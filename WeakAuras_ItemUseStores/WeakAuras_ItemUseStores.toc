@@ -1,0 +1,9 @@
+## Interface: 30403
+## Title: WeakAuras - ItemUseStores
+## Notes: Store Item Use Data
+## Author: HopeAsd
+## Version: 0.1.1
+## Created: Siweia
+## SavedVariablesPerCharacter: ItemUseInputSaved
+## SavedVariables: W_ItemUseSaved
+init.lua

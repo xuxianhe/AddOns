@@ -1,0 +1,10 @@
+lightweight tag e7472cec5a120993141b6ed67a4bcbb253e6d7f6 0.6.8
+Author:	zergrael <zergrael@gmail.com>
+Date:	Wed Oct 11 17:57:40 2023 +0200
+
+commit e7472cec5a120993141b6ed67a4bcbb253e6d7f6
+Author: zergrael <zergrael@gmail.com>
+Date:   Wed Oct 11 17:57:40 2023 +0200
+
+    Bump wrath TOC to 30403
+

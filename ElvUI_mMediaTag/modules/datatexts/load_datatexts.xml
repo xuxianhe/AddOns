@@ -1,0 +1,23 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="CombatTime.lua"/>
+	<Script file="FPSMS.lua"/>
+	<Script file="CoordinatesX.lua"/>
+	<Script file="Coordinatesy.lua"/>
+	<Script file="Score.lua"/>
+	<Script file="Teleports.lua"/>
+	<Script file="ProfessionMenu.lua"/>
+	<Script file="Dungeon.lua"/>
+	<Script file="gamemenu.lua"/>
+	<Script file="TimewarpedBadge.lua"/>
+	<Script file="ElementalOverflow.lua"/>
+	<Script file="DragonIslesSupplies.lua"/>
+	<Script file="Conquest.lua"/>
+	<Script file="Flightstones.lua"/>
+	<Script file="Whelpling.lua"/>
+	<Script file="Drake.lua"/>
+	<Script file="Wyrm.lua"/>
+	<Script file="Aspect.lua"/>
+	<Script file="firstprof.lua"/>
+	<Script file="secondprof.lua"/>
+	<Script file="durability_ilevel.lua"/>
+</Ui>
