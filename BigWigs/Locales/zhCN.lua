@@ -1,6 +1,8 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "zhCN")
 if not L then return end
 
+L.tempMessage = "您的计时条位置已重置，现在可以使用新的导入/导出配置功能。"
+
 -- Core.lua
 L.berserk = "狂暴"
 L.berserk_desc = "为首领狂暴显示计时器和警报。"
@@ -20,9 +22,9 @@ L.health = "血量"
 L.health_desc = "启用与首领战斗时显示血量变化信息。"
 
 L.already_registered = "|cffff0000警告：|r |cff00ff00%s|r（|cffffff00%s|r）在 BigWigs 中已经存在，但该模块仍试图重新注册。这可能是因为更新失败，导致您的插件文件夹中同时存在两份相同模块的拷贝。建议删除所有 BigWigs 文件夹并重新安装。"
-L.testNameplate = "检测到目标，在目标姓名板上创建一个测试计时条。 |cFF33FF99此功能很少用到，而且通常一次只存在一个计时条，用于追踪同时存在的多个目标的同个技能。|r"
 
 -- Loader / Options.lua
+L.okay = "确定"
 L.officialRelease = "你所使用的 BigWigs %s 为官方正式版（%s）"
 L.alphaRelease = "你所使用的 BigWigs %s 为“α测试版”（%s）"
 L.sourceCheckout = "你所使用的 BigWigs %s 是从原始代码仓库直接下载的。"
@@ -60,7 +62,10 @@ L.expansionNames = {
 	"巨龙时代", -- Dragonflight
 	"地心之战", -- The War Within
 }
-L.currentSeason = "当前赛季"
+L.littleWigsExtras = {
+	["LittleWigs_Delves"] = "地下堡",
+	["LittleWigs_CurrentSeason"] = "当前赛季",
+}
 
 -- Media.lua (These are the names of the sounds in the dropdown list in the "sounds" section)
 L.Beware = "当心（奥尔加隆）"
@@ -76,22 +81,17 @@ L.optionsKey = "ID: %s" -- The ID that messages/bars/options use
 L.raidBosses = "团队首领"
 L.dungeonBosses = "地下城首领"
 L.introduction = "欢迎使用 BigWigs 戏弄各个首领。请系好安全带，吃吃花生并享受这次旅行。它不会吃了你的孩子，但会协助你的团队与新的首领进行战斗就如同享受饕餮大餐一样。"
-L.toggleAnchorsBtnShow = "显示移动锚点"
-L.toggleAnchorsBtnHide = "隐藏移动锚点"
-L.toggleAnchorsBtnShow_desc = "显示全部移动锚点，允许移动计时条、信息等。"
-L.toggleAnchorsBtnHide_desc = "隐藏全部移动锚点，锁定一切就位。"
-L.testBarsBtn = "创建测试计时条"
-L.testBarsBtn_desc = "创建一个测试计时条以便于测试当前显示设置。"
 L.sound = "音效"
 L.minimapIcon = "小地图图标"
 L.minimapToggle = "打开或关闭小地图图标。"
 L.compartmentMenu = "隐藏暴雪插件收纳按钮"
 L.compartmentMenu_desc = "关闭此选项将会启用暴雪的小地图插件收纳功能。我们推荐你启用这个选项，隐藏暴雪插件收纳按钮。"
 L.configure = "配置"
-L.test = "测试"
 L.resetPositions = "重置位置"
 L.colors = "颜色"
 L.selectEncounter = "选择战斗"
+L.privateAuraSounds = "私有光环音效"
+L.privateAuraSounds_desc = "私有光环无法被正常追踪，但你可以设置一个音效，在你被技能锁定时播放。"
 L.listAbilities = "列出技能到团队聊天"
 
 L.dbmFaker = "伪装成 DBM 用户"
@@ -159,7 +159,7 @@ L.ME_ONLY_EMPHASIZE_desc = "启用此选项将醒目如只作用于自身相关�
 L.NAMEPLATEBAR = "姓名板条"
 L.NAMEPLATEBAR_desc = "当多个怪物施放相同的法术时，有时会在姓名板上附加条。如果此技能要伴随姓名板条隐藏，则禁用此选项。"
 L.PRIVATE = "私有光环"
-L.PRIVATE_desc = "私有光环无法用常规手段追踪，但可以在音效分页指定“只对自身”的音效。"
+L.PRIVATE_desc = "私有光环无法用常规手段追踪，但可以在音效分页指定只有“私有光环”出现在你身上时的音效。"
 
 L.advanced = "高级选项"
 L.back = "<< 返回"
@@ -168,6 +168,54 @@ L.tank = "|cFFFF0000只警报坦克。|r"
 L.healer = "|cFFFF0000只警报治疗。|r"
 L.tankhealer = "|cFFFF0000只警报坦克和治疗。|r"
 L.dispeller = "|cFFFF0000只警报驱散和打断。|r"
+
+-- Sharing.lua
+L.import = "导入"
+L.import_info = "导入字符串后，你可以选择要导入的设置。\n如果导入的字符串中有不可使用的设置，则无法选择这些设置。\n\n此导入只会改变你的常规设置，不会改变你对首领的特定设置。"
+L.import_info_active = "选择要导入的选项，然后点击导入按钮。"
+L.import_info_none = "|cFFFF0000导入的字符串不兼容或已过期。|r"
+L.export = "导出"
+L.export_info = "选择要导出并分享给他人的设置。\n\n您只能分享常规设置，这些设置对首领的特定设置没有影响。"
+L.export_string = "导出字符串"
+L.export_string_desc = "如果要分享设置，请复制此 BigWigs 字符串。"
+L.import_string = "导入字符串"
+L.import_string_desc = "将要导入的 BigWigs 字符串粘贴到此处。"
+L.position = "位置"
+L.settings = "设置"
+L.position_import_bars_desc = "导入 计时条 的位置（锚点）。"
+L.position_import_messages_desc = "导入 信息 的位置（锚点）。"
+L.position_import_countdown_desc = "导入 倒数 的位置（锚点）。"
+L.position_export_bars_desc = "导出 计时条 的位置（锚点）。"
+L.position_export_messages_desc = "导出 信息 的位置（锚点）。"
+L.position_export_countdown_desc = "导出 倒数 的位置（锚点）。"
+L.settings_import_bars_desc = "导入常规 计时条 设置，例如大小、字体等。"
+L.settings_import_messages_desc = "导入常规 信息 设置，例如大小、字体等。"
+L.settings_import_countdown_desc = "导入常规 倒数 设置，例如语音、大小、字体等。"
+L.settings_export_bars_desc = "导出常规 计时条 设置，例如大小、字体等。"
+L.settings_export_messages_desc = "导出常规 信息 设置，例如大小、字体等。"
+L.settings_export_countdown_desc = "导出常规 倒数 设置，例如语音、大小、字体等。"
+L.colors_import_bars_desc = "导入 计时条 的颜色。"
+L.colors_import_messages_desc = "导入 信息 的颜色。"
+L.color_import_countdown_desc = "导入 倒数 的颜色"
+L.colors_export_bars_desc = "导出 计时条 的颜色"
+L.colors_export_messages_desc = "导出 信息 的颜色"
+L.color_export_countdown_desc = "导出 倒数 的颜色"
+L.confirm_import = "您要导入的所选设置将覆盖您当前所选配置文件：\n\n|cFF33FF99\"%s\"|r 中的设置，\n\n您确定要这样做吗？"
+L.confirm_import_addon = "插件 |cFF436EEE\"%s\"|r 想要自动导入新的 BigWigs 设置，这些设置将覆盖您当前选择的 BigWigs 的设置：\n\n|cFF33FF99\"%s\"|r\n\n您确定要这样做吗？"
+L.confirm_import_addon_new_profile = "插件 |cFF436EEE\"%s\"|r 想自动创建一个名为：\n\n|cFF33FF99\"%s\"|r 的新 BigWigs 配置文件，\n\n 接受此新配置文件也会替换为它。"
+L.confirm_import_addon_edit_profile = "插件 |cFF436EEE\"%s\"|r 想要自动编辑您的一个名为：\n\n|cFF33FF99\"%s\"|r 的 BigWigs 配置文件，\n\n 接受这些更改也会替换为它。"
+L.no_string_available = "当前没有导入的字符串需要保存。首先导入一个字符串。"
+L.no_import_message = "未导入任何设置。"
+L.import_success = "导入：%s" -- 导入：计时条、信息颜色、倒数等所有设置
+L.imported_bar_positions = "计时条位置"
+L.imported_bar_settings = "计时条设置"
+L.imported_bar_colors = "计时条颜色"
+L.imported_message_positions = "信息位置"
+L.imported_message_settings = "信息设置"
+L.imported_message_colors = "信息颜色"
+L.imported_countdown_position = "倒数位置"
+L.imported_countdown_settings = "倒数设置"
+L.imported_countdown_color = "倒数颜色"
 
 -- Statistics
 L.statistics = "统计"

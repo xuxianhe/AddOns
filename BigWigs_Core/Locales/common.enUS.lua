@@ -44,7 +44,10 @@ L.health = "Health" -- The health of an NPC
 L.health_percent = "%d%% Health" -- "10% Health" The health percentage of an NPC
 L.door_open = "Door open" -- When a door is open, usually after a speech from an NPC
 L.gate_open = "Gate open" -- When a gate is open, usually after a speech from an NPC
+L.threat = "Threat"
+L.energy = "Energy"
 
+L.remaining = "%d remaining" -- 5 remaining
 L.duration = "%s for %s sec" -- Spell for 10 seconds
 L.over = "%s over" -- Spell over
 L.removed = "%s removed" -- Spell removed
@@ -64,8 +67,11 @@ L.you_die_sec = "You die in %d sec" -- "You die in 15 sec" (sec = seconds)
 L.next_ability = "Next ability" -- We don't know what ability will be next, we only know when it will happen (showing a bar)
 
 -- Add related
-L.add_spawned = "Add spawned"
-L.adds_spawned = "Adds spawned"
+L.add_spawned = "Add spawned" -- singular
+L.adds_spawned = "Adds spawned" -- plural
+L.adds_spawned_count = "%d |4add:adds; spawned" -- 1 add spawned / 2 adds spawned
+L.add_spawning = "Add spawning" -- singular
+L.adds_spawning = "Adds spawning" -- plural
 L.spawned = "%s spawned"
 L.spawning = "%s spawning"
 L.next_add = "Next Add"
@@ -139,6 +145,11 @@ L.shadow = "Shadow"
 L.nature = "Nature"
 L.arcane = "Arcane"
 
+-- Autotalk
+L.autotalk = "Automatic NPC interaction"
+L.autotalk_boss_desc = "Automatically select the NPC dialog options that cause the boss encounter to begin."
+L.autotalk_generic_desc = "Automatically select the NPC dialog options that cause you to progress to the next stage of the dungeon."
+
 -- Common ability name replacements
 L.absorb = "Absorb" -- Used for shield-like abilities that absorb damage or healing
 L.heal_absorb = "Heal Absorb" -- Used for shield-like abilities that absorb healing only
@@ -193,3 +204,5 @@ L.mind_control_short = "MC" -- Short version of Mind Control, mainly for bars
 L.soak = "Soak" -- Abilities you have to stand in on purpose to soak the damage, like a sponge soaks water. Commonly for abilities that split damage between everyone standing in them.
 L.soaks = "Soaks" -- Plural of L.soak
 L.spell_reflection = "Spell Reflection" -- Any ability that reflects spells
+L.parasite = "Parasite" -- Any ability where a parasite is involved e.g. "Parasitic Infection", "Parasitic Growth", etc
+L.rooted = "Rooted" -- Any ability that roots you in place, preventing you from moving

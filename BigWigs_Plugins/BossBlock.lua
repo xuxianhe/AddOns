@@ -145,7 +145,7 @@ plugin.pluginOptions = {
 					desc = L.blockTooltipQuestsDesc,
 					width = "full",
 					order = 7,
-					hidden = isVanilla, -- TooltipDataProcessor doesn't exist on vanilla
+					hidden = GameTooltip and not GameTooltip.IsTooltipType, -- TooltipDataProcessor doesn't exist on classic
 				},
 				blockObjectiveTracker = {
 					type = "toggle",
@@ -332,7 +332,7 @@ do
 		end
 	end
 	function plugin:OnRegister()
-		if TooltipDataProcessor then
+		if TooltipDataProcessor and GameTooltip and GameTooltip.IsTooltipType then
 			TooltipDataProcessor.AddLinePreCall(8, ShouldFilterQuestProgress) -- Enum.TooltipDataLineType.QuestObjective
 			TooltipDataProcessor.AddLinePreCall(17, ShouldFilterQuestProgress) -- Enum.TooltipDataLineType.QuestTitle
 			TooltipDataProcessor.AddLinePreCall(18, ShouldFilterQuestProgress) -- Enum.TooltipDataLineType.QuestPlayer
@@ -426,7 +426,15 @@ do
 				self:RegisterEvent("DISPLAY_EVENT_TOASTS")
 			end
 			self:RegisterEvent("TALKINGHEAD_REQUESTED")
-			CheckElv(self)
+			local frame = ObjectiveTrackerFrame
+			if type(frame) == "table" and type(frame.GetObjectType) == "function" then
+				CheckElv(self, frame)
+			end
+		elseif not isVanilla then
+			local frame = WatchFrame
+			if type(frame) == "table" and type(frame.GetObjectType) == "function" then
+				CheckElv(self, frame)
+			end
 		end
 	end
 end
@@ -547,16 +555,16 @@ do
 		end
 	end
 
-	function CheckElv(self)
+	function CheckElv(self, targetFrame)
 		-- Undo damage by ElvUI (This frame makes the Objective Tracker protected)
-		if type(ObjectiveTrackerFrame.AutoHider) == "table" and bbFrame.GetParent(ObjectiveTrackerFrame.AutoHider) == ObjectiveTrackerFrame then
+		if type(targetFrame.AutoHider) == "table" and type(targetFrame.AutoHider.GetObjectType) == "function" and bbFrame.GetParent(targetFrame.AutoHider) == targetFrame then
 			if InCombatLockdown() or UnitAffectingCombat("player") then
 				self:RegisterEvent("PLAYER_REGEN_ENABLED", function()
-					bbFrame.SetParent(ObjectiveTrackerFrame.AutoHider, (CreateFrame("Frame")))
+					bbFrame.SetParent(targetFrame.AutoHider, (CreateFrame("Frame")))
 					self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 				end)
 			else
-				bbFrame.SetParent(ObjectiveTrackerFrame.AutoHider, (CreateFrame("Frame")))
+				bbFrame.SetParent(targetFrame.AutoHider, (CreateFrame("Frame")))
 			end
 		end
 	end
@@ -568,12 +576,12 @@ do
 
 	local restoreObjectiveTracker = nil
 	function plugin:OnEngage(_, module)
-		if not module or not module:GetJournalID() or module.worldBoss then return end
+		if not module or (not module:GetJournalID() and not module:GetAllowWin()) or module.worldBoss then return end
 		if next(activatedModules) then
-			activatedModules[module:GetJournalID()] = true
+			activatedModules[module] = true
 			return
 		else
-			activatedModules[module:GetJournalID()] = true
+			activatedModules[module] = true
 		end
 
 		if isTestBuild then -- Don't block emotes on WoW PTR
@@ -619,37 +627,47 @@ do
 		end
 
 		if not isClassic then
-			CheckElv(self)
-			-- Never hide when tracking achievements or in Mythic+
-			local _, _, diff = GetInstanceInfo()
-			local trackedAchievements = C_ContentTracking.GetTrackedIDs(2) -- Enum.ContentTrackingType.Achievement = 2
-			if not restoreObjectiveTracker and self.db.profile.blockObjectiveTracker and not next(trackedAchievements) and diff ~= 8 and not bbFrame.IsProtected(ObjectiveTrackerFrame) then
-				restoreObjectiveTracker = bbFrame.GetParent(ObjectiveTrackerFrame)
-				if restoreObjectiveTracker then
-					bbFrame.SetFixedFrameStrata(ObjectiveTrackerFrame, true) -- Changing parent would change the strata & level, lock it first
-					bbFrame.SetFixedFrameLevel(ObjectiveTrackerFrame, true)
-					bbFrame.SetParent(ObjectiveTrackerFrame, bbFrame)
+			local frame = ObjectiveTrackerFrame
+			if type(frame) == "table" and type(frame.GetObjectType) == "function" then
+				CheckElv(self, frame)
+				-- Never hide when tracking achievements or in Mythic+
+				local _, _, diff = GetInstanceInfo()
+				local trackedAchievements = C_ContentTracking.GetTrackedIDs(2) -- Enum.ContentTrackingType.Achievement = 2
+				if not restoreObjectiveTracker and self.db.profile.blockObjectiveTracker and not next(trackedAchievements) and diff ~= 8 and not bbFrame.IsProtected(frame) then
+					restoreObjectiveTracker = bbFrame.GetParent(frame)
+					if restoreObjectiveTracker then
+						bbFrame.SetFixedFrameStrata(frame, true) -- Changing parent would change the strata & level, lock it first
+						bbFrame.SetFixedFrameLevel(frame, true)
+						bbFrame.SetParent(frame, bbFrame)
+					end
 				end
 			end
 		elseif not isVanilla then
 			local frame = Questie_BaseFrame or WatchFrame
-			local trackedAchievements = GetTrackedAchievements()
-			if not restoreObjectiveTracker and self.db.profile.blockObjectiveTracker and not trackedAchievements and not bbFrame.IsProtected(frame) then
-				restoreObjectiveTracker = bbFrame.GetParent(frame)
-				if restoreObjectiveTracker then
-					bbFrame.SetFixedFrameStrata(frame, true) -- Changing parent would change the strata & level, lock it first
-					bbFrame.SetFixedFrameLevel(frame, true)
-					bbFrame.SetParent(frame, bbFrame)
+			if type(frame) == "table" and type(frame.GetObjectType) == "function" then
+				if frame == WatchFrame then
+					CheckElv(self, frame)
+				end
+				local trackedAchievements = GetTrackedAchievements and GetTrackedAchievements()
+				if not restoreObjectiveTracker and self.db.profile.blockObjectiveTracker and not trackedAchievements and not bbFrame.IsProtected(frame) then
+					restoreObjectiveTracker = bbFrame.GetParent(frame)
+					if restoreObjectiveTracker then
+						bbFrame.SetFixedFrameStrata(frame, true) -- Changing parent would change the strata & level, lock it first
+						bbFrame.SetFixedFrameLevel(frame, true)
+						bbFrame.SetParent(frame, bbFrame)
+					end
 				end
 			end
 		elseif isVanilla then
 			local frame = Questie_BaseFrame or QuestWatchFrame
-			if not restoreObjectiveTracker and self.db.profile.blockObjectiveTracker and not bbFrame.IsProtected(frame) then
-				restoreObjectiveTracker = bbFrame.GetParent(frame)
-				if restoreObjectiveTracker then
-					bbFrame.SetFixedFrameStrata(frame, true) -- Changing parent would change the strata & level, lock it first
-					bbFrame.SetFixedFrameLevel(frame, true)
-					bbFrame.SetParent(frame, bbFrame)
+			if type(frame) == "table" and type(frame.GetObjectType) == "function" then
+				if not restoreObjectiveTracker and self.db.profile.blockObjectiveTracker and not bbFrame.IsProtected(frame) then
+					restoreObjectiveTracker = bbFrame.GetParent(frame)
+					if restoreObjectiveTracker then
+						bbFrame.SetFixedFrameStrata(frame, true) -- Changing parent would change the strata & level, lock it first
+						bbFrame.SetFixedFrameLevel(frame, true)
+						bbFrame.SetParent(frame, bbFrame)
+					end
 				end
 			end
 		end
@@ -703,8 +721,8 @@ do
 	end
 
 	function plugin:BigWigs_OnBossDisable(_, module)
-		if not module or not module:GetJournalID() or module.worldBoss then return end
-		activatedModules[module:GetJournalID()] = nil
+		if not module or (not module:GetJournalID() and not module:GetAllowWin()) or module.worldBoss then return end
+		activatedModules[module] = nil
 		if not next(activatedModules) then
 			activatedModules = {}
 			RestoreAll(self)
@@ -909,8 +927,9 @@ do
 	-- Cinematic skipping hack to workaround an item (Vision of Time) that creates cinematics in Siege of Orgrimmar.
 	function plugin:SiegeOfOrgrimmarCinematics()
 		local hasItem
+		local GetItemCount = C_Item and C_Item.GetItemCount or GetItemCount -- XXX Wrath compat
 		for i = 105930, 105935 do -- Vision of Time items
-			local count = C_Item.GetItemCount(i)
+			local count = GetItemCount(i)
 			if count > 0 then hasItem = true break end -- Item is found in our inventory
 		end
 		if hasItem and not self.SiegeOfOrgrimmarCinematicsFrame then

@@ -1,14 +1,13 @@
 # DBM - Dungeons, Delves, & Events
 
-## [r135](https://github.com/DeadlyBossMods/DBM-Dungeons/tree/r135) (2024-07-03)
-[Full Changelog](https://github.com/DeadlyBossMods/DBM-Dungeons/compare/r134...r135) [Previous Releases](https://github.com/DeadlyBossMods/DBM-Dungeons/releases)
+## [r136](https://github.com/DeadlyBossMods/DBM-Dungeons/tree/r136) (2024-07-08)
+[Full Changelog](https://github.com/DeadlyBossMods/DBM-Dungeons/compare/r135...r136) [Previous Releases](https://github.com/DeadlyBossMods/DBM-Dungeons/releases)
 
-- Push reworked The Coaglemation mod  
-- updated mythic timers for Orator  
-- Fixup izo with updated timers and accounting for randomness of initial timers  
-- Fangs of the queen Update  
-     - Fixed few timers now that missing spells were added to CLEU  
-     - Also added missing mechanics due to previous rework  
-- Sub in some prep mods for SoD season 4 dungeon  
-- Update localization.ru.lua (#224)  
-- update city of echos timers from latest M+ tests  
+- Update DBM-Delves-WarWithin\_Mainline.toc (#225)  
+- Update DBM-Party-WarWithin\_Mainline.toc (#226)  
+- Push reworked Shadowcrown mod that now handles spell queuing with a hard coded table (based on limited number of logs, if it proves inaccurate, a backup method is also already coded)  
+- Enable trash warnings to force enable on Bromach and treemouth since those bosses are often pulled with trash  
+- Rework Dungeon Rashanan to vastly improve timer accuracy by accounting for all ability true CDs, and all ability interactive CDs (spell queuing from ICDs). this should result in extremely precise (but jarring) auto correct code that only extends CDs where appropriate.  
+    Also fixed Stage 2 detection, since event I was using was removed.  
+- Significantly improve accuracy of Anub'Ikkaj with auto correcting timers that handle bosses overly annoying spell queue ICDs  
+- Flag DBM mods as current on 11.0.2 (in addition to 11.0.0)  

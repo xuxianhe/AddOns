@@ -7,7 +7,7 @@ L.you_icon = "|T13700%2$d:0|t你：%1$s"
 L.underyou = "%s在你脚下"
 L.aboveyou = "%s在你面前"
 L.other = "%s：%s"
-L.onboss = "首领%s"
+L.onboss = "首领：%s"
 L.buff_boss = "首领增益：%s"
 L.buff_other = "%s获得增益：%s"
 L.magic_buff_boss = "首领魔法增益: %s" -- Magic buff on BOSS: SPELL_NAME
@@ -29,8 +29,8 @@ L.boss = "首领"
 L.plus = "%s + %s" -- Spell 1 + Spell 2
 L.extra = "%s（%s）" -- SPELL_NAME (short spell name or extra information)
 
-L.phase = "阶段%d"
-L.stage = "阶段%d"
+L.phase = "阶段：%d"
+L.stage = "阶段：%d"
 L.wave = "第%d波" -- e.g. "Wave 1" (Waves of adds)
 L.wave_count = "第%d波，共%d波" -- Wave 1 of 3 (Usually waves of adds)
 L.normal = "普通模式"
@@ -45,18 +45,21 @@ L.health = "血量" -- The health of an NPC
 L.health_percent = "%d%% 血量" -- "10% Health" The health percentage of an NPC
 L.door_open = "门开了" -- When a door is open, usually after a speech from an NPC
 L.gate_open = "门开了" -- When a gate is open, usually after a speech from an NPC
+L.threat = "威胁"
+L.energy = "能量"
 
-L.duration = "%s持续%s秒" -- Spell for 10 seconds
+L.remaining = "剩余：%d" -- 5 remaining
+L.duration = "%s持续 %s 秒" -- Spell for 10 seconds
 L.over = "%s结束" -- Spell Over
 L.removed = "%s移除" -- Spell Removed
 L.removed_from = "%2$s已移除%1$s" -- Spell removed from Player
 L.removed_by = "%s被%s移除" -- Spell removed by Player
 L.removed_after = "%s移除，用时 %.1f 秒" -- "Spell removed after 1.1s" (s = seconds)
-L.incoming = "即将%s" -- Spell Incoming
+L.incoming = "即将：%s" -- Spell Incoming
 L.interrupted = "已打断%s" -- Spell Interrupted
 L.interrupted_by = "%2$s已打断%1$s" -- Spell interrupted by Player
 L.interruptible = "可打断" -- when a spell is interruptible
-L.no = "缺少%s" -- No Spell
+L.no = "缺少：%s" -- No Spell
 L.intermission = "阶段转换"
 L.percent = "%d%% - %s" -- 20% - Spell
 L.cancelled = "%s取消" -- Spell Cancelled
@@ -65,10 +68,13 @@ L.you_die_sec = "你将在%d秒后死亡" -- "You die in 15 sec" (sec = seconds)
 L.next_ability = "下个技能" -- We don't know what ability will be next, we only know when it will happen (showing a bar)
 
 -- Add related
-L.add_spawned = "小怪刷新"
-L.adds_spawned = "小怪刷新"
+L.add_spawned = "小怪出现" -- singular
+L.adds_spawned = "小怪出现" -- plural
+L.adds_spawned_count = "%d 增援出现" -- 1 add spawned / 2 adds spawned
+L.add_spawning = "小怪出现" -- singular
+L.adds_spawning = "小怪出现" -- plural
 L.spawned = "%s已刷新"
-L.spawning = "%s刷新"
+L.spawning = "%s出现"
 L.next_add = "下一波小怪"
 L.add_killed = "小怪已击杀（%d/%d）"
 L.add_remaining = "小怪已击杀，剩余 %d"
@@ -100,7 +106,7 @@ L.affixes = "词缀" -- Seasonal affixes for raids and mythic+ dungeons
 L.marker = "%s标记"
 L.marker_player_desc = "标记受到%s影响的玩家为%s，需要权限。" -- Mark players affected by 'SPELL_NAME' with SKULL_ICON
 L.marker_npc_desc = "标记%s为%s，需要权限。" -- Mark NPC_NAME with SKULL_ICON
---L.marker_npc_aura_desc = "标记受到'%s'影响的NPC为%s，需要权限。" -- Mark NPCs affected by 'SPELL_NAME' with SKULL_ICON
+L.marker_npc_aura_desc = "标记受到'%s'影响的 NPC 为%s，需要权限。" -- Mark NPCs affected by 'SPELL_NAME' with SKULL_ICON
 
 -- Ability where two players have to move close to each other
 L.link = "连接"
@@ -139,6 +145,11 @@ L.frost = "冰霜"
 L.shadow = "暗影"
 L.nature = "自然"
 L.arcane = "奥术"
+
+-- Autotalk
+L.autotalk = "自动与NPC对话"
+L.autotalk_boss_desc = "自动选择NPC对话选项，使首领战开始。"
+L.autotalk_generic_desc = "自动选择使你进入地下城下一阶段的NPC对话选项。"
 
 -- Common ability name replacements
 L.absorb = "吸收" -- Used for shield-like abilities that absorb damage or healing
@@ -180,7 +191,7 @@ L.orbs = "宝珠" -- Plural for L.orb
 L.curse = "诅咒" -- Any curse-type dispellable debuff, or debuffs called "Curse of XYZ", etc.
 L.curses = "诅咒" -- Plural of L.curse
 L.disease = "疾病" -- Any disease-type dispellable debuff, or debuffs called "Disease of XYZ", etc.
---L.poison = "Poison" -- Any poison-type dispellable debuff, or debuffs called "Poison of XYZ", etc.
+L.poison = "毒" -- Any poison-type dispellable debuff, or debuffs called "Poison of XYZ", etc.
 L.spirit = "精魂" -- Sometimes a boss will summon spirits, similar to ghosts, but not exactly, although you might have the same word for both. e.g. "Spirits of X" or "Wild Spirits"
 L.spirits = "精魂" -- Plural of L.spirit
 L.tornado = "旋风" -- 'A tornado is a violently rotating column of air that is in contact with both the surface of the Earth and a cloud' - Wikipedia
@@ -194,3 +205,5 @@ L.mind_control_short = "精神控制" -- Short version of Mind Control, mainly f
 L.soak = "分摊" -- Abilities you have to stand in on purpose to soak the damage, like a sponge soaks water. Commonly for abilities that split damage between everyone standing in them.
 L.soaks = "分摊" -- Plural of L.soak
 L.spell_reflection = "法术反射" -- Any ability that reflects spells
+L.parasite = "寄生" -- Any ability where a parasite is involved e.g. "Parasitic Infection", "Parasitic Growth", etc
+L.rooted = "定身" -- Any ability that roots you in place, preventing you from moving

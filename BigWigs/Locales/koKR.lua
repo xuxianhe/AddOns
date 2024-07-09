@@ -1,6 +1,8 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "koKR")
 if not L then return end
 
+--L.tempMessage = "Your bar positions have reset, but you can now Import/Export profiles."
+
 -- Core.lua
 L.berserk = "광폭화"
 L.berserk_desc = "우두머리가 언제 광폭화하는지 바와 시간 경고를 표시합니다."
@@ -20,9 +22,9 @@ L.adds_desc = "우두머리 전투 중 생성되는 다양한 추가 몹들과 �
 --L.health_desc = "Enable functions for displaying various health information during the boss encounter."
 
 L.already_registered = "|cffff0000경고:|r |cff00ff00%s|r (|cffffff00%s|r)|1은;는; 이미 BigWigs 내에 모듈로 존재합니다, 하지만 무엇인가 다시 등록하려고 시도했습니다. 이는 일반적으로 몇몇 애드온 업데이터 오류로 인해 애드온 폴더 내에 이 모듈의 사본을 가지고 있다는 것을 의미합니다. 설치된 모든 BigWigs 폴더를 삭제한 후 처음부터 다시 설치하는 것을 권장합니다."
-L.testNameplate = "대상이 감지되면, 대상의 이름표 위에 임의로 이름표를 하나 만듭니다. |cFF33FF99이 기능은 거의 쓰이지 않고, 바 하나일 때가 많고, 주로 같은 스킬을 시전하는 여러마리의 넴드나 쫄들과 상대할때 그 쿨다운을 체크하기 위해 씁니다.|r"
 
 -- Loader / Options.lua
+L.okay = "확인"
 L.officialRelease = "당신은 BigWigs %s (%s)의 공식 배포 버전을 실행 중입니다"
 L.alphaRelease = "당신은 BigWigs %s (%s)의 알파 버전을 실행 중입니다"
 L.sourceCheckout = "당신은 저장소로부터 직접 가져온 BigWigs %s의 소스를 실행 중입니다."
@@ -60,7 +62,10 @@ L.expansionNames = {
 	"용군단", -- Dragonflight
 	"내부 전쟁", -- The War Within
 }
-L.currentSeason = "현재 시즌"
+L.littleWigsExtras = {
+	["LittleWigs_Delves"] = "Delves",
+	["LittleWigs_CurrentSeason"] = "현재 시즌",
+}
 
 -- Media.lua (These are the names of the sounds in the dropdown list in the "sounds" section)
 L.Beware = "조심해라 (알갈론)"
@@ -76,22 +81,17 @@ L.optionsKey = "ID: %s" -- The ID that messages/bars/options use
 L.raidBosses = "공격대 우두머리"
 L.dungeonBosses = "던전 우두머리"
 L.introduction = "우두머리 전투가 배회하는 BigWigs에 오신 걸 환영합니다. 안전 벨트를 착용하고, 땅콩을 먹으며 탑승을 즐기세요. 당신의 아이들을 먹진 않지만, 당신의 공격대를 위한 7-코스 저녁 식사로 새로운 우두머리 전투를 준비하는 데 도움을 줄겁니다."
-L.toggleAnchorsBtnShow = "고정기 표시"
-L.toggleAnchorsBtnHide = "고정기 숨김"
-L.toggleAnchorsBtnShow_desc = "고정기를 모두 표시해서 바, 메세지, 등을 이동할 수 있게 합니다."
-L.toggleAnchorsBtnHide_desc = "고정기를 모두 숨겨서 다 그자리에 고정시킵니다."
-L.testBarsBtn = "테스트 바 만들기"
-L.testBarsBtn_desc = "당신의 현재 표시 설정으로 테스트용 바를 만듭니다."
 L.sound = "소리"
 L.minimapIcon = "미니맵 아이콘"
 L.minimapToggle = "미니맵 아이콘의 표시/숨기기를 전환합니다."
 L.compartmentMenu = "미니맵 옆에 아이콘 표시"
 L.compartmentMenu_desc = "이 옵션을 끄면 미니맵에 빅윅 아이콘이 애드온 묶음에 표시됩니다. 이 옵션을 켜두는 것을 권장합니다."
 L.configure = "구성"
-L.test = "테스트"
 L.resetPositions = "위치 초기화"
 L.colors = "색상"
 L.selectEncounter = "우두머리 전투 선택"
+--L.privateAuraSounds = "Private Aura Sounds"
+--L.privateAuraSounds_desc = "Private auras can't be tracked normally, but you can set a sound to be played when you are targeted with the ability."
 L.listAbilities = "파티/공격대 대화에 능력 나열하기"
 
 L.dbmFaker = "DBM을 사용 중인 것처럼 위장하기"
@@ -168,6 +168,54 @@ L.tank = "|cFFFF0000방어 전담만 경보합니다.|r "
 L.healer = "|cFFFF0000치유 전담만 경보합니다.|r "
 L.tankhealer = "|cFFFF0000방어 & 치유 전담만 경보합니다.|r "
 L.dispeller = "|cFFFF0000무효화 시전자만 경보합니다.|r "
+
+-- Sharing.lua
+--L.import = "Import"
+--L.import_info = "After entering a string you can select what settings you would like to import.\nIf settings are not available in the import string they will not be selectable.\n\nThis import will only affect the general settings and does not affect boss specific settings."
+--L.import_info_active = "Choose what parts you would like to import and then click the import button."
+--L.import_info_none = "|cFFFF0000The import string is incompatible or out of date.|r"
+--L.export = "Export"
+--L.export_info = "Select which settings you would like to export and share with others.\n\nYou can only share general settings and these have no effect on boss specific settings."
+--L.export_string = "Export String"
+--L.export_string_desc = "Copy this BigWigs string if you want to share your settings."
+--L.import_string = "Import String"
+--L.import_string_desc = "Paste the BigWigs string you want to import here."
+--L.position = "Position"
+--L.settings = "Settings"
+--L.position_import_bars_desc = "Import the position (anchors) of the bars."
+--L.position_import_messages_desc = "Import the position (anchors) of the messages."
+--L.position_import_countdown_desc = "Import the position (anchors) of the countdown."
+--L.position_export_bars_desc = "Export the position (anchors) of the bars."
+--L.position_export_messages_desc = "Export the position (anchors) of the messages."
+--L.position_export_countdown_desc = "Export the position (anchors) of the countdown."
+--L.settings_import_bars_desc = "Import the general bar settings such as size, font, etc."
+--L.settings_import_messages_desc = "Import the general message settings such as size, font, etc."
+--L.settings_import_countdown_desc = "Import the general countdown settings such as voice, size, font, etc."
+--L.settings_export_bars_desc = "Export the general bar settings such as size, font, etc."
+--L.settings_export_messages_desc = "Export the general message settings such as size, font, etc."
+--L.settings_export_countdown_desc = "Export the general countdown settings such as voice, size, font, etc."
+--L.colors_import_bars_desc = "Import the colors of the bars."
+--L.colors_import_messages_desc = "Import the colors of the messages."
+--L.color_import_countdown_desc = "Import the color of the countdown."
+--L.colors_export_bars_desc = "Export the colors of the bars."
+--L.colors_export_messages_desc = "Export the colors of the messages."
+--L.color_export_countdown_desc = "Export the color of the countdown."
+--L.confirm_import = "The selected settings you are about to import will overwrite the settings in your currently selected profile:\n\n|cFF33FF99\"%s\"|r\n\nAre you sure you want to do this?"
+--L.confirm_import_addon = "The addon |cFF436EEE\"%s\"|r wants to automatically import new BigWigs settings that will overwrite the settings in your currently selected BigWigs profile:\n\n|cFF33FF99\"%s\"|r\n\nAre you sure you want to do this?"
+--L.confirm_import_addon_new_profile = "The addon |cFF436EEE\"%s\"|r wants to automatically create a new BigWigs profile called:\n\n|cFF33FF99\"%s\"|r\n\nAccepting this new profile will also swap to it."
+--L.confirm_import_addon_edit_profile = "The addon |cFF436EEE\"%s\"|r wants to automatically edit one of your BigWigs profiles called:\n\n|cFF33FF99\"%s\"|r\n\nAccepting these changes will also swap to it."
+--L.no_string_available = "No import string stored to import. First import a string."
+--L.no_import_message = "No settings were imported."
+--L.import_success = "Imported: %s" -- Imported: Bar Anchors, Message Colors
+--L.imported_bar_positions = "Bar Positions"
+--L.imported_bar_settings = "Bar Settings"
+--L.imported_bar_colors = "Bar Colors"
+--L.imported_message_positions = "Message Positions"
+--L.imported_message_settings = "Message Settings"
+--L.imported_message_colors = "Message Colors"
+--L.imported_countdown_position = "Countdown Position"
+--L.imported_countdown_settings = "Countdown Settings"
+--L.imported_countdown_color = "Countdown Color"
 
 -- Statistics
 L.statistics = "통계"

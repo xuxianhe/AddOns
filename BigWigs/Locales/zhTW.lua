@@ -1,6 +1,8 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "zhTW")
 if not L then return end
 
+--L.tempMessage = "Your bar positions have reset, but you can now Import/Export profiles."
+
 -- Core.lua
 L.berserk = "狂暴"
 L.berserk_desc = "為首領狂暴顯示計時條及警報。"
@@ -20,9 +22,9 @@ L.health = "生命值"
 L.health_desc = "顯示與首領戰鬥中相關的生命值資訊。"
 
 L.already_registered = "|cffff0000警告：|r |cff00ff00%s|r（|cffffff00%s|r）在 BigWigs 中已經存在，但該模組仍試圖重新註冊。通常來說，這可能是由於更新失敗導致你的插件資料夾中同時存在兩份相同模組的拷貝。建議刪除所有 BigWigs 資料夾並重新安裝。"
-L.testNameplate = "檢測到目標，在目標名條上創建一個測試計時條。 |cFF33FF99這個功能相當少用，並且通常一次只會有一條；通常用於分別監視多個目標的同個技能冷卻。|r"
 
 -- Loader / Options.lua
+L.okay = "確定"
 L.officialRelease = "你所使用的 BigWigs %s 為官方正式版（%s）"
 L.alphaRelease = "你所使用的 BigWigs %s 為「α測試版（%s）」"
 L.sourceCheckout = "你所使用的 BigWigs（%s）是直接從原始碼倉庫下載的版本。"
@@ -60,7 +62,10 @@ L.expansionNames = {
 	"巨龍崛起", -- Dragonflight
 	"地心之戰", -- The War Within
 }
-L.currentSeason = "當前賽季"
+L.littleWigsExtras = {
+	["LittleWigs_Delves"] = "Delves",
+	["LittleWigs_CurrentSeason"] = "當前賽季",
+}
 
 -- Media.lua (These are the names of the sounds in the dropdown list in the "sounds" section)
 L.Beware = "當心（艾爾加隆）"
@@ -76,22 +81,17 @@ L.optionsKey = "ID: %s" -- The ID that messages/bars/options use
 L.raidBosses = "團隊首領"
 L.dungeonBosses = "地城首領"
 L.introduction = "歡迎使用 BigWigs 戲弄各個首領。請繫好安全帶，吃吃花生並享受這次旅行。它不會吃了你的孩子，但會協助你的團隊與新的首領進行戰鬥，如同享受饕餮大餐一樣。"
-L.toggleAnchorsBtnShow = "顯示移動錨點"
-L.toggleAnchorsBtnHide = "隱藏移動錨點"
-L.toggleAnchorsBtnShow_desc = "顯示所有移動錨點，使你可以移動計時條、訊息等元素的位置。"
-L.toggleAnchorsBtnHide_desc = "隱藏所有移動錨點，並鎖定所有元素的位置。"
-L.testBarsBtn = "創建測試計時條"
-L.testBarsBtn_desc = "創建一個測試計時條以測試當前顯示設定。"
 L.sound = "音效"
 L.minimapIcon = "小地圖圖示"
 L.minimapToggle = "打開或關閉小地圖圖示。"
 L.compartmentMenu = "隱藏暴雪插件收納按鈕"
 L.compartmentMenu_desc = "關閉此選項將會啟用暴雪的小地圖插件收納功能。我們推薦你啟用這個選項，隱藏暴雪插件收納按鈕。"
 L.configure = "配置"
-L.test = "測試"
 L.resetPositions = "重置位置"
 L.colors = "顏色"
 L.selectEncounter = "選擇戰鬥"
+L.privateAuraSounds = "私有光環音效"
+L.privateAuraSounds_desc = "插件無法用一般的方式追蹤私有光環，但可以指定一個音效，在你被光環鎖定時播放。"
 L.listAbilities = "將技能列表發送到團隊聊天頻道"
 
 L.dbmFaker = "假裝我是 DBM 用戶"
@@ -168,6 +168,54 @@ L.tank = "|cFFFF0000只警報坦克。|r"
 L.healer = "|cFFFF0000只警報治療。|r"
 L.tankhealer = "|cFFFF0000只警報坦克和治療。|r"
 L.dispeller = "|cFFFF0000只警報驅散和打斷。|r"
+
+-- Sharing.lua
+--L.import = "Import"
+--L.import_info = "After entering a string you can select what settings you would like to import.\nIf settings are not available in the import string they will not be selectable.\n\nThis import will only affect the general settings and does not affect boss specific settings."
+--L.import_info_active = "Choose what parts you would like to import and then click the import button."
+--L.import_info_none = "|cFFFF0000The import string is incompatible or out of date.|r"
+--L.export = "Export"
+--L.export_info = "Select which settings you would like to export and share with others.\n\nYou can only share general settings and these have no effect on boss specific settings."
+--L.export_string = "Export String"
+--L.export_string_desc = "Copy this BigWigs string if you want to share your settings."
+--L.import_string = "Import String"
+--L.import_string_desc = "Paste the BigWigs string you want to import here."
+--L.position = "Position"
+--L.settings = "Settings"
+--L.position_import_bars_desc = "Import the position (anchors) of the bars."
+--L.position_import_messages_desc = "Import the position (anchors) of the messages."
+--L.position_import_countdown_desc = "Import the position (anchors) of the countdown."
+--L.position_export_bars_desc = "Export the position (anchors) of the bars."
+--L.position_export_messages_desc = "Export the position (anchors) of the messages."
+--L.position_export_countdown_desc = "Export the position (anchors) of the countdown."
+--L.settings_import_bars_desc = "Import the general bar settings such as size, font, etc."
+--L.settings_import_messages_desc = "Import the general message settings such as size, font, etc."
+--L.settings_import_countdown_desc = "Import the general countdown settings such as voice, size, font, etc."
+--L.settings_export_bars_desc = "Export the general bar settings such as size, font, etc."
+--L.settings_export_messages_desc = "Export the general message settings such as size, font, etc."
+--L.settings_export_countdown_desc = "Export the general countdown settings such as voice, size, font, etc."
+--L.colors_import_bars_desc = "Import the colors of the bars."
+--L.colors_import_messages_desc = "Import the colors of the messages."
+--L.color_import_countdown_desc = "Import the color of the countdown."
+--L.colors_export_bars_desc = "Export the colors of the bars."
+--L.colors_export_messages_desc = "Export the colors of the messages."
+--L.color_export_countdown_desc = "Export the color of the countdown."
+--L.confirm_import = "The selected settings you are about to import will overwrite the settings in your currently selected profile:\n\n|cFF33FF99\"%s\"|r\n\nAre you sure you want to do this?"
+--L.confirm_import_addon = "The addon |cFF436EEE\"%s\"|r wants to automatically import new BigWigs settings that will overwrite the settings in your currently selected BigWigs profile:\n\n|cFF33FF99\"%s\"|r\n\nAre you sure you want to do this?"
+--L.confirm_import_addon_new_profile = "The addon |cFF436EEE\"%s\"|r wants to automatically create a new BigWigs profile called:\n\n|cFF33FF99\"%s\"|r\n\nAccepting this new profile will also swap to it."
+--L.confirm_import_addon_edit_profile = "The addon |cFF436EEE\"%s\"|r wants to automatically edit one of your BigWigs profiles called:\n\n|cFF33FF99\"%s\"|r\n\nAccepting these changes will also swap to it."
+--L.no_string_available = "No import string stored to import. First import a string."
+--L.no_import_message = "No settings were imported."
+--L.import_success = "Imported: %s" -- Imported: Bar Anchors, Message Colors
+--L.imported_bar_positions = "Bar Positions"
+--L.imported_bar_settings = "Bar Settings"
+--L.imported_bar_colors = "Bar Colors"
+--L.imported_message_positions = "Message Positions"
+--L.imported_message_settings = "Message Settings"
+--L.imported_message_colors = "Message Colors"
+--L.imported_countdown_position = "Countdown Position"
+--L.imported_countdown_settings = "Countdown Settings"
+--L.imported_countdown_color = "Countdown Color"
 
 -- Statistics
 L.statistics = "統計"

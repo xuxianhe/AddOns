@@ -45,8 +45,11 @@ L.health = "生命值" -- The health of an NPC
 L.health_percent = "%d%% 生命值" -- "10% Health" The health percentage of an NPC
 L.door_open = "開門" -- 小的門 When a door is open, usually after a speech from an NPC
 L.gate_open = "開門" -- 大的門 When a gate is open, usually after a speech from an NPC
+L.threat = "威脅"
+L.energy = "能量"
 
-L.duration = "%s持續%s秒" -- Spell for 10 seconds
+L.remaining = "剩餘 %d" -- 5 remaining
+L.duration = "%s持續 %s 秒" -- Spell for 10 seconds
 L.over = "%s結束" -- Spell Over
 L.removed = "%s移除" -- Spell Removed
 L.removed_from = "%2$s已移除%1$s" -- Spell removed from Player 自玩家身上清除 語句不順 應該是 %2$s身上的%1$s已移除 或 %2$s的%1$s被清除
@@ -65,8 +68,11 @@ L.you_die_sec = "你將在%d秒後死亡" -- "You die in 15 sec" (sec = seconds)
 L.next_ability = "下個技能" -- We don't know what ability will be next, we only know when it will happen (showing a bar)
 
 -- Add related
-L.add_spawned = "小怪出現"
-L.adds_spawned = "小怪出現"
+L.add_spawned = "小怪出現" -- singular
+L.adds_spawned = "小怪出現" -- plural
+--L.adds_spawned_count = "%d |4add:adds; spawned" -- 1 add spawned / 2 adds spawned
+L.add_spawning = "小怪出現" -- singular 小怪正在出現/小怪出現/小怪已出現，中文沒有英文那麼明確的時態和單複數之別
+L.adds_spawning = "小怪出現" -- plural
 L.spawned = "%s已重生"
 L.spawning = "%s出現"
 L.next_add = "下一波小怪"
@@ -140,6 +146,11 @@ L.shadow = "暗影"
 L.nature = "自然"
 L.arcane = "秘法"
 
+-- Autotalk
+L.autotalk = "自動與 NPC 對話"
+L.autotalk_boss_desc = "自動選擇開始首領戰鬥的對話選項。"
+L.autotalk_generic_desc = "自動選擇使地城進入下一階段的對話選項。"
+
 -- Common ability name replacements
 L.absorb = "吸收" -- Used for shield-like abilities that absorb damage or healing
 L.heal_absorb = "治療吸收盾" -- Used for shield-like abilities that absorb healing only
@@ -180,7 +191,7 @@ L.orbs = "寶珠" -- Plural for L.orb
 L.curse = "詛咒" -- Any curse-type dispellable debuff, or debuffs called "Curse of XYZ", etc.
 L.curses = "詛咒" -- Plural of L.curse
 L.disease = "疾病" -- Any disease-type dispellable debuff, or debuffs called "Disease of XYZ", etc.
---L.poison = "Poison" -- Any poison-type dispellable debuff, or debuffs called "Poison of XYZ", etc.
+L.poison = "毒" -- Any poison-type dispellable debuff, or debuffs called "Poison of XYZ", etc.
 L.spirit = "靈魂" -- Sometimes a boss will summon spirits, similar to ghosts, but not exactly, although you might have the same word for both. e.g. "Spirits of X" or "Wild Spirits"
 L.spirits = "靈魂" -- Plural of L.spirit
 L.tornado = "旋風" -- 'A tornado is a violently rotating column of air that is in contact with both the surface of the Earth and a cloud' - Wikipedia
@@ -194,3 +205,5 @@ L.mind_control_short = "精神控制" -- Short version of Mind Control, mainly f
 L.soak = "分攤" -- Abilities you have to stand in on purpose to soak the damage, like a sponge soaks water. Commonly for abilities that split damage between everyone standing in them.
 L.soaks = "分攤" -- Plural of L.soak
 L.spell_reflection = "法術反射" -- Any ability that reflects spells
+L.parasite = "寄生" -- Any ability where a parasite is involved e.g. "Parasitic Infection", "Parasitic Growth", etc
+L.rooted = "被定身" -- Any ability that roots you in place, preventing you from moving
