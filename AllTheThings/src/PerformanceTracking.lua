@@ -49,7 +49,7 @@ scopes.__new = function(t, scope) scopes[t] = performance[scope] return scopes[t
 app.PrintPerf = function()
 	local blob, line = {}, {};
 	for typeKey,typeData in pairs(performance) do
-		if type(typeData) == "table" then
+		if type(typeData) == "table" and type(typeKey) == "string" then
 			for k,v in pairs(typeData) do
 				if type(v) == "table" then
 					line[1] = typeKey;
@@ -66,8 +66,15 @@ app.PrintPerf = function()
 	app:ShowPopupDialogWithMultiLineEditBox(csv);
 end
 app.ClearPerf = function()
-	for _,typeData in pairs(performance) do
-		wipe(typeData);
+	for typeKey,typeData in pairs(performance) do
+		if type(typeData) == "table" and type(typeKey) == "string" then
+			for k,v in pairs(typeData) do
+				if type(v) == "table" then
+					v.count = 0
+					v.time = 0
+				end
+			end
+		end
 	end
 	app.print("Cleared Performance Stats");
 end

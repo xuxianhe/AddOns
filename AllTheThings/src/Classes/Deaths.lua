@@ -44,7 +44,7 @@ local fields = {
 		return OnTooltipForDeathTracker;
 	end,
 };
-if C_GameRules and C_GameRules.IsHardcoreActive() then
+if app.GameBuildVersion <= 40000 and C_GameRules and C_GameRules.IsHardcoreActive() then
 	fields.description = function(t)
 		return "The ATT Gods must be sated. Go forth and attempt to level, mortal!\n\n 'Live! Die! Try Again!'\n";
 	end;
@@ -80,9 +80,9 @@ if GetStatistic and GetStatistic(60) then
 	fields.OnUpdate = function(t)
 		return OnUpdateForDeathTrackerLib;
 	end
-	app.events.PLAYER_DEAD = function()
+	app.AddEventRegistration("PLAYER_DEAD", function()
 		app.Audio:PlayDeathSound();
-	end
+	end)
 else
 	-- Oh boy, we have to track it ourselves!
 	local OnUpdateForDeathTrackerLib = function(t)
@@ -98,17 +98,16 @@ else
 	fields.OnUpdate = function(t)
 		return OnUpdateForDeathTrackerLib;
 	end
-	app.events.PLAYER_DEAD = function()
+	app.AddEventRegistration("PLAYER_DEAD", function()
 		ATTAccountWideData.Deaths = ATTAccountWideData.Deaths + 1;
 		app.CurrentCharacter.Deaths = app.CurrentCharacter.Deaths + 1;
 		app.Audio:PlayDeathSound();
 		app:RefreshDataQuietly("PLAYER_DEAD");
-	end
+	end)
 end
-app:RegisterEvent("PLAYER_DEAD");
 app.CreateDeathClass = app.CreateClass("DeathTracker", "deaths", fields);
-app.AddEventHandler("OnStartup", function()
-	ATTAccountWideData = app.LocalizeGlobalIfAllowed("ATTAccountWideData", true);
+app.AddEventHandler("OnSavedVariablesAvailable", function(currentCharacter, accountWideData)
+	ATTAccountWideData = accountWideData
 	ATTCharacterData = app.LocalizeGlobalIfAllowed("ATTCharacterData", true);
 end)
 end

@@ -1,4 +1,6 @@
-local E, L = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
+
 local DT = E:GetModule("DataTexts")
 
 --Lua functions
@@ -15,6 +17,8 @@ local C_ChallengeMode = C_ChallengeMode
 local mText = L["Dungeon"]
 
 local function mSetup(self)
+	local isMaxLevel = E:XPIsLevelMax()
+
 	local mInstanceInfo = mMT:InstanceInfo()
 	if mInstanceInfo then
 		DT.tooltip:AddLine(" ")
@@ -32,14 +36,14 @@ local function mSetup(self)
 		DT.tooltip:AddLine(infoInstance[3] or "-")
 	end
 
-	if C_MythicPlus.IsMythicPlusActive() and (C_ChallengeMode.GetActiveChallengeMapID() ~= nil) then
+	if E.Retail and C_MythicPlus.IsMythicPlusActive() and (C_ChallengeMode.GetActiveChallengeMapID() ~= nil) then
 		local infoMythicPlus = mMT:MythicPlusDungeon()
 		DT.tooltip:AddLine(" ")
 		DT.tooltip:AddLine(infoMythicPlus[1] or "-")
 		DT.tooltip:AddLine(infoMythicPlus[2] or "-")
 	end
 
-	if E.db.mMT.dungeon.key then
+	if E.Retail and E.db.mMT.dungeon.key and isMaxLevel then
 		local key = mMT:OwenKeystone()
 		if key then
 			DT.tooltip:AddLine(" ")
@@ -48,12 +52,12 @@ local function mSetup(self)
 		end
 	end
 
-	if E.db.mMT.dungeon.score then
+	if E.Retail and E.db.mMT.dungeon.score and isMaxLevel then
 		DT.tooltip:AddLine(" ")
 		DT.tooltip:AddDoubleLine(DUNGEON_SCORE, mMT:GetDungeonScore())
 	end
 
-	if E.db.mMT.dungeon.affix then
+	if E.Retail and E.db.mMT.dungeon.affix then
 		local mAffixes = mMT:WeeklyAffixes()
 		if mAffixes then
 			DT.tooltip:AddLine(" ")
@@ -70,8 +74,8 @@ end
 
 local function OnClick(self, button)
 	if button == "LeftButton" then
-		_G.ToggleLFDParentFrame()
-	else
+		PVEFrame_ToggleFrame("GroupFinderFrame", _G.LFDParentFrame)
+	elseif E.Retail then
 		if not _G.WeeklyRewardsFrame then
 			LoadAddOn("Blizzard_WeeklyRewards")
 		end
@@ -87,7 +91,9 @@ local function OnEnter(self)
 	mSetup(self)
 	DT.tooltip:AddLine(" ")
 	DT.tooltip:AddLine(format("%s  %s%s|r", mMT:mIcon(mMT.Media.Mouse["LEFT"]), E.db.mMT.datatextcolors.colortip.hex, L["Click to open LFD Frame"]))
-	DT.tooltip:AddLine(format("%s  %s%s|r", mMT:mIcon(mMT.Media.Mouse["RIGHT"]), E.db.mMT.datatextcolors.colortip.hex, L["Click to open Great Vault"]))
+	if E.Retail then
+		DT.tooltip:AddLine(format("%s  %s%s|r", mMT:mIcon(mMT.Media.Mouse["RIGHT"]), E.db.mMT.datatextcolors.colortip.hex, L["Click to open Great Vault"]))
+	end
 	DT.tooltip:Show()
 end
 
@@ -116,16 +122,4 @@ local function OnLeave(self)
 	DT.tooltip:Hide()
 end
 
-DT:RegisterDatatext(
-	"mDungeon",
-	"mMediaTag",
-	{ "CHALLENGE_MODE_START", "CHALLENGE_MODE_COMPLETED", "PLAYER_ENTERING_WORLD", "UPDATE_INSTANCE_INFO" },
-	OnEvent,
-	nil,
-	OnClick,
-	OnEnter,
-	OnLeave,
-	mText,
-	nil,
-	nil
-)
+DT:RegisterDatatext("mDungeon", "mMediaTag", { "CHALLENGE_MODE_START", "CHALLENGE_MODE_COMPLETED", "PLAYER_ENTERING_WORLD", "UPDATE_INSTANCE_INFO" }, OnEvent, nil, OnClick, OnEnter, OnLeave, mText, nil, nil)

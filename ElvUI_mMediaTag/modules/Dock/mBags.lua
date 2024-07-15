@@ -1,4 +1,6 @@
-local E, L = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
+
 local DT = E:GetModule("DataTexts")
 local B = E:GetModule("Bags")
 
@@ -165,7 +167,7 @@ local function OnEnter(self)
 		end
 
 		DT.tooltip:AddLine(" ")
-		DT.tooltip:AddLine(L["Character: "])
+		DT.tooltip:AddLine(L["Character:"])
 
 		sort(myGold, sortFunction)
 
@@ -197,7 +199,7 @@ local function OnEnter(self)
 			DT.tooltip:AddDoubleLine(L["WoW Token:"], E:FormatMoney(C_WowTokenPublic_GetCurrentMarketPrice() or 0, style, textOnly), 0, 0.8, 1, 1, 1, 1)
 		end
 
-		if E.Retail or E.Wrath then
+		if E.Retail or E.Cata then
 			local index = 1
 			local info, name = DT:BackpackCurrencyInfo(index)
 

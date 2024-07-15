@@ -7,9 +7,12 @@ local ipairs, pairs, rawset, rawget, math_floor, select, tonumber
 
 local C_MountJournal_GetMountInfoExtraByID,C_MountJournal_GetMountInfoByID,C_MountJournal_GetMountIDs
 	= C_MountJournal.GetMountInfoExtraByID,C_MountJournal.GetMountInfoByID,C_MountJournal.GetMountIDs
-local GetSpellLink,GetItemInfo,GetSpellInfo
----@diagnostic disable-next-line: deprecated
-	= GetSpellLink,((C_Item and C_Item.GetItemInfo) or GetItemInfo),GetSpellInfo
+
+-- WoW API Cache
+local GetItemInfo = app.WOWAPI.GetItemInfo;
+local GetSpellName = app.WOWAPI.GetSpellName;
+local GetSpellIcon = app.WOWAPI.GetSpellIcon;
+local GetSpellLink = app.WOWAPI.GetSpellLink;
 
 -- App locals
 local Colorize = app.Modules.Color.Colorize;
@@ -53,9 +56,9 @@ do
 			_t.name = C_MountJournal_GetMountInfoByID(mountID);
 			_t.mountJournalID = mountID;
 		end
-		local name, _, icon = GetSpellInfo(id);
+		local name, icon = GetSpellName(id), GetSpellIcon(id);
 		if name then
-			_t.text = Colorize(name, app.Colors.Mount)
+			_t.name = name
 			_t.icon = icon;
 		end
 		if itemID then
@@ -73,7 +76,6 @@ do
 		if retries > 20 then
 			local name = (itemID and ("Item #%d"):format(itemID)) or
 						(id and ("Spell #%d"):format(id));
-			_t.text = _t.text or Colorize(name, app.Colors.Mount);
 			_t.name = _t.name or name;
 			_t.icon = _t.icon or 134400;	-- question mark
 			_t.link = GetSpellLink(id);
@@ -99,7 +101,11 @@ do
 		end,
 		-- Mounts use special text coloring instead of default text
 		text = function(t)
-			return cache.GetCachedField(t, "text", CacheInfo);
+			local name = t.name
+			if name then
+				return Colorize(name, app.Colors.Mount)
+			end
+			return t.link
 		end,
 		icon = function(t)
 			return cache.GetCachedField(t, "icon", CacheInfo);

@@ -1,4 +1,5 @@
-local E, L, V, P, G = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
 
 local tinsert = tinsert
 
@@ -23,26 +24,35 @@ local function configTable()
 				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\general.tga",
 				childGroups = "tab",
 				args = {
-					greeting = {
+					general = {
 						order = 1,
+						type = "group",
+						name = L["General"],
+						args = {},
+					},
+					greeting = {
+						order = 2,
 						type = "group",
 						name = L["Welcome text"],
 						args = {},
 					},
 					roll = {
-						order = 2,
+						order = 3,
 						type = "group",
 						name = L["Roll Button"],
 						args = {},
 					},
 					chat = {
-						order = 3,
+						order = 4,
 						type = "group",
 						name = L["Chat Button"],
+						hidden = function()
+							return not E.Retail
+						end,
 						args = {},
 					},
 					keystochat = {
-						order = 4,
+						order = 5,
 						type = "group",
 						name = L["Keystone to Chat"] .. " (!keys)",
 						hidden = function()
@@ -51,16 +61,16 @@ local function configTable()
 						args = {},
 					},
 					instancedifficulty = {
-						order = 5,
+						order = 6,
 						type = "group",
 						name = L["Instance Difficulty"],
 						hidden = function()
-							return not E.Retail
+							return not (E.Retail or E.Cata)
 						end,
 						args = {},
 					},
 					afk = {
-						order = 5,
+						order = 7,
 						type = "group",
 						name = L["AFK Screen"],
 						args = {},
@@ -74,11 +84,25 @@ local function configTable()
 				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\datatexts.tga",
 				childGroups = "tab",
 				args = {
-					colors = {
+					settings = {
 						order = 1,
 						type = "group",
-						name = mMT.Name .. " " .. L["Datatext Colors"],
-						args = {},
+						name = L["Datatext Settings"],
+						childGroups = "tab",
+						args = {
+							colors = {
+								order = 1,
+								type = "group",
+								name = L["Datatext Colors"],
+								args = {},
+							},
+							font = {
+								order = 1,
+								type = "group",
+								name = L["Font"],
+								args = {},
+							},
+						},
 					},
 					combat = {
 						order = 2,
@@ -109,7 +133,7 @@ local function configTable()
 						type = "group",
 						name = L["Professions"],
 						hidden = function()
-							return not E.Retail
+							return not (E.Retail or E.Cata)
 						end,
 						args = {},
 					},
@@ -118,7 +142,7 @@ local function configTable()
 						type = "group",
 						name = L["Dungeon"],
 						hidden = function()
-							return not E.Retail
+							return not (E.Retail or E.Cata)
 						end,
 						args = {},
 					},
@@ -140,7 +164,7 @@ local function configTable()
 					firstandsecondprofession = {
 						order = 8,
 						type = "group",
-						name = L["first and second Profession"],
+						name = L["First and Second Profession"],
 						args = {},
 					},
 					durabilityanditemlevel = {
@@ -185,7 +209,7 @@ local function configTable()
 				type = "group",
 				name = L["Castbar"],
 				hidden = function()
-					return not E.Retail
+					return not (E.Retail or E.Cata)
 				end,
 				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\castbar.tga",
 				childGroups = "tab",
@@ -200,6 +224,9 @@ local function configTable()
 						order = 2,
 						type = "group",
 						name = L["Interrupt on CD"],
+						hidden = function()
+							return not E.Retail
+						end,
 						args = {},
 					},
 					important = {
@@ -226,9 +253,9 @@ local function configTable()
 					healthmarker = {
 						order = 1,
 						type = "group",
-						name = L["Health markers"],
+						name = L["Healthmarkers"],
 						hidden = function()
-							return not E.Retail
+							return not (E.Retail or E.Cata)
 						end,
 						args = {},
 					},
@@ -262,11 +289,25 @@ local function configTable()
 						name = L["Tooltip Icon"],
 						args = {},
 					},
-					background = {
+					uftextures = {
 						order = 2,
 						type = "group",
-						name = L["Custom Unitframe Backgrounds"],
-						args = {},
+						name = L["Custom Unitframe Textures"],
+						childGroups = "tab",
+						args = {
+							textures = {
+								order = 1,
+								type = "group",
+								name = L["Custom Unitframe Textures"],
+								args = {},
+							},
+							background = {
+								order = 2,
+								type = "group",
+								name = L["Custom Unitframe Backgrounds"],
+								args = {},
+							},
+						},
 					},
 					-- classcolor = {
 					-- 	order = 3,
@@ -279,7 +320,7 @@ local function configTable()
 						type = "group",
 						name = L["Role Icons"],
 						hidden = function()
-							return not (E.Retail or E.Wrath)
+							return not (E.Retail or E.Cata)
 						end,
 						args = {},
 					},
@@ -318,6 +359,9 @@ local function configTable()
 						order = 9,
 						type = "group",
 						name = L["Quest Icons"],
+						hidden = function()
+							return not E.Retail
+						end,
 						childGroups = "tab",
 						args = {},
 					},

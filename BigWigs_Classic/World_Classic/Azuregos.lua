@@ -2,6 +2,7 @@
 -- Module Declaration
 --
 
+if BigWigsLoader.isSeasonOfDiscovery then return end
 local mod, CL = BigWigs:NewBoss("Azuregos", -1447)
 if not mod then return end
 mod:RegisterEnableMob(6109)

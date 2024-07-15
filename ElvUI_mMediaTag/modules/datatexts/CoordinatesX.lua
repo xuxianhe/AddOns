@@ -1,4 +1,6 @@
-local E, L = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
+
 local DT = E:GetModule("DataTexts")
 
 local _G = _G
@@ -42,16 +44,4 @@ local function Click()
 	_G.ToggleFrame(_G.WorldMapFrame)
 end
 
-DT:RegisterDatatext(
-	"mCoordsX",
-	"mMediaTag",
-	{ "LOADING_SCREEN_DISABLED", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA" },
-	OnEvent,
-	Update,
-	Click,
-	nil,
-	nil,
-	mText,
-	mapInfo,
-	nil
-)
+DT:RegisterDatatext("mCoordsX", "mMediaTag", { "LOADING_SCREEN_DISABLED", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "ZONE_CHANGED_NEW_AREA" }, OnEvent, Update, Click, nil, nil, mText, mapInfo, nil)

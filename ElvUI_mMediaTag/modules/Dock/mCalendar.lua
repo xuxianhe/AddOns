@@ -1,4 +1,6 @@
-local E, L = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
+
 local DT = E:GetModule("DataTexts")
 
 --Lua functions
@@ -100,7 +102,7 @@ local function OnClick(self)
 		mMT:Dock_Click(self, Config)
 		if E.Retail then
 			_G.GameTimeFrame:Click()
-		elseif E.Wrath then
+		elseif E.Cata then
 			_G.Calendar_LoadUI()
 			_G.ToggleCalendar()
 		end

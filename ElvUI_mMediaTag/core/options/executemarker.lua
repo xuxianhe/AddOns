@@ -1,4 +1,5 @@
-local E, L, V, P, G = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
 
 local tinsert = tinsert
 local function configTable()
@@ -13,7 +14,7 @@ local function configTable()
 					order = 1,
 					type = "toggle",
 					name = L["Enable"],
-					desc = L["Enable Nameplate Execute indicator"],
+					desc = L["Enable Nameplate Execute Marker"],
 					get = function(info)
 						return E.db.mMT.nameplate.executemarker.enable
 					end,
@@ -55,8 +56,8 @@ local function configTable()
 				autorange = {
 					order = 1,
 					type = "toggle",
-					name = L["Auto range"],
-					desc = L["Execute range based on your Class"],
+					name = L["Auto value"],
+					desc = L["Execute value based on your Class"],
 					get = function(info)
 						return E.db.mMT.nameplate.executemarker.auto
 					end,
@@ -65,20 +66,9 @@ local function configTable()
 						E:StaticPopup_Show("CONFIG_RL")
 					end,
 				},
-				combat = {
-					order = 1,
-					type = "toggle",
-					name = L["Show only in Combat"],
-					get = function(info)
-						return E.db.mMT.nameplate.executemarker.combat
-					end,
-					set = function(info, value)
-						E.db.mMT.nameplate.executemarker.combat = value
-					end,
-				},
 				executerange = {
 					order = 2,
-					name = L["Execute Range HP%"],
+					name = L["Execute value HP%"],
 					type = "range",
 					min = 5,
 					max = 95,

@@ -1,4 +1,5 @@
-local E, L, V, P, G = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
 
 local _G = _G
 local tinsert = tinsert
@@ -12,31 +13,40 @@ local change_log_important = {
 	"it is possible to create filters similar to ElvUI Style filters and assign multiple",
 	"spell IDs to the filters, so it is possible to have the same settings for multiple spells.",
 	"before you had to define separate settings for each id",
-	"This update will reset the Spell DB."
+	"This update will reset the Spell DB.",
 }
 
-local releasdate = "28.04.2024"
+local releasdate = "28.06.2024"
 
 local change_log_new = {
-	"TAG mRoleIcon:blizz:nodd and mRoleIcon:nodd",
-	"Icons for castbar"
+	"Portraits can now use custom textures.",
+	"Portraits can now show cast icon, available for player, target, focus, party, boss, and arena.",
+	"Portraits setting to force reaction colors on Player Units.",
+	"TAGs: mLevel:hidecombat, mLevelSmart:hidecombat, mHealth:onlypercent-with-absorbs:ndp, mHealth:short:absorbs, mColor:absorbs.",
+	"TAGs: mHealth:current-percent:absorbs, mHealth:current-percent:ndp:absorbs, mHealth:current-percent:short:absorbs, mHealth:current-percent:short:ndp:absorbs.",
+	"Add general TOC file for WOTLK Version in China",
 }
 
 local change_log_update = {
-	"Enabled mRoleIcon Tags for Classic Versions",
-	"Cleand up and optimized Objectivetracker Settings",
-	"Teleports for S4",
-	"Healthmarkers for S4",
-	"Rework of the Important Spells module, the behavior is no like ElvUI Style filters, a filter ca now react now to more then one spell id. This update will reset the Spell DB.",
-	"Currency for S4",
-	"TOC file for Classic"
+	"Add no Profession text and Icon to first and second Profession data text.",
+	"White text setting for Profession data text.",
+	"NEW: Icon for Teleports data text.",
+	"Portraits texture names.",
+	"Removed Portraits texture simple square and added flipped Versions for Drop texture.",
+	"Add Stone of the Hearth and Draenic Hologem to TP datatext (thx to Merathilis)",
 }
 
 local change_log_fix = {
-	"Prevent nil error with important spells",
-	"Prevent nil error with tex coords Portraits/Class Icons",
-	"Prevent nil error with instancdifficulty",
-	"Fixed color table bug with DK classes"
+	"Portraits colors if gradient mode is disabled.",
+	"Portraits can now properly enable/disable on the fly.",
+	"Portraits corner won't hide if the texture does not support it.",
+	"Tooltip Icon can override Item names in Classic.",
+	"Tooltip and Teleports Datatext for TWW, (for beta use, disable the Objectivetracker Skin).",
+	"Removed empty data text entry.",
+	"Add S Pack to mMT Settings DB.",
+	"Datatext Durability/ Ilevel: Durability color values.",
+	"Removed debug print.",
+	"Portraits Optimized code and fixed flipped drop texture (black background)",
 }
 
 local function Concatenation(tbl, icon, color)
@@ -56,16 +66,16 @@ local function Concatenation(tbl, icon, color)
 end
 
 local function configTable()
-	change_log_important_string = Concatenation(change_log_important)
+	--change_log_important_string = Concatenation(change_log_important)
 	change_log_new_string = Concatenation(change_log_new)
-	--change_log_update_string = Concatenation(change_log_update)
+	change_log_update_string = Concatenation(change_log_update)
 	change_log_fix_string = Concatenation(change_log_fix)
 	E.Options.args.mMT.args.changelog.args = {
 		header_changelog = {
 			order = 1,
 			type = "group",
 			inline = true,
-			name = mMT.IconSquare .. "  " .. mMT.Name .. "  " .. L["Change Log"],
+			name = mMT.IconSquare .. "  " .. mMT.Name .. "  " .. L["Changelog"],
 			args = {
 				header_version = {
 					order = 1,

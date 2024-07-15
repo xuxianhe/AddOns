@@ -10,9 +10,13 @@ local pairs, select, rawget
 -- App locals
 local IsQuestFlaggedCompleted, SearchForFieldContainer, GetFixedItemSpecInfo = app.IsQuestFlaggedCompleted, app.SearchForFieldContainer, app.GetFixedItemSpecInfo
 
-local GetSpellInfo, GetSpellLink, IsSpellKnown, IsPlayerSpell, GetNumSpellTabs, GetSpellTabInfo, IsSpellKnownOrOverridesKnown, GetItemInfo
+-- WoW API Cache
+local GetItemInfo = app.WOWAPI.GetItemInfo;
+local GetSpellLink = app.WOWAPI.GetSpellLink;
+
+local IsSpellKnown, IsPlayerSpell, GetNumSpellTabs, GetSpellTabInfo, IsSpellKnownOrOverridesKnown
 ---@diagnostic disable-next-line: deprecated
-	= GetSpellInfo, GetSpellLink, IsSpellKnown, IsPlayerSpell, GetNumSpellTabs, GetSpellTabInfo, IsSpellKnownOrOverridesKnown, ((C_Item and C_Item.GetItemInfo) or GetItemInfo)
+	= IsSpellKnown, IsPlayerSpell, GetNumSpellTabs, GetSpellTabInfo, IsSpellKnownOrOverridesKnown
 
 -- Consolidates some spell checking
 local IsSpellKnownHelper = function(spellID, rank, ignoreHigherRanks)
@@ -34,10 +38,14 @@ app.IsSpellKnownHelper = IsSpellKnownHelper;
 
 local SpellIDToSpellName = {};
 local SpellNameToSpellID;
+
+-- WoW API Cache
+local _GetSpellName = app.WOWAPI.GetSpellName;
+local GetSpellIcon = app.WOWAPI.GetSpellIcon;
 local GetSpellName = function(spellID)
 	local spellName = SpellIDToSpellName[spellID];
 	if spellName then return spellName; end
-	spellName = GetSpellInfo(spellID);
+	spellName = _GetSpellName(spellID);
 	if spellName and spellName ~= "" then
 		SpellIDToSpellName[spellID] = spellName;
 		SpellNameToSpellID[spellName] = spellID;
@@ -73,7 +81,7 @@ SpellNameToSpellID = setmetatable(L.SPELL_NAME_TO_SPELL_ID, {
 					GetSpellName(spellID, currentSpellRank);
 					SpellNameToSpellID[spellName] = spellID;
 				-- else
-				-- 	print("GetSpellInfo:Failed",offset + spellIndex);
+				-- 	print("GetSpellName:Failed",offset + spellIndex);
 				end
 			end
 			offset = offset + numSpells;
@@ -94,8 +102,7 @@ local SkillIcons = setmetatable({
 	if not key then return; end
 	local skillSpellID = app.SkillIDToSpellID[key];
 	if skillSpellID then
-		local _, _, icon = GetSpellInfo(skillSpellID);
-		return icon;
+		return GetSpellIcon(skillSpellID);
 	end
 end
 });
@@ -111,7 +118,7 @@ local function CacheInfo(t, field)
 			_t.icon = icon;
 		end
 	else
-		local name, _, icon = GetSpellInfo(id);
+		local name, icon = GetSpellName(id), GetSpellIcon(id);
 		_t.name = name;
 		-- typically, the profession's spell icon will be a better representation of the spell if the spell is tied to a skill
 		_t.icon = SkillIcons[t.skillID] or icon;

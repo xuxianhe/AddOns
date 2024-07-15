@@ -1,4 +1,6 @@
-local E, L = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
+
 local DT = E:GetModule("DataTexts")
 
 local _G = _G
@@ -40,9 +42,7 @@ local colors = {
 	[16] = "|CFFFFC900",
 }
 local function AddIcon(file)
-	return E.db.mMT.gamemenu.menuicons
-			and format("Interface\\AddOns\\ElvUI_mMediaTag\\media\\icons\\misc\\%s.tga", file)
-		or nil
+	return E.db.mMT.gamemenu.menuicons and format("Interface\\AddOns\\ElvUI_mMediaTag\\media\\icons\\misc\\%s.tga", file) or nil
 end
 
 local function AddColor(color)
@@ -93,7 +93,7 @@ local function BuildMenu()
 
 	if E.Retail then
 		tinsert(menuList, { text = _G.LFG_TITLE, icon = AddIcon("eye"), func = _G.ToggleLFDParentFrame })
-	elseif E.Wrath then
+	elseif E.Cata then
 		tinsert(menuList, {
 			text = _G.LFG_TITLE,
 			icon = AddIcon("eye"),
@@ -134,11 +134,11 @@ local function BuildMenu()
 		})
 	end
 
-	if E.Wrath and E.mylevel >= _G.SHOW_PVP_LEVEL then
+	if E.Cata and E.mylevel >= _G.SHOW_PVP_LEVEL then
 		tinsert(menuList, { text = _G.PLAYER_V_PLAYER, icon = AddIcon("battle"), func = _G.TogglePVPFrame })
 	end
 
-	if E.Retail or E.Wrath then
+	if E.Retail or E.Cata then
 		tinsert(menuList, {
 			text = _G.ACHIEVEMENT_BUTTON,
 			icon = AddIcon("star"),
@@ -171,7 +171,7 @@ local function BuildMenu()
 	end)
 
 	for i = 1, #menuList do
-		menuList[i].color = AddColor(i+1)
+		menuList[i].color = AddColor(i + 1)
 	end
 
 	tinsert(menuList, { text = "", isTitle = true, notClickable = true, func = function() end })
@@ -244,15 +244,7 @@ local function OnEvent(self, event)
 	local hex = E:RGBToHex(E.db.general.valuecolor.r, E.db.general.valuecolor.g, E.db.general.valuecolor.b)
 	local string = strjoin("", hex, "%s|r")
 
-	self.text:SetFormattedText(
-		string,
-		E.db.mMT.gamemenu.icon
-				and format(
-					"|TInterface\\AddOns\\ElvUI_mMediaTag\\media\\icons\\misc\\gears.tga:16:16:0:0:64:64|t %s",
-					L["Game Menu"]
-				)
-			or L["Game Menu"]
-	)
+	self.text:SetFormattedText(string, E.db.mMT.gamemenu.icon and format("|TInterface\\AddOns\\ElvUI_mMediaTag\\media\\icons\\misc\\gears.tga:16:16:0:0:64:64|t %s", L["Game Menu"]) or L["Game Menu"])
 end
 local function OnClick(self, button)
 	if not menuList then
@@ -265,7 +257,7 @@ local function OnClick(self, button)
 	else
 		if E.Retail then
 			_G.ToggleLFDParentFrame()
-		elseif E.Wrath then
+		elseif E.Cata then
 			if not IsAddOnLoaded("Blizzard_LookingForGroupUI") then
 				UIParentLoadAddOn("Blizzard_LookingForGroupUI")
 			end
@@ -275,19 +267,17 @@ local function OnClick(self, button)
 end
 
 local function OnEnter(self)
-	local nhc, hc, myth, mythp, other, titel, tip = mMT:mColorDatatext()
+	local nhc, hc, myth, mythp, other, title, tip = mMT:mColorDatatext()
 
 	DT.tooltip:AddLine(L["Game Menu"])
 	DT.tooltip:AddLine(" ")
-	DT.tooltip:AddDoubleLine(mMT.Name, format("%sVer.|r %s%s|r", titel, other, mMT.Version))
+	DT.tooltip:AddDoubleLine(mMT.Name, format("%sVer.|r %s%s|r", title, other, mMT.Version))
 	DT.tooltip:AddLine(" ")
 
 	DT.tooltip:AddLine(" ")
 	DT.tooltip:AddLine(format("%s %s%s|r", mMT:mIcon(mMT.Media.Mouse["LEFT"]), tip, L["left click to open the menu."]))
-	if E.Retail or E.Wrath then
-		DT.tooltip:AddLine(
-			format("%s %s%s|r", mMT:mIcon(mMT.Media.Mouse["RIGHT"]), tip, L["right click to open LFD Window"])
-		)
+	if E.Retail or E.Cata then
+		DT.tooltip:AddLine(format("%s %s%s|r", mMT:mIcon(mMT.Media.Mouse["RIGHT"]), tip, L["right click to open LFD Window"]))
 	end
 	DT.tooltip:Show()
 end

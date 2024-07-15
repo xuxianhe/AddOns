@@ -8,7 +8,12 @@ local Colorize = app.Modules.Color.Colorize;
 local GetNumberWithZeros = app.Modules.Color.GetNumberWithZeros;
 local IsRetrieving = app.Modules.RetrievingData.IsRetrieving;
 local GetRelativeValue = app.GetRelativeValue;
-local GetRealmName, GetItemInfo, GetSpellInfo = GetRealmName, GetItemInfo, GetSpellInfo
+local GetRealmName = GetRealmName
+
+-- WoW API Cache
+local GetItemInfo = app.WOWAPI.GetItemInfo;
+local GetItemCount = app.WOWAPI.GetItemCount;
+local GetSpellName = app.WOWAPI.GetSpellName;
 
 -- Settings: Interface Page
 local child = settings:CreateOptionsPage("Information", L.INTERFACE_PAGE)
@@ -112,7 +117,7 @@ local ConversionMethods = setmetatable({
 		end
 	end,
 	professionName = function(spellID, reference)
-		return IsRetrievingConversionMethod(GetSpellInfo(app.SkillIDToSpellID[spellID] or 0), reference)
+		return IsRetrievingConversionMethod(GetSpellName(app.SkillIDToSpellID[spellID] or 0), reference)
 	end,
 }, {
 	__index = function(t, key)
@@ -917,6 +922,8 @@ local function RefreshActiveInformationTypes()
 	ActiveInformationTypesForExternalTooltips[#ActiveInformationTypesForExternalTooltips + 1] = PostProcessor;
 	ActiveInformationTypes[#ActiveInformationTypes + 1] = PostProcessor;
 end
+-- other settings can control what information is displayed without themselves being an information type
+app.AddEventHandler("OnSettingsRefreshed", RefreshActiveInformationTypes)
 local function SortInformationTypes()
 	wipe(SortedInformationTypes);
 	wipe(SortedInformationTypesByName);
@@ -1043,5 +1050,10 @@ settings.CreateInformationType("LinkSourceID", {
 settings.CreateInformationType("modItemID", {
 	priority = 99999,
 	text = "DEBUG: modItemID",
+	HideCheckBox = not app.Debugging,
+})
+settings.CreateInformationType("hash", {
+	priority = 99999,
+	text = "DEBUG: hash",
 	HideCheckBox = not app.Debugging,
 })

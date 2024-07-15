@@ -1,4 +1,5 @@
-local E, L = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
 
 local function configTable()
 	E.Options.args.mMT.args.castbar.args.general.args = {
@@ -6,7 +7,7 @@ local function configTable()
 			order = 1,
 			type = "group",
 			inline = true,
-			name = L["Castbar BG Color"],
+			name = L["Castbar Background Color"],
 			args = {
 				toggle_BG = {
 					order = 1,

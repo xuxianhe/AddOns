@@ -11,6 +11,13 @@ local L = app.L;
 -- Global locals
 local GetAchievementInfo, select, sformat = GetAchievementInfo, select, string.format;
 
+-- WoW API Cache
+local GetSpellName = app.WOWAPI.GetSpellName;
+
+-- Temporary Helper functions
+local GetItemClassInfo = GetItemClassInfo;
+if not GetItemClassInfo then GetItemClassInfo = C_Item.GetItemClassInfo; end
+
 for key, value in pairs({
 	-- General Text
 	["THINGS_UNTIL"] = " THINGS UNTIL ";
@@ -40,6 +47,7 @@ for key, value in pairs({
 	["REPORT_TIP"] = "\n("..CTRL_KEY_TEXT.."+C to copy multiline report to your clipboard)";
 	["NOT_AVAILABLE_IN_PL"] = "Not available in Personal Loot.";
 	["MARKS_OF_HONOR_DESC"] = "Marks of Honor must be viewed in a Popout window to see all of the normal 'Contains' content.\n(Type '/att ' in chat then "..SHIFT_KEY_TEXT.." click to link the item)\n\n|cFFfe040fAfter purchasing and using an ensemble, relogging & a forced ATT refresh (in this order)\nmay be required to register all the items correctly.|r";
+	["MOP_REMIX_BRONZE_DESC"] = "Bronze must be viewed in a Popout window to see all of the normal 'Contains' content.\n(Type '/att ' in chat then "..SHIFT_KEY_TEXT.." click to link the currency)\n\n|cFFfe040fAfter purchasing and using an ensemble, relogging & a forced ATT refresh (in this order)\nmay be required to register all the items correctly.|r";
 	["ITEM_GIVES_REP"] = "Provides Reputation with '";
 	["COST"] = "Cost";
 	["COST_DESC"] = "This contains the visual breakdown of what is required to obtain or purchase this Thing";
@@ -393,7 +401,7 @@ for key, value in pairs({
 	["AUTO_MINI_LIST_CHECKBOX"] = "Automatically Open the Mini List";
 	["AUTO_MINI_LIST_CHECKBOX_TOOLTIP"] = "Enable this option if you want to see everything you can collect in your current zone. The list will automatically switch when you change zones. Some people don't like this feature, but when you are solo farming, this feature is extremely useful.\n\nYou can also bind this setting to a Key.\n\nKey Bindings -> Addons -> ALL THE THINGS -> Toggle Mini List\n\nShortcut Command: /att mini";
 	["FILTER_MINI_LIST_FOR_TIMERUNNING_CHECKBOX"] = "Filter Mini List for Timerunning";
-	["FILTER_MINI_LIST_FOR_TIMERUNNING_CHECKBOX_TOOLTIP"] = "Enable this option to filter out non-Timerunning content from the mini list when playing on a Timerunning Character.";
+	["FILTER_MINI_LIST_FOR_TIMERUNNING_CHECKBOX_TOOLTIP"] = "Enable this option to filter Timerunning content appropriately (only from the mini list) when playing on either a Retail or Timerunning Character.\n\nNOTE: This option will only be available during Timerunning events!";
 	["AUTO_PROF_LIST_CHECKBOX"] = "Automatically Open the Profession List";
 	["AUTO_PROF_LIST_CHECKBOX_TOOLTIP"] = "Enable this option if you want ATT to open and refresh the profession list when you open your professions. Due to an API limitation imposed by Blizzard, the only time an addon can interact with your profession data is when it is open. The list will automatically switch when you change to a different profession.\n\nWe don't recommend disabling this option as it may prevent recipes from tracking correctly.\n\nYou can also bind this setting to a Key. (only works when a profession is open)\n\nKey Bindings -> Addons -> ALL THE THINGS -> Toggle Profession Mini List";
 	["AUTO_RAID_ASSISTANT_CHECKBOX"] = "Automatically Open the Raid Assistant";
@@ -612,7 +620,7 @@ for key, value in pairs({
 		["Toy Box"] = TOY,
 		--["Zone Drop"] = LFG_TYPE_ZONE,
 		["Zone Wide"] = LFG_TYPE_ZONE,
-		["Mini World Events"] = GetSpellInfo(57055),
+		["Mini World Events"] = GetSpellName(57055),
 		["Monthly World Events"] = CALENDAR_REPEAT_MONTHLY,
 		[TRACKER_HEADER_WORLD_QUESTS] = "WQ",
 		["Weekly World Events"] = CALENDAR_REPEAT_WEEKLY,
@@ -658,8 +666,6 @@ for key, value in pairs({
 		[-242] = "Interface\\Icons\\Achievement_BG_KillXEnemies_GeneralsRoom",				-- Unrated
 	-- War Campaign
 		[-253] = "Interface\\Icons\\ui_horde_honorboundmedal",								-- Horde War Campaign
-	-- Allied Races
-		[-255] = "Interface\\Icons\\vas_guildfactionchange",								-- Heritage
 	-- Garrison Missons
 		[-299] = "Interface\\Icons\\achievement_garrisonquests_1000",						-- Missions
 	-- PvP
@@ -706,29 +712,13 @@ for key, value in pairs({
 		[-686] = "Interface\\Icons\\inv_stormdragonmount2light",							-- Fierce Gladiator: Legion Season 5
 		[-687] = "Interface\\Icons\\inv_stormdragonmount2yellow",							-- Dominant Gladiator: Legion Season 6
 		[-688] = "Interface\\Icons\\inv_stormdragonmount2_fel",								-- Demonic Gladiator: Legion Season 7
-	-- Battle for Azeroth PvP Seasons
-		[-689] = "Interface\\Icons\\inv_protodrakegladiatormount_gold",						-- Dread Gladiator: Battle for Azeroth Season 1
-		[-690] = "Interface\\Icons\\inv_protodrakegladiatormount_blue",						-- Sinister Gladiator: Battle for Azeroth Season 2
-		[-691] = "Interface\\Icons\\inv_protodrakegladiatormount_purple",					-- Notorious Gladiator: Battle for Azeroth Season 3
-		[-692] = "Interface\\Icons\\inv_protodrakegladiatormount_black",					-- Corrupted Gladiator: Battle for Azeroth Season 4
-	-- Toys
-		[-798] = app.asset("Category_SelfieFilters"),										-- Selfie Filter
-	-- Secret Header
-		[-807] = "Interface\\Icons\\inv_hivemind",											-- Hivemind
-	-- Chests
-		[-851] = "Interface\\Icons\\INV_Eng_Crate2",										-- Black Empire Cache (Is a placeholder since no ObjectID are assigned to chests!)
 	-- SL Headers
 		[-901] = 3726261,																	-- Covenant Callings
 		[-902] = 3726261,																	-- Renown
 		[-905] = "Interface\\Icons\\Sanctum_features_missiontable",							-- Command Table
-		--[-916] = Uses Different Icons														-- Tier 1
-		--[-917] = Uses Different Icons														-- Tier 2
-		--[-918] = Uses Different Icons														-- Tier 3
 		[-920] = "Interface\\Icons\\ui_sigil_necrolord",									-- Covenant: Necrolord
 		[-923] = "Interface\\Icons\\sanctum_features_buildabom",							-- Abomination Factory (Necrolord)
 		--[-924] = Uses Different Icons														-- Transport Network
-		--[-925] = Uses Different Icons														-- Tier 4
-		--[-926] = Uses Different Icons														-- Tier 5
 		[-929] = "Interface\\Icons\\ui_sigil_nightfae",										-- Covenant: Night Fae
 		[-930] = "Interface\\Icons\\Sanctum_features_gardenweald",							-- Queen's Conservatory
 		[-939] = "Interface\\Icons\\ui_sigil_kyrian",										-- Covenant: Kyrian
@@ -755,40 +745,10 @@ for key, value in pairs({
 		[-986] = 2178500,																	-- Mort'regar
 		[-987] = 2178509,																	-- The Upper Reaches
 	-- Dragonflight
-		[-1100] = "Interface\\Icons\\ability_dragonriding_glyph01",									-- Drakewatcher Manuscripts
-		[-1101] = "Interface\\Icons\\inv_10_dungeonjewelry_primalist_trinket_1ragingelement_air",	-- Primal Storms
 		[-1102] = "Interface\\Icons\\ability_evoker_dragonrage2",									-- Wrathion & Sabellian
-		[-1111] = "Interface\\Icons\\inv_cape_special_climbingpack_b_01",							-- Climbing
-		[-1112] = 1109168,																			-- Cataloging
-		[-1113] = "Interface\\Icons\\inv_misc_ancient_mana",										-- Ancient Waygates
-		[-1114] = "Interface\\Icons\\ability_racial_mountaineer",									-- Cartographer's Flag
 		[-1120] = "Interface\\Icons\\ui_majorfaction_centaur",										-- Maruuk Centaur
 		[-1130] = "Interface\\Icons\\ui_majorfaction_tuskarr",										-- Iskaara Tuskarr
-		[-1142] = "Interface\\Icons\\inv_checkered_flag",											-- Dragonriding Racing
-		[-1143] = 237274,																			-- Every 30 min Rare
 		[-1150] = "Interface\\Icons\\ui_majorfaction_niffen",										-- Loamm Niffen
-		[-1151] = "Interface\\Icons\\achievement_guildperk_bartering",								-- Bartering
-		[-1200] = "Interface\\Icons\\inv_10_dungeonjewelry_primalist_ring_4_omni",					-- Zskera Vaults
-		[-1202] = "Interface\\Icons\\inv_fyrakk_dragonbreath",										-- Fyrakk Assaults
-		[-1203] = "Interface\\Icons\\inv_pet_mole",													-- Sniffenseeking
-		[-1204] = 133642,																			-- Available (Inv_misc_bag_10_green)
-		[-1205] = 133643,																			-- Unavailable (Inv_misc_bag_10_red)
-	-- Island Expeditions
-		[-3338] = "Interface\\Icons\\achievement_zone_darkshore_01",						-- Island Expeditions
-	-- Tournament
-		[-4191] = "Interface\\Icons\\Achievement_PVP_Legion08",								-- Tournament
-	--
-		[-6014] = "Interface\\Icons\\Spell_Arcane_PortalUnderCity",							-- Cities
-	------ ACHIEVEMENT HEADERS SECTION ------
-	-- Is Used Somewhere
-		[-10048] = "Interface\\Icons\\buff_feltreasures",							-- Mage Tower
-		[-10050] = "Interface\\Icons\\buff_epichunter",								-- Nether Disruptor
-	-- 8.3
-		[-10071] = "Interface\\Icons\\Paladin_Protection",							-- Vision of N'zotth
-		[-10072] = "Interface\\Icons\\ability_deathwing_assualtaspects",			-- N'Zoth Assault
-	-- NYI
-		[-11111] = app.asset("Category_TradingPost"),						-- Trading Post NYI
-		[-11112] = "Interface\\Icons\\Inv_misc_questionmark",				-- Source IDs NYI
 	};
 	["HEADER_NAMES"] = {
 	-- Class Trial
@@ -825,18 +785,16 @@ for key, value in pairs({
 		[-242] = "Unrated",														-- Unrated
 	-- War Campaign
 		[-253] = C_Map.GetAreaInfo(9664),										-- War Campaign - Horde
-	-- Allied Races
-		[-255] = "Heritage",													-- Heritage
 	-- Garrison Missions
 		[-299] = GARRISON_MISSIONS,												-- Missions
 	-- PvP
 		[-302] = BATTLEFIELD_LEVEL.." 80-84",									-- Level Range 80-84
 		[-303] = BATTLEFIELD_LEVEL.." 85-89",									-- Level Range 85-89
 	-- Outposts in Draenor
-		[-357] = GetSpellInfo(171866),											-- Sparring Arena Outpost
-		[-358] = GetSpellInfo(164028),											-- Lumber Mill Outpost
+		[-357] = GetSpellName(171866),											-- Sparring Arena Outpost
+		[-358] = GetSpellName(164028),											-- Lumber Mill Outpost
 		[-360] = select(2,GetAchievementInfo(8987)),							-- Arcane Sanctum
-		[-361] = GetSpellInfo(182108).." Tower",								-- Artillery Tower
+		[-361] = GetSpellName(182108).." Tower",								-- Artillery Tower
 	-- Pre Class Hall Monk
 		[-362] = DUNGEON_FLOOR_KUNLAISUMMITSCENARIO0,							-- Peak of Serenity
 	-- Draenor Outposts
@@ -870,46 +828,29 @@ for key, value in pairs({
 		[-686] = select(2, GetAchievementInfo(12010)),							-- Fierce Gladiator: Legion Season 5
 		[-687] = select(2, GetAchievementInfo(12134)),							-- Dominant Gladiator: Legion Season 6
 		[-688] = select(2, GetAchievementInfo(12185)),							-- Demonic Gladiator: Legion Season 7
-	-- Battle for Azeroth PvP Seasons
-		[-689] = select(2, GetAchievementInfo(12945)),							-- Dread Gladiator: Battle for Azeroth Season 1
-		[-690] = select(2, GetAchievementInfo(13200)),							-- Sinister Gladiator: Battle for Azeroth Season 2
-		[-691] = select(2, GetAchievementInfo(13630)),							-- Notorious Gladiator: Battle for Azeroth Season 3
-		[-692] = select(2, GetAchievementInfo(13957)),							-- Corrupted Gladiator: Battle for Azeroth Season 4
-	-- Toys
-		[-798] = GetSpellInfo(181765),											-- S.E.L.F.I.E. Camera
-	-- Secret Header
-		[-807] = GetSpellInfo(261395),											-- The Hivemind
-	-- Chests
-		[-851] = "Black Empire Cache",											-- Black Empire Cache (Is a placeholder since no ObjectID are assigned to chests!)
 	-- Shadowlands Header
-		[-901] = GetSpellInfo(339041),											-- Covenant Callings
+		[-901] = GetSpellName(339041),											-- Covenant Callings
 		[-902] = COVENANT_SANCTUM_TAB_RENOWN,									-- Renown
-	--	[-902] = "Renown Rewards",												-- Renown Rewards
-		[-905] = GetSpellInfo(280630),											-- Command Table
-		[-916] = sformat(COVENANT_SANCTUM_TIER, 1),						-- Tier 1
-		[-917] = sformat(COVENANT_SANCTUM_TIER, 2),						-- Tier 2
-		[-918] = sformat(COVENANT_SANCTUM_TIER, 3),						-- Tier 3
+		[-905] = GetSpellName(280630),											-- Command Table
 		[-979] = "Broker Ve'ken & Broker Ve'nott",								-- Broker Ve'ken & Broker Ve'nott
-		[-981] = GetSpellInfo(348869),											-- Conduits
+		[-981] = GetSpellName(348869),											-- Conduits
 		-- SL Maldraxxus/Necrolord
-		[-920] = GetSpellInfo(321078),											-- Necrolord
+		[-920] = GetSpellName(321078),											-- Necrolord
 		[-923] = COVENANT_SANCTUM_FEATURE_NECROLORDS,							-- Abomination Factory
 		[-924] = "Transport Network",											-- Transport Network
-		[-925] = sformat(COVENANT_SANCTUM_TIER, 4),						-- Tier 4
-		[-926] = sformat(COVENANT_SANCTUM_TIER, 5),						-- Tier 5
 		-- SL Ardenweald/Night Fae
-		[-929] = GetSpellInfo(321077),											-- Night Fae
+		[-929] = GetSpellName(321077),											-- Night Fae
 		[-930] = COVENANT_SANCTUM_FEATURE_NIGHT_FAE,							-- Queen's Conservatory
 		[-934] = C_Map.GetAreaInfo(12840),										-- Star Lake Amphitheater
 		-- SL Bastion/Kyrian
-		[-939] = GetSpellInfo(321076),											-- Kyrian
+		[-939] = GetSpellName(321076),											-- Kyrian
 		[-942] = COVENANT_SANCTUM_FEATURE_KYRIAN,								-- Path of Ascension
 		[-972] = C_PetJournal.GetPetInfoBySpeciesID(3065),						-- Courage
 		[-973] = "Loyalty",														-- Loyalty
-		[-974] = GetSpellInfo(3166),											-- Wisdom
+		[-974] = GetSpellName(3166),											-- Wisdom
 		[-975] = "Humility",													-- Humility
 		-- SL Revendreth/Venthyr
-		[-949] = GetSpellInfo(321079),											-- Venthyr
+		[-949] = GetSpellName(321079),											-- Venthyr
 		[-954] = "Inquisitors",													-- Inquisitors
 		[-955] = "High Inquisitors",											-- High Inquisitors
 		[-956] = "Grand Inquisitors",											-- Grand Inquisitors
@@ -927,49 +868,20 @@ for key, value in pairs({
 		[-986] = select(2, GetAchievementInfo(14488)),							-- Mort'regar
 		[-987] = select(2, GetAchievementInfo(14493)),							-- The Upper Reaches
 	-- Dragonflight
-		[-1100] = "Drakewatcher Manuscripts",									-- Drakewatcher Manuscripts
-		[-1101] = "Primal Storms",													-- Primal Storms
+		-- Autotranslate with NPC
 		[-1102] = "Wrathion & Sabellian",											-- Wrathion & Sabellian
-		[-1111] = GetSpellInfo(365311),												-- Rock Climbing
-		[-1112] = GetSpellInfo(381284),												-- Cataloging
-		[-1113] = GetSpellInfo(386485),												-- Ancient Waygates
-		[-1114] = GetSpellInfo(382288),												-- Cartographer's Flag
+		-- Autotranslate with Reputation
 		[-1120] = "Maruuk Centaur",													-- Maruuk Centaur
 		[-1130] = "Iskaara Tuskarr",												-- Iskaara Tuskarr
-		[-1142] = GetSpellInfo(400433),												-- Dragonriding Racing
-		[-1143] = "DF Rare Rotation",												-- DF Rare Rotation (Every 30 min Rare)
 		[-1150] = "Loamm Niffen",													-- Loamm Niffen
-		[-1151] = "Bartering",														-- Bartering
-		[-1200] = "Zskera Vaults",													-- Zskera Vaults
-		[-1202] = "Fyrakk Assaults",												-- Fyrakk Assaults
-		[-1203] = "Sniffenseeking",													-- Sniffenseeking
-		[-1204] = AVAILABLE,														-- Available
-		[-1205] = UNAVAILABLE,														-- Unavailable
-	-- Island Expeditions
-		[-3338] = ISLANDS_HEADER,												-- Island Expeditions
-	-- Tournament
-		[-4191] = ITEM_TOURNAMENT_GEAR,											-- Tournament Gear
 	-- Tier/Dungeon/Event/Holiday Sets
-		-- Artifact Strings
+		-- Artifact Strings, These IDs are used in src/Expansion/Legion [Ask Runaway about removing them]
 		[-5200] = "Base Appearance",											-- Base Appearance
 		[-5201] = "Class Hall Campaign",										-- Class Hall Campaign
 		[-5202] = "Balance of Power",											-- Balance of Power
 		[-5203] = "Prestige Rewards",											-- Prestige Rewards
 		[-5204] = "Challenge Appearance",										-- Challenge Appearance
 		[-5205] = "Hidden Appearance",											-- Hidden Appearance
-
-		[-6014] = BUG_CATEGORY4,												-- Cities
-
-	------ ACHIEVEMENT HEADERS SECTION ------
-		[-10048] = BROKENSHORE_BUILDING_MAGETOWER,								-- Mage Tower
-		[-10050] = BROKENSHORE_BUILDING_NETHERDISRUPTOR,						-- Nether Disruptor
-	-- 8.3
-		[-10071] = "Visions of N'Zoth",
-		[-10072] = "N'Zoth Assault",
-
-	-- NYI
-		[-11111] = "Trading Post",												-- Trading Post NYI
-		[-11112] = "Source IDs",												-- Source IDs NYI
 	};
 
 	-- Module Localizations
@@ -977,6 +889,7 @@ for key, value in pairs({
 
 	-- Unobtainable Listing (for fellow 100%s out there)
 	["UNOBTAINABLE_ITEM_TEXTURES"] = {
+		[0] = "Interface\\FriendsFrame\\StatusIcon-Offline",	-- Available, but not due to Current Character filters
 		app.asset("status-unobtainable"),
 		app.asset("status-prerequisites"),
 		"",									-- 3, we want no icon for these
@@ -997,7 +910,7 @@ for key, value in pairs({
 		[15] = {1, "|CFFFF0000This cannot be permanently collected, learned or used for transmog.|r", "Unlearnable"},
 		[35] = {3, "|CFFFF0000This is locked behind a paywall such as the in-game shop, another Blizzard product, or the Recruit-A-Friend service.|r", "Blizzard Balance"},
 		--[36] = {1, "|CFFFF0000This was only obtainable during the WoW Anniversary when it was active and is no longer available.|r", "WoW Anniversary [Removed]"}, -- not used in Retail... I was confused with seasonal filter.
-		[38] = {2, "|CFFFF0000This is only available to players that completed the Legendary Cloak quest chain during Mists of Pandaria or via the BMAH.|r", "Ordos - Legendary Cloak"},
+		[38] = {2, "|CFFFF0000This is only available to players that completed the Legendary Cloak quest chain during Mists of Pandaria or obtained the Legendary Cloak Appearance during MoP: Remix or via the BMAH.|r", "Ordos - Legendary Cloak"},
 		-- #if BEFORE BFA
 		--[41] = {1, "|CFFFF0000This is only available to players that completed the associated Mage Tower Artifact Challenges and earned the base appearance.|r", "Mage Tower Appearances"},
 		-- #endif
@@ -1007,12 +920,12 @@ for key, value in pairs({
 	["CUSTOM_COLLECTS_REASONS"] = {
 		["NPE"] = { icon = "|T"..("Interface\\Icons\\achievement_newplayerexperience")..":0|t", color = "ff5bc41d", text = "New Player Experience", desc = "Only a New Character can Collect this." },
 		["SL_SKIP"] = { icon = "|T"..app.asset("Expansion_SL")..":0|t", color = "ff76879c", text = "Threads of Fate", desc = "Only a Character who chose to skip the Shadowlands Storyline can Collect this." },
-		["HOA"] = { icon = "|T"..("Interface\\Icons\\inv_heartofazeroth")..":0|t", color = "ffe6cc80", text = GetSpellInfo(275825), desc = "Only a Character who has obtained the |cffe6cc80"..GetSpellInfo(275825).."|r can collect this." },
-		["!HOA"] = { icon = "|T"..("Interface\\Icons\\mystery_azerite_chest_normal")..":0|t", color = "ffe6cc80", text = "|cffff0000"..NO.."|r "..GetSpellInfo(275825), desc = "Only a Character who has |cffff0000not|r obtained the |cffe6cc80"..GetSpellInfo(275825).."|r can collect this." },
-		["SL_COV_KYR"] = { icon = "|T"..("Interface\\Icons\\ui_sigil_kyrian")..":0|t", color = "ff516bfe", text = GetSpellInfo(321076) },
-		["SL_COV_NEC"] = { icon = "|T"..("Interface\\Icons\\ui_sigil_necrolord")..":0|t", color = "ff40bf40", text = GetSpellInfo(321078) },
-		["SL_COV_NFA"] = { icon = "|T"..("Interface\\Icons\\ui_sigil_nightfae")..":0|t", color = "ffA330C9", text = GetSpellInfo(321077) },
-		["SL_COV_VEN"] = { icon = "|T"..("Interface\\Icons\\ui_sigil_venthyr")..":0|t", color = "fffe040f", text = GetSpellInfo(321079) },
+		["HOA"] = { icon = "|T"..("Interface\\Icons\\inv_heartofazeroth")..":0|t", color = "ffe6cc80", text = GetSpellName(275825), desc = "Only a Character who has obtained the |cffe6cc80"..GetSpellName(275825).."|r can collect this." },
+		["!HOA"] = { icon = "|T"..("Interface\\Icons\\mystery_azerite_chest_normal")..":0|t", color = "ffe6cc80", text = "|cffff0000"..NO.."|r "..GetSpellName(275825), desc = "Only a Character who has |cffff0000not|r obtained the |cffe6cc80"..GetSpellName(275825).."|r can collect this." },
+		["SL_COV_KYR"] = { icon = "|T"..("Interface\\Icons\\ui_sigil_kyrian")..":0|t", color = "ff516bfe", text = GetSpellName(321076) },
+		["SL_COV_NEC"] = { icon = "|T"..("Interface\\Icons\\ui_sigil_necrolord")..":0|t", color = "ff40bf40", text = GetSpellName(321078) },
+		["SL_COV_NFA"] = { icon = "|T"..("Interface\\Icons\\ui_sigil_nightfae")..":0|t", color = "ffA330C9", text = GetSpellName(321077) },
+		["SL_COV_VEN"] = { icon = "|T"..("Interface\\Icons\\ui_sigil_venthyr")..":0|t", color = "fffe040f", text = GetSpellName(321079) },
 	};
 }) do
 	L[key] = value;

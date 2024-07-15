@@ -1,4 +1,5 @@
-local E, L, V, P, G = unpack(ElvUI)
+local E, _, _, _, _ = unpack(ElvUI)
+local L = mMT.Locales
 
 local _G = _G
 local tinsert = tinsert
@@ -12,13 +13,13 @@ local license_general_text = {
 	"",
 	"This addon is free to use and the authors hereby grants you the following rights:",
 	"",
-	"- 1. 	You may make modifications to this addon for private use only, you may not redistribute any part of this addon.",
+	"- 1. You may make modifications to this addon for private use only, you may not redistribute any part of this addon.",
 	"",
-	"- 2. 	You cannot change the name of this addon, including the addon folders.",
+	"- 2. You cannot change the name of this addon, including the addon folders.",
 	"",
-	"- 3. 	This copyright notice must appear in all copies of the software.",
+	"- 3. This copyright notice must appear in all copies of the software.",
 	"",
-	"- 4. 	You may not redistribute the textures of this addon.",
+	"- 4. You may not redistribute the textures of this addon.",
 	"",
 	"All rights not explicitly addressed in this license are reserved by",
 	"the copyright holders.",
@@ -76,7 +77,7 @@ local function configTable()
 				git = {
 					order = 2,
 					type = "execute",
-					name = L["Git"],
+					name = "GitHub",
 					func = function()
 						E:StaticPopup_Show("ELVUI_EDITBOX", nil, nil, "https://github.com/mBlinkii/mMediaTag/tree/main")
 					end,
@@ -95,7 +96,7 @@ local function configTable()
 			order = 3,
 			type = "group",
 			inline = true,
-			name = L["Licens"],
+			name = L["License"],
 			args = {
 				license_general = {
 					order = 1,

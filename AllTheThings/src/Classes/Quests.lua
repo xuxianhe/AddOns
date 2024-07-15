@@ -19,10 +19,16 @@ local C_QuestLog_IsQuestFlaggedCompleted = C_QuestLog.IsQuestFlaggedCompleted;
 ---@diagnostic disable-next-line: undefined-global
 local C_QuestLog_ReadyForTurnIn = C_QuestLog.ReadyForTurnIn or IsQuestComplete;
 local C_QuestLog_IsOnQuest = C_QuestLog.IsOnQuest;
-local GetFactionInfoByID, GetNumQuestLogRewardCurrencies, GetQuestLogRewardInfo, GetSpellInfo =
-	  GetFactionInfoByID, GetNumQuestLogRewardCurrencies, GetQuestLogRewardInfo, GetSpellInfo;
+local GetNumQuestLogRewardCurrencies, GetQuestLogRewardInfo =
+	  GetNumQuestLogRewardCurrencies, GetQuestLogRewardInfo;
 local ALLIANCE_FACTION_ID = Enum.FlightPathFaction.Alliance;
 local HORDE_FACTION_ID = Enum.FlightPathFaction.Horde;
+
+-- WoW API Cache
+local GetFactionName = app.WOWAPI.GetFactionName;
+local GetFactionCurrentReputation = app.WOWAPI.GetFactionCurrentReputation;
+local GetSpellName = app.WOWAPI.GetSpellName;
+local GetSpellIcon = app.WOWAPI.GetSpellIcon;
 
 -- Class locals
 local LastQuestTurnedIn, MostRecentQuestTurnIns;
@@ -99,7 +105,7 @@ if C_QuestLog_RequestLoadQuestByID and pcall(app.RegisterEvent, app, "QUEST_DATA
 	end
 
 	-- This event seems to fire synchronously from C_QuestLog.RequestLoadQuestByID if we already have the data
-	app.events.QUEST_DATA_LOAD_RESULT = function(questID, success)
+	app:RegisterFuncEvent("QUEST_DATA_LOAD_RESULT", function(questID, success)
 		-- app.PrintDebug("QUEST_DATA_LOAD_RESULT",questID,success)
 		QuestsRequested[questID] = nil;
 
@@ -109,7 +115,7 @@ if C_QuestLog_RequestLoadQuestByID and pcall(app.RegisterEvent, app, "QUEST_DATA
 			if rawget(QuestNameFromServer, questID) == false then
 				QuestNameFromServer[questID] = nil
 				app.PrintDebug("Fresh Quest Name!",questID,QuestNameFromServer[questID])
-				app:RefreshWindows();
+				app.HandleEvent("OnRefreshWindows")
 			end
 		else
 			-- this quest name cannot be populated by the server
@@ -123,8 +129,7 @@ if C_QuestLog_RequestLoadQuestByID and pcall(app.RegisterEvent, app, "QUEST_DATA
 			QuestsToPopulate[questID] = nil;
 			app.TryPopulateQuestRewards(questObject);
 		end
-	end
-
+	end)
 else
 	local QuestRetries = setmetatable({}, { __index = function(t, questID)
 		RequestLoadQuestByID(questID);
@@ -829,8 +834,7 @@ if app.IsRetail then
 	end
 
 	-- Retail Event Handlers
-	app:RegisterEvent("LOOT_OPENED");
-	app.events.LOOT_OPENED = RefreshAllQuestInfo;
+	app.AddEventRegistration("LOOT_OPENED", RefreshAllQuestInfo)
 	-- We don't want any reporting/updating of completed quests when ATT starts... simply capture all completed quests
 	app.AddEventHandler("OnStartup", QueryCompletedQuests);
 	app.AddEventHandler("OnRecalculate", QueryCompletedQuests);
@@ -941,7 +945,6 @@ else
 			app.WipeSearchCache();
 			app:RefreshDataQuietly("RefreshQuestInfo", true);
 		end
-		app:RegisterEvent("QUEST_LOG_UPDATE");
 	end
 	RefreshAllQuestInfo = function()
 		RefreshQuestInfo();
@@ -1229,7 +1232,7 @@ app.QuestLockCriteriaFunctions = criteriaFuncs;
 local function QuestWithReputationDescription(t)
 	if app.Settings.Collectibles.Reputations then
 		local factionID = t.maxReputation[1];
-		return L.ITEM_GIVES_REP .. (select(1, GetFactionInfoByID(factionID)) or ("Faction #" .. tostring(factionID))) .. "'";
+		return L.ITEM_GIVES_REP .. (GetFactionName(factionID) or ("Faction #" .. tostring(factionID))) .. "'";
 	end
 end
 local function QuestWithReputationCollectibleAsCost(t)
@@ -1322,14 +1325,14 @@ if IsQuestReplayable then
 			app.HandleEvent("OnUpdateWindows", true)
 		end
 	end
-	app.events.QUEST_SESSION_JOINED = function()
+	app.AddEventRegistration("QUEST_SESSION_JOINED", function()
 		if IsPartySyncActive then return; end
 		-- app.PrintDebug("QUEST_SESSION_JOINED")
 		IsPartySyncActive = true;
 		app.HandleEvent("OnUpdateWindows", true)
-	end
-	app.events.QUEST_SESSION_LEFT = LeavePartySync;
-	app.events.QUEST_SESSION_DESTROYED = LeavePartySync;
+	end)
+	app.AddEventRegistration("QUEST_SESSION_LEFT", LeavePartySync)
+	app.AddEventRegistration("QUEST_SESSION_DESTROYED", LeavePartySync)
 	app:RegisterEvent("QUEST_SESSION_JOINED");
 	app:RegisterEvent("QUEST_SESSION_LEFT");
 	app:RegisterEvent("QUEST_SESSION_DESTROYED");
@@ -1470,7 +1473,7 @@ local createQuest = app.CreateClass("Quest", "questID", {
 		local flag = IsQuestFlaggedCompletedForObject(t);
 		if flag then return flag; end
 		local maxReputation = t.maxReputation;
-		if (select(6, GetFactionInfoByID(maxReputation[1])) or 0) >= maxReputation[2] then
+		if GetFactionCurrentReputation(maxReputation[1]) >= maxReputation[2] then
 			return t.repeatable and 1 or 2;
 		end
 		if app.Settings.AccountWide.Reputations then
@@ -1556,14 +1559,14 @@ app.CreateQuestObjective = app.CreateClass("Objective", "objectiveID", {
 				if objective then return objective.text; end
 			end
 			return app.GetNameFromProviders(t)
-				or (t.spellID and GetSpellInfo(t.spellID))
+				or (t.spellID and GetSpellName(t.spellID))
 				or RETRIEVING_DATA;
 		end
 		return "INVALID: Must be relative to a Quest Object.";
 	end,
 	icon = function(t)
 		return app.GetIconFromProviders(t)
-			or (t.spellID and select(3, GetSpellInfo(t.spellID)))
+			or (t.spellID and GetSpellIcon(t.spellID))
 			or t.parent.icon or "Interface\\Worldmap\\Gear_64Grey";
 	end,
 	model = function(t)
@@ -1731,28 +1734,22 @@ local softRefresh = function()
 	wipe(LockedQuestCache)
 	wipe(LockedBreadcrumbCache)
 end;
-app.events.BAG_NEW_ITEMS_UPDATED = softRefresh;
 if app.IsClassic then
 	-- Way too spammy to be used without a Callback or combat protection
-	app:RegisterEvent("CRITERIA_UPDATE");
-	app.events.CRITERIA_UPDATE = softRefresh;
+	app.AddEventRegistration("CRITERIA_UPDATE", softRefresh)
 	-- This triggers in many situations where nothing actually changes... (like opening Quest Log)
-	app:RegisterEvent("QUEST_LOG_UPDATE");
-	app.events.QUEST_LOG_UPDATE = function()
-		-- app.PrintDebug("QUEST_LOG_UPDATE")
-		RefreshAllQuestInfo();
-	end
+	app.AddEventRegistration("QUEST_LOG_UPDATE", RefreshAllQuestInfo)
 else
 	-- In Retail, this has a cooldown and OOC protection, plus it actually allows accurate
 	-- triggering of quest status changes without user action.
 	-- Additionally, RefreshAllQuestInfo is extremely efficient for Retail and characters with 25,000 completed
 	-- quests should not notice any FPS stutters even up to 120 FPS
-	app:RegisterEvent("CRITERIA_UPDATE");
-	app.events.CRITERIA_UPDATE = RefreshAllQuestInfo;
+	app.AddEventRegistration("CRITERIA_UPDATE", RefreshAllQuestInfo)
 end
-app.events.QUEST_REMOVED = softRefresh;
-app.events.QUEST_WATCH_UPDATE = softRefresh;
-app.events.QUEST_ACCEPTED = function(questLogIndex, questID)
+app.AddEventRegistration("BAG_NEW_ITEMS_UPDATED", softRefresh)
+app.AddEventRegistration("QUEST_REMOVED", softRefresh)
+app.AddEventRegistration("QUEST_WATCH_UPDATE", softRefresh)
+app.AddEventRegistration("QUEST_ACCEPTED", function(questLogIndex, questID)
 	if not questID then questID = questLogIndex; end	-- NOTE: In Classic there's an extra parameter.
 	softRefresh();
 	if questID then
@@ -1761,8 +1758,8 @@ app.events.QUEST_ACCEPTED = function(questLogIndex, questID)
 		PrintQuestInfo(questID, true);
 		CheckFollowupQuests(questID);
 	end
-end
-app.events.QUEST_TURNED_IN = function(questID)
+end)
+app.AddEventRegistration("QUEST_TURNED_IN", function(questID)
 	if questID then
 		LastQuestTurnedIn = questID;
 		if not MostRecentQuestTurnIns then
@@ -1775,12 +1772,7 @@ app.events.QUEST_TURNED_IN = function(questID)
 		end
 		RefreshQuestInfo(questID);
 	end
-end
-app:RegisterEvent("BAG_NEW_ITEMS_UPDATED");
-app:RegisterEvent("QUEST_ACCEPTED");
-app:RegisterEvent("QUEST_REMOVED");
-app:RegisterEvent("QUEST_TURNED_IN");
-app:RegisterEvent("QUEST_WATCH_UPDATE");
+end)
 app.AddEventHandler("OnRefreshCollections", RefreshAllQuestInfo);
 
 

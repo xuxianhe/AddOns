@@ -2,11 +2,16 @@ local appName, app = ...
 local L = app.L;
 
 -- Global locals
-local ipairs, pairs, rawset, select, setmetatable, tonumber, tostring, type, GetItemCount, GetItemInfo, GetItemInfoInstant
----@diagnostic disable-next-line: deprecated
-	= ipairs, pairs, rawset, select, setmetatable, tonumber, tostring, type, GetItemCount, GetItemInfo, GetItemInfoInstant;
-local C_QuestLog_IsOnQuest
-	= C_QuestLog.IsOnQuest;
+local ipairs, pairs, rawset, select, setmetatable, tonumber, tostring, type, tinsert
+	= ipairs, pairs, rawset, select, setmetatable, tonumber, tostring, type, tinsert;
+local C_QuestLog_IsOnQuest = C_QuestLog.IsOnQuest;
+
+-- WoW API Cache
+local GetItemID = app.WOWAPI.GetItemID;
+local GetItemInfo = app.WOWAPI.GetItemInfo;
+local GetItemIcon = app.WOWAPI.GetItemIcon;
+local GetItemCount = app.WOWAPI.GetItemCount;
+local GetFactionBonusReputation = app.WOWAPI.GetFactionBonusReputation;
 
 -- App locals
 local AssignChildren, GetRelativeValue, IsQuestFlaggedCompletedForObject, NestObject, SearchForField, SearchForFieldContainer
@@ -32,7 +37,7 @@ app.ParseItemID = function(itemName)
 			return itemID;
 		else
 			-- The itemID given was actually the name or a link.
-			itemID = GetItemInfoInstant(itemName);
+			itemID = GetItemID(itemName);
 			if itemID then
 				-- Oh good, it was cached by WoW.
 				return itemID;
@@ -152,7 +157,7 @@ local itemFields = {
 		return t.link;
 	end,
 	["icon"] = function(t)
-		return select(5, GetItemInfoInstant(t.itemID)) or "Interface\\Icons\\INV_Misc_QuestionMark";
+		return GetItemIcon(t.itemID) or "Interface\\Icons\\INV_Misc_QuestionMark";
 	end,
 	["link"] = function(t)
 		return BestItemLinkPerItemID[t.itemID];
@@ -263,7 +268,7 @@ if C_Heirloom and app.GameBuildVersion >= 30000 then
 	-- Clone base item fields and extend the properties.
 	local heirloomFields = {
 		icon = function(t)
-			return select(4, C_Heirloom_GetHeirloomInfo(t.heirloomID)) or select(5, GetItemInfoInstant(t.heirloomID));
+			return select(4, C_Heirloom_GetHeirloomInfo(t.heirloomID)) or GetItemIcon(t.heirloomID);
 		end,
 		link = function(t)
 			return C_Heirloom_GetHeirloomLink(t.heirloomID) or select(2, GetItemInfo(t.heirloomID));
@@ -458,23 +463,55 @@ if C_Heirloom and app.GameBuildVersion >= 30000 then
 			wipe(heirloomIDs);
 		end
 	end
-
-	local CreateHeirloom = app.ExtendClass("Item", "Heirloom", "heirloomID", heirloomFields,
-	"AsTransmog", {
-		collectible = function(t)
-			return t.collectibleAsCost or app.Settings.Collectibles.Transmog;
-		end,
-		collected = function(t)
-			if t.collectedAsCost == false then
-				return;
+	
+	-- Heirlooms are containers for unlocks & upgrade levels.
+	local heirloomDefinition = { "Item", "Heirloom", "heirloomID", heirloomFields };
+	if gameBuildVersion < 40000 then
+		-- Prior to Cataclysm, we need to collect transmog the same way as we do for items.
+		tinsert(heirloomDefinition, "AsTransmog");
+		tinsert(heirloomDefinition, {
+			collectible = function(t)
+				return t.collectibleAsCost or app.Settings.Collectibles.Transmog;
+			end,
+			collected = function(t)
+				if t.collectedAsCost == false then
+					return;
+				end
+				return collectedAsTransmog(t);
+			end,
+			description = function()
+				return "This item also has a sourceID with it, keep at least one somewhere on your account. I'm not sure if Blizzard is planning on deprecating this completely before transmog comes out or not!\n\n  - Crieve";
+			end,
+		});
+		tinsert(heirloomDefinition, isCollectibleTransmog);
+	else
+		-- After the Cataclysm, we can use the transmog API.
+		local AccountSources;
+		tinsert(heirloomDefinition, "AsTransmog");
+		tinsert(heirloomDefinition, {
+			collectible = function(t)
+				return t.collectibleAsCost or app.Settings.Collectibles.Transmog;
+			end,
+			collected = function(t)
+				if t.collectedAsCost == false then
+					return;
+				end
+				return AccountSources[t.sourceID];
+			end,
+		});
+		tinsert(heirloomDefinition, isCollectibleTransmog);
+		app.AddEventHandler("OnSavedVariablesAvailable", function(currentCharacter, accountWideData)
+			AccountSources = accountWideData.Sources;
+			if not AccountSources then
+				AccountSources = {};
+				accountWideData.Sources = AccountSources;
 			end
-			return collectedAsTransmog(t);
-		end,
-		description = function()
-			return "This item also has a sourceID with it, keep at least one somewhere on your account. I'm not sure if Blizzard is planning on deprecating this completely before transmog comes out or not!\n\n  - Crieve";
-		end,
-	}, isCollectibleTransmog,
-	"WithFaction", {
+		end);
+	end
+	
+	-- Faction Extension.
+	tinsert(heirloomDefinition, "WithFaction");
+	tinsert(heirloomDefinition, {
 		collectible = function(t)
 			return t.collectibleAsCost or app.Settings.Collectibles.Reputations;
 		end,
@@ -488,7 +525,7 @@ if C_Heirloom and app.GameBuildVersion >= 30000 then
 			else
 				-- This is used for the Grand Commendations unlocking Bonus Reputation
 				if ATTAccountWideData.FactionBonus[t.factionID] then return 1; end
-				if select(15, GetFactionInfoByID(t.factionID)) then
+				if GetFactionBonusReputation(t.factionID) then
 					ATTAccountWideData.FactionBonus[t.factionID] = 1;
 					return 1;
 				end
@@ -497,7 +534,10 @@ if C_Heirloom and app.GameBuildVersion >= 30000 then
 			if app.CurrentCharacter.Factions[t.factionID] then return 1; end
 			if app.Settings.AccountWide.Reputations and ATTAccountWideData.Factions[t.factionID] then return 2; end
 		end,
-	}, (function(t) return t.factionID; end));
+	});
+	tinsert(heirloomDefinition, function(t) return t.factionID; end);
+	
+	local CreateHeirloom = app.ExtendClass(unpack(heirloomDefinition));
 	app.CreateHeirloom = function(id, t)
 		t = CreateHeirloom(id, t);
 		--t.b = 2;	-- Heirlooms are always BoA

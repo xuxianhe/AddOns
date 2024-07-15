@@ -1,9 +1,10 @@
 -- App locals
 local appName,app = ...;
 
-local pairs, GetItemCount, PlayerHasToy
----@diagnostic disable-next-line: deprecated
-	= pairs, ((C_Item and C_Item.GetItemCount) or GetItemCount), PlayerHasToy;
+local pairs, PlayerHasToy = pairs, PlayerHasToy;
+
+-- WoW API Cache
+local GetItemCount = app.WOWAPI.GetItemCount;
 
 -- Toy Lib
 local KEY, CACHE = "toyID", "Toys"
@@ -73,7 +74,7 @@ toyFields.description = function(t)
 	end
 end;
 
-app.events.TOYS_UPDATED = app.IsRetail and function(itemID, new)
+app.AddEventRegistration("TOYS_UPDATED", app.IsRetail and function(itemID, new)
 	if itemID and not AccountWideToyData[itemID] and PlayerHasToy(itemID) then
 		app.SetAccountCollected(app.SearchForObject(KEY, itemID) or app.CreateToy(itemID), CACHE, itemID, true);
 		app.UpdateRawID("itemID", itemID);
@@ -83,10 +84,7 @@ end or function(toyID, new)
 		app.SetAccountCollected(app.SearchForField(KEY, toyID)[1] or app.CreateToy(toyID), CACHE, toyID, PlayerHasToy(toyID));
 		app:RefreshDataQuietly("TOYS_UPDATED", true);
 	end
-end
-app.AddEventHandler("OnReady", function()
-	app:RegisterEvent("TOYS_UPDATED");
-end);
+end)
 if app.IsClassic then
 	app.AddEventHandler("OnRefreshCollections", function()
 		-- Refresh Toys

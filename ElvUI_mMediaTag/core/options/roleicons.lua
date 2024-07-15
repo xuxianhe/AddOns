@@ -1,4 +1,6 @@
-local E, L, V, P, G = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
+
 local UF = E:GetModule("UnitFrames")
 local tinsert = tinsert
 local function configTable()
@@ -57,7 +59,7 @@ local function configTable()
 				healicon = {
 					order = 2,
 					type = "select",
-					name = L["Heal"],
+					name = L["Healer"],
 					disabled = function()
 						return not E.db.mMT.roleicons.enable
 					end,
@@ -198,7 +200,7 @@ local function configTable()
 				explanation = {
 					order = 1,
 					type = "description",
-					name = L["Attention! The path of the custom texture must comply with WoW standards. Example: Interface\\MYFOLDER\\MYFILE.tga. If you see only a green box, the path is not correct or there is a typo."],
+					name = L["Attention! The path of the custom texture must comply with WoW standards. Example: Interface\\MYFOLDER\\MYFILE.tga. If you see a green box, the path is incorrect or you have a typo."],
 				},
 			},
 		},

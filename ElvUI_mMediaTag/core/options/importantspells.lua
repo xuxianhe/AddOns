@@ -1,4 +1,6 @@
-local E, L = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
+
 local LSM = LibStub("LibSharedMedia-3.0")
 
 local tinsert = tinsert
@@ -73,7 +75,7 @@ local function configTable()
 				np = {
 					order = 1,
 					type = "toggle",
-					name = L["Enable on Nameplate"],
+					name = L["Enable on Nameplates"],
 					desc = L["Enable this module on Nameplates."],
 					get = function(info)
 						return E.db.mMT.importantspells.np
@@ -149,7 +151,7 @@ local function configTable()
 				filterTable = {
 					type = "select",
 					order = 2,
-					name = L["Spell filters"],
+					name = L["Spell Filters"],
 					desc = L["Select the filter to edit."],
 					values = function()
 						UpdateFilterList()
@@ -227,7 +229,7 @@ local function configTable()
 					order = 2,
 					type = "group",
 					inline = true,
-					name = L["Spell id"],
+					name = L["Spell ID"],
 					args = {
 						id = {
 							order = 1,
@@ -577,7 +579,7 @@ local function configTable()
 								},
 								range_posX = {
 									order = 3,
-									name = L["Offset"] .. " X",
+									name = L["X offset"],
 									desc = L["Icon offset if not Auto point is enabled."],
 									type = "range",
 									min = -256,
@@ -594,7 +596,7 @@ local function configTable()
 								},
 								range_posY = {
 									order = 4,
-									name = L["Offset"] .. " Y",
+									name = L["Y offset"],
 									desc = L["Icon offset if not Auto point is enabled."],
 									type = "range",
 									min = -256,

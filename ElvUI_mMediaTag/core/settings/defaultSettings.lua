@@ -2,7 +2,7 @@ local E, L, V, P, G = unpack(ElvUI)
 
 P.mMT = {
 	version = 0,
-	general = { greeting = true, keystochat = false, emediaenable = false },
+	general = { greeting = true, keystochat = false, emediaenable = false, datatextfontsize = 12 },
 	afk = {
 		enable = false,
 		logo = false,
@@ -42,10 +42,16 @@ P.mMT = {
 		spells = {},
 	},
 	custombackgrounds = {
-		enable = false,
 		health = { enable = false, texture = "mMediaTag A8" },
 		power = { enable = false, texture = "mMediaTag A8" },
 		castbar = { enable = false, texture = "mMediaTag A8" },
+		altpower = { enable = false, texture = "mMediaTag A8" },
+	},
+	customtextures= {
+		health = { enable = false, texture = "mMediaTag A8" },
+		power = { enable = false, texture = "mMediaTag A8" },
+		castbar = { enable = false, texture = "mMediaTag A8" },
+		altpower = { enable = false, texture = "mMediaTag A8" },
 	},
 	singleProfession = {
 		icon = true,
@@ -88,7 +94,7 @@ P.mMT = {
 			hex = "|cffffffff",
 			r = 1,
 		},
-		colortitel = {
+		colortitle = {
 			b = 0,
 			g = 0.78,
 			hex = "|cffffc800",
@@ -133,7 +139,7 @@ P.mMT = {
 		},
 	},
 	teleports = { anchorCursor = false, icon = false, customicon = "TP1" },
-	profession = { icon = false, proficon = true },
+	profession = { icon = false, proficon = true, whiteText = true },
 	dungeon = { icon = false, texttoname = true, key = true, score = true, affix = true },
 	instancedifficulty = {
 		enable = false,
@@ -265,6 +271,12 @@ P.mMT = {
 				hex = "|cffff033e",
 				g = 0.01,
 				r = 1,
+			},
+			absorbs = {
+				b = 1,
+				hex = "|cffcd5fff",
+				g = 0.37,
+				r = 0.8,
 			},
 		},
 	},
@@ -505,6 +517,7 @@ P.mMT = {
 	},
 	castbarshield = {
 		enable = false,
+		iconanchor = false,
 		auto = true,
 		custom = false,
 		sizeX = 32,
@@ -552,8 +565,45 @@ P.mMT = {
 			EVOKER = { r = 0.20, g = 0.58, b = 0.50 },
 		},
 	},
+	mp_textures = {
+		isChanged = false,
+		all = true,
+		a = true,
+		b = true,
+		c = true,
+		d = true,
+		e = true,
+		f = true,
+		g = true,
+		h = true,
+		i = true,
+		j = true,
+		k = true,
+		l = true,
+		n = true,
+		m = true,
+		o = true,
+		p = true,
+		q = true,
+		r = true,
+		s = true,
+	},
 	portraits = {
+		custom = {
+			texture = "",
+			extra = "",
+			extraborder = "",
+			extrashadow = "",
+			border = "",
+			shadow = "",
+			inner = "",
+			mask = "",
+			maskb = "",
+			enable = false,
+		},
 		player = {
+			flippe = false,
+			cast = false,
 			enable = true,
 			texture = "RO",
 			mirror = false,
@@ -566,6 +616,7 @@ P.mMT = {
 			level = 20,
 		},
 		pet = {
+			flippe = false,
 			enable = false,
 			texture = "RO",
 			mirror = false,
@@ -578,6 +629,8 @@ P.mMT = {
 			level = 20,
 		},
 		target = {
+			flippe = false,
+			cast = false,
 			enable = true,
 			texture = "RO",
 			extraEnable = true,
@@ -591,6 +644,7 @@ P.mMT = {
 			level = 20,
 		},
 		targettarget = {
+			flippe = false,
 			enable = true,
 			texture = "RO",
 			extraEnable = true,
@@ -604,6 +658,8 @@ P.mMT = {
 			level = 20,
 		},
 		focus = {
+			flippe = false,
+			cast = false,
 			enable = false,
 			texture = "RO",
 			extraEnable = true,
@@ -617,6 +673,8 @@ P.mMT = {
 			level = 20,
 		},
 		party = {
+			flippe = false,
+			cast = false,
 			enable = true,
 			texture = "RO",
 			mirror = false,
@@ -629,6 +687,8 @@ P.mMT = {
 			level = 20,
 		},
 		boss = {
+			flippe = false,
+			cast = false,
 			enable = false,
 			texture = "RO",
 			mirror = true,
@@ -641,6 +701,8 @@ P.mMT = {
 			level = 20,
 		},
 		arena = {
+			flippe = false,
+			cast = false,
 			enable = false,
 			texture = "RO",
 			mirror = true,
@@ -654,6 +716,7 @@ P.mMT = {
 		},
 		general = {
 			enable = false,
+			reaction = false,
 			eltruism = false,
 			gradient = true,
 			default = false,
@@ -673,6 +736,7 @@ P.mMT = {
 			QA = 0,
 			SMQ = 0,
 			MO = 5.5,
+			CUSTOM = 5.5,
 		},
 		shadow = {
 			enable = true,

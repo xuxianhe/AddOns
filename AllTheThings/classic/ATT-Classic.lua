@@ -49,18 +49,20 @@ local GetAchievementNumCriteria = _G["GetAchievementNumCriteria"];
 local GetAchievementCriteriaInfo = _G["GetAchievementCriteriaInfo"];
 local GetAchievementCriteriaInfoByID = _G["GetAchievementCriteriaInfoByID"];
 local GetCategoryInfo = _G["GetCategoryInfo"];
-local GetFactionInfoByID = _G["GetFactionInfoByID"];
----@diagnostic disable-next-line: deprecated
-local GetItemInfo = _G["GetItemInfo"];
----@diagnostic disable-next-line: deprecated
-local GetItemInfoInstant = _G["GetItemInfoInstant"];
 ---@diagnostic disable-next-line: deprecated
 local GetItemCount = _G["GetItemCount"];
 local InCombatLockdown = _G["InCombatLockdown"];
-local GetSpellInfo, IsPlayerSpell, IsSpellKnown, IsSpellKnownOrOverridesKnown =
-	  GetSpellInfo, IsPlayerSpell, IsSpellKnown, IsSpellKnownOrOverridesKnown;
+local IsPlayerSpell, IsSpellKnown, IsSpellKnownOrOverridesKnown =
+	  IsPlayerSpell, IsSpellKnown, IsSpellKnownOrOverridesKnown;
 local C_QuestLog_IsOnQuest = C_QuestLog.IsOnQuest;
 local HORDE_FACTION_ID = Enum.FlightPathFaction.Horde;
+
+-- WoW API Cache
+local GetItemInfo = app.WOWAPI.GetItemInfo;
+local GetItemIcon = app.WOWAPI.GetItemIcon;
+local GetItemInfoInstant = app.WOWAPI.GetItemInfoInstant;
+local GetFactionCurrentReputation = app.WOWAPI.GetFactionCurrentReputation;
+local GetSpellLink = app.WOWAPI.GetSpellLink;
 
 -- App & Module locals
 local contains = app.contains;
@@ -74,6 +76,10 @@ local Colorize = app.Modules.Color.Colorize;
 local ColorizeRGB = app.Modules.Color.ColorizeRGB;
 local HexToARGB = app.Modules.Color.HexToARGB;
 local RGBToHex = app.Modules.Color.RGBToHex;
+
+-- WoW API Cache
+local GetSpellName = app.WOWAPI.GetSpellName;
+local GetSpellIcon = app.WOWAPI.GetSpellIcon;
 
 -- Helper Functions
 local pendingCollection, pendingRemovals, retrievingCollection, pendingCollectionCooldown = {},{},{},0;
@@ -321,7 +327,7 @@ local function GetIconFromProviders(group)
 				if v[1] == "o" then
 					icon = app.ObjectIcons[v[2]];
 				elseif v[1] == "i" then
-					icon = select(5, GetItemInfoInstant(v[2]));
+					icon = GetItemIcon(v[2]);
 				end
 				if icon then return icon; end
 			end
@@ -2368,7 +2374,7 @@ if GetCategoryInfo and (GetCategoryInfo(92) ~= "" and GetCategoryInfo(92) ~= nil
 		local data = L.ACHIEVEMENT_DATA[t.achievementID];
 		if data and data[2] then return data[2]; end
 		return GetNameFromProviders(t)
-			or (t.spellID and GetSpellInfo(t.spellID));
+			or (t.spellID and GetSpellName(t.spellID));
 	end
 	fields.link = function(t)
 		return GetAchievementLink(t.achievementID);
@@ -2379,7 +2385,7 @@ if GetCategoryInfo and (GetCategoryInfo(92) ~= "" and GetCategoryInfo(92) ~= nil
 		local data = L.ACHIEVEMENT_DATA[t.achievementID];
 		if data and data[3] then return data[3]; end
 		return GetIconFromProviders(t)
-			or (t.spellID and select(3, GetSpellInfo(t.spellID)))
+			or (t.spellID and GetSpellIcon(t.spellID))
 			or t.parent.icon or "Interface\\Worldmap\\Gear_64Grey";
 	end
 	fields.parentCategoryID = function(t)
@@ -2680,13 +2686,13 @@ else
 	fields.name = function(t)
 		local data = L.ACHIEVEMENT_DATA[t.achievementID];
 		if data and data[2] then return data[2]; end
-		return GetNameFromProviders(t) or (t.spellID or GetSpellInfo(t.spellID)) or RETRIEVING_DATA;
+		return GetNameFromProviders(t) or (t.spellID or GetSpellName(t.spellID)) or RETRIEVING_DATA;
 	end
 	fields.icon = function(t)
 		local data = L.ACHIEVEMENT_DATA[t.achievementID];
 		if data and data[3] then return data[3]; end
 		return GetIconFromProviders(t)
-			or (t.spellID and select(3, GetSpellInfo(t.spellID)))
+			or (t.spellID and GetSpellIcon(t.spellID))
 			or t.parent.icon or "Interface\\Worldmap\\Gear_64Grey";
 	end
 	fields.parentCategoryID = function(t)
@@ -3593,6 +3599,9 @@ app.events.TAXIMAP_OPENED = function()
 	app.CacheFlightPathDataForTarget(knownNodeIDs);
 	app.CacheFlightPathDataForMap(app.CurrentMapID, knownNodeIDs);
 
+	-- apparently this can be nil somehow
+	if not app.CurrentMapID then return end
+
 	local allNodeData = C_TaxiMap.GetAllTaxiNodes(app.CurrentMapID);
 	if allNodeData then
 		for j,nodeData in ipairs(allNodeData) do
@@ -3780,7 +3789,7 @@ local createCustomHeader = app.CreateClass("Header", "headerID", {
 		end
 	end,
 	collected = function(t)
-		if (select(6, GetFactionInfoByID(t.maxReputation[1])) or 0) >= t.maxReputation[2] then
+		if GetFactionCurrentReputation(t.maxReputation[1]) >= t.maxReputation[2] then
 			return 1;
 		end
 		if app.Settings.AccountWide.Reputations then
@@ -4020,10 +4029,10 @@ app.OnUpdateForOmarionsHandbook = function(t)
 end;
 app.CreateProfession = app.CreateClass("Profession", "professionID", {
 	["text"] = function(t)
-		return GetSpellInfo(t.spellID);
+		return GetSpellName(t.spellID);
 	end,
 	["icon"] = function(t)
-		return select(3, GetSpellInfo(t.spellID));
+		return GetSpellIcon(t.spellID);
 	end,
 	["spellID"] = function(t)
 		return app.SkillIDToSpellID[t.professionID];
@@ -4072,9 +4081,9 @@ app.GetSpellName = function(spellID, rank)
 	local spellName = rawget(SpellIDToSpellName, spellID);
 	if spellName then return spellName; end
 	if rank then
-		spellName = GetSpellInfo(spellID, rank);
+		spellName = GetSpellName(spellID, rank);
 	else
-		spellName = GetSpellInfo(spellID);
+		spellName = GetSpellName(spellID);
 	end
 	if not IsRetrieving(spellName) then
 		if not rawget(app.SpellNameToSpellID, spellName) then
@@ -4104,7 +4113,7 @@ end
 app.IsSpellKnown = function(spellID, rank, ignoreHigherRanks)
 	if isSpellKnownHelper(spellID) then return true; end
 	if rank then
-		local spellName = GetSpellInfo(spellID);
+		local spellName = GetSpellName(spellID);
 		if spellName then
 			local maxRank = ignoreHigherRanks and rank or  rawget(MaxSpellRankPerSpellName, spellName);
 			if maxRank then
@@ -4166,7 +4175,7 @@ app.SpellNameToSpellID = setmetatable(L.SPELL_NAME_TO_SPELL_ID, {
 
 -- The difference between a recipe and a spell is that a spell is not collectible.
 local baseIconFromSpellID = function(t)
-	return select(3, GetSpellInfo(t.spellID)) or (t.requireSkill and select(3, GetSpellInfo(t.requireSkill)));
+	return GetSpellIcon(t.spellID) or (t.requireSkill and GetSpellIcon(t.requireSkill));
 end;
 local linkFromSpellID = function(t)
 	local link = GetSpellLink(t.spellID);
@@ -4230,7 +4239,7 @@ recipeFields.IsClassIsolated = true;
 local createRecipe = app.CreateClass("Recipe", "spellID", recipeFields,
 "WithItem", {
 	baseIcon = function(t)
-		return select(5, GetItemInfoInstant(t.itemID)) or baseIconFromSpellID(t);
+		return GetItemIcon(t.itemID) or baseIconFromSpellID(t);
 	end,
 	link = function(t)
 		return select(2, GetItemInfo(t.itemID));
@@ -4306,7 +4315,7 @@ local mountFields = {
 		return "|cffb19cd9" .. t.name .. "|r";
 	end,
 	["icon"] = function(t)
-		return select(3, GetSpellInfo(t.spellID));
+		return GetSpellIcon(t.spellID);
 	end,
 	["link"] = function(t)
 		return (t.itemID and select(2, GetItemInfo(t.itemID))) or GetSpellLink(t.spellID);
@@ -4324,7 +4333,7 @@ local mountFields = {
 		return (t.parent and t.parent.b) or 1;
 	end,
 	["name"] = function(t)
-		return GetSpellInfo(t.spellID) or RETRIEVING_DATA;
+		return GetSpellName(t.spellID) or RETRIEVING_DATA;
 	end,
 	["tsmForItem"] = function(t)
 		---@diagnostic disable-next-line: undefined-field
@@ -4391,7 +4400,7 @@ if C_PetJournal and app.GameBuildVersion > 30000 then
 		mountFields.name = function(t)
 			local mountID = t.mountID;
 			if mountID then return C_MountJournal.GetMountInfoByID(mountID); end
-			return GetSpellInfo(t.spellID) or RETRIEVING_DATA;
+			return GetSpellName(t.spellID) or RETRIEVING_DATA;
 		end
 		mountFields.displayID = function(t)
 			local mountID = t.mountID;
@@ -4418,7 +4427,7 @@ if C_PetJournal and app.GameBuildVersion > 30000 then
 		end
 	else
 		mountFields.name = function(t)
-			return GetSpellInfo(t.spellID) or RETRIEVING_DATA;
+			return GetSpellName(t.spellID) or RETRIEVING_DATA;
 		end
 		mountFields.collected = function(t)
 			local spellID = t.spellID;
@@ -4433,7 +4442,7 @@ if C_PetJournal and app.GameBuildVersion > 30000 then
 else
 	speciesFields.icon = function(t)
 		if t.itemID then
-			return select(5, GetItemInfoInstant(t.itemID)) or "Interface\\Icons\\INV_Misc_QuestionMark";
+			return GetItemIcon(t.itemID) or "Interface\\Icons\\INV_Misc_QuestionMark";
 		end
 		return "Interface\\Icons\\INV_Misc_QuestionMark";
 	end
@@ -4441,7 +4450,7 @@ else
 		return t.itemID and GetItemInfo(t.itemID) or RETRIEVING_DATA;
 	end
 	mountFields.name = function(t)
-		return GetSpellInfo(t.spellID) or RETRIEVING_DATA;
+		return GetSpellName(t.spellID) or RETRIEVING_DATA;
 	end
 	if GetCompanionInfo and GetNumCompanions("CRITTER") ~= nil then
 		local CollectedBattlePetHelper = {};

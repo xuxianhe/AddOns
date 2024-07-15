@@ -1,5 +1,7 @@
-local E, L, V, P, G = unpack(ElvUI)
- if not mMTSettings then return end
+local E = unpack(ElvUI)
+local L = mMT.Locales
+
+if not mMTSettings then return end
 
 local tinsert = tinsert
 local function configTable()
@@ -66,6 +68,7 @@ local function configTable()
 						db.p = false
 						db.q = false
 						db.r = false
+						db.s = false
 						E:StaticPopup_Show("CONFIG_RL")
 					end,
 				},
@@ -344,6 +347,21 @@ local function configTable()
 					end,
 					set = function(info, value)
 						mMTSettings.textures.r = value
+						E:StaticPopup_Show("CONFIG_RL")
+					end,
+				},
+				toggle_s = {
+					order = 19,
+					type = "toggle",
+					name = L["Load Pack"] .. " S",
+					disabled = function()
+						return mMTSettings.textures.all
+					end,
+					get = function(info)
+						return mMTSettings.textures.s
+					end,
+					set = function(info, value)
+						mMTSettings.textures.s = value
 						E:StaticPopup_Show("CONFIG_RL")
 					end,
 				},

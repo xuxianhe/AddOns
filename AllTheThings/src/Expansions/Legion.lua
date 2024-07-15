@@ -11,12 +11,15 @@ if not C_ArtifactUI then
 	return
 end
 
+-- WoW API Cache
+local GetItemInfo = app.WOWAPI.GetItemInfo;
+
 local CurrentArtifactRelicItemLevels = {}
 local pairs, select, math_floor
 	= pairs, select, math.floor;
 local L, ColorizeRGB = app.L, app.Modules.Color.ColorizeRGB;
 local GetRelativeField, GetRelativeValue = app.GetRelativeField, app.GetRelativeValue;
-local GetDetailedItemLevelInfo, GetItemInfo, IsArtifactRelicItem = GetDetailedItemLevelInfo, GetItemInfo, IsArtifactRelicItem;
+local GetDetailedItemLevelInfo, IsArtifactRelicItem = GetDetailedItemLevelInfo, IsArtifactRelicItem;
 local C_TransmogCollection_PlayerHasTransmogItemModifiedAppearance = C_TransmogCollection and C_TransmogCollection.PlayerHasTransmogItemModifiedAppearance;
 
 local ATTAccountWideData, ATTAccountWideDataArtifacts
@@ -411,7 +414,7 @@ local function legion_relinquished_relic(ResolveFunctions)
 end
 
 -- Event Handling
-app.events.ARTIFACT_UPDATE = function(...)
+app.AddEventRegistration("ARTIFACT_UPDATE", function(...)
 	local itemID = C_ArtifactUI.GetArtifactInfo();
 	if itemID then
 		local count = C_ArtifactUI.GetNumRelicSlots();
@@ -430,15 +433,12 @@ app.events.ARTIFACT_UPDATE = function(...)
 			end
 		end
 	end
-end
+end)
 app.AddEventHandler("OnLoad", function()
 	app.RegisterSymlinkResolveFunction("relictype", ResolveRelicType);
 	app.RegisterSymlinkSubroutine("legion_relinquished_base", legion_relinquished_base);
 	app.RegisterSymlinkSubroutine("legion_relinquished", legion_relinquished);
 	app.RegisterSymlinkSubroutine("legion_relinquished_relic", legion_relinquished_relic);
-end);
-app.AddEventHandler("OnReady", function()
-	app:RegisterEvent("ARTIFACT_UPDATE");
 end);
 app.AddEventHandler("OnSavedVariablesAvailable", function(currentCharacter, accountWideData)
 	local characterData = currentCharacter.ArtifactRelicItemLevels;

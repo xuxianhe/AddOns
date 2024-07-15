@@ -7,6 +7,7 @@
 	<Script file="interruptoncd.lua"/>
 	<Script file="importantspells.lua"/>
 	<Script file="background.lua"/>
+	<Script file="general.lua"/>
 	<!-- <Script file="customclasscolors.lua"/> -->
 	<Script file="datatextcolors.lua"/>
 	<Script file="rollbutton.lua"/>
@@ -38,5 +39,7 @@
 	<Script file="durabilityanditemlevel.lua"/>
 	<Script file="firstandsecondprofession.lua"/>
 	<Script file="datapanels.lua"/>
+	<Script file="datatextfont.lua"/>
+	<Script file="uftextures.lua"/>
 	<Script file="questicons.lua"/>
 </Ui>

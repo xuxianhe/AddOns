@@ -22,11 +22,12 @@ BigWigs:AddSounds("Sergeant Bainbridge", {
 BigWigs:AddSounds("Dread Captain Lockwood", {
 	[268230] = "alarm",
 	[268260] = "alarm",
-	[268752] = "long",
+	[268752] = {"info","long"},
 	[268963] = "info",
 	[269029] = "alarm",
-	[272471] = "alert",
-	[273470] = "alert",
+	[273470] = "alarm",
+	[463182] = "alert",
+	[463185] = "info",
 })
 
 BigWigs:AddSounds("Hadal Darkfathom", {
@@ -38,6 +39,7 @@ BigWigs:AddSounds("Hadal Darkfathom", {
 BigWigs:AddSounds("Viq'Goth", {
 	[269266] = "alarm",
 	[269366] = "info",
+	[269456] = "warning",
 	[270185] = "alarm",
 	[270590] = "warning",
 	[275014] = "warning",
@@ -58,8 +60,9 @@ BigWigs:AddSounds("Siege of Boralus Trash", {
 	[257288] = "alert",
 	[268260] = "alarm",
 	[272421] = "info",
-	[272546] = "alert",
-	[272711] = "alarm",
+	[272546] = "alarm",
+	[272571] = "alert",
+	[272711] = "info",
 	[272827] = "alert",
 	[274569] = "alert",
 	[275826] = {"alarm","alert"},

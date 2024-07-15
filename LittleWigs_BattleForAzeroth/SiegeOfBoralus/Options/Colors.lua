@@ -20,13 +20,14 @@ BigWigs:AddColors("Sergeant Bainbridge", {
 })
 
 BigWigs:AddColors("Dread Captain Lockwood", {
-	[268230] = "purple",
+	[268230] = "blue",
 	[268260] = "orange",
-	[268752] = {"green","yellow"},
+	[268752] = {"cyan","green"},
 	[268963] = "cyan",
 	[269029] = "orange",
-	[272471] = "yellow",
-	[273470] = {"blue","red"},
+	[273470] = "purple",
+	[463182] = "red",
+	[463185] = "yellow",
 })
 
 BigWigs:AddColors("Hadal Darkfathom", {
@@ -36,10 +37,11 @@ BigWigs:AddColors("Hadal Darkfathom", {
 })
 
 BigWigs:AddColors("Viq'Goth", {
-	[269266] = "purple",
+	[269266] = "orange",
 	[269366] = "cyan",
-	[270185] = "orange",
-	[270590] = "red",
+	[269456] = "red",
+	[270185] = "red",
+	[270590] = "purple",
 	[275014] = {"blue","yellow"},
 	["demolishing"] = "yellow",
 	["stages"] = "green",
@@ -58,8 +60,9 @@ BigWigs:AddColors("Siege of Boralus Trash", {
 	[257288] = "orange",
 	[268260] = "orange",
 	[272421] = {"blue","yellow"},
-	[272546] = "orange",
-	[272711] = "orange",
+	[272546] = "yellow",
+	[272571] = "red",
+	[272711] = "yellow",
 	[272827] = "orange",
 	[274569] = "red",
 	[275826] = {"red","yellow"},

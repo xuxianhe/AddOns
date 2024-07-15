@@ -1,4 +1,5 @@
-local E, L, V, P, G = unpack(ElvUI)
+local E = unpack(ElvUI)
+local L = mMT.Locales
 
 local tinsert = tinsert
 local function configTable()
@@ -165,7 +166,7 @@ local function configTable()
                     type = "color",
                     order = 2,
                     name = function()
-                        return format("%s%s|r",E.db.mMT.tags.colors.heal.hex ,L["Heal"])
+                        return format("%s%s|r",E.db.mMT.tags.colors.heal.hex ,L["Healer"])
                     end,
                     hasAlpha = false,
                     get = function(info)
@@ -199,6 +200,31 @@ local function configTable()
                     end,
                     set = function(info, r, g, b)
                         local t = E.db.mMT.tags.colors.level
+                        t.r, t.g, t.b, t.hex = r, g, b, E:RGBToHex(r, g, b)
+                        mMT:UpdateTagSettings()
+                    end,
+                },
+            },
+        },
+        header_other = {
+			order = 5,
+			type = "group",
+			inline = true,
+			name = L["Other Colors"],
+			args = {
+                color_absorbs = {
+                    type = "color",
+                    order = 1,
+                    name = function()
+                        return format("%s%s|r",E.db.mMT.tags.colors.absorbs.hex ,L["Absorbs"])
+                    end,
+                    hasAlpha = false,
+                    get = function(info)
+                        local t = E.db.mMT.tags.colors.absorbs
+                        return t.r, t.g, t.b
+                    end,
+                    set = function(info, r, g, b)
+                        local t = E.db.mMT.tags.colors.absorbs
                         t.r, t.g, t.b, t.hex = r, g, b, E:RGBToHex(r, g, b)
                         mMT:UpdateTagSettings()
                     end,

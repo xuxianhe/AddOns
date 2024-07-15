@@ -14,7 +14,6 @@ local ToggleFrame = ToggleFrame
 --Variables
 local autoHideDelay = 2
 local PADDING = 10
-local BUTTON_HEIGHT = E.db.general.fontSize / 3 + 16
 local mDropDownFrame = {}
 
 -- frame hide function for the timer
@@ -53,6 +52,10 @@ end
 -- text = string, Secondtext = string, color = color string for first text, icon = texture, func = function, funcOnEnter = function,
 -- funcOnLeave = function, isTitle = bolean, macro = macrotext, tooltip = id or var you can use for the functions, notClickable = bolean
 function mMT:mDropDown(list, frame, menuparent, ButtonWidth, HideDelay)
+	local SAVE_HEIGHT = (E.db.mMT.general.datatextfontsize or E.db.general.fontSize) / 3 + 16
+	local BUTTON_HEIGHT = 0
+	local BUTTON_WIDTH = 0
+
 	autoHideDelay = HideDelay or 2
 
 	mMT:CancelAllTimers(mDropDownFrame.mTimer)
@@ -97,7 +100,7 @@ function mMT:mDropDown(list, frame, menuparent, ButtonWidth, HideDelay)
 			frame.buttons[i].hoverTex:SetAllPoints()
 			frame.buttons[i].hoverTex:SetTexture(texture)
 
-			if E.Retail then
+			if E.Retail or E.Cata then
 				frame.buttons[i].hoverTex:SetGradient("HORIZONTAL", { r = mMT.ClassColor.r, g = mMT.ClassColor.g, b = mMT.ClassColor.b, a = 0.75 }, { r = mMT:ColorCheck(mMT.ClassColor.r + 0.4), g = mMT:ColorCheck(mMT.ClassColor.g + 0.4), b = mMT:ColorCheck(mMT.ClassColor.b + 0.4), a = 0.75 })
 			else
 				frame.buttons[i].hoverTex:SetGradientAlpha("HORIZONTAL", mMT.ClassColor.r, mMT.ClassColor.g, mMT.ClassColor.b, 0.75, mMT:ColorCheck(mMT.ClassColor.r + 0.4), mMT:ColorCheck(mMT.ClassColor.g + 0.4), mMT:ColorCheck(mMT.ClassColor.b + 0.4), 0.75)
@@ -109,14 +112,14 @@ function mMT:mDropDown(list, frame, menuparent, ButtonWidth, HideDelay)
 		if list[i].text then
 			frame.buttons[i].text = frame.buttons[i]:CreateFontString(nil, "BORDER")
 			frame.buttons[i].text:SetAllPoints()
-			frame.buttons[i].text:FontTemplate(nil, nil, "")
+			frame.buttons[i].text:FontTemplate(nil, E.db.mMT.general.datatextfontsize, "")
 			frame.buttons[i].text:SetJustifyH("LEFT")
 		end
 
 		if list[i].Secondtext then
 			frame.buttons[i].Secondtext = frame.buttons[i]:CreateFontString(nil, "BORDER")
 			frame.buttons[i].Secondtext:SetAllPoints()
-			frame.buttons[i].Secondtext:FontTemplate(nil, nil, "")
+			frame.buttons[i].Secondtext:FontTemplate(nil, E.db.mMT.general.datatextfontsize, "")
 			frame.buttons[i].Secondtext:SetJustifyH("RIGHT")
 		end
 
@@ -147,23 +150,44 @@ function mMT:mDropDown(list, frame, menuparent, ButtonWidth, HideDelay)
 			frame.buttons[i].Secondtext:SetText(list[i].Secondtext or "")
 		end
 
-		--fontHeight = frame.buttons[i].text:GetStringHeight()
-
-		frame.buttons[i]:Show()
-		frame.buttons[i]:Height(BUTTON_HEIGHT)
-		frame.buttons[i]:Width(ButtonWidth)
-
 		if i == 1 then
 			frame.buttons[i]:Point("TOPLEFT", frame, "TOPLEFT", PADDING, -PADDING)
 		else
 			frame.buttons[i]:Point("TOPLEFT", frame.buttons[i - 1], "BOTTOMLEFT")
 		end
 
-		--frame.buttons[i].text:SetText(fontHeight .. " - " .. BUTTON_HEIGHT .. " - " .. list[i].text)
+		if frame.buttons[i].text then
+			local height = frame.buttons[i].text:GetStringHeight()
+			local width = frame.buttons[i].text:GetStringWidth()
+
+			if height ~= 0 then
+				BUTTON_HEIGHT = (height > BUTTON_HEIGHT) and height or BUTTON_HEIGHT
+			end
+
+			if width ~= 0 then
+				if frame.buttons[i].Secondtext then
+					local secondWidth = frame.buttons[i].Secondtext:GetStringWidth()
+
+					if secondWidth ~= 0 then
+						width = width + secondWidth
+					end
+				end
+				BUTTON_WIDTH = (width > BUTTON_WIDTH) and width or BUTTON_WIDTH
+			end
+		end
 	end
 
-	frame:Height((#list * BUTTON_HEIGHT) + PADDING * 2)
-	frame:Width(ButtonWidth + PADDING * 2)
+	BUTTON_HEIGHT = BUTTON_HEIGHT > SAVE_HEIGHT and BUTTON_HEIGHT or SAVE_HEIGHT
+	BUTTON_WIDTH = BUTTON_WIDTH > ButtonWidth and BUTTON_WIDTH or ButtonWidth
+
+	for i = 1, #list do
+		frame.buttons[i]:Show()
+		frame.buttons[i]:Height(BUTTON_HEIGHT)
+		frame.buttons[i]:Width(BUTTON_WIDTH + 2)
+	end
+
+	frame:Height((#list * BUTTON_HEIGHT + PADDING * 2))
+	frame:Width(BUTTON_WIDTH + PADDING * 2)
 	frame:ClearAllPoints()
 
 	if menuparent then

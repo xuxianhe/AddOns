@@ -1,17 +1,14 @@
 local E, _, V, P, G = unpack(ElvUI)
-
 local EP = E.Libs.EP
-local L = E.Libs.ACL:GetLocale("ElvUI", E.global.general.locale)
 
 local _G = _G
-local tinsert, type = tinsert, type
-local print = print
+local tinsert = tinsert
 
 local collectgarbage = collectgarbage
 local GetAddOnMetadata = _G.C_AddOns and _G.C_AddOns.GetAddOnMetadata or _G.GetAddOnMetadata
 
 -- Addon Name and Namespace
-local addonName, addon = ...
+local addonName, _ = ...
 mMT = E:NewModule(addonName, "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceConsole-3.0")
 
 -- Settings
@@ -33,6 +30,7 @@ mMT.DevMode = false
 mMT.CurrentProfile = nil
 mMT.firstLoad = 0
 mMT.Classes = { "DEATHKNIGHT", "DEMONHUNTER", "DRUID", "EVOKER", "HUNTER", "MAGE", "MONK", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR" }
+mMT.Locales = LibStub("AceLocale-3.0"):GetLocale("mMediaTag")
 
 mMT.Modules.Portraits = {}
 mMT.Modules.SummonIcon = {}
@@ -46,13 +44,19 @@ mMT.Modules.InterruptOnCD = {}
 mMT.Modules.CosmeticBars = {}
 mMT.Modules.QuestIcons = {}
 mMT.Modules.ObjectiveTracker = {}
+mMT.Modules.CustomUFTextures = {}
+mMT.Modules.CustomBGTextures = {}
 --mMT.Modules.CustomClassColors = {}
+
+local L = mMT.Locales
 
 local defaultDB = {
 	mplusaffix = { affixes = nil, season = nil, reset = false, year = nil },
 	affix = nil,
 	keys = {},
 	dev = { enabled = false, frame = { top = nil, left = nil }, unit = {}, zone = {} },
+	debugMode = false,
+	disabledAddons = {},
 }
 
 local DB_Loader = CreateFrame("FRAME")
@@ -118,21 +122,21 @@ local function EnableModules()
 	mMT.Modules.Portraits.enable = E.db.mMT.portraits.general.enable
 	mMT.Modules.ImportantSpells.enable = (E.db.mMT.importantspells.enable and (E.db.mMT.importantspells.np or E.db.mMT.importantspells.uf))
 	mMT.Modules.CosmeticBars.enable = E.db.mMT.cosmeticbars.enable and not IsAddOnLoaded("ElvUI_NutsAndBolts")
+	mMT.Modules.CustomUFTextures.enable = E.db.mMT.customtextures.health.enable or E.db.mMT.customtextures.power.enable or E.db.mMT.customtextures.castbar.enable or E.db.mMT.customtextures.altpower.enable
+	mMT.Modules.CustomBGTextures.enable = (E.db.mMT.custombackgrounds.health.enable or E.db.mMT.custombackgrounds.power.enable or E.db.mMT.custombackgrounds.castbar.enable) and not mMT.ElvUI_EltreumUI.dark
 	--mMT.Modules.CustomClassColors.enable = E.db.mMT.classcolors.enable and not (mMT.ElvUI_EltreumUI.gradient or mMT.ElvUI_EltreumUI.dark)
+
+	-- Retail and Cata
+	if E.Retail or E.Cata then
+		mMT.Modules.Castbar.enable = (E.db.mMT.interruptoncd.enable or (E.db.mMT.importantspells.enable and (E.db.mMT.importantspells.np or E.db.mMT.importantspells.uf)) or E.db.mMT.castbarshield.enable)
+		mMT.Modules.RoleIcons.enable = E.db.mMT.roleicons.enable
+	end
 
 	-- Retail
 	if E.Retail then
 		mMT.Modules.ObjectiveTracker.enable = E.db.mMT.objectivetracker.enable and (E.private.skins.blizzard.enable and E.private.skins.blizzard.objectiveTracker) and not IsAddOnLoaded("!KalielsTracker")
-		mMT.Modules.Castbar.enable = (E.db.mMT.interruptoncd.enable or (E.db.mMT.importantspells.enable and (E.db.mMT.importantspells.np or E.db.mMT.importantspells.uf)) or E.db.mMT.castbarshield.enable)
-		mMT.Modules.RoleIcons.enable = E.db.mMT.roleicons.enable
 		mMT.Modules.InterruptOnCD.enable = E.db.mMT.interruptoncd.enable
 		mMT.Modules.QuestIcons.enable = E.db.mMT.questicons.enable
-	end
-
-	-- Wrath
-	if E.Retail then
-		mMT.Modules.Castbar.enable = (E.db.mMT.interruptoncd.enable or (E.db.mMT.importantspells.enable and (E.db.mMT.importantspells.np or E.db.mMT.importantspells.uf)) or E.db.mMT.castbarshield.enable)
-		mMT.Modules.RoleIcons.enable = E.db.mMT.roleicons.enable
 	end
 end
 
@@ -203,14 +207,16 @@ function mMT:Initialize()
 	mMT.Classes = mMT:ClassesTable()
 
 	-- Register Events for Retail
-	if E.Retail then
+	if E.Retail or E.Cata then
 		if E.db.mMT.instancedifficulty.enable then
 			self:RegisterEvent("UPDATE_INSTANCE_INFO")
-			self:RegisterEvent("CHALLENGE_MODE_START")
 			self:SetupInstanceDifficulty()
+			if E.Retail then
+				self:RegisterEvent("CHALLENGE_MODE_START")
+			end
 		end
 
-		if E.db.mMT.general.keystochat then
+		if E.Retail and E.db.mMT.general.keystochat then
 			self:RegisterEvent("CHAT_MSG_PARTY")
 			self:RegisterEvent("CHAT_MSG_PARTY_LEADER")
 			self:RegisterEvent("CHAT_MSG_RAID")
@@ -218,7 +224,7 @@ function mMT:Initialize()
 			self:RegisterEvent("CHAT_MSG_GUILD")
 		end
 
-		if (E.private.nameplates.enable and E.db.mMT.nameplate.executemarker.auto) or E.db.mMT.interruptoncd.enable then
+		if E.Retail and (E.private.nameplates.enable and E.db.mMT.nameplate.executemarker.auto) or E.db.mMT.interruptoncd.enable then
 			self:RegisterEvent("PLAYER_TALENT_UPDATE")
 		end
 
@@ -250,10 +256,6 @@ function mMT:Initialize()
 	E.ConfigModeLocalizedStrings["MMEDIATAG"] = mMT.Name
 
 	mMT.CurrentProfile = E.data:GetCurrentProfile()
-
-	if (E.db.mMT.custombackgrounds.health.enable or E.db.mMT.custombackgrounds.power.enable or E.db.mMT.custombackgrounds.castbar.enable) and not mMT.ElvUI_EltreumUI.dark then
-		mMT:CustomBackdrop()
-	end
 
 	-- if E.db.mMT.customclasscolors.enable and not (mMT.ElvUI_EltreumUI.gradient or mMT.ElvUI_EltreumUI.dark) then
 	-- 	mMT:SetCustomColors()
@@ -299,11 +301,18 @@ function mMT:PLAYER_ENTERING_WORLD(event)
 
 	-- DevMode
 	if mMT.DB.dev.enabled and mMT.DEVNames[UnitName("player")] then
-		mMT:Print("|CFFFFC900DEV - Tools:|r |CFF00E360enabld|r")
+		mMT:Print("|CFFFFC900DEV - Tools:|r |CFF00E360Enabled|r")
 		mMT.DevMode = true
 		mMT:DevTools()
 	else
 		mMT.DevMode = false
+	end
+
+	if mMT.DB.debugMode then
+		mMT:Print("|CFFFFC900DebugMode:|r |CFF00E360Enabled|r", "/", mMT.NameShort .. ":", format("|CFFF7DC6F%s|r", mMT.Version), "/", "|CFF4169FFElvUI|r:", format("|CFFF7DC6F%s|r", E.version))
+		for k, v in pairs(mMT.DB.disabledAddons) do
+			mMT:Print("|CFFB7AAFF" .. k .. "|r: ", v)
+		end
 	end
 
 	-- Modules
@@ -314,6 +323,10 @@ function mMT:PLAYER_ENTERING_WORLD(event)
 	if E.Retail then
 		if E.private.nameplates.enable and E.db.mMT.nameplate.executemarker.auto then
 			mMT:updateAutoRange()
+		end
+
+		if E.db.mMT.chat.enable then
+			mMT:mChat()
 		end
 	end
 
@@ -328,10 +341,6 @@ function mMT:PLAYER_ENTERING_WORLD(event)
 
 	if E.db.mMT.roll.enable then
 		mMT:mRoll()
-	end
-
-	if E.db.mMT.chat.enable then
-		mMT:mChat()
 	end
 
 	if E.private.nameplates.enable and (E.db.mMT.nameplate.bordercolor.glow or E.db.mMT.nameplate.bordercolor.border) then

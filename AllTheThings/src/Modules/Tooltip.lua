@@ -3,14 +3,16 @@
 local _, app = ...;
 local L = app.L;
 
+-- WoW API Cache
+local GetItemInfo = app.WOWAPI.GetItemInfo;
+local GetItemID = app.WOWAPI.GetItemID;
+
 -- Concepts:
 -- Encapsulates the functionality for interacting with and hooking into game Tooltips
 
 -- Global locals
 local ipairs, pairs, InCombatLockdown, pcall, tinsert, tostring, tonumber, C_Map_GetPlayerMapPosition, math_sqrt, GameTooltip
 	= ipairs, pairs, InCombatLockdown, pcall, tinsert, tostring, tonumber, C_Map.GetPlayerMapPosition, math.sqrt, GameTooltip
----@diagnostic disable-next-line: deprecated
-local GetItemInfo = ((C_Item and C_Item.GetItemInfo) or GetItemInfo);
 
 local timeFormatter = CreateFromMixins(SecondsFormatterMixin);
 timeFormatter:Init(1, SecondsFormatter.Abbreviation.Truncate);
@@ -555,6 +557,11 @@ end
 
 -- ItemID's which should be skipped when filling purchases with certain levels of 'skippability'
 local SkipPurchases = {
+	-- 0 	- (default, never skipped)
+	-- 1 	- (tooltip, skipped unless within tooltip/popout)
+	-- 1.5	- (tooltip root, skipped unless tooltip root or within popout)
+	-- 2 	- (popout, skipped unless within popout)
+	-- 2.5 	- (popout root, skipped unless root of popout)
 	itemID = {
 		[137642] = 2,	-- Mark of Honor
 		[21100] = 1,	-- Coin of Ancestry
@@ -565,14 +572,14 @@ local SkipPurchases = {
 		[2778] = 2,		-- Bronze
 	},
 }
-app.ShouldFillPurchases = function(group)
+app.ShouldFillPurchases = function(group, FillData)
 	local val
 	for key,values in pairs(SkipPurchases) do
 		val = group[key]
 		if val then
 			val = values[val]
 			if not val then return true end
-			if CurrentSkipLevel < val then
+			if CurrentSkipLevel < val - (group == FillData.Root and 0.5 or 0) then
 				return false;
 			end
 		end
@@ -701,11 +708,11 @@ local function ClearTooltip(tooltip)
 	tooltip.AllTheThingsProcessing = nil;
 	tooltip.ATT_AttachComplete = nil;
 end
-local HexToARGB = app.Modules.Color.HexToARGB
 local function AttachTooltipSearchResults(tooltip, lineNumber, method, ...)
 	-- app.PrintDebug("AttachTooltipSearchResults",...)
 	app.SetSkipLevel(1);
 	local status, group, working = pcall(app.GetCachedSearchResults, method, ...)
+	app.SetSkipLevel(0);
 	if status then
 		if group then
 			-- If nothing was put into the tooltip initially, mark the text of the source.
@@ -733,11 +740,10 @@ local function AttachTooltipSearchResults(tooltip, lineNumber, method, ...)
 			AttachTooltipInformation(tooltip, tooltipInfo);
 		end
 	else
-		print(status, group);
+		app.print(status, group);
 		app.PrintDebug("pcall tooltip failed",group)
 	end
 	tooltip.ATT_AttachComplete = not (working or (group and group.working));
-	app.SetSkipLevel(0);
 end
 
 -- Battle Pet Tooltips
@@ -779,7 +785,7 @@ if TooltipDataProcessor and app.GameBuildVersion > 50000 then
 	-- https://wowpedia.fandom.com/wiki/Patch_10.0.2/API_changes#Tooltip_Changes
 	-- many of these don't include an ID in-game so they don't attach results. maybe someday they will...
 	---@diagnostic disable-next-line: deprecated
-	local Enum_TooltipDataType, GetItemInfoInstant, TooltipUtil = Enum.TooltipDataType, ((C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant), TooltipUtil;
+	local Enum_TooltipDataType, TooltipUtil = Enum.TooltipDataType, TooltipUtil;
 	local TooltipTypes = {
 		[Enum_TooltipDataType.Toy] = "itemID",
 		[Enum_TooltipDataType.Item] = "itemID",
@@ -980,7 +986,7 @@ if TooltipDataProcessor and app.GameBuildVersion > 50000 then
 				AttachTooltipSearchResults(self, 1, app.EmptyFunction, "itemID", 137642);
 				return true;
 			else
-				local itemID = GetItemInfoInstant(link);
+				local itemID = GetItemID(link);
 				-- TODO: review if Blizzard ever fixes their tooltips returning the wrong Item link when using TooltipUtil.GetDisplayedItem
 				-- on Auction House tooltips (i.e. Recipes) where one Item is nested inside another Item
 				if itemID ~= ttId then

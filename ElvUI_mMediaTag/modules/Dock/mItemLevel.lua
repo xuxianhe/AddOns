@@ -1,4 +1,5 @@
-local E, L = unpack(ElvUI)
+local E = unpack(ElvUI)
+
 local DT = E:GetModule("DataTexts")
 
 --Lua functions
@@ -59,7 +60,7 @@ local function OnEvent(self, event, ...)
 	local text = mMT:round(avgEquipped or 0)
 
 	local hex = nil
-	if E.db.mMT.dockdatatext.itemlevel.color then
+	if E.Retail and E.db.mMT.dockdatatext.itemlevel.color then
 		local r, g, b = GetItemLevelColor()
 		hex = E:RGBToHex(r, g, b)
 	end

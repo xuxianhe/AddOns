@@ -18,7 +18,6 @@ local HM_NPCs = {
 	[186125] = { 15 }, --Tricktotem
 	[186206] = { 15 }, --Cruel Bonecrusher
 	[186227] = { 20 }, --Monstrous Decay
-	[189719] = { 15 }, --Watcher Irideus
 
 	-- Dawn of the Infinite
 	[198933] = { 90 }, --Iridikron
@@ -36,6 +35,7 @@ local HM_NPCs = {
 	[189719] = { 15 }, -- Watcher Irideus
 	[190368] = { 40 }, -- Flamecaller Aymi
 	[190407] = { 20 }, -- Aqua Rager
+	[189729] = { 60 }, -- Primal Tsunami
 
 	-- Neltharus
 	[194816] = { 10 }, -- Forgewrought Monstrosity
@@ -196,6 +196,7 @@ function mMT:updateAutoRange()
 			if IsPlayerSpell(384581) then -- Arcane pressure
 				executeAutoRange.enable = true
 				executeAutoRange.range = 35
+				executeAutoRange.spell = 384581
 			end
 		elseif specID == 63 then
 			if IsPlayerSpell(269644) then -- Touch
@@ -216,36 +217,27 @@ function mMT:updateAutoRange()
 			end
 		end
 	elseif class == "PRIEST" then
-		if IsPlayerSpell(309072) or IsPlayerSpell(32379) then -- ToF or SW:Death
+		if IsPlayerSpell(32379) then -- ToF or SW:Death
 			executeAutoRange.enable = true
-			executeAutoRange.range = IsPlayerSpell(309072) and 35 or 20
+			executeAutoRange.range = 20
 		end
 	elseif class == "WARRIOR" then
-		if specID == 72 then
-			local execute_Id = (specID == 72) and 280735 or 163201
-			local massacre_Id = (specID == 72) and 206315 or 281001
-			if IsPlayerSpell(execute_Id) or IsPlayerSpell(massacre_Id) then -- Execute or Massacre
-				executeAutoRange.enable = true
-				executeAutoRange.range = IsPlayerSpell(massacre_Id) and 35 or 20
-			end
-		elseif specID == 73 then
-			if IsPlayerSpell(163201) then -- Execute
-				executeAutoRange.enable = true
-				executeAutoRange.range = 20
-			end
+		local execute = (specID == 72) and 280735 or 163201
+		local massacre = (specID == 72) and 206315 or 281001
+		if IsPlayerSpell(execute) or IsPlayerSpell(massacre) then -- Execute or Massacre
+			executeAutoRange.enable = true
+			executeAutoRange.range = IsPlayerSpell(massacre) and 35 or 20
 		end
 	elseif class == "HUNTER" then
-		if IsPlayerSpell(273887) or ((specID == 255) and IsPlayerSpell(385718)) then
-			-- Killer Instinct or Ruthless marauder
+		if IsPlayerSpell(273887) then
 			executeAutoRange.enable = true
 			executeAutoRange.range = 35
-		else
-			-- Since Survival has it's own spellId for kill shot
-			local killShot_Id = (specID == 255) and 320976 or 53351
-			if IsPlayerSpell(killShot_Id) then -- Kill shot
-				executeAutoRange.enable = true
-				executeAutoRange.range = 20
-			end
+		elseif IsPlayerSpell(53351) then
+			executeAutoRange.enable = true
+			executeAutoRange.range = 20
+		elseif IsPlayerSpell((specID == 255) and 320976 or 53351) then -- Kill shot
+			executeAutoRange.enable = true
+			executeAutoRange.range = 20
 		end
 	elseif class == "ROGUE" then
 		if specID == 259 then
@@ -260,9 +252,10 @@ function mMT:updateAutoRange()
 			executeAutoRange.range = 20
 		end
 	elseif class == "MONK" then
-		if IsPlayerSpell(322109) and IsPlayerSpell(322113) then -- ToD
+		if IsPlayerSpell(322109) then -- ToD
 			executeAutoRange.enable = true
 			executeAutoRange.range = 15
+			executeAutoRange.monk = not IsPlayerSpell(322113)
 		end
 	elseif class == "DEATHKNIGHT" then
 		if IsPlayerSpell(343294) then -- Soulreaper
@@ -285,7 +278,20 @@ local function executeMarker(unit, percent)
 	local inCombat = InCombatLockdown()
 
 	if db.auto and executeAutoRange.enable then
-		range = executeAutoRange.range
+		if executeAutoRange.monk then
+			local playerHealth = UnitHealthMax("player")
+			local unitHealth = unit.Health.max
+
+			if executeAutoRange.monk and unitHealth > playerHealth then
+				if playerHealth and unitHealth then
+					range = (100 / unitHealth) * playerHealth
+				else
+					range = executeAutoRange.range
+				end
+			end
+		else
+			range = executeAutoRange.range
+		end
 	elseif not db.auto then
 		range = db.range
 	end
@@ -323,7 +329,7 @@ local function healthMarkers(unit, percent)
 		health.healthOverlay:Hide()
 	else
 		local markersTable = nil
-		if db.useDefaults then
+		if E.Retail and db.useDefaults then
 			markersTable = db.NPCs[npcID] or HM_NPCs[npcID]
 		else
 			markersTable = db.NPCs[npcID]
@@ -369,14 +375,14 @@ local function healthMarkers(unit, percent)
 end
 
 local function mNameplateTools(table, event, frame)
-	if table.isNamePlate and (table.Health and table.Health.max) then --and executeAutoRange.enable
+	if table.isNamePlate and (table.Health and table.Health.max) then
 		local percent = math.floor((table.Health.cur or 100) / table.Health.max * 100 + 0.5)
 
 		if E.db.mMT.nameplate.healthmarker.enable then
 			healthMarkers(table, percent)
 		end
 
-		if E.db.mMT.nameplate.executemarker.enable then
+		if E.Retail and E.db.mMT.nameplate.executemarker.enable then
 			executeMarker(table, percent)
 		end
 	end
