@@ -31,7 +31,7 @@ local loader = BigWigsLoader
 local isClassic, isRetail, isClassicEra, isCata = loader.isClassic, loader.isRetail, loader.isVanilla, loader.isCata
 local C_EncounterJournal_GetSectionInfo = isCata and function(key)
 	return C_EncounterJournal.GetSectionInfo(key) or BigWigsAPI:GetLocale("BigWigs: Encounter Info")[key]
-end or C_EncounterJournal and C_EncounterJournal.GetSectionInfo or function(key)
+end or isRetail and C_EncounterJournal.GetSectionInfo or function(key)
 	return BigWigsAPI:GetLocale("BigWigs: Encounter Info")[key]
 end
 local UnitAffectingCombat, UnitIsPlayer, UnitPosition, UnitIsConnected, UnitClass, UnitTokenFromGUID = UnitAffectingCombat, UnitIsPlayer, UnitPosition, UnitIsConnected, UnitClass, UnitTokenFromGUID
@@ -39,7 +39,7 @@ local GetSpellName, GetSpellTexture, GetTime, IsSpellKnown, IsPlayerSpell = load
 local UnitGroupRolesAssigned, C_UIWidgetManager = UnitGroupRolesAssigned, C_UIWidgetManager
 local EJ_GetEncounterInfo = isCata and function(key)
 	return EJ_GetEncounterInfo(key) or BigWigsAPI:GetLocale("BigWigs: Encounters")[key]
-end or EJ_GetEncounterInfo or function(key)
+end or isRetail and EJ_GetEncounterInfo or function(key)
 	return BigWigsAPI:GetLocale("BigWigs: Encounters")[key]
 end
 local SendChatMessage, GetInstanceInfo, Timer, SetRaidTarget = loader.SendChatMessage, loader.GetInstanceInfo, loader.CTimerAfter, loader.SetRaidTarget
@@ -57,7 +57,7 @@ local bossUtilityFrame = CreateFrame("Frame")
 local petUtilityFrame = CreateFrame("Frame")
 local enabledModules, unitTargetScans = {}, {}
 local allowedEvents = {}
-local difficulty
+local difficulty, maxPlayers
 local UpdateDispelStatus, UpdateInterruptStatus = nil, nil
 local myGUID, myRole, myRolePosition
 local myGroupGUIDs, myGroupRoles, myGroupRolePositions = {}, {}, {}
@@ -65,8 +65,8 @@ local solo = false
 local classColorMessages = true
 local englishSayMessages = false
 do -- Update some data that may be called at the top of modules (prior to initialization)
-	local _, _, diff = GetInstanceInfo()
-	difficulty = diff
+	local _, _, diff, _, currentMaxPlayers = GetInstanceInfo()
+	difficulty, maxPlayers = diff, currentMaxPlayers
 	myGUID = UnitGUID("player")
 	local function update(_, role, position, player)
 		myGroupRolePositions[player] = position
@@ -215,7 +215,6 @@ local bossNames = setmetatable({}, {__index =
 --- Register the module to enable on mob id.
 -- @number ... Any number of mob ids
 function boss:RegisterEnableMob(...)
-	self.enableMobs = {}
 	core:RegisterEnableMob(self, ...)
 end
 
@@ -1320,7 +1319,7 @@ end
 function boss:EncounterEnd(_, id, name, diff, size, status)
 	if self:GetEncounterID() == id and self:IsEnabled() then
 		if status == 1 then
-			if self:GetJournalID() or self.allowWin then
+			if self:GetJournalID() or self:GetAllowWin() then
 				self:Win() -- Official boss module
 			else
 				self:Disable() -- Custom external boss module
@@ -1359,6 +1358,12 @@ do
 	function boss:TableToString(table, entries)
 		return tconcat(table, comma, 1, entries)
 	end
+end
+
+--- Get the max player count of the current instance.
+-- @return number
+function boss:GetMaxPlayers()
+	return maxPlayers
 end
 
 --- Get the current instance difficulty.
@@ -2438,15 +2443,10 @@ do
 	})
 	myNameWithColor = coloredNames[myName]
 
-	local mt = {
-		__newindex = function(self, key, value)
-			rawset(self, key, coloredNames[value])
-		end
-	}
-	--- Get a table that colors player names based on class.
+	--- Get a table that colors player names based on class. [DEPRECATED]
 	-- @return an empty table
 	function boss:NewTargetList()
-		return setmetatable({}, mt)
+		return {}
 	end
 
 	--- Color a player name based on class.

@@ -392,7 +392,7 @@ do
 	local bossMeta = { __index = bossPrototype, __metatable = false }
 	local EJ_GetEncounterInfo = loader.isCata and function(key)
 		return EJ_GetEncounterInfo(key) or BigWigsAPI:GetLocale("BigWigs: Encounters")[key]
-	end or EJ_GetEncounterInfo or function(key)
+	end or loader.isRetail and EJ_GetEncounterInfo or function(key)
 		return BigWigsAPI:GetLocale("BigWigs: Encounters")[key]
 	end
 	function core:NewBoss(moduleName, zoneId, journalId)
@@ -402,6 +402,7 @@ do
 			local m = setmetatable({
 				name = "BigWigs_Bosses_"..moduleName, -- XXX AceAddon/AceDB backwards compat
 				moduleName = moduleName,
+				enableMobs = {},
 
 				-- Embed callback handler
 				RegisterMessage = loader.RegisterMessage,
@@ -490,7 +491,7 @@ end
 do
 	local C_EncounterJournal_GetSectionInfo = loader.isCata and function(key)
 		return C_EncounterJournal.GetSectionInfo(key) or BigWigsAPI:GetLocale("BigWigs: Encounter Info")[key]
-	end or C_EncounterJournal and C_EncounterJournal.GetSectionInfo or function(key)
+	end or loader.isRetail and C_EncounterJournal.GetSectionInfo or function(key)
 		return BigWigsAPI:GetLocale("BigWigs: Encounter Info")[key]
 	end
 	local C = core.C -- Set from Constants.lua
