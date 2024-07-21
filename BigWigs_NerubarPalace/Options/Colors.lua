@@ -57,12 +57,12 @@ BigWigs:AddColors("Rasha'nan", {
 	[439811] = "yellow",
 	[444687] = "purple",
 	[452806] = {"green","yellow"},
-	[454989] = "yellow",
+	[454989] = {"blue","yellow"},
 	[455287] = "blue",
 	[455373] = "cyan",
-	[456853] = "cyan",
 	[457877] = "cyan",
 	[458067] = {"blue","purple"},
+	["stages"] = "cyan",
 })
 
 BigWigs:AddColors("Broodtwister Ovi'nax", {

@@ -12,7 +12,7 @@ local strfind = string.find
 -- Generate our version variables
 --
 
-local BIGWIGS_VERSION = 344
+local BIGWIGS_VERSION = 345
 local BIGWIGS_RELEASE_STRING, BIGWIGS_VERSION_STRING
 local versionQueryString, versionResponseString = "Q^%d^%s^%d^%s", "V^%d^%s^%d^%s"
 local customGuildName = false
@@ -38,7 +38,7 @@ do
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "322d0ad" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "ba992d7" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.
@@ -354,7 +354,7 @@ do
 		--[129] = lw_c, -- Razorfen Downs
 		--[189] = lw_c, -- Scarlet Monastery
 		--[209] = lw_c, -- Zul'Farrak
-		--[229] = lw_c, -- Blackrock Spire
+		[229] = lw_c, -- Blackrock Spire
 		--[230] = lw_c, -- Blackrock Depths
 		--[289] = lw_c, -- Scholomance
 		--[329] = lw_c, -- Stratholme

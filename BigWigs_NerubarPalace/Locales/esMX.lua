@@ -13,6 +13,16 @@ if L then
 	--L.goresplatter = "Run Away"
 end
 
+L = BigWigs:NewBossLocale("Rasha'nan", "esMX")
+if L then
+	--L.rolling_acid = "Waves"
+	--L.spinnerets_strands = "Strands"
+	--L.enveloping_webs = "Webs"
+	--L.enveloping_web_say = "Web" -- Singular of Webs
+	--L.erosive_spray = "Spray"
+	--L.caustic_hail = "Next Position"
+end
+
 L = BigWigs:NewBossLocale("Broodtwister Ovi'nax", "esMX")
 if L then
 	--L.sticky_web_say = "Web"
@@ -22,4 +32,11 @@ if L then
 	--L.unstable_infusion = "Swirls"
 	--L.custom_on_experimental_dosage_marks = "Experimental Dosage assignments"
 	--L.custom_on_experimental_dosage_marks_desc = "Assign players affected by 'Experimental Dosage' to {rt6}{rt4}{rt3}{rt7} with a melee > ranged > healer priority. Affects Say and Target messages."
+end
+
+L = BigWigs:NewBossLocale("Nexus-Princess Ky'veza", "esMX")
+if L then
+	--L.assasination = "Phantoms"
+	--L.twiligt_massacre = "Dashes"
+	--L.nexus_daggers = "Daggers"
 end

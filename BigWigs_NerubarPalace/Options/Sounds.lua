@@ -53,12 +53,12 @@ BigWigs:AddSounds("Rasha'nan", {
 	[439811] = "alert",
 	[444687] = "info",
 	[452806] = {"alert","info"},
-	[454989] = "alarm",
+	[454989] = {"alarm","warning"},
 	[455287] = "alarm",
 	[455373] = "info",
-	[456853] = "long",
 	[457877] = "info",
 	[458067] = "alarm",
+	["stages"] = "long",
 })
 
 BigWigs:AddSounds("Broodtwister Ovi'nax", {
