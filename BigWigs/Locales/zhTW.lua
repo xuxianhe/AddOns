@@ -37,7 +37,7 @@ L.warnOldBase = "你正在使用公會版 BigWigs（%d），但它所基於的�
 L.tooltipHint = "|cffeda55f右擊|r打開選項。"
 L.activeBossModules = "啟動首領模組："
 
-L.oldVersionsInGroup = "你隊伍中的其他成員使用了舊版本的 BigWigs 或沒有使用 BigWigs。輸入 /bwv 可以獲得詳細資訊。"
+L.oldVersionsInGroup = "你隊伍中的其他成員使用了舊版本的 BigWigs 或沒有使用 BigWigs。輸入 /bwv 可以獲得詳細資訊。" -- XXX needs updated
 L.upToDate = "已更新："
 L.outOfDate = "過期："
 L.dbmUsers = "使用 DBM："
@@ -226,3 +226,7 @@ L.mythic = "傳奇模式"
 L.wipes = "團滅："
 L.kills = "擊殺："
 L.best = "最快："
+--L.SOD = "Unknown"
+--L.level1 = "Level 1"
+--L.level2 = "Level 2"
+--L.level3 = "Level 3"

@@ -12,7 +12,7 @@ local strfind = string.find
 -- Generate our version variables
 --
 
-local BIGWIGS_VERSION = 345
+local BIGWIGS_VERSION = 346
 local BIGWIGS_RELEASE_STRING, BIGWIGS_VERSION_STRING
 local versionQueryString, versionResponseString = "Q^%d^%s^%d^%s", "V^%d^%s^%d^%s"
 local customGuildName = false
@@ -38,7 +38,7 @@ do
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "ba992d7" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "bb065b8" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.
@@ -103,6 +103,7 @@ public.DoCountdown = C_PartyInfo.DoCountdown
 public.GetBestMapForUnit = GetBestMapForUnit
 public.GetInstanceInfo = GetInstanceInfo
 public.GetMapInfo = GetMapInfo
+public.GetPlayerAuraBySpellID = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID
 public.GetSpellCooldown = C_Spell and C_Spell.GetSpellCooldown or GetSpellCooldown
 public.GetSpellDescription = C_Spell and C_Spell.GetSpellDescription or GetSpellDescription
 public.GetSpellLink = C_Spell and C_Spell.GetSpellLink or GetSpellLink
@@ -120,6 +121,7 @@ public.UnitGUID = UnitGUID
 public.UnitHealth = UnitHealth
 public.UnitHealthMax = UnitHealthMax
 public.UnitName = UnitName
+public.UnitSex = UnitSex
 public.isTestBuild = GetCurrentRegion() == 72 -- PTR/beta
 do
 	local _, _, _, build = GetBuildInfo()
@@ -710,7 +712,7 @@ function dataBroker.OnTooltipShow(tt)
 	for i = 1, #tooltipFunctions do
 		tooltipFunctions[i](tt)
 	end
-	tt:AddLine(L.tooltipHint, 0.2, 1, 0.2, 1)
+	tt:AddLine(L.tooltipHint, 0.2, 1, 0.2, true)
 end
 
 -----------------------------------------------------------------------
@@ -718,19 +720,11 @@ end
 --
 
 tooltipFunctions[#tooltipFunctions+1] = function(tt)
-	local add, i = false, 0
 	for _, version in next, usersVersion do
-		i = i + 1
 		if version < highestFoundVersion then
-			add = true
+			tt:AddLine(L.oldVersionsInGroup, 1, 1, 1, true)
 			break
 		end
-	end
-	if not add and i ~= GetNumGroupMembers() then
-		add = true
-	end
-	if add then
-		tt:AddLine(L.oldVersionsInGroup, 1, 0, 0, 1)
 	end
 end
 
@@ -1913,6 +1907,7 @@ SlashCmdList.BigWigs = function()
 end
 
 SLASH_BigWigsVersion1 = "/bwv"
+local UnitInPartyIsAI = UnitInPartyIsAI
 SlashCmdList.BigWigsVersion = function()
 	if not IsInGroup() then
 		sysprint(BIGWIGS_RELEASE_STRING)
@@ -1943,9 +1938,12 @@ SlashCmdList.BigWigsVersion = function()
 		unit = "raid%d"
 	end
 	for i = 1, GetNumGroupMembers() do
-		local n, s = UnitName((unit):format(i))
-		if n and s and s ~= "" then n = n.."-"..s end
-		if n then list[#list+1] = n end
+		local unitToken = (unit):format(i)
+		if not UnitInPartyIsAI or not UnitInPartyIsAI(unitToken) then -- Filter AI units from version list
+			local n, s = UnitName(unitToken)
+			if n and s and s ~= "" then n = n.."-"..s end
+			if n then list[#list+1] = n end
+		end
 	end
 
 	local good = {} -- highest release users

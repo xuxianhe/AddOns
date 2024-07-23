@@ -294,14 +294,23 @@ end
 -- Event Handlers
 --
 
+local function GetModuleID(bossMod)
+	local journalId = bossMod:GetJournalID()
+	if journalId then
+		return journalId
+	elseif not journalId and bossMod:GetAllowWin() and bossMod:GetEncounterID() then
+		return -(bossMod:GetEncounterID()) -- Fallback to record stats for modules with no journal ID, but set to allow win
+	end
+end
+
 do
 	local UnitHealth, UnitHealthMax, IsEncounterInProgress = UnitHealth, UnitHealthMax, IsEncounterInProgress
 	local function StoreHealth(module)
 		if IsEncounterInProgress() then
+			local journalId = GetModuleID(module)
 			for i = 1, 5 do
 				local unit = units[i]
 				local rawHealth = UnitHealth(unit)
-				local journalId = module:GetJournalID()
 				if rawHealth > 0 then
 					local maxHealth = UnitHealthMax(unit)
 					local health = rawHealth / maxHealth
@@ -315,7 +324,7 @@ do
 	end
 	function plugin:BigWigs_OnBossEngage(event, module, diff)
 		local id = module.instanceId
-		local journalId = module:GetJournalID()
+		local journalId = GetModuleID(module)
 
 		if journalId and id and id > 0 and not module.worldBoss then -- Raid restricted for now
 			activeDurations[journalId] = GetTime()
@@ -325,9 +334,19 @@ do
 				if not sDB[id] then sDB[id] = {} end
 				if not sDB[id][journalId] then sDB[id][journalId] = {} end
 				sDB = sDB[id][journalId]
-				if not sDB[difficultyTable[diff]] then sDB[difficultyTable[diff]] = {} end
+				local difficultyText = difficultyTable[diff]
+				if difficultyText == "SOD" then
+					if module:GetPlayerAura(458841) then -- Sweltering Heat
+						difficultyText = "level1"
+					elseif module:GetPlayerAura(458842) then -- Blistering Heat
+						difficultyText = "level2"
+					elseif module:GetPlayerAura(458843) then -- Molten Heat
+						difficultyText = "level3"
+					end
+				end
+				if not sDB[difficultyText] then sDB[difficultyText] = {} end
 
-				local best = sDB[difficultyTable[diff]].best
+				local best = sDB[difficultyText].best
 				if self.db.profile.showBar and best then
 					self:SendMessage("BigWigs_StartBar", self, nil, L.bestTimeBar, best, 237538) -- 237538 = "Interface\\Icons\\spell_holy_borrowedtime"
 				end
@@ -344,7 +363,7 @@ do
 end
 
 local function Stop(self, module)
-	local journalId = module:GetJournalID()
+	local journalId = GetModuleID(module)
 	if journalId then
 		activeDurations[journalId] = nil
 		if healthPools[journalId] then
@@ -357,7 +376,7 @@ local function Stop(self, module)
 end
 
 function plugin:BigWigs_OnBossWin(event, module)
-	local journalId = module:GetJournalID()
+	local journalId = GetModuleID(module)
 	if journalId and activeDurations[journalId] then
 		local elapsed = GetTime()-activeDurations[journalId]
 
@@ -367,7 +386,17 @@ function plugin:BigWigs_OnBossWin(event, module)
 
 		local diff = module:Difficulty()
 		if difficultyTable[diff] then
-			local sDB = BigWigsStatsDB[module.instanceId][journalId][difficultyTable[diff]]
+			local difficultyText = difficultyTable[diff]
+			if difficultyText == "SOD" then
+				if module:GetPlayerAura(458841) then -- Sweltering Heat
+					difficultyText = "level1"
+				elseif module:GetPlayerAura(458842) then -- Blistering Heat
+					difficultyText = "level2"
+				elseif module:GetPlayerAura(458843) then -- Molten Heat
+					difficultyText = "level3"
+				end
+			end
+			local sDB = BigWigsStatsDB[module.instanceId][journalId][difficultyText]
 			if self.db.profile.saveKills then
 				sDB.kills = sDB.kills and sDB.kills + 1 or 1
 			end
@@ -388,7 +417,7 @@ function plugin:BigWigs_OnBossWin(event, module)
 end
 
 function plugin:BigWigs_OnBossWipe(event, module)
-	local journalId = module:GetJournalID()
+	local journalId = GetModuleID(module)
 	if journalId and activeDurations[journalId] then
 		local elapsed = GetTime()-activeDurations[journalId]
 
@@ -401,7 +430,17 @@ function plugin:BigWigs_OnBossWipe(event, module)
 			if not difficultyTable[diff] and IsInRaid() and not dontPrint[diff] then
 				BigWigs:Error("Tell the devs, the stats for this boss were not recorded because a new difficulty id was found: "..diff)
 			elseif difficultyTable[diff] and self.db.profile.saveWipes then
-				local sDB = BigWigsStatsDB[module.instanceId][journalId][difficultyTable[diff]]
+				local difficultyText = difficultyTable[diff]
+				if difficultyText == "SOD" then
+					if module:GetPlayerAura(458841) then -- Sweltering Heat
+						difficultyText = "level1"
+					elseif module:GetPlayerAura(458842) then -- Blistering Heat
+						difficultyText = "level2"
+					elseif module:GetPlayerAura(458843) then -- Molten Heat
+						difficultyText = "level3"
+					end
+				end
+				local sDB = BigWigsStatsDB[module.instanceId][journalId][difficultyText]
 				sDB.wipes = sDB.wipes and sDB.wipes + 1 or 1
 			end
 

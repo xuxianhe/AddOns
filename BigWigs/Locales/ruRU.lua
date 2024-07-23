@@ -37,7 +37,7 @@ L.warnOldBase = "Вы используете версию для гильдии 
 L.tooltipHint = "|cffeda55fПравый клик|r открыть настройки."
 L.activeBossModules = "Активные модули боссов:"
 
-L.oldVersionsInGroup = "В вашей группе есть игроки с устаревшими версиями или без BigWigs. Для получения более подробной информации введите команду /bwv."
+L.oldVersionsInGroup = "В вашей группе есть игроки с устаревшими версиями или без BigWigs. Для получения более подробной информации введите команду /bwv." -- XXX needs updated
 L.upToDate = "Текущий:"
 L.outOfDate = "Устарело:"
 L.dbmUsers = "Пользователи DBM:"
@@ -226,3 +226,7 @@ L.mythic = "Эпохальный"
 L.wipes = "Поражений:"
 L.kills = "Побед:"
 L.best = "Лучшее:"
+--L.SOD = "Unknown"
+--L.level1 = "Level 1"
+--L.level2 = "Level 2"
+--L.level3 = "Level 3"

@@ -7,6 +7,11 @@ local mod, CL = BigWigs:NewBoss("Ara-Kara, City of Echoes Trash", 2660)
 if not mod then return end
 mod.displayName = CL.trash
 mod:RegisterEnableMob(
+	216336, -- Ravenous Crawler
+	216341, -- Jabbing Flyer
+	214840, -- Engorged Crawler
+	216293, -- Trilling Attendant
+	219420, -- Discordant Attendant (gossip NPC)
 	217531, -- Ixin
 	218324, -- Nakt
 	217533, -- Atik
@@ -28,6 +33,10 @@ if L then
 	L.hulking_bloodguard = "Hulking Bloodguard"
 	L.bloodstained_webmage = "Bloodstained Webmage"
 	L.blood_overseer = "Blood Overseer"
+
+	L.custom_on_autotalk = CL.autotalk
+	L.custom_on_autotalk_desc = "|cFFFF0000Requires 25 skill in Khaz Algar Tailoring.|r Automatically select the NPC dialog option that grants you 'Silk Wrap' which you can use by clicking your extra action button."
+	L.custom_on_autotalk_icon = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Say"
 end
 
 --------------------------------------------------------------------------------
@@ -36,6 +45,9 @@ end
 
 function mod:GetOptions()
 	return {
+		-- Autotalk
+		"custom_on_autotalk",
+		439208, -- Silk Wrap
 		-- Ixin
 		434824, -- Web Spray
 		434802, -- Horrifying Shrill
@@ -52,6 +64,7 @@ function mod:GetOptions()
 		433845, -- Erupting Webs
 		433841, -- Venom Volley
 	}, {
+		["custom_on_autotalk"] = CL.general,
 		[434824] = L.ixin,
 		[438877] = L.nakt,
 		[438826] = L.atik,
@@ -62,14 +75,20 @@ function mod:GetOptions()
 end
 
 function mod:OnBossEnable()
-	-- TODO Tailoring gossip with 219420
+	-- Autotalk
+	self:RegisterEvent("GOSSIP_SHOW")
+	self:Log("SPELL_AURA_APPLIED", "SilkThreadApplied", 439201)
 
-	-- Ixin, Nakt, Atik
+	-- Ixin
 	self:Log("SPELL_CAST_START", "WebSpray", 434824)
+	self:Log("SPELL_CAST_START", "HorrifyingShrill", 434802)
+
+	-- Nakt
+	self:Log("SPELL_CAST_START", "CallOfTheBrood", 438877)
+
+	-- Atik
 	self:Log("SPELL_CAST_START", "PoisonousCloud", 438826)
 	self:Log("SPELL_PERIODIC_DAMAGE", "PoisonousCloudDamage", 438825)
-	self:Log("SPELL_CAST_START", "HorrifyingShrill", 434802)
-	self:Log("SPELL_CAST_START", "CallOfTheBrood", 438877)
 
 	-- Hulking Bloodguard
 	self:Log("SPELL_CAST_START", "Impale", 453161)
@@ -87,12 +106,44 @@ end
 -- Event Handlers
 --
 
--- Ixin, Nakt, Atik
+-- Autotalk
+
+function mod:GOSSIP_SHOW()
+	if self:GetOption("custom_on_autotalk") and self:GetGossipID(121214) then
+		-- 121214:<Carefully pull on a bit of thread.> \r\n[Requires at least 25 skill in Khaz Algar Tailoring.]
+		-- grants a buff (439201 Silk Thread) which gives an extra action button to stun an enemy (439208 Silk Wrap).
+		self:SelectGossipID(121214)
+	end
+end
+
+function mod:SilkThreadApplied(args)
+	if self:Me(args.destGUID) then
+		-- use Silk Wrap key, which is the stun which can now be applied when you gain this buff
+		self:Message(439208, "green", CL.you:format(args.spellName))
+		self:PlaySound(439208, "info")
+	end
+end
+
+-- Ixin
 
 function mod:WebSpray(args)
 	self:Message(args.spellId, "orange")
 	self:PlaySound(args.spellId, "alarm")
 end
+
+function mod:HorrifyingShrill(args)
+	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
+	self:PlaySound(args.spellId, "warning")
+end
+
+-- Nakt
+
+function mod:CallOfTheBrood(args)
+	self:Message(args.spellId, "cyan")
+	self:PlaySound(args.spellId, "info")
+end
+
+-- Atik
 
 function mod:PoisonousCloud(args)
 	self:Message(args.spellId, "yellow")
@@ -104,16 +155,6 @@ function mod:PoisonousCloudDamage(args)
 		self:PersonalMessage(438826, "underyou")
 		self:PlaySound(438826, "underyou", nil, args.destName)
 	end
-end
-
-function mod:HorrifyingShrill(args)
-	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
-	self:PlaySound(args.spellId, "warning")
-end
-
-function mod:CallOfTheBrood(args)
-	self:Message(args.spellId, "cyan")
-	self:PlaySound(args.spellId, "info")
 end
 
 -- Hulking Bloodguard
@@ -130,19 +171,40 @@ end
 
 -- Bloodstained Webmage
 
-function mod:RevoltingVolley(args)
-	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
-	self:PlaySound(args.spellId, "alert")
+do
+	local prev = 0
+	function mod:RevoltingVolley(args)
+		local t = args.time
+		if t - prev > 1.5 then
+			prev = t
+			self:Message(args.spellId, "red", CL.casting:format(args.spellName))
+			self:PlaySound(args.spellId, "alert")
+		end
+	end
 end
 
 -- Blood Overseer
 
-function mod:EruptingWebs(args)
-	self:Message(args.spellId, "orange")
-	self:PlaySound(args.spellId, "alarm")
+do
+	local prev = 0
+	function mod:EruptingWebs(args)
+		local t = args.time
+		if t - prev > 1.5 then
+			prev = t
+			self:Message(args.spellId, "orange")
+			self:PlaySound(args.spellId, "alarm")
+		end
+	end
 end
 
-function mod:VenomVolley(args)
-	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
-	self:PlaySound(args.spellId, "alert")
+do
+	local prev = 0
+	function mod:VenomVolley(args)
+		local t = args.time
+		if t - prev > 1.5 then
+			prev = t
+			self:Message(args.spellId, "red", CL.casting:format(args.spellName))
+			self:PlaySound(args.spellId, "alert")
+		end
+	end
 end

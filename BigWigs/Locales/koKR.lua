@@ -37,7 +37,7 @@ L.warnOldBase = "당신은 길드 버전의 BigWigs(%d) 를 사용하고 있지�
 L.tooltipHint = "옵션에 접근하려면 |cffeda55f오른쪽 클릭|r하세요."
 L.activeBossModules = "활성화된 우두머리 모듈:"
 
-L.oldVersionsInGroup = "파티 내에 BigWigs가 없거나 구버전을 가진 사람입니다. /bwv 명령어로 더 자세한 정보를 얻을 수 있습니다."
+L.oldVersionsInGroup = "파티 내에 BigWigs가 없거나 구버전을 가진 사람입니다. /bwv 명령어로 더 자세한 정보를 얻을 수 있습니다." -- XXX needs updated
 L.upToDate = "최신 버전:"
 L.outOfDate = "구버전:"
 L.dbmUsers = "DBM 사용자:"
@@ -226,3 +226,7 @@ L.mythic = "신화"
 L.wipes = "전멸:"
 L.kills = "처치:"
 L.best = "최고 기록:"
+--L.SOD = "Unknown"
+--L.level1 = "Level 1"
+--L.level2 = "Level 2"
+--L.level3 = "Level 3"

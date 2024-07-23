@@ -37,7 +37,7 @@ L.warnOldBase = "Você está usando uma versão de guilda do BigWigs (%d), mas s
 L.tooltipHint = "|cffeda55fClique-Direito|r para acessar as opções."
 L.activeBossModules = "Módulos de chefes ativos:"
 
-L.oldVersionsInGroup = "Existem pessoas no seu grupo com uma versão antiga ou sem o BigWigs. Você pode ver mais detalhes com /bwv."
+L.oldVersionsInGroup = "Existem pessoas no seu grupo com uma versão antiga ou sem o BigWigs. Você pode ver mais detalhes com /bwv." -- XXX needs updated
 L.upToDate = "Atualizado:"
 L.outOfDate = "Desatualizado:"
 L.dbmUsers = "Usuários do DBM:"
@@ -226,3 +226,7 @@ L.mythic = "Mítico"
 L.wipes = "Derrotas:"
 L.kills = "Mortes:"
 L.best = "Melhor:"
+--L.SOD = "Unknown"
+--L.level1 = "Level 1"
+--L.level2 = "Level 2"
+--L.level3 = "Level 3"

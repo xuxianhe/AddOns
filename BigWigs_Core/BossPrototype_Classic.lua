@@ -43,7 +43,7 @@ end or isRetail and EJ_GetEncounterInfo or function(key)
 	return BigWigsAPI:GetLocale("BigWigs: Encounters")[key]
 end
 local SendChatMessage, GetInstanceInfo, Timer, SetRaidTarget = loader.SendChatMessage, loader.GetInstanceInfo, loader.CTimerAfter, loader.SetRaidTarget
-local UnitGUID, UnitHealth, UnitHealthMax, Ambiguate = loader.UnitGUID, loader.UnitHealth, loader.UnitHealthMax, loader.Ambiguate
+local UnitGUID, UnitHealth, UnitHealthMax = loader.UnitGUID, loader.UnitHealth, loader.UnitHealthMax
 local RegisterAddonMessagePrefix = loader.RegisterAddonMessagePrefix
 local format, find, gsub, band, tremove, twipe = string.format, string.find, string.gsub, bit.band, table.remove, table.wipe
 local select, type, next, tonumber = select, type, next, tonumber
@@ -1547,6 +1547,18 @@ function boss:Me(guid)
 end
 
 do
+	local Ambiguate = loader.Ambiguate
+	--- Returns a version of a character-realm string suitable for use in a given context.
+	-- @string name character-realm for a character
+	-- @string context the context the name will be used in, one of: "all", "guild", "mail", "none", or "short"
+	-- @return newName the character name with the server appended if appropriate
+	function boss:Ambiguate(name, context)
+		local newName = Ambiguate(name, context)
+		return newName
+	end
+end
+
+do
 	local UnitName = loader.UnitName
 	--- Get the full name of a unit.
 	-- @string unit unit token or name
@@ -1559,6 +1571,19 @@ do
 			name = name .."-".. server
 		end
 		return name
+	end
+end
+
+do
+	local UnitSex = loader.UnitSex
+	--- Get the sex of a unit.
+	-- @string unit unit token or name
+	-- @return sex the sex of the unit
+	function boss:UnitSex(unit)
+		local sex = UnitSex(unit)
+		if sex then
+			return sex
+		end
 	end
 end
 
@@ -1622,6 +1647,17 @@ function boss:GetHealth(unit)
 		return maxHP
 	else
 		return UnitHealth(unit) / maxHP * 100
+	end
+end
+
+do
+	local GetPlayerAuraBySpellID = loader.GetPlayerAuraBySpellID
+	--- Get the aura info of the player using a spell ID.
+	-- @number spellId the spell ID of the aura
+	-- @return table the table full of aura info, or nil if not found
+	function boss:GetPlayerAura(spellId)
+		local tbl = GetPlayerAuraBySpellID(spellId)
+		return tbl
 	end
 end
 
@@ -1770,7 +1806,7 @@ function boss:RegisterWhisperEmoteComms(func)
 		if channel ~= "RAID" and channel ~= "PARTY" and channel ~= "INSTANCE_CHAT" then
 			return
 		elseif prefix == "Transcriptor" then
-			self[func](self, msg, Ambiguate(sender, "none"))
+			self[func](self, msg, self:Ambiguate(sender, "none"))
 		end
 	end)
 end
