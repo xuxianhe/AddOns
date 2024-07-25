@@ -47,7 +47,7 @@ P.mMT = {
 		castbar = { enable = false, texture = "mMediaTag A8" },
 		altpower = { enable = false, texture = "mMediaTag A8" },
 	},
-	customtextures= {
+	customtextures = {
 		health = { enable = false, texture = "mMediaTag A8" },
 		power = { enable = false, texture = "mMediaTag A8" },
 		castbar = { enable = false, texture = "mMediaTag A8" },
@@ -138,7 +138,7 @@ P.mMT = {
 			r = 0.11,
 		},
 	},
-	teleports = { anchorCursor = false, icon = false, customicon = "TP1" },
+	teleports = { anchorCursor = false, icon = false, customicon = "TP1", whiteText = true },
 	profession = { icon = false, proficon = true, whiteText = true },
 	dungeon = { icon = false, texttoname = true, key = true, score = true, affix = true },
 	instancedifficulty = {
@@ -718,6 +718,7 @@ P.mMT = {
 			enable = false,
 			reaction = false,
 			eltruism = false,
+			mui = false,
 			gradient = true,
 			default = false,
 			corner = true,
@@ -734,8 +735,8 @@ P.mMT = {
 			PI = 10,
 			RA = 6,
 			QA = 0,
-			SMQ = 0,
 			MO = 5.5,
+			TH = 4,
 			CUSTOM = 5.5,
 		},
 		shadow = {

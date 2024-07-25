@@ -56,5 +56,7 @@ BigWigs:AddColors("Ragnaros Classic", {
 })
 
 BigWigs:AddColors("The Molten Core", {
+	[460895] = {"blue","yellow"},
+	[460898] = {"blue","yellow"},
 	["stages"] = "cyan",
 })

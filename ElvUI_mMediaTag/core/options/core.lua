@@ -324,16 +324,16 @@ local function configTable()
 						end,
 						args = {},
 					},
-					objectivetracker = {
-						order = 5,
-						type = "group",
-						name = L["Objective Tracker"],
-						hidden = function()
-							return not E.Retail
-						end,
-						childGroups = "tab",
-						args = {},
-					},
+					-- objectivetracker = {
+					-- 	order = 5,
+					-- 	type = "group",
+					-- 	name = L["Objective Tracker"],
+					-- 	hidden = function()
+					-- 		return not E.Retail
+					-- 	end,
+					-- 	childGroups = "tab",
+					-- 	args = {},
+					-- },
 					unitframeicons = {
 						order = 6,
 						type = "group",
@@ -373,14 +373,14 @@ local function configTable()
 					},
 				},
 			},
-			-- misc = {
-			-- 	order = 9,
-			-- 	type = "group",
-			-- 	name = L["Misc"],
-			-- 	icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\misc.tga",
-			-- 	childGroups = "tab",
-			-- 	args = {},
-			-- },
+			misc = {
+				order = 9,
+				type = "group",
+				name = L["Misc"],
+				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\misc.tga",
+				childGroups = "tab",
+				args = {},
+			},
 			about = {
 				order = 10,
 				type = "group",

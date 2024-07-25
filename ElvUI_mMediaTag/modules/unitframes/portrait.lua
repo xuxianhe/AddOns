@@ -11,7 +11,7 @@ if not module then
 end
 
 local settings = {}
-
+local colors = {}
 local path = "Interface\\Addons\\ElvUI_mMediaTag\\media\\portraits\\"
 local textures = {
 	texture = {
@@ -25,6 +25,7 @@ local textures = {
 			QA = path .. "qa_a.tga",
 			SMQ = path .. "qa_a.tga",
 			MO = path .. "moon_c.tga",
+			TH = path .. "th_a.tga",
 		},
 		smooth = {
 			SQ = path .. "sq_b.tga",
@@ -36,6 +37,7 @@ local textures = {
 			QA = path .. "qa_b.tga",
 			SMQ = path .. "qa_b.tga",
 			MO = path .. "moon_a.tga",
+			TH = path .. "th_b.tga",
 		},
 		metal = {
 			SQ = path .. "sq_c.tga",
@@ -47,6 +49,7 @@ local textures = {
 			QA = path .. "qa_c.tga",
 			SMQ = path .. "qa_c.tga",
 			MO = path .. "moon_b.tga",
+			TH = path .. "th_c.tga",
 		},
 	},
 	extra = {
@@ -59,6 +62,7 @@ local textures = {
 			QA = path .. "ex_qa_a.tga",
 			SMQ = path .. "ex_qa_a.tga",
 			MO = path .. "ex_mo_c.tga",
+			TH = path .. "ex_th_a.tga",
 		},
 		smooth = {
 			CI = path .. "ex_a_b.tga",
@@ -69,6 +73,7 @@ local textures = {
 			QA = path .. "ex_qa_b.tga",
 			SMQ = path .. "ex_qa_b.tga",
 			MO = path .. "ex_mo_a.tga",
+			TH = path .. "ex_th_b.tga",
 		},
 		metal = {
 			CI = path .. "ex_a_c.tga",
@@ -79,6 +84,7 @@ local textures = {
 			QA = path .. "ex_qa_c.tga",
 			SMQ = path .. "ex_qa_c.tga",
 			MO = path .. "ex_mo_b.tga",
+			TH = path .. "ex_th_c.tga",
 		},
 		border = {
 			CI = path .. "border_ex_a.tga",
@@ -89,6 +95,7 @@ local textures = {
 			QA = path .. "border_ex_qa.tga",
 			SMQ = path .. "border_ex_qa.tga",
 			MO = path .. "border_ex_moon.tga",
+			TH = path .. "border_ex_th.tga",
 		},
 		shadow = {
 			CI = path .. "shadow_ex_a.tga",
@@ -99,6 +106,7 @@ local textures = {
 			QA = path .. "shadow_ex_qa.tga",
 			SMQ = path .. "shadow_ex_qa.tga",
 			MO = nil,
+			TH = path .. "shadow_ex_th.tga",
 		},
 	},
 	border = {
@@ -111,6 +119,7 @@ local textures = {
 		QA = path .. "border_qa.tga",
 		SMQ = path .. "border_qa.tga",
 		MO = path .. "border_moon.tga",
+		TH = path .. "border_th.tga",
 	},
 	shadow = {
 		SQ = path .. "shadow_sq.tga",
@@ -121,6 +130,7 @@ local textures = {
 		QA = path .. "shadow_qa.tga",
 		SMQ = path .. "shadow_qa.tga",
 		MO = path .. "shadow_moon.tga",
+		TH = path .. "shadow_th.tga",
 	},
 	inner = {
 		SQ = path .. "inner_a.tga",
@@ -131,6 +141,7 @@ local textures = {
 		QA = path .. "inner_qa.tga",
 		SMQ = path .. "inner_qa.tga",
 		MO = path .. "inner_b.tga",
+		TH = path .. "inner_th.tga",
 	},
 	mask = {
 		CI = path .. "mask_c.tga",
@@ -139,6 +150,7 @@ local textures = {
 		QA = path .. "mask_qa.tga",
 		MO = path .. "mask_c.tga",
 		SMQ = path .. "mask_qa.tga",
+		TH = path .. "mask_th.tga",
 
 		A = {
 			SQ = path .. "mask_a.tga",
@@ -162,6 +174,7 @@ local textures = {
 		QA = false,
 		MO = false,
 		SMQ = false,
+		TH = false,
 	},
 	background = {
 		[1] = path .. "bg_1.tga",
@@ -179,6 +192,7 @@ local textures = {
 		QA = false,
 		MO = false,
 		SMQ = false,
+		TH = true,
 	},
 	custom = {
 		texture = "",
@@ -232,7 +246,7 @@ end
 local cachedFaction = {}
 
 local function getColor(unit)
-	local defaultColor = settings.colors.default
+	local defaultColor = colors.default
 
 	if settings.general.default then
 		return defaultColor
@@ -245,14 +259,14 @@ local function getColor(unit)
 			local unitFaction = cachedFaction[UnitGUID(unit)] or select(1, UnitFactionGroup(unit))
 			cachedFaction[UnitGUID(unit)] = unitFaction
 
-			return settings.colors[(playerFaction == unitFaction) and "friendly" or "enemy"]
+			return colors[(playerFaction == unitFaction) and "friendly" or "enemy"]
 		else
 			local _, class = UnitClass(unit)
-			return settings.colors[class]
+			return colors[class]
 		end
 	else
 		local reaction = UnitReaction(unit, "player")
-		return settings.colors[reaction and ((reaction <= 3) and "enemy" or (reaction == 4) and "neutral" or "friendly") or "enemy"]
+		return colors[reaction and ((reaction <= 3) and "enemy" or (reaction == 4) and "neutral" or "friendly") or "enemy"]
 	end
 end
 
@@ -450,7 +464,7 @@ end
 
 local function CheckRareElite(frame, unit)
 	local c = UnitClassification(unit)
-	local color = settings.colors[c]
+	local color = colors[c]
 
 	if color then
 		setColor(frame.extra, color)
@@ -492,13 +506,16 @@ local function UpdatePortrait(frame, conf, unit, parent)
 	unit = UnitExists(unit) and unit or "player"
 
 	-- Portraits Frame
-	frame:SetSize(conf.size, conf.size)
-	frame:ClearAllPoints()
-	frame:SetPoint(conf.point, parent, conf.relativePoint, conf.x, conf.y)
-	if conf.strata ~= "AUTO" then
-		frame:SetFrameStrata(conf.strata)
+	if not InCombatLockdown() then
+		frame:SetSize(conf.size, conf.size)
+		frame:ClearAllPoints()
+		frame:SetPoint(conf.point, parent, conf.relativePoint, conf.x, conf.y)
+
+		if conf.strata ~= "AUTO" then
+			frame:SetFrameStrata(conf.strata)
+		end
+		frame:SetFrameLevel(conf.level)
 	end
-	frame:SetFrameLevel(conf.level)
 
 	-- Portrait Texture
 	texture = textures.custom.enable and textures.custom.texture or textures.texture[settings.general.style][conf.texture]
@@ -696,7 +713,7 @@ function module:UpdatePortraits()
 	end
 end
 
-local function AddCastIcon(self, unit)
+local function AddCastIcon(self, unit, mirror)
 	local texture = select(3, UnitCastingInfo(unit))
 
 	self.throttle = texture and true or false
@@ -707,6 +724,12 @@ local function AddCastIcon(self, unit)
 
 	if texture then
 		self.portrait:SetTexture(texture)
+		if self.portrait.mClass then
+			self.portrait.mClass = nil
+			self.portrait.mCoords = nil
+		end
+
+		mirrorTexture(self.portrait, mirror)
 	end
 end
 
@@ -780,7 +803,7 @@ local function UnitEvent(self, event, conf, castUnit, unit)
 	end
 
 	if conf.cast and (castUnit == unit) and castIconUpdateEvents[event] then
-		AddCastIcon(self, unit)
+		AddCastIcon(self, unit, conf.mirror)
 	else
 		if conf.cast and throttleEvents[event] then
 			if (not self.throttle) or self.empowering then
@@ -846,22 +869,18 @@ function module:Initialize()
 	end
 
 	if settings.general.eltruism and mMT.ElvUI_EltreumUI.loaded then
-		settings.colors.WARRIOR = mMT.ElvUI_EltreumUI.colors.WARRIOR
-		settings.colors.PALADIN = mMT.ElvUI_EltreumUI.colors.PALADIN
-		settings.colors.HUNTER = mMT.ElvUI_EltreumUI.colors.HUNTER
-		settings.colors.ROGUE = mMT.ElvUI_EltreumUI.colors.ROGUE
-		settings.colors.PRIEST = mMT.ElvUI_EltreumUI.colors.PRIEST
-		settings.colors.DEATHKNIGHT = mMT.ElvUI_EltreumUI.colors.DEATHKNIGHT
-		settings.colors.SHAMAN = mMT.ElvUI_EltreumUI.colors.SHAMAN
-		settings.colors.MAGE = mMT.ElvUI_EltreumUI.colors.MAGE
-		settings.colors.WARLOCK = mMT.ElvUI_EltreumUI.colors.WARLOCK
-		settings.colors.MONK = mMT.ElvUI_EltreumUI.colors.MONK
-		settings.colors.DRUID = mMT.ElvUI_EltreumUI.colors.DRUID
-		settings.colors.DEMONHUNTER = mMT.ElvUI_EltreumUI.colors.DEMONHUNTER
-		settings.colors.EVOKER = mMT.ElvUI_EltreumUI.colors.EVOKER
-		settings.colors.friendly = mMT.ElvUI_EltreumUI.colors.friendly
-		settings.colors.neutral = mMT.ElvUI_EltreumUI.colors.neutral
-		settings.colors.enemy = mMT.ElvUI_EltreumUI.colors.enemy
+		colors = mMT.ElvUI_EltreumUI.colors
+	elseif settings.general.mui and mMT.ElvUI_MerathilisUI.loaded then
+		--colors = mMT.ElvUI_MerathilisUI.colors
+
+		if not colors.inverted then
+			for i, tbl in pairs(mMT.ElvUI_MerathilisUI.colors) do
+				colors[i] = { a = tbl.b, b = tbl.a }
+			end
+			colors.inverted = true
+		end
+	else
+		colors = settings.colors
 	end
 
 	local frames = {}

@@ -9,44 +9,31 @@ local new, fix, update, important, dash = "|TInterface\\Addons\\ElvUI_mMediaTag\
 
 local change_log_important = {
 	red .. "!!! Important" .. endtag,
-	"rework of the Important Spell feature",
-	"it is possible to create filters similar to ElvUI Style filters and assign multiple",
-	"spell IDs to the filters, so it is possible to have the same settings for multiple spells.",
-	"before you had to define separate settings for each id",
-	"This update will reset the Spell DB.",
+	"",
+	"The Objectivetracker Skin is completely deactivated in mMT, because I don't have the time at the moment, to adapt the skin to the current changes in WoW. I recommend to activate the skin in the addon from Eltreum > Eltruism an update will follow.",
+	"",
+	"Some features  in the AFK screen have been disabled, again for the same reason as above and an update will follow.",
+	"",
+	"I can understand that some people will not like these changes, but please understand that I am working on this project after my work and do not always have enough time. Thanks for your understanding and have fun with the PrePatch.",
 }
 
-local releasdate = "28.06.2024"
+local releasdate = "23.07.2024"
 
 local change_log_new = {
-	"Portraits can now use custom textures.",
-	"Portraits can now show cast icon, available for player, target, focus, party, boss, and arena.",
-	"Portraits setting to force reaction colors on Player Units.",
-	"TAGs: mLevel:hidecombat, mLevelSmart:hidecombat, mHealth:onlypercent-with-absorbs:ndp, mHealth:short:absorbs, mColor:absorbs.",
-	"TAGs: mHealth:current-percent:absorbs, mHealth:current-percent:ndp:absorbs, mHealth:current-percent:short:absorbs, mHealth:current-percent:short:ndp:absorbs.",
-	"Add general TOC file for WOTLK Version in China",
+	"New Settings menu for the Example Docks.",
+	"Support for MerathilisUI colors and gradient mode.",
+	"Portraits Texture Thin.",
+	"Add more example Docks and Datattext to Example Docks menu.",
 }
 
 local change_log_update = {
-	"Add no Profession text and Icon to first and second Profession data text.",
-	"White text setting for Profession data text.",
-	"NEW: Icon for Teleports data text.",
-	"Portraits texture names.",
-	"Removed Portraits texture simple square and added flipped Versions for Drop texture.",
-	"Add Stone of the Hearth and Draenic Hologem to TP datatext (thx to Merathilis)",
+	"Update for TWW",
 }
 
 local change_log_fix = {
-	"Portraits colors if gradient mode is disabled.",
-	"Portraits can now properly enable/disable on the fly.",
-	"Portraits corner won't hide if the texture does not support it.",
-	"Tooltip Icon can override Item names in Classic.",
-	"Tooltip and Teleports Datatext for TWW, (for beta use, disable the Objectivetracker Skin).",
-	"Removed empty data text entry.",
-	"Add S Pack to mMT Settings DB.",
-	"Datatext Durability/ Ilevel: Durability color values.",
-	"Removed debug print.",
-	"Portraits Optimized code and fixed flipped drop texture (black background)",
+	"Bug with Portraits in combat and zone changes",
+	"Portrait Cast icon with enabled Class icons",
+	"TAG classification colors",
 }
 
 local function Concatenation(tbl, icon, color)
@@ -60,14 +47,14 @@ local function Concatenation(tbl, icon, color)
 			line = icon .. "  " .. line
 		end
 
-		string = string .. dash .. "  " .. line .. "\n"
+		string = string .. ((line ~= "") and dash or "") .. "  " .. line .. "\n"
 	end
 	return string
 end
 
 local function configTable()
-	--change_log_important_string = Concatenation(change_log_important)
-	change_log_new_string = Concatenation(change_log_new)
+	change_log_important_string = Concatenation(change_log_important)
+	--change_log_new_string = Concatenation(change_log_new)
 	change_log_update_string = Concatenation(change_log_update)
 	change_log_fix_string = Concatenation(change_log_fix)
 	E.Options.args.mMT.args.changelog.args = {

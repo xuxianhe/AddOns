@@ -13,6 +13,7 @@ local form = {
 	MO = L["Moon"],
 	SQT = L["Drop flipped"],
 	ROT = L["Drop round flipped"],
+	TH = L["Thin"],
 }
 
 local style = {
@@ -148,20 +149,8 @@ local function configTable()
 										mMT.Modules.Portraits:Initialize()
 									end,
 								},
-								toggle_gradien_eltr = {
-									order = 2,
-									type = "toggle",
-									name = L["Use Eltruism colors"],
-									get = function(info)
-										return E.db.mMT.portraits.general.eltruism
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.general.eltruism = value
-										mMT.Modules.Portraits:Initialize()
-									end,
-								},
 								select_gradient = {
-									order = 3,
+									order = 2,
 									type = "select",
 									name = L["Gradient Orientation"],
 									disabled = function()
@@ -178,6 +167,39 @@ local function configTable()
 										HORIZONTAL = "HORIZONTAL",
 										VERTICAL = "VERTICAL",
 									},
+								},
+								spacer_texture1 = {
+									order = 3,
+									type = "description",
+									name = "\n\n",
+								},
+								toggle_gradien_eltr = {
+									order = 4,
+									type = "toggle",
+									name = L["Use Eltruism colors"],
+									get = function(info)
+										return E.db.mMT.portraits.general.eltruism
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.general.eltruism = value
+										E.db.mMT.portraits.general.mui = false
+										mMT.ElvUI_EltreumUI = mMT:CheckEltruism()
+										mMT.Modules.Portraits:Initialize()
+									end,
+								},
+								toggle_gradien_mui = {
+									order = 5,
+									type = "toggle",
+									name = L["Use MerathilisUI colors"],
+									get = function(info)
+										return E.db.mMT.portraits.general.mui
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.general.mui = value
+										E.db.mMT.portraits.general.eltruism = false
+										mMT.ElvUI_MerathilisUI = mMT:CheckMerathilisUI()
+										mMT.Modules.Portraits:Initialize()
+									end,
 								},
 							},
 						},
@@ -590,23 +612,23 @@ local function configTable()
 								mMT.Modules.Portraits:Initialize()
 							end,
 						},
-						range_smq = {
+						range_th = {
 							order = 6,
-							name = L["Simple Square"],
+							name = L["Thin"],
 							type = "range",
 							min = 0,
-							max = 60,
+							max = 10,
 							step = 0.1,
 							get = function(info)
-								return E.db.mMT.portraits.offset.SMQ
+								return E.db.mMT.portraits.offset.TH
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.offset.SMQ = value
+								E.db.mMT.portraits.offset.TH = value
 								mMT.Modules.Portraits:Initialize()
 							end,
 						},
 						range_custom = {
-							order = 7,
+							order = 8,
 							name = L["Custom"],
 							type = "range",
 							min = 0,
@@ -637,8 +659,8 @@ local function configTable()
 									PI = 10,
 									RA = 6,
 									QA = 0,
-									SMQ = 0,
 									MO = 5.5,
+									TH = 4,
 									CUSTOM = 5.5,
 								}
 								mMT.Modules.Portraits:Initialize()
