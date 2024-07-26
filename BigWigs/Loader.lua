@@ -12,7 +12,7 @@ local strfind = string.find
 -- Generate our version variables
 --
 
-local BIGWIGS_VERSION = 347
+local BIGWIGS_VERSION = 348
 local BIGWIGS_RELEASE_STRING, BIGWIGS_VERSION_STRING
 local versionQueryString, versionResponseString = "Q^%d^%s^%d^%s", "V^%d^%s^%d^%s"
 local customGuildName = false
@@ -38,7 +38,7 @@ do
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "4b17441" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "b1a4aa7" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.
@@ -96,6 +96,7 @@ local debugstack, print = debugstack, print
 local myLocale = GetLocale()
 
 -- Try to grab unhooked copies of critical funcs (hooked by some crappy addons)
+public.date = date
 public.Ambiguate = Ambiguate
 public.CTimerAfter = CTimerAfter
 public.CTimerNewTicker = CTimerNewTicker
@@ -1002,7 +1003,7 @@ function mod:ADDON_LOADED(addon)
 	if type(BigWigsIconDB) ~= "table" then
 		BigWigsIconDB = {}
 	end
-	ldbi:Register("BigWigs", dataBroker, BigWigsIconDB, "Interface\\AddOns\\BigWigs\\Media\\Icons\\minimap_raid.tga")
+	ldbi:Register("BigWigs", dataBroker, BigWigsIconDB)
 
 	-- XXX Classic DB Migration
 	-- Overwrite BigWigs3DB with BigWigsClassicDB

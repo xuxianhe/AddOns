@@ -95,7 +95,7 @@ function config:CopyActionFromTo(bind, dest)
         -- nothing extra to copy
     elseif bind.type == "spell" then
         dest.spell = bind.spell
-        dest.spellSubName = bind.spells
+        dest.spellSubName = bind.spellSubName
     elseif bind.type == "macro" then
         dest.macro = bind.macro
         dest.macrotext = bind.macrotext

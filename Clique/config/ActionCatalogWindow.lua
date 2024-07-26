@@ -179,7 +179,7 @@ local function ActionCatalogButton_OnMouseWheel(activeButton, delta)
     if config:InQuickbindMode() then
         local button = (delta < 0) and "MOUSEWHEELUP" or "MOUSEWHEELDOWN"
         local captured = addon:GetCapturedKey(button)
-        window:AddNewBindingFromButton(button, captured)
+        window:AddNewBindingFromButton(activeButton, captured)
     end
 end
 
@@ -191,6 +191,11 @@ end
 
 function window:AddNewBindingFromButton(button, key)
     local actionAttributes = config:GetActionAttributes(button.type, button.id)
+
+    if not actionAttributes.type then
+        return
+    end
+
     if not key then
         return
     end

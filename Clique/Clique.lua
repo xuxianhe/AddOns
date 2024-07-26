@@ -308,6 +308,19 @@ function addon:ADDON_LOADED(event, addonName)
     end
 end
 
+function addon:FixMyBindingsV1()
+    -- Reverse iterate over all bindings and fix broken ones
+    local bindings = addon.db.profile.bindings or {}
+    for idx=#bindings, 1, -1 do
+        local bind = bindings[idx]
+
+        if bind.type == nil or bind.type == "" then
+            table.remove(bindings, idx)
+            addon:Printf("Removed broken binding with action type '%s' from index %s", tostring(bind.type), tostring(idx))
+        end
+    end
+end
+
 function addon:Enable()
     if SpellBookFrame then
         -- We're on a legacy spellbook
@@ -319,6 +332,8 @@ function addon:Enable()
         -- Wait for spellbook to be loaded
         addon:RegisterEvent("ADDON_LOADED")
     end
+
+    addon:FixMyBindingsV1()
 end
 
 -- A new profile is being created in the db, called 'profile'
