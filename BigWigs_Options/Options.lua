@@ -455,32 +455,6 @@ local function getSlaveToggle(label, desc, key, module, flag, master, width, ico
 	return toggle
 end
 
-local icons = {
-	MESSAGE = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Messages",
-	ME_ONLY = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\MeOnly",
-	SOUND = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Sounds",
-	ICON = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Markers",
-	FLASH = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Flash",
-	PULSE = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Pulse",
-	PROXIMITY = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Proximity",
-	ALTPOWER = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\AltPower",
-	INFOBOX = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Info",
-	COUNTDOWN = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Countdown",
-	CASTBAR_COUNTDOWN = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Countdown",
-	SAY = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Say",
-	SAY_COUNTDOWN = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\SayCountdown",
-	VOICE = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Voice",
-	BAR = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Bars",
-	CASTBAR = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Bars",
-	NAMEPLATEBAR = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Bars",
-	TANK = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Role_Tank",
-	HEALER = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Role_Healer",
-	EMPHASIZE = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\EmphasizeMessage",
-	ME_ONLY_EMPHASIZE = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\EmphasizeMessageMeOnly",
-	DISPEL = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Dispel",
-	PRIVATE = "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Private",
-}
-
 local function hasOptionFlag(dbKey, module, key)
 	-- Check the actual option table instead of using toggleDefaults
 	for _, opTbl in next, module.toggleOptions do
@@ -503,51 +477,51 @@ local function advancedToggles(dbKey, module, check)
 	if bit.band(dbv, C.MESSAGE) == C.MESSAGE then
 		-- Emphasize
 		if not isPrivateAura or hasOptionFlag(dbKey, module, "ME_ONLY_EMPHASIZE") then
-			advOpts[#advOpts+1] = getSlaveToggle(L.EMPHASIZE, L.EMPHASIZE_desc, dbKey, module, C.EMPHASIZE, check, 0.3, icons.EMPHASIZE)
-			advOpts[#advOpts+1] = getSlaveToggle(L.ME_ONLY_EMPHASIZE, L.ME_ONLY_EMPHASIZE_desc, dbKey, module, C.ME_ONLY_EMPHASIZE, check, 0.5, icons.ME_ONLY_EMPHASIZE)
+			advOpts[#advOpts+1] = getSlaveToggle(L.EMPHASIZE, L.EMPHASIZE_desc, dbKey, module, C.EMPHASIZE, check, 0.3, module:GetMenuIcon("EMPHASIZE"))
+			advOpts[#advOpts+1] = getSlaveToggle(L.ME_ONLY_EMPHASIZE, L.ME_ONLY_EMPHASIZE_desc, dbKey, module, C.ME_ONLY_EMPHASIZE, check, 0.5, module:GetMenuIcon("ME_ONLY_EMPHASIZE"))
 		else
-			advOpts[#advOpts+1] = getSlaveToggle(L.EMPHASIZE, L.EMPHASIZE_desc, dbKey, module, C.EMPHASIZE, check, 0.8, icons.EMPHASIZE)
+			advOpts[#advOpts+1] = getSlaveToggle(L.EMPHASIZE, L.EMPHASIZE_desc, dbKey, module, C.EMPHASIZE, check, 0.8, module:GetMenuIcon("EMPHASIZE"))
 		end
 		--
 
 		-- Bar & Countdown
-		advOpts[#advOpts+1] = getSlaveToggle(L.BAR, L.BAR_desc, dbKey, module, C.BAR, check, 0.3, icons.BAR)
-		advOpts[#advOpts+1] = getSlaveToggle(L.COUNTDOWN, L.COUNTDOWN_desc, dbKey, module, C.COUNTDOWN, check, 0.5, icons.COUNTDOWN)
+		advOpts[#advOpts+1] = getSlaveToggle(L.BAR, L.BAR_desc, dbKey, module, C.BAR, check, 0.3, module:GetMenuIcon("BAR"))
+		advOpts[#advOpts+1] = getSlaveToggle(L.COUNTDOWN, L.COUNTDOWN_desc, dbKey, module, C.COUNTDOWN, check, 0.5, module:GetMenuIcon("COUNTDOWN"))
 		--
 
 		-- Cast Bars & Cast Countdowns
 		if bit.band(dbv, C.CASTBAR) == C.CASTBAR and hasOptionFlag(dbKey, module, "CASTBAR") then
-			advOpts[#advOpts+1] = getSlaveToggle(L.CASTBAR, L.CASTBAR_desc, dbKey, module, C.CASTBAR, check, 0.3, icons.CASTBAR)
-			advOpts[#advOpts+1] = getSlaveToggle(L.CASTBAR_COUNTDOWN, L.CASTBAR_COUNTDOWN_desc, dbKey, module, C.CASTBAR_COUNTDOWN, check, 0.5, icons.CASTBAR_COUNTDOWN)
+			advOpts[#advOpts+1] = getSlaveToggle(L.CASTBAR, L.CASTBAR_desc, dbKey, module, C.CASTBAR, check, 0.3, module:GetMenuIcon("CASTBAR"))
+			advOpts[#advOpts+1] = getSlaveToggle(L.CASTBAR_COUNTDOWN, L.CASTBAR_COUNTDOWN_desc, dbKey, module, C.CASTBAR_COUNTDOWN, check, 0.5, module:GetMenuIcon("CASTBAR_COUNTDOWN"))
 		end
 		--
 
 		-- Messages & Sound
 		if not isPrivateAura or hasOptionFlag(dbKey, module, "ME_ONLY") then
-			advOpts[#advOpts+1] = getSlaveToggle(L.MESSAGE, L.MESSAGE_desc, dbKey, module, C.MESSAGE, check, 0.3, icons.MESSAGE)
-			advOpts[#advOpts+1] = getSlaveToggle(L.ME_ONLY, L.ME_ONLY_desc, dbKey, module, C.ME_ONLY, check, 0.4, icons.ME_ONLY)
-			advOpts[#advOpts+1] = getSlaveToggle(L.SOUND, L.SOUND_desc, dbKey, module, C.SOUND, check, 0.3, icons.SOUND)
+			advOpts[#advOpts+1] = getSlaveToggle(L.MESSAGE, L.MESSAGE_desc, dbKey, module, C.MESSAGE, check, 0.3, module:GetMenuIcon("MESSAGE"))
+			advOpts[#advOpts+1] = getSlaveToggle(L.ME_ONLY, L.ME_ONLY_desc, dbKey, module, C.ME_ONLY, check, 0.4, module:GetMenuIcon("ME_ONLY"))
+			advOpts[#advOpts+1] = getSlaveToggle(L.SOUND, L.SOUND_desc, dbKey, module, C.SOUND, check, 0.3, module:GetMenuIcon("SOUND"))
 		else
-			advOpts[#advOpts+1] = getSlaveToggle(L.MESSAGE, L.MESSAGE_desc, dbKey, module, C.MESSAGE, check, 0.3, icons.MESSAGE)
-			advOpts[#advOpts+1] = getSlaveToggle(L.SOUND, L.SOUND_desc, dbKey, module, C.SOUND, check, 0.5, icons.SOUND)
+			advOpts[#advOpts+1] = getSlaveToggle(L.MESSAGE, L.MESSAGE_desc, dbKey, module, C.MESSAGE, check, 0.3, module:GetMenuIcon("MESSAGE"))
+			advOpts[#advOpts+1] = getSlaveToggle(L.SOUND, L.SOUND_desc, dbKey, module, C.SOUND, check, 0.5, module:GetMenuIcon("SOUND"))
 		end
 		--
 	end
 
 	if bit.band(dbv, C.NAMEPLATEBAR) == C.NAMEPLATEBAR and hasOptionFlag(dbKey, module, "NAMEPLATEBAR") then
-		advOpts[#advOpts+1] = getSlaveToggle(L.NAMEPLATEBAR, L.NAMEPLATEBAR_desc, dbKey, module, C.NAMEPLATEBAR, check, 0.3, icons.NAMEPLATEBAR)
+		advOpts[#advOpts+1] = getSlaveToggle(L.NAMEPLATEBAR, L.NAMEPLATEBAR_desc, dbKey, module, C.NAMEPLATEBAR, check, 0.3, module:GetMenuIcon("NAMEPLATEBAR"))
 	end
 
 	-- Flash & Pulse
 	if bit.band(dbv, C.FLASH) == C.FLASH and hasOptionFlag(dbKey, module, "FLASH") then
-		advOpts[#advOpts+1] = getSlaveToggle(L.FLASH, L.FLASH_desc, dbKey, module, C.FLASH, check, 0.3, icons.FLASH)
-		advOpts[#advOpts+1] = getSlaveToggle(L.PULSE, L.PULSE_desc, dbKey, module, C.PULSE, check, 0.5, icons.PULSE)
+		advOpts[#advOpts+1] = getSlaveToggle(L.FLASH, L.FLASH_desc, dbKey, module, C.FLASH, check, 0.3, module:GetMenuIcon("FLASH"))
+		advOpts[#advOpts+1] = getSlaveToggle(L.PULSE, L.PULSE_desc, dbKey, module, C.PULSE, check, 0.5, module:GetMenuIcon("PULSE"))
 	end
 	--
 
 	if bit.band(dbv, C.MESSAGE) == C.MESSAGE then
 		if API:HasVoicePack() then
-			advOpts[#advOpts+1] = getSlaveToggle(L.VOICE, L.VOICE_desc, dbKey, module, C.VOICE, check, 0.3, icons.VOICE)
+			advOpts[#advOpts+1] = getSlaveToggle(L.VOICE, L.VOICE_desc, dbKey, module, C.VOICE, check, 0.3, module:GetMenuIcon("VOICE"))
 		end
 	end
 
@@ -558,7 +532,7 @@ local function advancedToggles(dbKey, module, check)
 			-- All on by default, check if we should add a GUI widget
 			if key == "ICON" or key == "SAY" or key == "SAY_COUNTDOWN" or key == "PROXIMITY" or key == "ALTPOWER" or key == "INFOBOX" then
 				if hasOptionFlag(dbKey, module, key) then
-					advOpts[#advOpts+1] = getSlaveToggle(name, desc, dbKey, module, flag, check, 0.3, icons[key])
+					advOpts[#advOpts+1] = getSlaveToggle(name, desc, dbKey, module, flag, check, 0.3, module:GetMenuIcon(key))
 				end
 			elseif key ~= "MESSAGE" and key ~= "BAR" and key ~= "FLASH" and key ~= "VOICE" then
 				advOpts[#advOpts+1] = getSlaveToggle(name, desc, dbKey, module, flag, check, 0.3)
@@ -663,12 +637,8 @@ function getAdvancedToggleOption(scrollFrame, dropdown, module, bossOption)
 		if bit.band(dbv, flag) == flag then
 			local roleName, roleDesc = BigWigs:GetOptionDetails(key)
 			local roleRestrictionCheckbox
-			if key == "TANK" then
-				roleRestrictionCheckbox = getSlaveToggle(roleName, roleDesc, dbKey, module, flag, check, 0.3, icons.TANK)
-			elseif key == "HEALER" then
-				roleRestrictionCheckbox = getSlaveToggle(roleName, roleDesc, dbKey, module, flag, check, 0.3, icons.HEALER)
-			elseif key == "DISPEL" then
-				roleRestrictionCheckbox = getSlaveToggle(roleName, roleDesc, dbKey, module, flag, check, 0.3, icons.DISPEL)
+			if key == "TANK" or key == "HEALER" or key == "DISPEL" then
+				roleRestrictionCheckbox = getSlaveToggle(roleName, roleDesc, dbKey, module, flag, check, 0.3, module:GetMenuIcon(key))
 			else
 				roleRestrictionCheckbox = getSlaveToggle(roleName, roleDesc, dbKey, module, flag, check, 0.3) -- No icon
 			end
@@ -683,7 +653,7 @@ function getAdvancedToggleOption(scrollFrame, dropdown, module, bossOption)
 		local privateAuraText = AceGUI:Create("Label")
 		privateAuraText:SetText(L.PRIVATE_desc)
 		privateAuraText:SetColor(1, 0.75, 0.79)
-		privateAuraText:SetImage(icons.PRIVATE)
+		privateAuraText:SetImage(module:GetMenuIcon("PRIVATE"))
 		privateAuraText:SetFullWidth(true)
 		privateAuraText:SetHeight(30)
 		widgets[#widgets + 1] = privateAuraText
@@ -831,7 +801,7 @@ local function getDefaultToggleOption(scrollFrame, dropdown, module, bossOption)
 				-- add both "TANK" and "HEALER" icons
 				local icon1 = AceGUI:Create("Icon")
 				icon1:SetWidth(16)
-				icon1:SetImage(icons.TANK)
+				icon1:SetImage(module:GetMenuIcon("TANK"))
 				icon1:SetImageSize(16, 16)
 				icon1:SetUserData("tooltipText", L[key])
 				icon1:SetCallback("OnEnter", flagOnEnter)
@@ -841,13 +811,9 @@ local function getDefaultToggleOption(scrollFrame, dropdown, module, bossOption)
 				flagIcons[#flagIcons+1] = icon1
 				-- first icon, don't bother with SetPoint
 
-				icon:SetImage(icons.HEALER)
+				icon:SetImage(module:GetMenuIcon("HEALER"))
 			else
-				if type(icons[key]) == "string" then
-					icon:SetImage(icons[key]) -- custom icon
-				else
-					icon:SetImage(icons[key], 0.07, 0.93, 0.07, 0.93)
-				end
+				icon:SetImage(module:GetMenuIcon(key))
 			end
 
 			icon.frame:SetParent(check.frame)
@@ -984,7 +950,7 @@ local function populatePrivateAuraOptions(widget)
 	local text = AceGUI:Create("Label")
 	text:SetText(L.privateAuraSounds_desc)
 	text:SetColor(1, 0.75, 0.79)
-	text:SetImage(icons.PRIVATE)
+	text:SetImage("Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Private")
 	text:SetFullWidth(true)
 	text:SetHeight(30)
 	scrollFrame:AddChild(text)
@@ -1082,15 +1048,27 @@ local function populatePrivateAuraOptions(widget)
 	scrollFrame:PerformLayout()
 end
 
-local function statsBestTimeLabelOnEnter(self)
+local function statsDefeatLabelOnEnter(self)
 	bwTooltip:SetOwner(self.frame, "ANCHOR_TOP")
-	bwTooltip:AddLine(L.best_desc, 1, 1, 1)
+	bwTooltip:AddLine(L.defeat_desc, 1, 1, 1)
 	bwTooltip:Show()
 end
 
-local function statsFirstKillLabelOnEnter(self)
+local function statsVictoryLabelOnEnter(self)
 	bwTooltip:SetOwner(self.frame, "ANCHOR_TOP")
-	bwTooltip:AddLine(L.firstKill_desc, 1, 1, 1, true)
+	bwTooltip:AddLine(L.victory_desc, 1, 1, 1)
+	bwTooltip:Show()
+end
+
+local function statsFastestLabelOnEnter(self)
+	bwTooltip:SetOwner(self.frame, "ANCHOR_TOP")
+	bwTooltip:AddLine(L.fastest_desc, 1, 1, 1)
+	bwTooltip:Show()
+end
+
+local function statsFirstLabelOnEnter(self)
+	bwTooltip:SetOwner(self.frame, "ANCHOR_TOP")
+	bwTooltip:AddLine(L.first_desc, 1, 1, 1)
 	bwTooltip:Show()
 end
 
@@ -1128,39 +1106,43 @@ local function populateToggleOptions(widget, module)
 			scrollFrame:AddChild(statGroup)
 
 			local emptyFirstColumnLabel = AceGUI:Create("Label")
-			emptyFirstColumnLabel:SetWidth(100)
+			emptyFirstColumnLabel:SetWidth(110)
 			emptyFirstColumnLabel:SetText("")
 			statGroup:AddChild(emptyFirstColumnLabel)
 
-			local wipesColumnLabel = AceGUI:Create("Label")
-			wipesColumnLabel:SetWidth(100)
-			wipesColumnLabel:SetText(L.wipes)
-			statGroup:AddChild(wipesColumnLabel)
+			local defeatColumnLabel = AceGUI:Create("InteractiveLabel")
+			defeatColumnLabel:SetWidth(100)
+			defeatColumnLabel:SetText(L.defeat)
+			defeatColumnLabel:SetCallback("OnEnter", statsDefeatLabelOnEnter)
+			defeatColumnLabel:SetCallback("OnLeave", bwTooltip_Hide)
+			statGroup:AddChild(defeatColumnLabel)
 
-			local killsLabel = AceGUI:Create("Label")
-			killsLabel:SetWidth(100)
-			killsLabel:SetText(L.kills)
-			statGroup:AddChild(killsLabel)
+			local victoryColumnLabel = AceGUI:Create("InteractiveLabel")
+			victoryColumnLabel:SetWidth(100)
+			victoryColumnLabel:SetText(L.victory)
+			victoryColumnLabel:SetCallback("OnEnter", statsVictoryLabelOnEnter)
+			victoryColumnLabel:SetCallback("OnLeave", bwTooltip_Hide)
+			statGroup:AddChild(victoryColumnLabel)
 
-			local bestTimeColumnLabel = AceGUI:Create("InteractiveLabel")
-			bestTimeColumnLabel:SetWidth(110)
-			bestTimeColumnLabel:SetText(L.best)
-			bestTimeColumnLabel:SetCallback("OnEnter", statsBestTimeLabelOnEnter)
-			bestTimeColumnLabel:SetCallback("OnLeave", bwTooltip_Hide)
-			statGroup:AddChild(bestTimeColumnLabel)
+			local fastestColumnLabel = AceGUI:Create("InteractiveLabel")
+			fastestColumnLabel:SetWidth(110)
+			fastestColumnLabel:SetText(L.fastest)
+			fastestColumnLabel:SetCallback("OnEnter", statsFastestLabelOnEnter)
+			fastestColumnLabel:SetCallback("OnLeave", bwTooltip_Hide)
+			statGroup:AddChild(fastestColumnLabel)
 
-			local firstKillColumnLabel = AceGUI:Create("InteractiveLabel")
-			firstKillColumnLabel:SetWidth(110)
-			firstKillColumnLabel:SetText(L.firstKill)
-			firstKillColumnLabel:SetCallback("OnEnter", statsFirstKillLabelOnEnter)
-			firstKillColumnLabel:SetCallback("OnLeave", bwTooltip_Hide)
-			statGroup:AddChild(firstKillColumnLabel)
+			local firstColumnLabel = AceGUI:Create("InteractiveLabel")
+			firstColumnLabel:SetWidth(110)
+			firstColumnLabel:SetText(L.first)
+			firstColumnLabel:SetCallback("OnEnter", statsFirstLabelOnEnter)
+			firstColumnLabel:SetCallback("OnLeave", bwTooltip_Hide)
+			statGroup:AddChild(firstColumnLabel)
 
 			-- Headers
 			local displayOrder = {
 				"story", "timewalk", "LFR", "normal", "heroic", "mythic",
 				"10N", "25N", "10H", "25H",
-				"SOD", "level1", "level2", "level3"
+				"SOD", "level1", "level2", "level3", "hardcore",
 			}
 			for diff, tbl in next, sDB do -- Unknown Stats
 				local found = false
@@ -1172,19 +1154,19 @@ local function populateToggleOptions(widget, module)
 				end
 				if not found then
 					local difficultyText = AceGUI:Create("Label")
-					difficultyText:SetWidth(100)
+					difficultyText:SetWidth(110)
 					difficultyText:SetText(L.unknown)
 					statGroup:AddChild(difficultyText)
 
-					local totalWipesLabel = AceGUI:Create("Label")
-					totalWipesLabel:SetWidth(100)
-					totalWipesLabel:SetText(tbl.wipes or (not tbl.kills and "-" or "0"))
-					statGroup:AddChild(totalWipesLabel)
+					local defeatsLabel = AceGUI:Create("Label")
+					defeatsLabel:SetWidth(100)
+					defeatsLabel:SetText(tbl.wipes or (not tbl.kills and "-" or "0"))
+					statGroup:AddChild(defeatsLabel)
 
-					local totalKillsLabel = AceGUI:Create("Label")
-					totalKillsLabel:SetWidth(100)
-					totalKillsLabel:SetText(tbl.kills or "-")
-					statGroup:AddChild(totalKillsLabel)
+					local victoriesLabel = AceGUI:Create("Label")
+					victoriesLabel:SetWidth(100)
+					victoriesLabel:SetText(tbl.kills or "-")
+					statGroup:AddChild(victoriesLabel)
 
 					local fastestVictoryLabel = AceGUI:Create("Label")
 					fastestVictoryLabel:SetWidth(110)
@@ -1216,19 +1198,19 @@ local function populateToggleOptions(widget, module)
 				local tbl = sDB[diff]
 				if tbl then
 					local difficultyText = AceGUI:Create("Label")
-					difficultyText:SetWidth(100)
+					difficultyText:SetWidth(110)
 					difficultyText:SetText(L[diff] or "?")
 					statGroup:AddChild(difficultyText)
 
-					local totalWipesLabel = AceGUI:Create("Label")
-					totalWipesLabel:SetWidth(100)
-					totalWipesLabel:SetText(tbl.wipes or (not tbl.kills and "-" or "0"))
-					statGroup:AddChild(totalWipesLabel)
+					local defeatsLabel = AceGUI:Create("Label")
+					defeatsLabel:SetWidth(100)
+					defeatsLabel:SetText(tbl.wipes or (not tbl.kills and "-" or "0"))
+					statGroup:AddChild(defeatsLabel)
 
-					local totalKillsLabel = AceGUI:Create("Label")
-					totalKillsLabel:SetWidth(100)
-					totalKillsLabel:SetText(tbl.kills or "-")
-					statGroup:AddChild(totalKillsLabel)
+					local victoriesLabel = AceGUI:Create("Label")
+					victoriesLabel:SetWidth(100)
+					victoriesLabel:SetText(tbl.kills or "-")
+					statGroup:AddChild(victoriesLabel)
 
 					local fastestVictoryLabel = AceGUI:Create("Label")
 					fastestVictoryLabel:SetWidth(110)

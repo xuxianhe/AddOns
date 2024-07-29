@@ -1,11 +1,14 @@
 # BigWigs
 
-## [v349](https://github.com/BigWigsMods/BigWigs/tree/v349) (2024-07-27)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v348.2...v349) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
+## [v349.1](https://github.com/BigWigsMods/BigWigs/tree/v349.1) (2024-07-28)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v349...v349.1) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
 
-- bump version  
-- Core/BossPrototype: Add `:GetSeason()`  
-- Fix loading Season of Discovery content on Hardcore Classic Era  
-- Update deDE (#1712)  
-- Update zhCN (#1710)  
-- Update frFR (#1709)  
+- Update deDE (#1716)  
+- Options: Re-word and clean up the stats display  
+- Update deDE (#1715)  
+- Stop sending difficulty in engage callbacks  
+- Update zhCN (#1714)  
+- Plugins/Statistics: Log classic era stats separately from hardcore stats  
+- Core: Add more common locale  
+- Options: Cleanup  
+- Core/BossPrototype: Add `:GetMenuIcon()`  

@@ -113,10 +113,12 @@ L.marker_npc_aura_desc = "Von '%s' betroffene NPCs mit %s markieren. Benötigt L
 L.link = "Verbindung"
 L.link_with = "Verbunden mit %s"
 L.link_with_icon = "Verbunden mit |T13700%d:0|t%s"
-L.link_with_rticon = "Verbunden mit {rt%d}%s"
+L.link_with_rticon = "{rt%d}Verbunden mit %s"
 L.link_both = "%s + %s sind verbunden"
 L.link_both_icon = "|T13700%d:0|t%s + |T13700%d:0|t%s sind verbunden"
 L.link_removed = "Verbindung entfernt"
+L.link_say_option_name = "Wiederholte 'Verbunden' Chatnachrichten"
+L.link_say_option_desc = "Wiederholt Nachrichten im Sprechen-Chat um mitzuteilen mit wem Du verbunden bist."
 
 -- Abbreviated numbers
 L.amount_one = "%dB" -- Billions 1,000,000,000
