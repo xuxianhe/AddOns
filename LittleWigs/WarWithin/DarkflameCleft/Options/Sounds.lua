@@ -1,7 +1,7 @@
 
 BigWigs:AddSounds("Ol' Waxbeard", {
-	[421665] = "alert",
 	[422116] = "alarm",
+	[422245] = "alert",
 	[423693] = {"info","warning"},
 })
 
@@ -40,4 +40,5 @@ BigWigs:AddSounds("Darkflame Cleft Trash", {
 	[426295] = "alert",
 	[426619] = "alarm",
 	[440652] = "alarm",
+	["minecart"] = {"info","long"},
 })

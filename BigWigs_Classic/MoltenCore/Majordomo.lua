@@ -24,7 +24,7 @@ function mod:GetOptions()
 	}
 end
 
-if BigWigsLoader.isSeasonOfDiscovery then
+if mod:GetSeason() == 2 then
 	function mod:GetOptions()
 		return {
 			{20619, "CASTBAR"}, -- Magic Reflection
@@ -47,7 +47,7 @@ function mod:OnBossEnable()
 	self:Log("SPELL_CAST_SUCCESS", "MagicReflection", 20619)
 	self:Log("SPELL_CAST_SUCCESS", "DamageShield", 21075)
 	self:Log("SPELL_CAST_SUCCESS", "Teleport", 20534)
-	if BigWigsLoader.isSeasonOfDiscovery then
+	if self:GetSeason() == 2 then
 		self:Log("SPELL_CAST_START", "RagingFlareStart", 461056)
 		self:Log("SPELL_CAST_SUCCESS", "RagingFlare", 461056)
 	end
@@ -57,7 +57,7 @@ function mod:OnEngage()
 	self:CDBar(20534, 20) -- Teleport
 	self:Bar(self:CheckOption(20619, "BAR") and 20619 or 21075, 27, CL.next_ability, "INV_Misc_QuestionMark")
 	self:DelayedMessage(self:CheckOption(20619, "MESSAGE") and 20619 or 21075, 22, "orange", CL.custom_sec:format(CL.next_ability, 5))
-	if BigWigsLoader.isSeasonOfDiscovery then
+	if self:GetPlayerAura(458843) then -- Level 3 only
 		self:CDBar(461056, 16) -- Raging Flare
 	end
 end

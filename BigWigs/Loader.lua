@@ -12,7 +12,7 @@ local strfind = string.find
 -- Generate our version variables
 --
 
-local BIGWIGS_VERSION = 348
+local BIGWIGS_VERSION = 349
 local BIGWIGS_RELEASE_STRING, BIGWIGS_VERSION_STRING
 local versionQueryString, versionResponseString = "Q^%d^%s^%d^%s", "V^%d^%s^%d^%s"
 local customGuildName = false
@@ -38,7 +38,7 @@ do
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "b1a4aa7" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "6897bd1" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.
@@ -1440,9 +1440,9 @@ end
 --
 
 do
-	local DBMdotRevision = "20240723001246" -- The changing version of the local client, changes with every new zip using the project-date-integer packager replacement.
-	local DBMdotDisplayVersion = "11.0.0" -- "N.N.N" for a release and "N.N.N alpha" for the alpha duration.
-	local DBMdotReleaseRevision = "20240722000000" -- Hardcoded time, manually changed every release, they use it to track the highest release version, a new DBM release is the only time it will change.
+	local DBMdotRevision = "20240727022631" -- The changing version of the local client, changes with every new zip using the project-date-integer packager replacement.
+	local DBMdotDisplayVersion = "11.0.1" -- "N.N.N" for a release and "N.N.N alpha" for the alpha duration.
+	local DBMdotReleaseRevision = "20240726000000" -- Hardcoded time, manually changed every release, they use it to track the highest release version, a new DBM release is the only time it will change.
 	local protocol = 3
 	local versionPrefix = "V"
 	local PForceDisable = public.isVanilla and 13 or public.isWrath and 13 or 12

@@ -85,7 +85,7 @@ function mod:OnEngage()
 	timer = nil
 	self:SetStage(1)
 	self:CDBar(20566, 26, CL.knockback) -- Wrath of Ragnaros
-	if BigWigsLoader.isSeasonOfDiscovery then
+	if self:GetSeason() == 2 then
 		self:RegisterEvent("UNIT_HEALTH")
 	else
 		self:Bar("submerge", 180, L.submerge_bar, L.submerge_icon)
@@ -111,6 +111,7 @@ end
 function mod:WrathOfRagnaros(args)
 	self:Message(args.spellId, "red", CL.knockback)
 	self:CDBar(args.spellId, 27, CL.knockback)
+	self:PlaySound(args.spellId, "info")
 end
 
 function mod:SummonRagnarosStart()
@@ -145,7 +146,7 @@ function mod:Emerge()
 	self:SetStage(1)
 	self:CDBar(20566, 27, CL.knockback)
 	self:Message("emerge", "yellow", L.emerge_message, L.emerge_icon)
-	if not BigWigsLoader.isSeasonOfDiscovery then
+	if self:GetSeason() ~= 2 then
 		self:Bar("submerge", 180, L.submerge_bar, L.submerge_icon)
 		self:DelayedMessage("submerge", 60, "yellow", CL.custom_min:format(L.submerge, 2))
 		self:DelayedMessage("submerge", 120, "yellow", CL.custom_min:format(L.submerge, 1))
@@ -161,8 +162,8 @@ function mod:Submerge()
 	self:SetStage(2)
 	timer = self:ScheduleTimer("Emerge", 90)
 	self:StopBar(CL.knockback)
-	if BigWigsLoader.isSeasonOfDiscovery then
-		self:Message("submerge", "yellow", CL.health_percent:format(50, L.submerge_message), L.submerge_icon)
+	if self:GetSeason() == 2 then
+		self:Message("submerge", "yellow", CL.percent:format(50, L.submerge_message), L.submerge_icon)
 	else
 		self:Message("submerge", "yellow", L.submerge_message, L.submerge_icon)
 	end
