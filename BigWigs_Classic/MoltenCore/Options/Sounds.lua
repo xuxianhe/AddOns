@@ -23,6 +23,7 @@ BigWigs:AddSounds("Baron Geddon", {
 	[19695] = "alarm",
 	[20475] = "warning",
 	[20478] = "long",
+	[461103] = "underyou",
 })
 
 BigWigs:AddSounds("Shazzrah", {

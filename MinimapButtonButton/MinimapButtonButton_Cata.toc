@@ -1,7 +1,7 @@
 ## Interface: 40400
 ## Title: MinimapButtonButton
 ## Title-ruRU: Универсальная кнопка миникарты
-## Version: 1.18.2
+## Version: 1.19
 ## Author: syndenbock
 ## Notes: Creates a button that collects all minimap buttons
 ## Notes-deDE: Erstellt einen Button, der alle Minimap-Buttons einsammelt
@@ -15,7 +15,7 @@
 ## X-Curse-Project-ID: 446096
 ## X-Wago-ID: pkNM4QGz
 
-## OptionalDeps: ElvUI, Tukui
+## OptionalDeps: ElvUI, Tukui, Blizzard_Minimap
 ## SavedVariables: MinimapButtonButtonOptions
 ## SavedVariablesPerCharacter:
 
