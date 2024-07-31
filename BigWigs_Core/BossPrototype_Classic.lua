@@ -1490,6 +1490,13 @@ function boss:LFR()
 	return difficulty == 7 or difficulty == 17
 end
 
+--- Check if in a Follower, Quest, or Story instance.
+-- @return boolean
+function boss:Story()
+	-- 205: Follower, 216: Quest, 220: Story
+	return difficulty == 205 or difficulty == 216 or difficulty == 220
+end
+
 --- Check if in a Normal difficulty instance.
 -- @return boolean
 function boss:Normal()
@@ -2013,7 +2020,8 @@ do
 	-- @string[opt="player"] sourceUnit If a player unit is specified, this unit will be checked to see if they are tanking, otherwise use nil to check yourself
 	-- @return boolean
 	function boss:Tanking(targetUnit, sourceUnit)
-		return UnitDetailedThreatSituation(sourceUnit or "player", targetUnit)
+		local isTanking, status =  UnitDetailedThreatSituation(sourceUnit or "player", targetUnit)
+		return isTanking or status == 2 or status == 3
 	end
 
 	--- Check if you have the highest threat on a specific NPC unit.

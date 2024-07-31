@@ -1413,6 +1413,13 @@ function boss:LFR()
 	return difficulty == 7 or difficulty == 17
 end
 
+--- Check if in a Follower, Quest, or Story instance.
+-- @return boolean
+function boss:Story()
+	-- 205: Follower, 216: Quest, 220: Story
+	return difficulty == 205 or difficulty == 216 or difficulty == 220
+end
+
 --- Check if in a Normal difficulty instance.
 -- @return boolean
 function boss:Normal()
@@ -1936,7 +1943,8 @@ do
 	-- @string[opt="player"] sourceUnit If a player unit is specified, this unit will be checked to see if they are tanking, otherwise use nil to check yourself
 	-- @return boolean
 	function boss:Tanking(targetUnit, sourceUnit)
-		return UnitDetailedThreatSituation(sourceUnit or "player", targetUnit)
+		local isTanking, status =  UnitDetailedThreatSituation(sourceUnit or "player", targetUnit)
+		return isTanking or status == 2 or status == 3
 	end
 
 	--- Check if you have the highest threat on a specific NPC unit.
@@ -2043,8 +2051,8 @@ do
 				-- Mass Dispel (Priest), Dispel Magic (Priest), Purge (Shaman), Spellsteal (Mage), Consume Magic (Demon Hunter), Devour Magic (Warlock Felhunter), Tranquilizing Shot (Hunter)
 				offDispel.magic = true
 			end
-			if IsSpellKnown(2908) or IsSpellKnown(19801) or IsSpellKnown(5938) then
-				-- Soothe (Druid), Tranquilizing Shot (Hunter), Shiv (Rogue)
+			if IsSpellKnown(2908) or IsSpellKnown(19801) or IsSpellKnown(5938) or IsPlayerSpell(450432) then
+				-- Soothe (Druid), Tranquilizing Shot (Hunter), Shiv (Rogue), Pressure Points (Monk)
 				offDispel.enrage = true
 			end
 			if IsSpellKnown(527) or IsSpellKnown(77130) or IsSpellKnown(115450) or IsSpellKnown(4987) or IsSpellKnown(88423) or IsPlayerSpell(360823) or IsSpellKnown(89808, true) then -- XXX Add DPS priest mass dispel?
