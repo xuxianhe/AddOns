@@ -1,0 +1,29 @@
+## Interface: 100207
+
+## Title: BetterBags - Better Sort
+## Author: Vollmer
+## Version: v1.1.2
+## X-Date: 2024-06-05T07:21:58Z
+## X-License: MIT
+## X-Curse-Project-ID: 1003934
+## X-WoWI-ID: 26720
+## X-Wago-ID: qGZRwqGd
+
+## Dependencies: BetterBags
+
+## Notes: Improvements and additions to BetterBags sorting methods.
+## Notes-ruRU: 
+## Notes-deDE: 
+## Notes-koKR: 
+## Notes-esMX: 
+## Notes-esES: 
+## Notes-ptBR: 
+## Notes-zhCN: 
+## Notes-zhTW: 
+## Notes-itIT: 
+## Notes-frFR: 
+
+AlphabeticalSort.lua
+BagOptions.lua
+ItemLevelSorting.lua
+NewItemDurationFix.lua
