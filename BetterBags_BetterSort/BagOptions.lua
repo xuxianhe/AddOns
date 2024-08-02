@@ -22,6 +22,12 @@ local GetItemLevelOptions = DB.GetItemLevelOptions
 function DB:SetItemLevelSortEnabled(kind, enabled)
     DB.data.profile.itemLevel[kind]["sort"] = enabled
 end
+---@param kind BagKind
+---@param enabled boolean
+---@return boolean
+function DB:SetItemLevelSortDescending(kind, enabled)
+    DB.data.profile.itemLevel[kind]["descending"] = enabled
+end
 
 -- MARK: Overrides
 -------------------------------------------------------
@@ -43,9 +49,23 @@ function config:GetBagOptions(kind)
             events:SendMessage('bags/FullRefreshAll')
         end,
     }
+    descendingArg = {
+        type = "toggle",
+        name = L:G("Item Level Descending"),
+        desc = L:G("Sort Descendingly."),
+        order = 11, -- Lets just make sure that this is always at the end
+        get = function()
+            return DB:GetItemLevelOptions(kind).descending
+        end,
+        set = function(_, value)
+            DB:SetItemLevelSortDescending(kind, value)
+            events:SendMessage('bags/FullRefreshAll')
+        end,
+    }
 
     -- Insert the sort option
     originalOptions.args.itemLevel.args["sort"] = sortArg
+    originalOptions.args.itemLevel.args["descending"] = descendingArg
 
     return originalOptions
 end
@@ -54,9 +74,13 @@ end
 function DB:GetItemLevelOptions(kind) 
     local options = GetItemLevelOptions(self, kind)
 
-    if options and options["sort"] == nil then
+    if options and options["sort"] == nil  then
         options["sort"] = false
         DB:SetItemLevelSortEnabled(kind, false)
+    end
+    if options and options["descending"] == nil then
+        options["descending"] = false
+        DB:SetItemLevelSortDescending(kind, false)
     end
 
     return options

@@ -5,12 +5,22 @@ local L = BetterBags:GetModule('Localization')
 ---@class Sort: AceModule
 local sort = BetterBags:GetModule('Sort')
 
+-- Local BetterBags function
+-------------------------------------------------------
+local SortSectionsAlphabetically = sort.SortSectionsAlphabetically
+
 -- Override the default sort function
+---@param kind string
 ---@param a Section
 ---@param b Section
 ---@return boolean
 function sort.SortSectionsAlphabetically(kind, a, b)
-    local shouldSort, sortResult = sort.SortSectionsByPriority(kind, a, b)
+    -- Prevent rare nil case
+    local success, shouldSort, sortResult = pcall(sort.SortSectionsByPriority, kind, a, b)
+    if not success then
+        return SortSectionsAlphabetically(kind, a, b) 
+    end
+
     if shouldSort then return sortResult end
 
     local titleA = a.title:GetText()

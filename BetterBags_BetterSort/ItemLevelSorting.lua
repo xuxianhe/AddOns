@@ -26,8 +26,9 @@ function sort:GetItemSortFunction(kind, view)
     -- and as such this is the only place where we known if we should sort by item level or not
     local shouldSortByItemLevel = DB:GetItemLevelOptions(kind).sort
     if shouldSortByItemLevel then
+        local shouldSortDescending = DB:GetItemLevelOptions(kind).descending
         return function(a, b)
-            return SortItemsByItemLevelThenDefault(a, b, defaultItemSortFunction)
+            return SortItemsByItemLevelThenDefault(a, b, defaultItemSortFunction, shouldSortDescending)
         end
     end
 
@@ -39,12 +40,13 @@ end
 ---@param a Item
 ---@param b Item
 ---@param defaultItemSortFunction function
+---@param shouldSortDescending boolean
 ---@return boolean
-function SortItemsByItemLevelThenDefault(a, b, defaultItemSortFunction)
+function SortItemsByItemLevelThenDefault(a, b, defaultItemSortFunction, shouldSortDescending)
     local aData, bData = getValidData(a), getValidData(b)
     if not aData or not bData then return defaultItemSortFunction(a, b) end
 
-    local maybeSortedByItemLevel = MaybeSortItemsByItemLevel(aData, bData)
+    local maybeSortedByItemLevel = MaybeSortItemsByItemLevel(aData, bData, shouldSortDescending)
     if maybeSortedByItemLevel == nil then
         return defaultItemSortFunction(a, b)
     end
@@ -54,8 +56,9 @@ end
 
 ---@param aData ItemData
 ---@param bData ItemData
+---@param shouldSortDescending boolean
 ---@return boolean
-function MaybeSortItemsByItemLevel(aData, bData)
+function MaybeSortItemsByItemLevel(aData, bData, shouldSortDescending)
     -- No item level so use the default sort
     if not isGearWithItemLevel(aData.itemInfo) or not isGearWithItemLevel(bData.itemInfo) then
         return nil
@@ -66,6 +69,9 @@ function MaybeSortItemsByItemLevel(aData, bData)
         return nil 
     end
 
+    if shouldSortDescending then
+        return aData.itemInfo.currentItemLevel > bData.itemInfo.currentItemLevel
+    end
     return aData.itemInfo.currentItemLevel < bData.itemInfo.currentItemLevel
 end
 
