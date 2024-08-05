@@ -1,8 +1,6 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "zhTW")
 if not L then return end
 
-L.tempMessage = "計時條位置已重置，現在可以使用匯入匯出功能直接匯入設定檔。"
-
 -- Core.lua
 L.berserk = "狂暴"
 L.berserk_desc = "為首領狂暴顯示計時條及警報。"
@@ -48,6 +46,8 @@ L.missingAddOn = "缺少插件 |cFF436EEE%s|r！"
 L.disabledAddOn = "模組 |cFF436EEE%s|r 已被禁用，無法顯示計時器。"
 L.removeAddOn = "請移除「|cFF436EEE%s|r」，其已被「|cFF436EEE%s|r」所替代。"
 L.alternativeName = "%s（|cFF436EEE%s|r）"
+--L.outOfDateContentPopup = "WARNING!\nYou updated |cFF436EEE%s|r but you also need to update the main |cFF436EEEBigWigs|r addon.\nIgnoring this will result in broken functionality."
+--L.outOfDateContentRaidWarning = "|cFF436EEE%s|r requires version %d of the main |cFF436EEEBigWigs|r addon to function correctly, but you're on version %d."
 
 L.expansionNames = {
 	"艾澤拉斯", -- Classic
@@ -241,7 +241,7 @@ L.mythic = "傳奇模式"
 --L.level1 = "Level 1"
 --L.level2 = "Level 2"
 --L.level3 = "Level 3"
---L["10N"] = "Normal 10"
---L["25N"] = "Normal 25"
---L["10H"] = "Heroic 10"
---L["25H"] = "Heroic 25"
+--L.N10 = "Normal 10"
+--L.N25 = "Normal 25"
+--L.H10 = "Heroic 10"
+--L.H25 = "Heroic 25"

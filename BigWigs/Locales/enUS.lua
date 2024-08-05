@@ -1,7 +1,5 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "enUS")
 
-L.tempMessage = "Your bar positions have reset, but you can now Import/Export profiles."
-
 -- Core.lua
 L.berserk = "Berserk"
 L.berserk_desc = "Show a bar and timed warnings for when the boss will go berserk."
@@ -47,6 +45,8 @@ L.missingAddOn = "The |cFF436EEE%s|r addon is missing!"
 L.disabledAddOn = "You have the |cFF436EEE%s|r addon disabled, timers will not be shown."
 L.removeAddOn = "Please remove '|cFF436EEE%s|r' as it's been replaced by '|cFF436EEE%s|r'."
 L.alternativeName = "%s (|cFF436EEE%s|r)"
+L.outOfDateContentPopup = "WARNING!\nYou updated |cFF436EEE%s|r but you also need to update the main |cFF436EEEBigWigs|r addon.\nIgnoring this will result in broken functionality."
+L.outOfDateContentRaidWarning = "|cFF436EEE%s|r requires version %d of the main |cFF436EEEBigWigs|r addon to function correctly, but you're on version %d."
 
 L.expansionNames = {
 	"Classic", -- Classic
@@ -240,7 +240,7 @@ L.hardcore = "Hardcore"
 L.level1 = "Level 1"
 L.level2 = "Level 2"
 L.level3 = "Level 3"
-L["10N"] = "Normal 10"
-L["25N"] = "Normal 25"
-L["10H"] = "Heroic 10"
-L["25H"] = "Heroic 25"
+L.N10 = "Normal 10"
+L.N25 = "Normal 25"
+L.H10 = "Heroic 10"
+L.H25 = "Heroic 25"

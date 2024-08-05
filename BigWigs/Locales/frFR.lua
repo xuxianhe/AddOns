@@ -1,8 +1,6 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "frFR")
 if not L then return end
 
-L.tempMessage = "Les positions de votre bar ont été réinitialisées, mais vous pouvez maintenant Importer et Exporter des profils."
-
 -- Core.lua
 L.berserk = "Berserk"
 L.berserk_desc = "Prévient quand le boss devient fou furieux."
@@ -48,6 +46,8 @@ L.missingAddOn = "L'addon |cFF436EEE%s|r est manquant !"
 L.disabledAddOn = "L'addon |cFF436EEE%s|r est désactivé, les délais ne seront pas affichés."
 L.removeAddOn = "Veuillez enlever '|cFF436EEE%s|r' étant donné qu'il a été remplacé par '|cFF436EEE%s|r'."
 L.alternativeName = "%s (|cFF436EEE%s|r)"
+--L.outOfDateContentPopup = "WARNING!\nYou updated |cFF436EEE%s|r but you also need to update the main |cFF436EEEBigWigs|r addon.\nIgnoring this will result in broken functionality."
+--L.outOfDateContentRaidWarning = "|cFF436EEE%s|r requires version %d of the main |cFF436EEEBigWigs|r addon to function correctly, but you're on version %d."
 
 L.expansionNames = {
 	"Classic", -- Classic
@@ -241,7 +241,7 @@ L.hardcore = "Hardcore"
 L.level1 = "Niveau 1"
 L.level2 = "Niveau 2"
 L.level3 = "Niveau 3"
-L["10N"] = "10 joueurs"
-L["25N"] = "25 joueurs"
-L["10H"] = "Héroïque 10"
-L["25H"] = "Héroïque 25"
+L.N10 = "10 joueurs"
+L.N25 = "25 joueurs"
+L.H10 = "Héroïque 10"
+L.H25 = "Héroïque 25"

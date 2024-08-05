@@ -1,8 +1,6 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "koKR")
 if not L then return end
 
---L.tempMessage = "Your bar positions have reset, but you can now Import/Export profiles."
-
 -- Core.lua
 L.berserk = "광폭화"
 L.berserk_desc = "우두머리가 언제 광폭화하는지 바와 시간 경고를 표시합니다."
@@ -48,6 +46,8 @@ L.missingAddOn = "|cFF436EEE%s|r 애드온이 없습니다!"
 L.disabledAddOn = "|cFF436EEE%s|r 애드온이 비활성화 중이므로 타이머를 표시할 수 없습니다."
 L.removeAddOn = "'|cFF436EEE%s|r'|1이;가; '|cFF436EEE%s|r'|1으로;로; 대체되었으므로 제거해주세요."
 L.alternativeName = "%s (|cFF436EEE%s|r)"
+--L.outOfDateContentPopup = "WARNING!\nYou updated |cFF436EEE%s|r but you also need to update the main |cFF436EEEBigWigs|r addon.\nIgnoring this will result in broken functionality."
+--L.outOfDateContentRaidWarning = "|cFF436EEE%s|r requires version %d of the main |cFF436EEEBigWigs|r addon to function correctly, but you're on version %d."
 
 L.expansionNames = {
 	"오리지널", -- Classic
@@ -241,7 +241,7 @@ L.mythic = "신화"
 --L.level1 = "Level 1"
 --L.level2 = "Level 2"
 --L.level3 = "Level 3"
---L["10N"] = "Normal 10"
---L["25N"] = "Normal 25"
---L["10H"] = "Heroic 10"
---L["25H"] = "Heroic 25"
+--L.N10 = "Normal 10"
+--L.N25 = "Normal 25"
+--L.H10 = "Heroic 10"
+--L.H25 = "Heroic 25"

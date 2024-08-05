@@ -1,8 +1,6 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "deDE")
 if not L then return end
 
-L.tempMessage = "Die Leistenpositionen wurden zurückgesetzt, aber es können jetzt Profile importiert/exportiert werden."
-
 -- Core.lua
 L.berserk = "Berserker"
 L.berserk_desc = "Warnt, wenn der Boss zum Berserker wird."
@@ -48,6 +46,8 @@ L.missingAddOn = "Das |cFF436EEE%s|r Addon fehlt!"
 L.disabledAddOn = "Du hast das Addon |cFF436EEE%s|r deaktiviert, Timer werden nicht angezeigt."
 L.removeAddOn = "Bitte entferne '|cFF436EEE%s|r', da es durch '|cFF436EEE%s|r' ersetzt wurde."
 L.alternativeName = "%s (|cFF436EEE%s|r)"
+L.outOfDateContentPopup = "WARNUNG!\nDu hast |cFF436EEE%s|r aktualisiert, aber Du musst auch das Haupt |cFF436EEEBigWigs|r Addon aktualisieren.\nAndernfalls wird die Funktionalität eingeschränkt sein."
+L.outOfDateContentRaidWarning = "|cFF436EEE%s|r benötigt Version %d des Haupt |cFF436EEEBigWigs|r Addons zur korrekten Funktion, allerdings hast Du Version %d."
 
 L.expansionNames = {
 	"Classic", -- Classic
@@ -241,7 +241,7 @@ L.hardcore = "Hardcore"
 L.level1 = "Stufe 1"
 L.level2 = "Stufe 2"
 L.level3 = "Stufe 3"
-L["10N"] = "Normal 10"
-L["25N"] = "Normal 25"
-L["10H"] = "Heroisch 10"
-L["25H"] = "Heroisch 25"
+L.N10 = "Normal 10"
+L.N25 = "Normal 25"
+L.H10 = "Heroisch 10"
+L.H25 = "Heroisch 25"

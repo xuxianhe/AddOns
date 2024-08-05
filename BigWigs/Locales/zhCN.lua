@@ -1,8 +1,6 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "zhCN")
 if not L then return end
 
-L.tempMessage = "您的计时条位置已重置，现在可以使用新的导入/导出配置功能。"
-
 -- Core.lua
 L.berserk = "狂暴"
 L.berserk_desc = "为首领狂暴显示计时器和警报。"
@@ -48,6 +46,8 @@ L.missingAddOn = "你缺少 |cFF436EEE%s|r 插件!"
 L.disabledAddOn = "你的 |cFF436EEE%s|r 插件已禁用，计时器将无法显示。"
 L.removeAddOn = "请移除“|cFF436EEE%s|r”，其已被“|cFF436EEE%s|r”所替代。"
 L.alternativeName = "%s（|cFF436EEE%s|r）"
+L.outOfDateContentPopup = "警告！\n你更新了 |cFF436EEE%s|r 但你还需要更新 |cFF436EEEBigWigs|r 主插件。\n忽略这一点将导致功能崩溃。"
+L.outOfDateContentRaidWarning = "|cFF436EEE%s|r 需要安装 %d 版本的 |cFF436EEEBigWigs|r 主插件才能正常运行，但你使用了 %d 版本。"
 
 L.expansionNames = {
 	"经典旧世", -- Classic
@@ -241,7 +241,7 @@ L.hardcore = "专家模式"
 L.level1 = "难度等级 1"
 L.level2 = "难度等级 2"
 L.level3 = "难度等级 3"
-L["10N"] = "10人普通"
-L["25N"] = "25人普通"
-L["10H"] = "10人英雄"
-L["25H"] = "25人英雄"
+L.N10 = "10人普通"
+L.N25 = "25人普通"
+L.H10 = "10人英雄"
+L.H25 = "25人英雄"

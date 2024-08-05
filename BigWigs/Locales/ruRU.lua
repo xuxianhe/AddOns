@@ -1,8 +1,6 @@
 local L = BigWigsAPI:NewLocale("BigWigs", "ruRU")
 if not L then return end
 
-L.tempMessage = "Позиции панелей были изменены. Теперь возможен импорт/экспорт конфигурации."
-
 -- Core.lua
 L.berserk = "Берсерк"
 L.berserk_desc = "Предупреждать и отсчитывать время до берсерка."
@@ -48,6 +46,8 @@ L.missingAddOn = "Отсутствует модификация |cFF436EEE%s|r."
 L.disabledAddOn = "У вас выключена модификация |cFF436EEE%s|r, таймеры не будут показываться."
 L.removeAddOn = "Пожалуйста, удалите '|cFF436EEE%s|r', ему на смену пришло '|cFF436EEE%s|r'."
 L.alternativeName = "%s (|cFF436EEE%s|r)"
+--L.outOfDateContentPopup = "WARNING!\nYou updated |cFF436EEE%s|r but you also need to update the main |cFF436EEEBigWigs|r addon.\nIgnoring this will result in broken functionality."
+--L.outOfDateContentRaidWarning = "|cFF436EEE%s|r requires version %d of the main |cFF436EEEBigWigs|r addon to function correctly, but you're on version %d."
 
 L.expansionNames = {
 	"Классика", -- Classic
@@ -241,7 +241,7 @@ L.hardcore = "Хардкор"
 L.level1 = "Уровень 1"
 L.level2 = "Уровень 2"
 L.level3 = "Уровень 3"
-L["10N"] = "Нормал 10"
-L["25N"] = "Нормал 25"
-L["10H"] = "Героик 10"
-L["25H"] = "Героик 25"
+L.N10 = "Нормал 10"
+L.N25 = "Нормал 25"
+L.H10 = "Героик 10"
+L.H25 = "Героик 25"

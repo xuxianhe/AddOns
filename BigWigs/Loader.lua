@@ -38,7 +38,7 @@ do
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "6eb36b5" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "bf6d8ad" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.
@@ -642,10 +642,10 @@ local function Popup(msg, focus)
 	local frame = CreateFrame("Frame")
 	frame:SetFrameStrata("DIALOG")
 	frame:SetToplevel(true)
-	frame:SetSize(384, 128)
+	frame:SetSize(400, 150)
 	frame:SetPoint("CENTER", "UIParent", "CENTER")
 	local text = frame:CreateFontString(nil, "ARTWORK", "GameFontRedLarge")
-	text:SetSize(360, 0)
+	text:SetSize(380, 0)
 	text:SetJustifyH("CENTER")
 	text:SetJustifyV("TOP")
 	text:SetNonSpaceWrap(true)
@@ -770,6 +770,14 @@ do
 			meta = GetAddOnMetadata(i, "X-BigWigs-LoadOn-WorldBoss")
 			if meta then
 				loadOnWorldBoss[#loadOnWorldBoss + 1] = i
+			end
+			local minVersion = GetAddOnMetadata(i, "X-BigWigs-Minimum")
+			if minVersion and GetAddOnDependencies(i) == "BigWigs" then -- Safety
+				local version = tonumber(minVersion)
+				if version and version > BIGWIGS_VERSION then
+					Popup(L.outOfDateContentPopup:format(name), true)
+					RaidNotice_AddMessage(RaidWarningFrame, L.outOfDateContentRaidWarning:format(name, version, BIGWIGS_VERSION), {r=1,g=1,b=1}, 90)
+				end
 			end
 			meta = GetAddOnMetadata(i, "X-BigWigs-LoadOn-Slash")
 			if meta then
@@ -1005,21 +1013,53 @@ function mod:ADDON_LOADED(addon)
 	end
 	ldbi:Register("BigWigs", dataBroker, BigWigsIconDB)
 
-	-- Updates for BigWigsStatsDB
-	--if type(BigWigsStatsDB) == "table" then
-	--	local sDB = BigWigsStatsDB -- BigWigsStatsDB[instanceId][journalId][diff].[best|kills|wipes|fkWipes|fkDuration|fkDate|bestDate]
-	--	for instanceId, encounters in next, BigWigsStatsDB do
-	--		for journalId, difficulties in next, encounters do
-	--			for diff, statEntry in next, difficulties do
-	--				if diff == "10" then
-	--					for stats, result in next, statEntry do
-	--						print(diff, stats, result)
-	--					end
-	--				end
-	--			end
-	--		end
-	--	end
-	--end
+	-- Updates for BigWigsStatsDB, 11.0.0
+	if type(BigWigsStatsDB) == "table" then
+		local knownStats = {
+			["story"]=true, ["timewalk"]=true, ["LFR"]=true, ["normal"]=true, ["heroic"]=true, ["mythic"]=true,
+			["10N"]=true, ["25N"]=true, ["10H"]=true, ["25H"]=true,
+			["SOD"]=true, ["level1"]=true, ["level2"]=true, ["level3"]=true, ["hardcore"]=true,
+			["10"]=true,["25"]=true,["10h"]=true,["25h"]=true,["flex"]=true,["lfr"]=true,
+			["N10"]=true, ["N25"]=true,["H10"]=true,["H25"]=true,
+		}
+		local thingsToModify = {}
+		local lookup = {["10N"]="N10", ["25N"]="N25", ["10H"]="H10", ["25H"]="H25"}
+		-- BigWigsStatsDB[instanceId][journalId][diff].[best|kills|wipes|fkWipes|fkDuration|fkDate|bestDate]
+		for instanceId, encounters in next, BigWigsStatsDB do
+			for journalId, difficulties in next, encounters do
+				for diff, statEntry in next, difficulties do
+					if diff == "normal" and (instanceId == 2789 or instanceId == 2791 or instanceId == 109 or instanceId == 90 or instanceId == 48) then
+						-- Kazzak, Azuregos, Sunken Temple, Gnomeregan, Blackfathom Deeps
+						if not thingsToModify[instanceId] then thingsToModify[instanceId] = {} end
+						if not thingsToModify[instanceId][journalId] then thingsToModify[instanceId][journalId] = {} end
+						thingsToModify[instanceId][journalId][diff] = true
+					elseif lookup[diff] then
+						if not thingsToModify[instanceId] then thingsToModify[instanceId] = {} end
+						if not thingsToModify[instanceId][journalId] then thingsToModify[instanceId][journalId] = {} end
+						thingsToModify[instanceId][journalId][diff] = true
+					elseif not knownStats[diff] then
+						sysprint("Unknown stat: ".. tostring(diff))
+						geterrorhandler()("BigWigs: Unknown stat: ".. tostring(diff))
+					end
+				end
+			end
+		end
+		for instanceId, encounters in next, thingsToModify do
+			for journalId, difficulties in next, encounters do
+				for diff, statEntry in next, difficulties do
+					if diff == "normal" and (instanceId == 2789 or instanceId == 2791 or instanceId == 109 or instanceId == 90 or instanceId == 48) then
+						-- Kazzak, Azuregos, Sunken Temple, Gnomeregan, Blackfathom Deeps
+						BigWigsStatsDB[instanceId][journalId].SOD = BigWigsStatsDB[instanceId][journalId][diff]
+						BigWigsStatsDB[instanceId][journalId][diff] = nil
+					elseif lookup[diff] then
+						BigWigsStatsDB[instanceId][journalId][lookup[diff]] = BigWigsStatsDB[instanceId][journalId][diff]
+						BigWigsStatsDB[instanceId][journalId][diff] = nil
+					end
+				end
+			end
+		end
+		-- Add old stats to new stats? [10,25,10h,25h,flex,lfr]
+	end
 
 	if BigWigs3DB then
 		-- Somewhat ugly, but saves loading AceDB with the loader instead of with the core
@@ -1058,13 +1098,6 @@ function mod:ADDON_LOADED(addon)
 		C_CVar.SetCVar("Sound_MaxCacheSizeInBytes", "67108864") -- Set the cache to the "Small (64MB)" setting as a minimum
 	end
 
-	if not BigWigsBarsReset then
-		BigWigsBarsReset = true
-		if BigWigs3DB then
-			sysprint(L.tempMessage)
-			Popup("BigWigs: ".. L.tempMessage, true)
-		end
-	end
 	--bwFrame:UnregisterEvent("ADDON_LOADED")
 	--self.ADDON_LOADED = nil
 end
