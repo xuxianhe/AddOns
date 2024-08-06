@@ -15,7 +15,7 @@ BigWigs:AddColors("Skarmorak", {
 	[423572] = "green",
 })
 
-BigWigs:AddColors("Forge Speakers", {
+BigWigs:AddColors("Master Machinists", {
 	[428202] = "yellow",
 	[428508] = "red",
 	[428711] = "purple",
@@ -25,7 +25,7 @@ BigWigs:AddColors("Forge Speakers", {
 	[449167] = "orange",
 })
 
-BigWigs:AddColors("High Speaker Eirich", {
+BigWigs:AddColors("Void Speaker Eirich", {
 	[427461] = {"green","yellow"},
 	[427852] = "red",
 	[427869] = "orange",

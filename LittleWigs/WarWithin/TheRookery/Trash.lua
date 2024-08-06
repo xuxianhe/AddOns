@@ -50,7 +50,7 @@ function mod:GetOptions()
 		450628, -- Entropy Shield
 		-- Cursed Stormrider
 		427323, -- Charged Bombardment
-		-- TODO Localized Storm?
+		427404, -- Localized Storm
 		-- Cursed Rooktender
 		427260, -- Enrage Rook
 		-- Unruly Stormrook
@@ -94,6 +94,7 @@ function mod:OnBossEnable()
 
 	-- Cursed Stormrider
 	self:Log("SPELL_CAST_START", "ChargedBombardment", 427323)
+	self:Log("SPELL_CAST_START", "LocalizedStorm", 427404)
 
 	-- Cursed Rooktender
 	self:Log("SPELL_CAST_START", "EnrageRook", 427260)
@@ -155,7 +156,7 @@ do
 		timer = self:ScheduleTimer("QuartermasterKoratiteDeath", 30)
 	end
 
-	function mod:QuartermasterKoratiteDeath(args)
+	function mod:QuartermasterKoratiteDeath()
 		if timer then
 			self:CancelTimer(timer)
 			timer = nil
@@ -168,8 +169,15 @@ end
 -- Cursed Stormrider
 
 function mod:ChargedBombardment(args)
-	self:Message(args.spellId, "yellow")
+	self:Message(args.spellId, "orange")
 	self:PlaySound(args.spellId, "alarm")
+	--self:Nameplate(args.spellId, 20.6, args.sourceGUID)
+end
+
+function mod:LocalizedStorm(args)
+	self:Message(args.spellId, "yellow")
+	self:PlaySound(args.spellId, "info")
+	--self:Nameplate(args.spellId, 27.9, args.sourceGUID)
 end
 
 -- Cursed Rooktender
@@ -177,6 +185,7 @@ end
 function mod:EnrageRook(args)
 	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
 	self:PlaySound(args.spellId, "alert")
+	--self:Nameplate(args.spellId, 12.1, args.sourceGUID)
 end
 
 -- Unruly Stormrook
@@ -190,6 +199,7 @@ do
 			self:Message(args.spellId, "orange")
 			self:PlaySound(args.spellId, "alarm")
 		end
+		--self:Nameplate(args.spellId, 18.2, args.sourceGUID)
 	end
 end
 
@@ -199,9 +209,10 @@ do
 		local t = args.time
 		if t - prev > 2 then
 			prev = t
-			self:Message(args.spellId, "red")
+			self:Message(args.spellId, "purple")
 			self:PlaySound(args.spellId, "alarm")
 		end
+		--self:Nameplate(args.spellId, 23.0, args.sourceGUID)
 	end
 end
 
@@ -210,6 +221,7 @@ end
 function mod:Implosion(args)
 	self:Message(args.spellId, "orange")
 	self:PlaySound(args.spellId, "alarm")
+	--self:Nameplate(args.spellId, 17.0, args.sourceGUID)
 end
 
 -- Corrupted Oracle
@@ -217,6 +229,7 @@ end
 function mod:VoidShell(args)
 	self:Message(args.spellId, "red")
 	self:PlaySound(args.spellId, "alert")
+	--self:Nameplate(args.spellId, 21.8, args.sourceGUID)
 end
 
 function mod:SeepingCorruptionApplied(args)
@@ -229,6 +242,7 @@ end
 function mod:AttractingShadows(args)
 	self:Message(args.spellId, "yellow")
 	self:PlaySound(args.spellId, "info")
+	--self:Nameplate(args.spellId, 21.8, args.sourceGUID)
 end
 
 -- Inflicted Civilian
@@ -253,6 +267,7 @@ function mod:VoidVolley(args)
 	end
 	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
 	self:PlaySound(args.spellId, "alert")
+	--self:Nameplate(args.spellId, 18.2, args.sourceGUID)
 end
 
 -- Radiating Voidstone
@@ -266,6 +281,7 @@ do
 			self:Message(args.spellId, "yellow")
 			self:PlaySound(args.spellId, "alert")
 		end
+		--self:Nameplate(args.spellId, 27.9, args.sourceGUID)
 	end
 end
 

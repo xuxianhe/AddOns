@@ -15,7 +15,7 @@ BigWigs:AddSounds("Skarmorak", {
 	[423572] = "info",
 })
 
-BigWigs:AddSounds("Forge Speakers", {
+BigWigs:AddSounds("Master Machinists", {
 	[428202] = "long",
 	[428508] = "alarm",
 	[428711] = "alert",
@@ -25,7 +25,7 @@ BigWigs:AddSounds("Forge Speakers", {
 	[449167] = "alarm",
 })
 
-BigWigs:AddSounds("High Speaker Eirich", {
+BigWigs:AddSounds("Void Speaker Eirich", {
 	[427461] = "info",
 	[427852] = "alert",
 	[427869] = "alarm",

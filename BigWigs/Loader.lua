@@ -12,7 +12,7 @@ local strfind = string.find
 -- Generate our version variables
 --
 
-local BIGWIGS_VERSION = 350
+local BIGWIGS_VERSION = 351
 local BIGWIGS_RELEASE_STRING, BIGWIGS_VERSION_STRING
 local versionQueryString, versionResponseString = "Q^%d^%s^%d^%s", "V^%d^%s^%d^%s"
 local customGuildName = false
@@ -32,13 +32,14 @@ do
 	public.isWrath = tbl.isWrath
 	public.isCata = tbl.isCata
 	public.dbmPrefix = "D5"
+	public.littlewigsVersionString = L.missingAddOnPopup:format("LittleWigs")
 
 	-- START: MAGIC PACKAGER VOODOO VERSION STUFF
 	local REPO = "REPO"
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "bf6d8ad" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "186d70b" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.
@@ -776,7 +777,9 @@ do
 				local version = tonumber(minVersion)
 				if version and version > BIGWIGS_VERSION then
 					Popup(L.outOfDateContentPopup:format(name), true)
-					RaidNotice_AddMessage(RaidWarningFrame, L.outOfDateContentRaidWarning:format(name, version, BIGWIGS_VERSION), {r=1,g=1,b=1}, 90)
+					local msg = L.outOfDateContentRaidWarning:format(name, version, BIGWIGS_VERSION)
+					sysprint(msg)
+					RaidNotice_AddMessage(RaidWarningFrame, msg, {r=1,g=1,b=1}, 90)
 				end
 			end
 			meta = GetAddOnMetadata(i, "X-BigWigs-LoadOn-Slash")
@@ -823,9 +826,22 @@ do
 			end
 		end
 
-		-- check if LittleWigs is installed from source
-		if name == "LittleWigs" and GetAddOnMetadata(i, "X-LittleWigs-Repo") then
-			public.usingLittleWigsRepo = true
+		-- check LittleWigs version
+		if name == "LittleWigs" then
+			if GetAddOnMetadata(i, "X-LittleWigs-Repo") then
+				public.usingLittleWigsRepo = true
+				public.littlewigsVersionString = L.littlewigsSourceCheckout
+			else
+				local version = GetAddOnMetadata(i, "Version")
+				if version then
+					local alpha = strfind(version, "-", nil, true)
+					if alpha then
+						public.littlewigsVersionString = L.littlewigsAlphaRelease:format(version)
+					else
+						public.littlewigsVersionString = L.littlewigsOfficialRelease:format(version)
+					end
+				end
+			end
 		end
 
 		if next(loadOnSlash) then
@@ -1114,17 +1130,13 @@ function mod:GLOBAL_MOUSE_UP(button)
 	end
 end
 
-function mod:START_PLAYER_COUNTDOWN(initiatedBy, timeSeconds, totalTime)
+function mod:START_PLAYER_COUNTDOWN(...)
 	loadAndEnableCore()
-	if BigWigs and BigWigs.GetPlugin then -- XXX Clean this up
-		BigWigs:GetPlugin("Pull"):START_PLAYER_COUNTDOWN(nil, initiatedBy, timeSeconds, totalTime)
-	end
+	public:SendMessage("Blizz_StartCountdown", ...)
 end
-function mod:CANCEL_PLAYER_COUNTDOWN(initiatedBy)
+function mod:CANCEL_PLAYER_COUNTDOWN(...)
 	loadAndEnableCore()
-	if BigWigs and BigWigs.GetPlugin then -- XXX Clean this up
-		BigWigs:GetPlugin("Pull"):CANCEL_PLAYER_COUNTDOWN(nil, initiatedBy)
-	end
+	public:SendMessage("Blizz_StopCountdown", ...)
 end
 
 -- We can't do our addon loading in ADDON_LOADED as the target addons may be registering that
@@ -1313,17 +1325,15 @@ do
 	if not public.usingBigWigsRepo and not guildDisableContentWarnings then -- We're not using BigWigs Git, but required functional addons are missing? Show a warning
 		for k in next, reqFuncAddons do -- List of required addons (core/plugins/options)
 			if not foundReqAddons[k] then -- A required functional addon is missing
-				local msg = L.missingAddOn:format(k)
-				delayedMessages[#delayedMessages+1] = msg
-				Popup(msg, true)
+				delayedMessages[#delayedMessages+1] = L.missingAddOnRaidWarning:format(k)
+				Popup(L.missingAddOnPopup:format(k), true)
 			end
 		end
 	end
 
 	if printMissingExpansionAddon and public.isClassic then
-		local msg = L.missingAddOn:format(public.currentExpansion.name)
-		delayedMessages[#delayedMessages+1] = msg
-		Popup(msg, true)
+		delayedMessages[#delayedMessages+1] = L.missingAddOnRaidWarning:format(public.currentExpansion.name)
+		Popup(L.missingAddOnPopup:format(public.currentExpansion.name), true)
 	else
 		printMissingExpansionAddon = false
 	end
@@ -1362,7 +1372,7 @@ do
 						sysprint(delayedMessages[i])
 					end
 					if printMissingExpansionAddon then
-						RaidNotice_AddMessage(RaidWarningFrame, L.missingAddOn:format(public.currentExpansion.name), {r=1,g=1,b=1}, 120)
+						RaidNotice_AddMessage(RaidWarningFrame, L.missingAddOnRaidWarning:format(public.currentExpansion.name), {r=1,g=1,b=1}, 120)
 					end
 					delayedMessages = nil
 				end)
@@ -1728,10 +1738,10 @@ do
 			end
 			if public:GetAddOnState(zoneAddon) == "MISSING" then
 				warnedThisZone[id] = true
-				local msg = L.missingAddOn:format(zoneAddon)
+				Popup(L.missingAddOnPopup:format(zoneAddon))
+				local msg = L.missingAddOnRaidWarning:format(zoneAddon)
 				sysprint(msg)
-				Popup(msg)
-				RaidNotice_AddMessage(RaidWarningFrame, msg, {r=1,g=1,b=1}, 15)
+				RaidNotice_AddMessage(RaidWarningFrame, msg, {r=1,g=1,b=1}, 20)
 			end
 		end
 	end

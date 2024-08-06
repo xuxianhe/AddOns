@@ -13,7 +13,8 @@
 ## Notes-ptBR: Logging utility for boss encounters.
 ## IconTexture: Interface\AddOns\Transcriptor\icon_on
 ## Author: Funkydude
-## Version: v11.0.0
+## Version: v11.0.1
+## OptionalDeps: LibSpecialization
 ## X-Credits: Kyahx, Rabbit, MysticalOS, nebula169
 ## X-Category: Development Tools
 ## X-License: All Rights Reserved: You are free to fork and modify on GitHub, please ask us about anything else.

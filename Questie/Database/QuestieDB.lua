@@ -188,6 +188,7 @@ QuestieDB.classKeys = {
 }
 
 QuestieDB.specialFlags = {
+    NONE = 0,
     REPEATABLE = 1,
 }
 
@@ -506,19 +507,6 @@ function QuestieDB:IsExclusiveQuestInQuestLogOrComplete(exclusiveTo)
         if Questie.db.char.complete[exId] then
             return true
         end
-    end
-    return false
-end
-
----@param parentID number
----@return boolean
-function QuestieDB.IsParentQuestActive(parentID)
-    --! If you edit the logic here, also edit in AvailableQuests.IsLevelRequirementsFulfilled
-    if (not parentID) or (parentID == 0) then
-        return false
-    end
-    if QuestiePlayer.currentQuestlog[parentID] then
-        return true
     end
     return false
 end
