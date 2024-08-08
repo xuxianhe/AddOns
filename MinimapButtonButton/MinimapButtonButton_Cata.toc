@@ -1,7 +1,7 @@
 ## Interface: 40400
 ## Title: MinimapButtonButton
 ## Title-ruRU: Универсальная кнопка миникарты
-## Version: 1.19
+## Version: 1.19.2
 ## Author: syndenbock
 ## Notes: Creates a button that collects all minimap buttons
 ## Notes-deDE: Erstellt einen Button, der alle Minimap-Buttons einsammelt

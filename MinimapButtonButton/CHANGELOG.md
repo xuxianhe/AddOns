@@ -1,1 +1,1 @@
-- A notification message is now displayed when accessing a setting that's unavailable on the current client
+- The expansion landing page button is now included if the garrison button was collected before
