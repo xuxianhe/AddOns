@@ -1,4 +1,14 @@
 # AddOns
+
+## 单人开团宏
+``
+/click [@party1,noexists]PlayerFrame RightButton
+/click [@party1,noexists]DropDownList1Button20
+/run ConvertToRaid()
+/stopmacro [group]
+/invite anyone
+``
+
 iTaank
 [iTank]
 ``
