@@ -12,7 +12,7 @@ local CloseMenus = CloseMenus
 local CreateFrame = CreateFrame
 local HideUIPanel = HideUIPanel
 local InCombatLockdown = InCombatLockdown
-local IsAddOnLoaded = IsAddOnLoaded
+local IsAddOnLoaded = _G.C_AddOns and _G.C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 local ShowUIPanel = ShowUIPanel
 local ToggleFrame = ToggleFrame
 local UIParentLoadAddOn = UIParentLoadAddOn
@@ -325,4 +325,4 @@ local function OnLeave(self)
 	DT.tooltip:Hide()
 end
 
-DT:RegisterDatatext("mGameMenu", "mMediaTag", nil, OnEvent, nil, OnClick, OnEnter, OnLeave, L["Game Menu"], nil, nil)
+DT:RegisterDatatext("mGameMenu", mMT.DatatextString, nil, OnEvent, nil, OnClick, OnEnter, OnLeave, L["Game Menu"], nil, nil)

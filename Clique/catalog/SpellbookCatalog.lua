@@ -93,7 +93,12 @@ end
 
 function lib:GetSpellId(idx, bookType)
     if C_SpellBook and C_SpellBook.GetSpellBookItemType then
-        local spellType, actionId = C_SpellBook.GetSpellBookItemType(idx, bookType)
+        local spellType, actionId, spellId = C_SpellBook.GetSpellBookItemType(idx, bookType)
+        -- The spell might be overriden due to some talents
+        if spellId and spellId ~= actionId then
+            return spellId
+        end
+
         return actionId
     else
         local spellType, actionId = GetSpellBookItemInfo(idx, bookType)

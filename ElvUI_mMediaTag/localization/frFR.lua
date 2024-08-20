@@ -104,7 +104,7 @@ L["Click Color Style"] = true
 L["Click left to open the main menu."] = true
 L["Click to open Great Vault"] = true
 L["Click to open LFD Frame"] = true
-L["Click to roll 1-100"] = true
+L["Left Click to roll"] = true
 L["Collect Garbage"] = true
 L["Collected"] = true
 L["Color HC"] = true
@@ -720,3 +720,14 @@ L["|cffFFFFFFControl + Left Click:|r Change Loadout"] = true
 L["|cffFFFFFFLeft Click:|r Change Talent Specialization"] = true
 L["|cffFFFFFFRight Click:|r Change Loot Specialization"] = true
 L["|cffFFFFFFShift + Left Click:|r Show Talent Specialization UI"] = true
+
+-- new
+L["Released"] = true
+L["Version"] = true
+L["Important"] = true
+L["New"] = true
+L["Updates"] = true
+L["Fixes"] = true
+L["Left Click"] = true
+L["Right Click"] = true
+L["Info: The Skin can be affected by other addons if they add a skin for all windows. To fix the problem, the skin must be deactivated in the other addon. This is not a bug of mMT."] = true

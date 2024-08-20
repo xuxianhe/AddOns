@@ -13,14 +13,10 @@ if not (addon:ProjectIsRetail() and addon:ProjectIsWarWithin()) then
     return
 end
 
-addon:Printf(L["Loading Blizzard_warwithin integration"])
-
 function addon:IntegrateBlizzardFrames()
     self:DragonflightPlayerFrame()
     self:DragonflightTargetFrame()
     self:DragonflightFocusFrame()
-
-    addon:Printf(L["==== Skipping party frames ===="])
     self:DragonflightPartyFrame()
 
     self:DragonflightCompactRaidFrames()

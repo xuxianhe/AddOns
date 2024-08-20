@@ -42,15 +42,6 @@ local function configTable()
 						name = L["Roll Button"],
 						args = {},
 					},
-					chat = {
-						order = 4,
-						type = "group",
-						name = L["Chat Button"],
-						hidden = function()
-							return not E.Retail
-						end,
-						args = {},
-					},
 					keystochat = {
 						order = 5,
 						type = "group",
@@ -309,12 +300,6 @@ local function configTable()
 							},
 						},
 					},
-					-- classcolor = {
-					-- 	order = 3,
-					-- 	type = "group",
-					-- 	name = L["Custom Class colors"],
-					-- 	args = {},
-					-- },
 					roleicons = {
 						order = 4,
 						type = "group",
@@ -355,16 +340,6 @@ local function configTable()
 						childGroups = "tab",
 						args = {},
 					},
-					questicons = {
-						order = 9,
-						type = "group",
-						name = L["Quest Icons"],
-						hidden = function()
-							return not E.Retail
-						end,
-						childGroups = "tab",
-						args = {},
-					},
 					textures = {
 						order = 20,
 						type = "group",
@@ -389,12 +364,20 @@ local function configTable()
 				childGroups = "tab",
 				args = {},
 			},
-			changelog = {
+			license = {
 				order = 11,
+				type = "group",
+				name = format("|CFF0080ff%s|r", L["License"]),
+				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\license.tga",
+				childGroups = "tab",
+				args = {},
+			},
+			changelog = {
+				order = 12,
 				type = "group",
 				name = format("|CFFFF0094%s|r", L["Changelog"]),
 				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\changelog.tga",
-				childGroups = "tab",
+				childGroups = "select",
 				args = {},
 			},
 			dev = {

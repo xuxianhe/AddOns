@@ -6,7 +6,7 @@ local tinsert = tinsert
 
 local collectgarbage = collectgarbage
 local GetAddOnMetadata = _G.C_AddOns and _G.C_AddOns.GetAddOnMetadata or _G.GetAddOnMetadata
-local IsAddOnLoaded = C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded
+local IsAddOnLoaded = _G.C_AddOns and _G.C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 
 -- Addon Name and Namespace
 local addonName, _ = ...
@@ -17,6 +17,7 @@ mMT.Version = GetAddOnMetadata(addonName, "Version")
 mMT.Name = "|CFF6559F1m|r|CFF7A4DEFM|r|CFF8845ECe|r|CFFA037E9d|r|CFFA435E8i|r|CFFB32DE6a|r|CFFBC26E5T|r|CFFCB1EE3a|r|CFFDD14E0g|r |CFFFF006C&|r |CFFFF4C00T|r|CFFFF7300o|r|CFFFF9300o|r|CFFFFA800l|r|CFFFFC900s|r"
 mMT.NameShort = "|CFF6559F1m|r|CFFA037E9M|r|CFFDD14E0T|r"
 mMT.DockString = "|CFF2CD204D|r|CFF1BE43Ao|r|CFF10EE5Cc|r|CFF05FA82k|r"
+mMT.DatatextString = "|CFF6559F1m|r|CFF7A4DEFM|r|CFF8845ECe|r|CFFA037E9d|r|CFFA435E8i|r|CFFB32DE6a|r|CFFBC26E5T|r|CFFCB1EE3a|r|CFFDD14E0g|r"
 mMT.Icon = "|TInterface\\Addons\\ElvUI_mMediaTag\\media\\logo\\mmt_icon_round.tga:14:14|t"
 mMT.IconSquare = "|TInterface\\Addons\\ElvUI_mMediaTag\\media\\logo\\mmt_icon.tga:14:14|t"
 mMT.Modules = {}
@@ -33,6 +34,7 @@ mMT.CurrentProfile = nil
 mMT.firstLoad = 0
 mMT.Classes = { "DEATHKNIGHT", "DEMONHUNTER", "DRUID", "EVOKER", "HUNTER", "MAGE", "MONK", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR" }
 mMT.Locales = LibStub("AceLocale-3.0"):GetLocale("mMediaTag")
+mMT.Changelog = {}
 
 mMT.Modules.Portraits = {}
 mMT.Modules.SummonIcon = {}
@@ -44,7 +46,6 @@ mMT.Modules.Castbar = {}
 mMT.Modules.ImportantSpells = {}
 mMT.Modules.InterruptOnCD = {}
 mMT.Modules.CosmeticBars = {}
-mMT.Modules.QuestIcons = {}
 mMT.Modules.ObjectiveTracker = {}
 mMT.Modules.CustomUFTextures = {}
 mMT.Modules.CustomBGTextures = {}
@@ -138,7 +139,6 @@ local function EnableModules()
 	if E.Retail then
 		mMT.Modules.ObjectiveTracker.enable = E.db.mMT.objectivetracker.enable and (E.private.skins.blizzard.enable and E.private.skins.blizzard.objectiveTracker) and not IsAddOnLoaded("!KalielsTracker")
 		mMT.Modules.InterruptOnCD.enable = E.db.mMT.interruptoncd.enable
-		mMT.Modules.QuestIcons.enable = E.db.mMT.questicons.enable
 	end
 end
 
@@ -205,9 +205,13 @@ function mMT:Initialize()
 	mMT.ElvUI_EltreumUI = mMT:CheckEltruism()
 	mMT.ElvUI_MerathilisUI = mMT:CheckMerathilisUI()
 	mMT.ClassColor = mMT:UpdateClassColor()
-	mMT.ElvUI_JiberishIcons = mMT:JiberishIcons()
 	mMT.DEVNames = mMT:GetDevNames()
 	mMT.Classes = mMT:ClassesTable()
+
+	-- load JiberishUI Icons for Portraits
+	if E.db.mMT.portraits.general.enable then
+		mMT.ElvUI_JiberishIcons = mMT:JiberishIcons()
+	end
 
 	-- Register Events for Retail
 	if E.Retail or E.Cata then
@@ -329,10 +333,6 @@ function mMT:PLAYER_ENTERING_WORLD(event)
 	if E.Retail then
 		if E.private.nameplates.enable and E.db.mMT.nameplate.executemarker.auto then
 			mMT:updateAutoRange()
-		end
-
-		if E.db.mMT.chat.enable then
-			mMT:mChat()
 		end
 	end
 

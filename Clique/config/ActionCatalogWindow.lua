@@ -151,6 +151,26 @@ function window:Initialize()
 
     window:ResetFilter()
     window:UPDATE_CATALOG_WINDOW()
+
+    local function triggerCatalogUpdate(self, elapsed)
+        if not self.delay then
+            self.delay = 0.1
+        end
+
+        self.delay = self.delay - elapsed
+        if self.delay <= 0 then
+            self:SetScript("OnUpdate", nil)
+            self.delay = nil
+            window:REFRESH_CATALOG_WINDOW()
+        end
+    end
+
+    window.frame:RegisterEvent("SPELLS_CHANGED")
+    window.frame:SetScript("OnEvent", function(self, event, ...)
+        if self:IsVisible() then
+           self:SetScript("OnUpdate", triggerCatalogUpdate)
+        end
+    end)
 end
 
 local function ActionCatalogButton_OnClick(self, button)
@@ -177,7 +197,7 @@ end
 local function ActionCatalogButton_OnMouseWheel(activeButton, delta)
     -- If we're quickbinding then do quickbindy things
     if config:InQuickbindMode() then
-        local button = (delta < 0) and "MOUSEWHEELUP" or "MOUSEWHEELDOWN"
+        local button = (delta > 0) and "MOUSEWHEELUP" or "MOUSEWHEELDOWN"
         local captured = addon:GetCapturedKey(button)
         window:AddNewBindingFromButton(activeButton, captured)
     end
@@ -517,6 +537,15 @@ function window:GetCatalogResults()
 
     window.allResults = results
     return results
+end
+
+-- Called when the spells change
+function window:REFRESH_CATALOG_WINDOW()
+    -- Make sure the spell catalog is updated
+    window:CATALOG_FILTER_CHANGED()
+
+    -- Refresh the UI
+    window:UPDATE_CATALOG_WINDOW()
 end
 
 function window:CATALOG_FILTER_CHANGED()

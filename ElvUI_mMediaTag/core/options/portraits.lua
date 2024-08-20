@@ -45,9 +45,7 @@ end
 local function configTable()
 	local sizeString = ":16:16:0:0:64:64:4:60:4:60"
 
-	if mMT.ElvUI_JiberishIcons.loaded then
-		BuildIconStylesTable()
-	end
+	if mMT.ElvUI_JiberishIcons.loaded then BuildIconStylesTable() end
 
 	E.Options.args.mMT.args.cosmetic.args.portraits.args = {
 		toggle_enable = {
@@ -348,7 +346,7 @@ local function configTable()
 									type = "description",
 									name = "\n\n",
 								},
-								extrashadow= {
+								extrashadow = {
 									order = 10,
 									desc = L["This is the shadow texture for the Rare & Elite texture."],
 									name = function()
@@ -455,7 +453,7 @@ local function configTable()
 										E:StaticPopup_Show("CONFIG_RL")
 									end,
 								},
-								spacer_texture8= {
+								spacer_texture8 = {
 									order = 17,
 									type = "description",
 									name = "\n\n",
@@ -483,7 +481,7 @@ local function configTable()
 										E:StaticPopup_Show("CONFIG_RL")
 									end,
 								},
-								spacer_texture9= {
+								spacer_texture9 = {
 									order = 19,
 									type = "description",
 									name = "\n\n",
@@ -742,7 +740,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.player.cast = value
-								mMT.Modules.Portraits:Initialize()
+								mMT.Modules.Portraits:Initialize(true)
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},
@@ -942,7 +940,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.target.cast = value
-								mMT.Modules.Portraits:Initialize()
+								mMT.Modules.Portraits:Initialize(true)
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},
@@ -1502,7 +1500,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.focus.cast = value
-								mMT.Modules.Portraits:Initialize()
+								mMT.Modules.Portraits:Initialize(true)
 							end,
 						},
 					},
@@ -1689,7 +1687,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.party.cast = value
-								mMT.Modules.Portraits:Initialize()
+								mMT.Modules.Portraits:Initialize(true)
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},
@@ -1877,7 +1875,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.boss.cast = value
-								mMT.Modules.Portraits:Initialize()
+								mMT.Modules.Portraits:Initialize(true)
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},
@@ -2065,7 +2063,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.arena.cast = value
-								mMT.Modules.Portraits:Initialize()
+								mMT.Modules.Portraits:Initialize(true)
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},

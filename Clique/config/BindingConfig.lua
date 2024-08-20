@@ -189,6 +189,8 @@ function config:ShowTooltip(owner, entryType, entryId)
     if entryType == libCatalog.entryType.Spell and entryId then
         tooltip:SetOwner(owner, "ANCHOR_TOPLEFT")
         tooltip:SetSpellByID(entryId)
+        tooltip:AddLine("")
+        tooltip:AddLine("Spell ID: " .. tostring(entryId))
     elseif entryType == libCatalog.entryType.Macro and entryId then
         local name, icon, body = libMacros:GetMacroNameIconBody(entryId)
         local accountMacro = libMacros:IsAccountMacroIndex(entryId)

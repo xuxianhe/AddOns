@@ -1,6 +1,6 @@
 # Clique
 
-## [v4.0.20-release](https://github.com/jnwhiteh/Clique/tree/v4.0.20-release) (2024-07-26)
-[Full Changelog](https://github.com/jnwhiteh/Clique/compare/v4.0.19-release...v4.0.20-release) [Previous Releases](https://github.com/jnwhiteh/Clique/releases)
+## [v4.0.25-release](https://github.com/jnwhiteh/Clique/tree/v4.0.25-release) (2024-08-19)
+[Full Changelog](https://github.com/jnwhiteh/Clique/compare/v4.0.24-release...v4.0.25-release) [Previous Releases](https://github.com/jnwhiteh/Clique/releases)
 
-- Fix issue with ranked spells  
+- Revert "Fix anchor of spellbook tab"  

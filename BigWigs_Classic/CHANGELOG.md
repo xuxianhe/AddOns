@@ -1,8 +1,6 @@
 # BigWigs [Classic]
 
-## [v11.0.17](https://github.com/BigWigsMods/BigWigs_Classic/tree/v11.0.17) (2024-08-09)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs_Classic/compare/v11.0.16...v11.0.17) [Previous Releases](https://github.com/BigWigsMods/BigWigs_Classic/releases)
+## [v11.0.22](https://github.com/BigWigsMods/BigWigs_Classic/tree/v11.0.22) (2024-08-19)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs_Classic/compare/v11.0.21...v11.0.22) [Previous Releases](https://github.com/BigWigsMods/BigWigs_Classic/releases)
 
-- Update option files  
-- Updates and cleanups for classic  
-- Update zhCN (#141)  
+- MoltenCore/Ragnaros: Fix subsequent submerge messages stating 50%, bring back backup submerge event  

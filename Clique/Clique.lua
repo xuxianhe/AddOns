@@ -668,7 +668,7 @@ function addon:GetBindingAttributes(global)
         set = {
             "local button = self",
             "local name = button:GetName()",
-            --"print('onenter: ' .. tostring(name and name or button))",
+            -- "print('onenter: ' .. tostring(name and name or button))",
             "if blacklist[name] then return end",
             "if danglingButton then ",
             --"  local dangleName = danglingButton:GetName()",

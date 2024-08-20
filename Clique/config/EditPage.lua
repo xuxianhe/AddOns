@@ -622,8 +622,13 @@ function page:SaveButton_OnClick(self, button)
         if actionChanged(orig, draft, page.rankRemoved) then
             -- Remove previous action information from orig
             config:RemoveActionFromBinding(orig)
+
             -- Copy the action from draft to orig
             config:CopyActionFromTo(draft, orig)
+
+            if page.rankRemoved then
+                orig.spellSubName = nil
+            end
         end
 
         if bindSetsChanged(orig, draft) then

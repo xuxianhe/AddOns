@@ -1,1 +1,0 @@
-- The expansion landing page button is now included if the garrison button was collected before

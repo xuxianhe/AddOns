@@ -64,6 +64,7 @@ function panel:CreateOptions()
     self.intro:SetJustifyV("TOP")
     self.intro:SetHeight(40)
 
+    self.statusBarFix = make_checkbox("statusBarFix", L["Fix issue with health and power bars"])
     self.PlayerFrame = make_checkbox("PlayerFrame", L["Player frame"])
     self.PetFrame = make_checkbox("PetFrame", L["Player's pet frame"])
     self.TargetFrame = make_checkbox("TargetFrame", L["Player's target frame"])
@@ -77,6 +78,7 @@ function panel:CreateOptions()
     self.arena = make_checkbox("ArenaEnemy", L["Arena enemy frames"])
 
     table.insert(bits, self.intro)
+    table.insert(bits, self.statusBarFix)
     table.insert(bits, self.PlayerFrame)
     table.insert(bits, self.PetFrame)
     table.insert(bits, self.TargetFrame)
@@ -122,6 +124,7 @@ function panel.refresh()
 
     local opt = addon.settings.blizzframes
 
+    panel.statusBarFix:SetChecked(opt.statusBarFix)
     panel.PlayerFrame:SetChecked(opt.PlayerFrame)
     panel.PetFrame:SetChecked(opt.PetFrame)
     panel.TargetFrame:SetChecked(opt.TargetFrame)
@@ -145,6 +148,8 @@ end
 function panel.okay()
     xpcall(function()
     local opt = addon.settings.blizzframes
+
+    opt.statusBarFix = not not panel.statusBarFix:GetChecked()
     opt.PlayerFrame = not not panel.PlayerFrame:GetChecked()
     opt.PetFrame = not not panel.PetFrame:GetChecked()
     opt.TargetFrame = not not panel.TargetFrame:GetChecked()

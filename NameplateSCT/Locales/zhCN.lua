@@ -1,8 +1,8 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("NameplateSCT", "zhCN")
 if not L then return end
 
-L["%s (A: %s)"] = "%s (A: %s)" -- A for Absorb
---L["%s (O: %s)"] = "%s (O: %s)" -- O for Overkill
+L["%s (A: %s)"] = "%s (吸收: %s)" -- A for Absorb
+L["%s (O: %s)"] = "%s (过量: %s)" -- O for Overkill
 L["Abilities"] = "技能"
 L["Absorbed"] = "吸收"
 L["Alpha"] = "透明度"
@@ -60,8 +60,10 @@ L["Icon Y Offset"] = "图标垂直偏移"
 L["Icons"] = "图标"
 L["If the addon is enabled."] = "启用本插件"
 L["Immune"] = "免疫"
-L["Inverse Filter"] = "反向过滤"
-L["Inverse the logic, and only show the spells and npc's in the list instead of filtering them away."] = "反转逻辑，只显示列表中的技能和NPC，而不是过滤掉它们。"
+--L["Inverse Spell Filter"] = "Inverse Spell Filter"
+--L["Inverse the logic and only show the spells in the list instead of filtering them away."] = "Inverse the logic and only show the spells in the list instead of filtering them away."
+--L["Inverse NPC Filter"] = "Inverse NPC Filter"
+--L["Inverse the logic and only show npc's in the list instead of filtering them away."] = "Inverse the logic and only show npc's in the list instead of filtering them away."
 L["Left"] = "左侧"
 L["Let Masuqe skin the icons"] = "使用 Masque 管理图标"
 L["Low"] = "低"
@@ -83,7 +85,7 @@ L["Personal SCT Animations"] = "个人浮动战斗文字动画"
 L["Personal SCT Only"] = "只有个人浮动战斗文字"
 L["Personal SCT"] = "个人浮动战斗文字"
 L["Position"] = "位置"
-L["Rainfall"] = "下雨"
+L["Rainfall"] = "雨落"
 L["Randomly varies the starting horizontal position of each damage number."] = "暴击伤害的横向位置"
 L["Randomly varies the starting vertical position of each damage number."] = "暴击伤害的纵向位置。"
 L["Reflected"] = "反射"
@@ -93,7 +95,7 @@ L["Scale down hits that are below a running average of your recent damage output
 L["Scale Down Small Hits"] = "缩小低伤害"
 L["Scale of the spell icon"] = "技能图标缩放"
 L["Shake"] = "摇晃"
-L["Show Absorbed Damage shown as: '5 (A: 3)' where A: 3 is the absorbed amount"] = "显示 吸收伤害：5(A:3)，其中A:3是吸收的伤害量"
+L["Show Absorbed Damage shown as: '5 (A: 3)' where A: 3 is the absorbed amount"] = "显示 吸收伤害：5（吸收:3），其中 吸收:3 是 吸收伤害量"
 L["Show Absorbed Damage"] = "显示吸收伤害"
 L["Show Truncated Letter"] = "显示缩写选项"
 L["Size"] = "字号"
