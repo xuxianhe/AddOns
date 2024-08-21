@@ -1,4 +1,4 @@
-﻿if UnitClassBase( 'player' ) ~= 'SHAMAN' then return end
+if UnitClassBase( 'player' ) ~= 'SHAMAN' then return end
 
 local addon, ns = ...
 local Hekili = _G[ addon ]
@@ -2511,9 +2511,9 @@ spec:RegisterAbilities( {
 
 spec:RegisterSetting( "st_cl_mana_threshold", 80, {
     type = "range",
-    name = "|T136015:0|t单目标使用闪电链的阈值",
-    desc = "当法力值低于设定的百分比时，默认优先级将不会推荐对单目标使用|T136015:0|t闪电链。\n\n"
-        .. "如果学会|T237589:0|t雷霆风暴，默认优先级可能会推荐使用它来回复低于该阈值的法力值。",
+    name = "|T136015:0|t Single-Target Chain Lightning Mana %",
+    desc = "When below the specified mana percentage, the default priority will not recommend |T136015:0|t Chain Lightning in single-target.\n\n"
+        .. "If |T237589:0|t Thunderstorm is known, the default priority may recommend using it to regenerate mana below this threshold.",
     min = 0,
     max = 100,
     step = 1,
@@ -2522,8 +2522,8 @@ spec:RegisterSetting( "st_cl_mana_threshold", 80, {
 
 spec:RegisterSetting( "st_fn_mana_threshold", 3000, {
     type = "range",
-    name = "|T136088:0|t萨满之怒阈值",
-    desc = "当法力值低于设定的百分比时，插件会提示使用萨满之怒来恢复法力值。",
+    name = "Single-Target Fire Nova Mana",
+    desc = "When below the specified mana level, the default priority will not recommend Fire Nova in single-target.",
     min = 0,
     softMax = 10000,
     step = 100,
@@ -2532,8 +2532,8 @@ spec:RegisterSetting( "st_fn_mana_threshold", 3000, {
 
 spec:RegisterSetting( "shaman_rage_threshold", 60, {
     type = "range",
-    name = "最小漩涡武器层数",
-    desc = "设置玩家施法前的最小漩涡武器层数。",
+    name = "|T136088:0|t Shamanistic Rage Threshold",
+    desc = "When below the specified mana percentage, the addon may recommend using Shamanistic Rage to regenerate mana.\n\nThis setting is ignored when wearing T10_2Pc.",
     min = 0,
     max = 100,
     step = 1,
@@ -2555,30 +2555,30 @@ spec:RegisterOptions( {
     damageExpiration = 6,
     potion = "speed",
 
-    package = "增强(IV)",
+    package = "Enhancement",
     usePackSelector = true
 } )
 
 
-spec:RegisterPack( "元素/恢复DPS(IV)", 20220925, [[Hekili:1EvZUnUnq4NLGfWjbnw(NDZUnTj5q72djhcwuVy7njslrzXAksbskl4Ia(S3zOSLLKLtt32CXwIC4W5NVz(gfol8RHlsOww4tZNoF(0BMFDWS5F465FmCHDBblCrbnEnDf8GKMd)(BcwotAPchzIJ87mJv5iF(llCKlE4BxIIVvOOjOAnQsDmCKmRTW8ttMuvvfWJ3oEdJlnbXQ8jvkRy94yb1y4Xty7v9ytgnNkhNuygxSHnwRSulxjhhRuIevL0mMUKl4woZeUyzjxyFqgUCyh5AWqkyXHp9jWs4jjSAjzM4WfFnJBCKcnxP52TWtGVELJaBYxjzjosQs7iTC5lwwADendmEyPKgrAhhOGkRycXLocQ9LudkwzHs6ipaU)3q3)8oQDH3FDKvL8e2ov(hAQnliCHGBSgmCsvm4VN8zmMKUuWsc)LWfXGPZ0Ckgistds5AwKvzz5byKcowmg6cxKtxLtR3j0cbjVk3TN)qs1gABndc9(2c1KEIYPg4k32t4p0w44mkxgj4RYSsUCvprVUNpS)u2SsiOQHyPoVohP5f1BvlIjaIc)WDtAl4v807GOhnOi2E7ntF(zlvVIzdsGahvgZUD20rReBlYc8)gPsJAF8G92rRizpn4i3ENJmBQJmYr2FvWIoYnWAp)CVfnmRf8ztGXgfJrlje3Z0mtgGEb33IUwkTuyBYN7davCzsKjJr19IyhNUoKoQZPVqMR0WIaxl3mugBqOeEYnWDiz5qnMJCp4(TsUuHiQ(LieEwdsJQBqGW09P4xl05JN0qoZrS841EiuJ7lGlcIsQ414H)0jpCIYg0s4anlhqL1UtmyirwU3I3PxbDdnAzjalq1(JNuT5QnG94bd9VHJSvitAZoyR3CcG)rLlDW(pXWoiydMyndAXbp7BCH914ub)V8DhDeLx(Go2AdW8()zG5tZMEsN(TSKy46F0E6uC0eEIwQGANoqi41cFB5Lu7l3L8m004YmkuPXZxwYs6HSSk5QswufJcTSBQ9gkPHLb(UjnvJMEzUViOySAlWeIjqSgeyfsXeiB75AylPcIqubKxt2ISei9JsEoSyfvARZ6q9lCkB9jRyNVH5xdWeu0z(tKU4x)8Uli4ikHAm4bobFoBiYIdBubOm9G7q5TxVPvZ3bHKFnm(vHmDd1pAVKgWdW0(UgDNO2if6D6Jiv0T1RSbmJu85mQ1hYbGOKwaGo41mKN2sxZaNRatthh46AHbLfhcdjSCLKhhbtmyHn8iqadc3ObnRMzqGw6unIzbKXd5fkTfn33d2zCDnRNEpW9iIFvPCb0p6DVBWHdUagEWr8tpCP7rui8sgp9MXZV29O7X9mKn1bap5XaAKT8SEfaG2CK)9q1F()muDyJEO6k0ShempAiq2ObbXJgaapSf0nX3C39lxWW2)J4VHTLoG)gt5iO5OHGLTGfGMomCr7vhAyI273m8q7f7pbWvi3)Da1pAGDhE4(zTp4rtc0XuoWK6HP7ytBlYboAuItqWFFd5ENR(avSFKrpl(OtWG3l3(Q4D7eG6sO3Eg17FrYW2kP)uU9hS9oyY2ot(28YR(k6YP2Uns9G2T(QHtxg09inFmr)noDUFNa9cA1n5oKeQzgGVschJ3S7ZKQZi42vk96aFERRwFd(wH(g(BuIcyalTzk4BbA(Urpnt4F)d]] )
+spec:RegisterPack( "Elemental / Resto DPS (IV)", 20220925, [[Hekili:1EvZUnUnq4NLGfWjbnw(NDZUnTj5q72djhcwuVy7njslrzXAksbskl4Ia(S3zOSLLKLtt32CXwIC4W5NVz(gfol8RHlsOww4tZNoF(0BMFDWS5F465FmCHDBblCrbnEnDf8GKMd)(BcwotAPchzIJ87mJv5iF(llCKlE4BxIIVvOOjOAnQsDmCKmRTW8ttMuvvfWJ3oEdJlnbXQ8jvkRy94yb1y4Xty7v9ytgnNkhNuygxSHnwRSulxjhhRuIevL0mMUKl4woZeUyzjxyFqgUCyh5AWqkyXHp9jWs4jjSAjzM4WfFnJBCKcnxP52TWtGVELJaBYxjzjosQs7iTC5lwwADendmEyPKgrAhhOGkRycXLocQ9LudkwzHs6ipaU)3q3)8oQDH3FDKvL8e2ov(hAQnliCHGBSgmCsvm4VN8zmMKUuWsc)LWfXGPZ0Ckgistds5AwKvzz5byKcowmg6cxKtxLtR3j0cbjVk3TN)qs1gABndc9(2c1KEIYPg4k32t4p0w44mkxgj4RYSsUCvprVUNpS)u2SsiOQHyPoVohP5f1BvlIjaIc)WDtAl4v807GOhnOi2E7ntF(zlvVIzdsGahvgZUD20rReBlYc8)gPsJAF8G92rRizpn4i3ENJmBQJmYr2FvWIoYnWAp)CVfnmRf8ztGXgfJrlje3Z0mtgGEb33IUwkTuyBYN7davCzsKjJr19IyhNUoKoQZPVqMR0WIaxl3mugBqOeEYnWDiz5qnMJCp4(TsUuHiQ(LieEwdsJQBqGW09P4xl05JN0qoZrS841EiuJ7lGlcIsQ414H)0jpCIYg0s4anlhqL1UtmyirwU3I3PxbDdnAzjalq1(JNuT5QnG94bd9VHJSvitAZoyR3CcG)rLlDW(pXWoiydMyndAXbp7BCH914ub)V8DhDeLx(Go2AdW8()zG5tZMEsN(TSKy46F0E6uC0eEIwQGANoqi41cFB5Lu7l3L8m004YmkuPXZxwYs6HSSk5QswufJcTSBQ9gkPHLb(UjnvJMEzUViOySAlWeIjqSgeyfsXeiB75AylPcIqubKxt2ISei9JsEoSyfvARZ6q9lCkB9jRyNVH5xdWeu0z(tKU4x)8Uli4ikHAm4bobFoBiYIdBubOm9G7q5TxVPvZ3bHKFnm(vHmDd1pAVKgWdW0(UgDNO2if6D6Jiv0T1RSbmJu85mQ1hYbGOKwaGo41mKN2sxZaNRatthh46AHbLfhcdjSCLKhhbtmyHn8iqadc3ObnRMzqGw6unIzbKXd5fkTfn33d2zCDnRNEpW9iIFvPCb0p6DVBWHdUagEWr8tpCP7rui8sgp9MXZV29O7X9mKn1bap5XaAKT8SEfaG2CK)9q1F()muDyJEO6k0ShempAiq2ObbXJgaapSf0nX3C39lxWW2)J4VHTLoG)gt5iO5OHGLTGfGMomCr7vhAyI273m8q7f7pbWvi3)Da1pAGDhE4(zTp4rtc0XuoWK6HP7ytBlYboAuItqWFFd5ENR(avSFKrpl(OtWG3l3(Q4D7eG6sO3Eg17FrYW2kP)uU9hS9oyY2ot(28YR(k6YP2Uns9G2T(QHtxg09inFmr)noDUFNa9cA1n5oKeQzgGVschJ3S7ZKQZi42vk96aFERRwFd(wH(g(BuIcyalTzk4BbA(Urpnt4F)d]] )
 
-spec:RegisterPack( "增强", 20240413, [[Hekili:nJvxVTUnp4FlNBc25So)gN0pofOPxmGbS23HUl8W2DYwXwowOYwgsYnRaf(3(OKtSLL)Qh0HTHcuKsrrsr(q(WgKp63qbjyfb90M1BUC9L(B92S(YnxDlkq9AjbfuIJFgFa(qboh(9pvKHlIj5KcL(SxzCCI2gsELigohfSVIYupuG2pUH3IcWvQmUafeuvsefvsjkiJMKqAUdrgJc(dU6x()1rKoVvhjZW54I6ibxHvuo8PuUOo6Njptzuiye8ukdcbCS(uPxPGeZZ3JvF)U)3rArsAL41WJeCjV4cA6UpLJPAZNesZ3xrsw1jidldLLegRKFKiQFCmlMYG8HIxCOIC2OcCXZ7A01B4XE54)muRYp4pQ7)OExBtEAQLjh)Qm6HmvbT4qOmJsyj6lUVkn1R5p9s4hlg)MXyglKNgQYiHeMPQiBVnbluzHkUIKBmXBVzeNsfKHspcadXqXyQTWXdIsUP2)y7PNQUWRbcbxPF4A()gv6V56lCHMMdQurJbxFGOvxsuH75qdMNIse(RT6Mc3ugVZ32avssifs9sBHNt2wbMUEEQ4JznvRENteGyzjvqvty(bMRG)cwhVAXVawVGKtjY77fEXzqslSf72c7YXeMuj45NZ9sfmWA3vRMZyhXu1yoCvmNZ0qpV24Ytq0Ll5D7w7DZkxi9PdVF67DHKeVB6JTJQUgZ9CMAXx4a4c0bWJF(I4xJzq8Hfhik5o)l0GX(Y2yWsas5zWzRAKcqKC9RkmHsUF3T9s9Z1270FVAq79583M1Jw37HHvCro8uPpt6gk1jR)qbq)C8HCCJBglEARCmiCkIFToAvDuNsoG4bwVzGMjNoEvQB8jyeWs6cJU9ZCfpsbEpdA2NC0A)hCpxGFbhYWYSLESwY8Qkxnq25mW2)UEagO3D2s0OlJ0VS2B72LMiDcRDKQYOf(RHjHfyVYy1DWOkfessVMBzUaa4eeiwyjOGxicjyxZYeB99xFnk4iwOFfWYdpKxYfkyEy0M6OMaOoIbEw6v)iSAsjjg90nWMjyjj5xl6TetD039WV)z43B(mkWChZgrKuCftbF8jZgsngf8zlrdk4u(b9JifewAT6KeedJ)ickgf8P6iN5)gCOT4(0a99MfbM2pBD8ZzvhYx8oIHjdan31zBpp)MoMUCU3EFgRzdyWuxnPPwGlRoAxDKFN5DbFAJFTDLSLpYPqEJTsn0FoA8vBngBsIJ(32tFl6rh98x)EIpF)jtr9zZQJUVxgPDIRXktJxNHZXKKVYaDM3xoK1gp6ICbErqXjjgx6HzIIz4vJUdIvGY2zOFV5Iglnxi02ic7lyEetd1xmT1zT(88g76I771L0mpgCMnjUEWuWaQDuWgN(VtS8M0WqMEidaX2TMy465FBoe9D51ri7HSpmlETfGyKvimo9MbntgiQdM)RZhAU7iyngO7eJHU9D)g7HJE)lq05AlEydbrVUBRDlCjsMU)Egs6UiZAtJXqCnhBC0g7aYor5eqBT1RD1exTwSZWEtLUWDKTvmGNTtNiNMJ4BjbDQZ8U(sB3MPo6l6XhB3UqsC6MgNvDor42SUJXVlTYZmuz6V6LZ)lXT7O8pW2hUSg)xy7dxELpW2hlGHF3TwtJqh9BkPo6T3gYr5CI73yI1r9)wtwEO71lTIZ5Fq)f]] )
+spec:RegisterPack( "Enhancement", 20240413, [[Hekili:nJvxVTUnp4FlNBc25So)gN0pofOPxmGbS23HUl8W2DYwXwowOYwgsYnRaf(3(OKtSLL)Qh0HTHcuKsrrsr(q(WgKp63qbjyfb90M1BUC9L(B92S(YnxDlkq9AjbfuIJFgFa(qboh(9pvKHlIj5KcL(SxzCCI2gsELigohfSVIYupuG2pUH3IcWvQmUafeuvsefvsjkiJMKqAUdrgJc(dU6x()1rKoVvhjZW54I6ibxHvuo8PuUOo6Njptzuiye8ukdcbCS(uPxPGeZZ3JvF)U)3rArsAL41WJeCjV4cA6UpLJPAZNesZ3xrsw1jidldLLegRKFKiQFCmlMYG8HIxCOIC2OcCXZ7A01B4XE54)muRYp4pQ7)OExBtEAQLjh)Qm6HmvbT4qOmJsyj6lUVkn1R5p9s4hlg)MXyglKNgQYiHeMPQiBVnbluzHkUIKBmXBVzeNsfKHspcadXqXyQTWXdIsUP2)y7PNQUWRbcbxPF4A()gv6V56lCHMMdQurJbxFGOvxsuH75qdMNIse(RT6Mc3ugVZ32avssifs9sBHNt2wbMUEEQ4JznvRENteGyzjvqvty(bMRG)cwhVAXVawVGKtjY77fEXzqslSf72c7YXeMuj45NZ9sfmWA3vRMZyhXu1yoCvmNZ0qpV24Ytq0Ll5D7w7DZkxi9PdVF67DHKeVB6JTJQUgZ9CMAXx4a4c0bWJF(I4xJzq8Hfhik5o)l0GX(Y2yWsas5zWzRAKcqKC9RkmHsUF3T9s9Z1270FVAq79583M1Jw37HHvCro8uPpt6gk1jR)qbq)C8HCCJBglEARCmiCkIFToAvDuNsoG4bwVzGMjNoEvQB8jyeWs6cJU9ZCfpsbEpdA2NC0A)hCpxGFbhYWYSLESwY8Qkxnq25mW2)UEagO3D2s0OlJ0VS2B72LMiDcRDKQYOf(RHjHfyVYy1DWOkfessVMBzUaa4eeiwyjOGxicjyxZYeB99xFnk4iwOFfWYdpKxYfkyEy0M6OMaOoIbEw6v)iSAsjjg90nWMjyjj5xl6TetD039WV)z43B(mkWChZgrKuCftbF8jZgsngf8zlrdk4u(b9JifewAT6KeedJ)ickgf8P6iN5)gCOT4(0a99MfbM2pBD8ZzvhYx8oIHjdan31zBpp)MoMUCU3EFgRzdyWuxnPPwGlRoAxDKFN5DbFAJFTDLSLpYPqEJTsn0FoA8vBngBsIJ(32tFl6rh98x)EIpF)jtr9zZQJUVxgPDIRXktJxNHZXKKVYaDM3xoK1gp6ICbErqXjjgx6HzIIz4vJUdIvGY2zOFV5Iglnxi02ic7lyEetd1xmT1zT(88g76I771L0mpgCMnjUEWuWaQDuWgN(VtS8M0WqMEidaX2TMy465FBoe9D51ri7HSpmlETfGyKvimo9MbntgiQdM)RZhAU7iyngO7eJHU9D)g7HJE)lq05AlEydbrVUBRDlCjsMU)Egs6UiZAtJXqCnhBC0g7aYor5eqBT1RD1exTwSZWEtLUWDKTvmGNTtNiNMJ4BjbDQZ8U(sB3MPo6l6XhB3UqsC6MgNvDor42SUJXVlTYZmuz6V6LZ)lXT7O8pW2hUSg)xy7dxELpW2hlGHF3TwtJqh9BkPo6T3gYr5CI73yI1r9)wtwEO71lTIZ5Fq)f]] )
 
 
-spec:RegisterPackSelector( "elemental", "元素/恢复DPS(IV)", "|T136048:0|t 元素",
-    "如果你在|T136048:0|t元素天赋中投入的点数多于其他天赋，将会为你自动选择该优先级。",
+spec:RegisterPackSelector( "elemental", "Elemental / Resto DPS (IV)", "|T136048:0|t Elemental",
+    "If you have spent more points in |T136048:0|t Elemental than in any other tree, this priority will be automatically selected for you.",
     function( tab1, tab2, tab3 )
         return tab1 > max( tab2, tab3 )
     end )
 
-spec:RegisterPackSelector( "enhancement", "增强(IV)", "|T136051:0|t 增强",
-    "如果你在|T136051:0|t增强天赋中投入的点数多于其他天赋，将会为你自动选择该优先级。",
+spec:RegisterPackSelector( "enhancement", "Enhancement", "|T136051:0|t Enhancement",
+    "If you have spent more points in |T136051:0|t Enhancement than in any other tree, this priority will be automatically selected for you.",
     function( tab1, tab2, tab3 )
         return tab2 > max( tab1, tab3 )
     end )
 
-spec:RegisterPackSelector( "restoration", "元素/恢复DPS(IV)", "|T136052:0|t 恢复",
-    "如果你在|T136052:0|t恢复天赋中投入的点数多于其他天赋，将会为你自动选择该优先级。",
+spec:RegisterPackSelector( "restoration", "Elemental / Resto DPS (IV)", "|T136052:0|t Restoration",
+    "If you have spent more points in |T136052:0|t Restoration than in any other tree, this priority will be automatically selected for you.",
     function( tab1, tab2, tab3 )
         return tab3 > max( tab1, tab2 )
     end )

@@ -1173,7 +1173,7 @@ local lowLevelWarned = false
 -- Need to make caching system.
 RegisterUnitEvent( "UNIT_SPELLCAST_SUCCEEDED", "player", "target", function( event, unit, _, spellID )
     if lowLevelWarned == false and UnitLevel( "player" ) < 50 then
-        Hekili:Notify( "Hekili基于最高等级设计,低于50级效果可能不尽人意。", 5 )
+        Hekili:Notify( "Hekili is designed for current content.\nUse below level 50 at your own risk.", 5 )
         lowLevelWarned = true
     end
 

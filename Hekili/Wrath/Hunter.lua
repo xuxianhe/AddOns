@@ -1,4 +1,4 @@
-﻿if UnitClassBase( 'player' ) ~= 'HUNTER' then return end
+if UnitClassBase( 'player' ) ~= 'HUNTER' then return end
 
 local addon, ns = ...
 local Hekili = _G[ addon ]
@@ -2372,32 +2372,32 @@ spec:RegisterOptions( {
 
     potion = "speed",
 
-    package = "野兽控制(wowtbc.gg)",
+    package = "Beast Mastery (wowtbc.gg)",
     usePackSelector = true
 } )
 
 
-spec:RegisterPack( "野兽控制(wowtbc.gg)", 20230211, [[Hekili:fs1YUTnmqWpMCPfTr2YjTnPajhYHced0CrbO3O0kPvseMIuGKYQ(c)27sjeBkzB0l6b5SdN9Xqwm7Dwsjyr2BBwV5U1BIJJw)W3Em(owI9qhYs6GIDqn9HeAPNVGGX6Y(n9e1hCzFAqnyZlIQR)Sh7bHck9CAu96ccFJ12z(5QvhHrFzf7wviaJ526EEjAwL7j922joVTPxsVxXsY75c7Rsw(LLiDiDyb7nsQn8YsCciAkyjV3WnUSonxP5wsL()Ybdw6YusxMTbDzhvKl7pAW24YgvtelrWnwZyHbRGEHL(8TXcfuy5kjDUCbkl4Y6utJYYsqjKlWs2lmljspYtRKuqsa1CWtxEFvvubLNuSr9DNyKlT8woLL()S(C6QKOgKNIBQwzsBb9oFC3hktn0XltR4ACHe)wiQcqisvvPurjDGlkxG97HyZrs6GiDWxWwa8hHa3XjsluTTGCjHpeIRtn9EgIhdr0BWuk3BnlafV(SZ7cnJ44)x3ySxyIMxwnOUdL20Xnh556DvlORrB0a32WLKQosc(3oHYW3JPwQtmYYDHAULgT4xsZ3F1ZYhkXhkXwosZ0p7Y2CIW9kHapmsXSomOlajEXYZSUlz)GYdxah9BNgP2zoCUza8Uq7htqLAOwjBGHDlPGizpnQ6JXBK3eVEnP9bql9nawYRTDkT1Br34YMi3LnAfJCB9cqvr2owYn34YwCl0w)AXXUSFH56EWFVK)Qc3w32jImrh1)xEA11uCaEc1CtE4oHM1VYRE6mFDi4qh6iyAqlC)tM0WvxAkd3BMjmCJqtx46tMSWvoAQol8L56mNqqYgyBcHpFM3JFH9ie8rdq4ItdX(iNpS)8MqubJ0ZuB4em0BBuAAe7Jl6hhcz)l]] )
+spec:RegisterPack( "Beast Mastery (wowtbc.gg)", 20230211, [[Hekili:fs1YUTnmqWpMCPfTr2YjTnPajhYHced0CrbO3O0kPvseMIuGKYQ(c)27sjeBkzB0l6b5SdN9Xqwm7Dwsjyr2BBwV5U1BIJJw)W3Em(owI9qhYs6GIDqn9HeAPNVGGX6Y(n9e1hCzFAqnyZlIQR)Sh7bHck9CAu96ccFJ12z(5QvhHrFzf7wviaJ526EEjAwL7j922joVTPxsVxXsY75c7Rsw(LLiDiDyb7nsQn8YsCciAkyjV3WnUSonxP5wsL()Ybdw6YusxMTbDzhvKl7pAW24YgvtelrWnwZyHbRGEHL(8TXcfuy5kjDUCbkl4Y6utJYYsqjKlWs2lmljspYtRKuqsa1CWtxEFvvubLNuSr9DNyKlT8woLL()S(C6QKOgKNIBQwzsBb9oFC3hktn0XltR4ACHe)wiQcqisvvPurjDGlkxG97HyZrs6GiDWxWwa8hHa3XjsluTTGCjHpeIRtn9EgIhdr0BWuk3BnlafV(SZ7cnJ44)x3ySxyIMxwnOUdL20Xnh556DvlORrB0a32WLKQosc(3oHYW3JPwQtmYYDHAULgT4xsZ3F1ZYhkXhkXwosZ0p7Y2CIW9kHapmsXSomOlajEXYZSUlz)GYdxah9BNgP2zoCUza8Uq7htqLAOwjBGHDlPGizpnQ6JXBK3eVEnP9bql9nawYRTDkT1Br34YMi3LnAfJCB9cqvr2owYn34YwCl0w)AXXUSFH56EWFVK)Qc3w32jImrh1)xEA11uCaEc1CtE4oHM1VYRE6mFDi4qh6iyAqlC)tM0WvxAkd3BMjmCJqtx46tMSWvoAQol8L56mNqqYgyBcHpFM3JFH9ie8rdq4ItdX(iNpS)8MqubJ0ZuB4em0BBuAAe7Jl6hhcz)l]] )
 
-spec:RegisterPack( "射击", 20230226, [[Hekili:TA12UnUnq0)gJDrxO6ljoDbI9dfOaDdW6x0(mLOLgBrejsbsQ4AGa(T3HuXwu0sYPa9flBZzoCUCMZiYcYViX5unq2TC(YvZxUCD0INw89vprI1NRbsCnn7v6r8lCAf(5pPYxvvuUQGvBp8CPGMBbrjAKzObK49nSs9p4K9dJ8JOT1qgz3ksCblphATeuz9r3Kw0W1G0KwlzcjtF2KEqG)8VHxzLmsCjtPv2RMka8XoxUaC6(siN8NK4m0hqYOyMqLhbD0jMUGXX7NMPzcoA8)uxkuS3GeTKwt0yO6W7JJRAk1mvHq7dR2g4JDrwpr0aouXaLjD7gt6QoaFtuwcNTq8WOqKd7BoCisPz8JQOCXjEN)kqwdCDI7qlmp6hUzfSkqstUnI1wypqX0z660qH)YUlq2WtA)EIT232bsA5f2EWL6Nh2Fgxv62qu9jIobpIAzp6eXHeDbK8gRgKrAmZtumEgysF2KU2KoZK6QJdzDtT78mHO0wFJ8lCrsOIY42K3Ko3R0RbA(52A7a5Px)dr0bpsJPr41LHDmhAl9yE9dRCj9OGxqp9600R(SH2Xdvsfo0mnNYvjqgolp5atcbSQUdUsPghLmAz5LW(eRmpaRWJTiU2NKwl(y0ZFG6jFlAuqcELvQaJ(dFJkqTjjwdHCKwLbLy7BaC)UVlOOr5aZg7wm))NzXfl(CdJ7w0tKHI2LpOzJZd(Ih51RT2rDX52fpo3K((73Zst6hIJUriTijNHZqF9ZoG03UUCzSXijofX4Gs5YWh6viKzuomyLyCoPc0TnhvZXJakP0jPBvzgxOFX67JPDc(iKyF0QCmWC9ZBMAW25L766rX9ftcfQRLqMOApTtm8UAg9RwtlnnQ8H7YFd)d7HxxztIprLCB1Ge)JQAHud5M0hmPTOysDlHJmVydCXbwjC5curxZKFBZVpwSBEziR9dTVXoSXPPEXs88GTjFZUhzdUbYAB)DyB3S8UoQ0Mx6IdLna8AqxW8UBEEE9Sj24mBYHPTZdcGXQxxQgZ8zHBx(yG7twaBnPtnWAWqBicCiuA)QBdUsiW5wz)G)8QsFy0pS4EGvx1Zd7D(cZUK)gv8WmZRJe2hUQOfw(UiKzVHVmHg72nOs87VpLf3Qa)17rxMnHM7TKPoL1Gt6RlAtLjfuNKK6y69G4g9ZES2N3CdT1BSZFKeNShmw7)A9H2F9T3dpO9TWhsRyvOP)N4sTU0FXpTrxiKK4Fva)vLcVwk3P0s(3)]] )
+spec:RegisterPack( "Marksmanship", 20230226, [[Hekili:TA12UnUnq0)gJDrxO6ljoDbI9dfOaDdW6x0(mLOLgBrejsbsQ4AGa(T3HuXwu0sYPa9flBZzoCUCMZiYcYViX5unq2TC(YvZxUCD0INw89vprI1NRbsCnn7v6r8lCAf(5pPYxvvuUQGvBp8CPGMBbrjAKzObK49nSs9p4K9dJ8JOT1qgz3ksCblphATeuz9r3Kw0W1G0KwlzcjtF2KEqG)8VHxzLmsCjtPv2RMka8XoxUaC6(siN8NK4m0hqYOyMqLhbD0jMUGXX7NMPzcoA8)uxkuS3GeTKwt0yO6W7JJRAk1mvHq7dR2g4JDrwpr0aouXaLjD7gt6QoaFtuwcNTq8WOqKd7BoCisPz8JQOCXjEN)kqwdCDI7qlmp6hUzfSkqstUnI1wypqX0z660qH)YUlq2WtA)EIT232bsA5f2EWL6Nh2Fgxv62qu9jIobpIAzp6eXHeDbK8gRgKrAmZtumEgysF2KU2KoZK6QJdzDtT78mHO0wFJ8lCrsOIY42K3Ko3R0RbA(52A7a5Px)dr0bpsJPr41LHDmhAl9yE9dRCj9OGxqp9600R(SH2Xdvsfo0mnNYvjqgolp5atcbSQUdUsPghLmAz5LW(eRmpaRWJTiU2NKwl(y0ZFG6jFlAuqcELvQaJ(dFJkqTjjwdHCKwLbLy7BaC)UVlOOr5aZg7wm))NzXfl(CdJ7w0tKHI2LpOzJZd(Ih51RT2rDX52fpo3K((73Zst6hIJUriTijNHZqF9ZoG03UUCzSXijofX4Gs5YWh6viKzuomyLyCoPc0TnhvZXJakP0jPBvzgxOFX67JPDc(iKyF0QCmWC9ZBMAW25L766rX9ftcfQRLqMOApTtm8UAg9RwtlnnQ8H7YFd)d7HxxztIprLCB1Ge)JQAHud5M0hmPTOysDlHJmVydCXbwjC5curxZKFBZVpwSBEziR9dTVXoSXPPEXs88GTjFZUhzdUbYAB)DyB3S8UoQ0Mx6IdLna8AqxW8UBEEE9Sj24mBYHPTZdcGXQxxQgZ8zHBx(yG7twaBnPtnWAWqBicCiuA)QBdUsiW5wz)G)8QsFy0pS4EGvx1Zd7D(cZUK)gv8WmZRJe2hUQOfw(UiKzVHVmHg72nOs87VpLf3Qa)17rxMnHM7TKPoL1Gt6RlAtLjfuNKK6y69G4g9ZES2N3CdT1BSZFKeNShmw7)A9H2F9T3dpO9TWhsRyvOP)N4sTU0FXpTrxiKK4Fva)vLcVwk3P0s(3)]] )
 
-spec:RegisterPack( "生存(wowtbc.gg)", 20230211, [[Hekili:DwvqZTjpq0Fm5s70gSHy3M8ntYHEOtJp4lKz6nbcqy0ybIrAXuFr)27k4ZGGIRB7LaE3NES7B1(cXN8gjmJcmY(G1bpSoW33B9JBFAZwsiCUMrcRPPhPhWxQOL4FdBuN4NOct87ALTqsQ3HdV3I6SqsZSSPLnQuezba16)B1Qby4BG44QubvRV)qdpJPxP)F6UVOPcyQvKWKgUaETIKSCDTb)a1SuY(hWVaplJ1JKPtjHVvW1M4AfxQ4WztS9xjunlZelRmXqbZepunM4VROqHjURs8iHcUg0DYblN2ia819DYdRIMiyzKVqctrIzkofbjBRiH0uGlXN9vVoQKQosaSMTN7ssfTMNfLZvmxUaBl4GkLkerY8iSkJA5ISzy34I9ihXMkllPvZXT1fxTS)5eeFYfrJMfHTuPEgOpF9gNL0KN7X(rTqQ5Nyr6cj4nvoMM0Y3JxLpGQoWapzdOX5G)6rwse4vViQsjBTu80TOOLdf8kxggRdahcwsWSxJf7HqKSkwjNH3CEXehmsvjEJGFPB8V(9IFplNKcb7Chfb)YaTJ9PJb)jxrO8sw2IW2CRXLg4vh0ZgtAMQMvbrDj74z7FVgNRKAyuFNC7sdmA25fQy8N1kgEdoHoUNn0M2fC4YUqMIEqwvqBpoRPd(h3nF4MBiB(d7bmWjKzlmRlvG)614SULQQSInj81YAPcS2pbM4E(mXD2mEMDwfqMZfOPWD3zIh9v)wx9A2zJ67BI)klr1qvOFM1j0SZSRNkT3Ge(HNxDnrBz0UAYh55pBvSLr2lqlNZrACkRBrpMF0r0n6Chq3CUoE9sZyU8g0XVrhviBfUNzwPJrgC7Cdo1SQRCVQfN75CSNShAUp2YFc7EId6lRtUGhCAS4MAN8sGlWEZKBHAWAXn4OtIB0j(bocHJ5Hl8Xn)B0rtwHOnqHuHRjx(hXDlsKFo]] )
+spec:RegisterPack( "Survival (wowtbc.gg)", 20230211, [[Hekili:DwvqZTjpq0Fm5s70gSHy3M8ntYHEOtJp4lKz6nbcqy0ybIrAXuFr)27k4ZGGIRB7LaE3NES7B1(cXN8gjmJcmY(G1bpSoW33B9JBFAZwsiCUMrcRPPhPhWxQOL4FdBuN4NOct87ALTqsQ3HdV3I6SqsZSSPLnQuezba16)B1Qby4BG44QubvRV)qdpJPxP)F6UVOPcyQvKWKgUaETIKSCDTb)a1SuY(hWVaplJ1JKPtjHVvW1M4AfxQ4WztS9xjunlZelRmXqbZepunM4VROqHjURs8iHcUg0DYblN2ia819DYdRIMiyzKVqctrIzkofbjBRiH0uGlXN9vVoQKQosaSMTN7ssfTMNfLZvmxUaBl4GkLkerY8iSkJA5ISzy34I9ihXMkllPvZXT1fxTS)5eeFYfrJMfHTuPEgOpF9gNL0KN7X(rTqQ5Nyr6cj4nvoMM0Y3JxLpGQoWapzdOX5G)6rwse4vViQsjBTu80TOOLdf8kxggRdahcwsWSxJf7HqKSkwjNH3CEXehmsvjEJGFPB8V(9IFplNKcb7Chfb)YaTJ9PJb)jxrO8sw2IW2CRXLg4vh0ZgtAMQMvbrDj74z7FVgNRKAyuFNC7sdmA25fQy8N1kgEdoHoUNn0M2fC4YUqMIEqwvqBpoRPd(h3nF4MBiB(d7bmWjKzlmRlvG)614SULQQSInj81YAPcS2pbM4E(mXD2mEMDwfqMZfOPWD3zIh9v)wx9A2zJ67BI)klr1qvOFM1j0SZSRNkT3Ge(HNxDnrBz0UAYh55pBvSLr2lqlNZrACkRBrpMF0r0n6Chq3CUoE9sZyU8g0XVrhviBfUNzwPJrgC7Cdo1SQRCVQfN75CSNShAUp2YFc7EId6lRtUGhCAS4MAN8sGlWEZKBHAWAXn4OtIB0j(bocHJ5Hl8Xn)B0rtwHOnqHuHRjx(hXDlsKFo]] )
 
 
 spec:RegisterPackSelector( "beast_mastery", "Beast Mastery (wowtbc.gg)", "|T132164:0|t Beast Mastery",
-    "如果你在|T132164:0|t野兽控制天赋中投入的点数多于其他天赋，将会为你自动选择该优先级。",
+    "If you have spent more points in |T132164:0|t Beast Mastery than in any other tree, this priority will be automatically selected for you.",
     function( tab1, tab2, tab3 )
         return tab1 > max( tab2, tab3 )
     end )
 
 spec:RegisterPackSelector( "marksmanship", "Marksmanship (wowtbc.gg)", "|T132222:0|t Marksmanship",
-    "如果你在|T132222:0|t射击天赋中投入的点数多于其他天赋，将会为你自动选择该优先级。",
+    "If you have spent more points in |T132222:0|t Marksmanship than in any other tree, this priority will be automatically selected for you.",
     function( tab1, tab2, tab3 )
         return tab2 > max( tab1, tab3 )
     end )
 
 spec:RegisterPackSelector( "survival", "Survival (wowtbc.gg)", "|T132215:0|t Survival",
-    "如果你在|T132215:0|t生存天赋中投入的点数多于其他天赋，将会为你自动选择该优先级。",
+    "If you have spent more points in |T132215:0|t Survival than in any other tree, this priority will be automatically selected for you.",
     function( tab1, tab2, tab3 )
         return tab3 > max( tab1, tab2 )
     end )
@@ -2405,14 +2405,14 @@ spec:RegisterPackSelector( "survival", "Survival (wowtbc.gg)", "|T132215:0|t Sur
 -- Settings
 spec:RegisterSetting( "suggest_explosive_st", false, {
     type = "toggle",
-    name = "|T135826:0|t对单目标使用爆炸陷阱",
-    desc = "启用后，|T135826:0|t爆炸陷阱在单目标战斗时也会被推荐。",
+    name = "|T135826:0|t Suggest Explosive Trap on Single Target",
+    desc = "When enabled, |T135826:0|t Explosive Trap will be suggested in single target scenarios as well as AoE.",
     width = "full",
 } )
 
 spec:RegisterSetting( "manage_mana_viper", false, {
     type = "toggle",
-    name = "|T132160:0|t使用蝰蛇守护获取法力",
-    desc = "启用后，默认优先级会在低法力值时推荐使用|T132160:0|t蝰蛇守护来获取法力。",
+    name = "|T132160:0|t Swap to Aspect of the Viper for Mana",
+    desc = "When enabled, the profile will suggest swapping to |T132160:0|t Aspect of the Viper at low mana.",
     width = "full",
 } )

@@ -1,4 +1,4 @@
-﻿if UnitClassBase( 'player' ) ~= 'ROGUE' then return end
+if UnitClassBase( 'player' ) ~= 'ROGUE' then return end
 
 local addon, ns = ...
 local Hekili = _G[ addon ]
@@ -1470,8 +1470,8 @@ spec:RegisterAbilities( {
 
 spec:RegisterSetting("rogue_description", nil, {
     type = "description",
-    name = "根据你的游戏风格偏好调整以下设置。"..
-        "建议你始终使用Simc模拟来确定角色设置的最佳值。"
+    name = "Adjust the settings below according to your playstyle preference. It is always recommended that you use a simulator "..
+        "to determine the optimal values for these settings for your specific character."
 })
 
 spec:RegisterSetting("rogue_description_footer", nil, {
@@ -1481,18 +1481,18 @@ spec:RegisterSetting("rogue_description_footer", nil, {
 
 spec:RegisterSetting("rogue_general", nil, {
     type = "header",
-    name = "通用"
+    name = "General"
 })
 
 spec:RegisterSetting("rogue_general_description", nil, {
     type = "description",
-    name = "通用设置将更改常态情况下使用的参数。\n\n"
+    name = "General settings will change the parameters used in the core rotation.\n\n"
 })
 
 spec:RegisterSetting("maintain_expose", false, {
     type = "toggle",
-    name = "维持破甲",
-    desc = "启用后，当 BOSS 没有护甲 debuff 时，将推荐使用破甲",
+    name = "Maintain Expose Armor",
+    desc = "When enabled, expose armor will be recommended when there is no major armor debuff up on the boss",
     width = "full",
     set = function( _, val )
         Hekili.DB.profile.specs[ 4 ].settings.maintain_expose = val
@@ -1516,30 +1516,30 @@ spec:RegisterOptions( {
     damage = false,
     damageExpiration = 6,
 
-    package = "刺杀(wowtbc.gg)",
+    package = "Assassination (wowtbc.gg)",
     usePackSelector = true
 } )
 
 
-spec:RegisterPack( "刺杀(wowtbc.gg)", 20230126, [[Hekili:TAvBVTTnq4FmfiVG1i)wR3wwsa6(Yqcg8aQsr)WqLiTeTeHPi1iPIRbc4V9DhLSLKR0YA2qacK5D85EUJhFognl6XOWuQLfTA(05lMoB(YG5tF)YflIcT7lzrHL0KT0m4djTa()hmgQXWLulxjDKl2P2zxNeKLDj66EHIMIqAuv6eW9CRT0C9KjhDd(Yk2ojraOCvwfpLzMq7I5vAvwfBsu46kUWEVmADhcoF20zlb0lzjrREhappnLv7cZKef(yo34iLAUsZT7De8xRPgwQJuvI81MZCKJKXr(SMAZDeprcGmqR2WfaVFZBCKts1pI8Y9aAz2sh5psSQ1mTJG0Y9G7bAc6NjOuZsufRP2F42jwnpzRjwTjgcCSvttzVLV52mTQQC4DuQ8rBqBglJka6oOXmQwRSE4nkHQdJaJBbA093gbpHftLPXPWh4EwxTztq)Ldsv7K9XHMQzsQGlzX6ktoUr04tSyMKvWzM7M1191ciHJ3iQ069VKVBOsSoTvcEyg25UURRkTvAp1TubtAdYRKzmD8gLoETqPsdaMUwWspZNAFJvm5olL5n2u7As42GC6MowOgeTEf4CkSubtK2HHQNy6TCHOpZoU6Py8evYRRXVU9)VQ5d8JjFIjvfOnSBsfxQ4sRjiLTHNWT3oToojkrAt22F)TgghIVJ4DZ8ZUO5CPXtFM98ZqNGoBFGLxazJkUG(1BoXpnRGYLMl7gTIklxqRVymu4UBAuiubnG7DLy2r1sUmZef(5p8Xv3V63U2rCKhr5dErPsBDe403rohGHwjSN7iA2FvX1OwJrva(rRSQciYWcj5uOHXe4E43H7ooY7b0(K0uvIiHouZxaUExdopaB6piQ5LMQ10k4OWeOF1ardzYWsepbK50C5wgKKiPV3wVjVyrbtMIb0MtHLzqMVVNGPmrubAPGjo01OVgia5kh5p)KHHiXkmF5TGcAopjVR3u5(2O6isfc(xlfyfw0IBk(vJk8HG(locW9MW8yneGe7xqqt7U08orEh0W3jJAG0EWvF1WVKSQauP9hkcLfQN3xCOMpVTSl4gSy9quiCOLR0W5)HzerHEJ(5K1h1WNR8ZnR3DuiQUgf2CPm6xJSqJeAVDLWeitHJgkowByH2w46BerBXOO1xK0rUdQCTiDICnc17ELq1vkhX59VsC61FJaTCuGEbDDh5my4(4QXO5H03X1TuDgZg0yUzwYjhdnRIC8h)Npnhm(TaDQzeXF6LY6t16BZ2E69D6AooXbX)N)Fh)6Pri2ZMok4(zlT7zGjqEaMnkadPq7i36itBjyVbrTbRziGpaJF9B8a0IuBa8Gn(TVHb7gV0cW2lo2a2DqMJ88ZG443mmZVXHhO5ixoCEo(T5HP2D9YZdJgbOS4BFBEm5r9T)dhXZ7Qpw)M2tuix01JMx2EIlJND4lCB3DZ1BFAu)x0F)d]] )
+spec:RegisterPack( "Assassination (wowtbc.gg)", 20230126, [[Hekili:TAvBVTTnq4FmfiVG1i)wR3wwsa6(Yqcg8aQsr)WqLiTeTeHPi1iPIRbc4V9DhLSLKR0YA2qacK5D85EUJhFognl6XOWuQLfTA(05lMoB(YG5tF)YflIcT7lzrHL0KT0m4djTa()hmgQXWLulxjDKl2P2zxNeKLDj66EHIMIqAuv6eW9CRT0C9KjhDd(Yk2ojraOCvwfpLzMq7I5vAvwfBsu46kUWEVmADhcoF20zlb0lzjrREhappnLv7cZKef(yo34iLAUsZT7De8xRPgwQJuvI81MZCKJKXr(SMAZDeprcGmqR2WfaVFZBCKts1pI8Y9aAz2sh5psSQ1mTJG0Y9G7bAc6NjOuZsufRP2F42jwnpzRjwTjgcCSvttzVLV52mTQQC4DuQ8rBqBglJka6oOXmQwRSE4nkHQdJaJBbA093gbpHftLPXPWh4EwxTztq)Ldsv7K9XHMQzsQGlzX6ktoUr04tSyMKvWzM7M1191ciHJ3iQ069VKVBOsSoTvcEyg25UURRkTvAp1TubtAdYRKzmD8gLoETqPsdaMUwWspZNAFJvm5olL5n2u7As42GC6MowOgeTEf4CkSubtK2HHQNy6TCHOpZoU6Py8evYRRXVU9)VQ5d8JjFIjvfOnSBsfxQ4sRjiLTHNWT3oToojkrAt22F)TgghIVJ4DZ8ZUO5CPXtFM98ZqNGoBFGLxazJkUG(1BoXpnRGYLMl7gTIklxqRVymu4UBAuiubnG7DLy2r1sUmZef(5p8Xv3V63U2rCKhr5dErPsBDe403rohGHwjSN7iA2FvX1OwJrva(rRSQciYWcj5uOHXe4E43H7ooY7b0(K0uvIiHouZxaUExdopaB6piQ5LMQ10k4OWeOF1ardzYWsepbK50C5wgKKiPV3wVjVyrbtMIb0MtHLzqMVVNGPmrubAPGjo01OVgia5kh5p)KHHiXkmF5TGcAopjVR3u5(2O6isfc(xlfyfw0IBk(vJk8HG(locW9MW8yneGe7xqqt7U08orEh0W3jJAG0EWvF1WVKSQauP9hkcLfQN3xCOMpVTSl4gSy9quiCOLR0W5)HzerHEJ(5K1h1WNR8ZnR3DuiQUgf2CPm6xJSqJeAVDLWeitHJgkowByH2w46BerBXOO1xK0rUdQCTiDICnc17ELq1vkhX59VsC61FJaTCuGEbDDh5my4(4QXO5H03X1TuDgZg0yUzwYjhdnRIC8h)Npnhm(TaDQzeXF6LY6t16BZ2E69D6AooXbX)N)Fh)6Pri2ZMok4(zlT7zGjqEaMnkadPq7i36itBjyVbrTbRziGpaJF9B8a0IuBa8Gn(TVHb7gV0cW2lo2a2DqMJ88ZG443mmZVXHhO5ixoCEo(T5HP2D9YZdJgbOS4BFBEm5r9T)dhXZ7Qpw)M2tuix01JMx2EIlJND4lCB3DZ1BFAu)x0F)d]] )
 
-spec:RegisterPack( "战斗", 20230211, [[Hekili:Dw1Y2TTnq0VfTrBQRI1d300ALfnBI9cVHoztpbeqGdLWrKa8aaAfTbF7DgsjtqgkDS7cjboZCVdMh8k2C2ZSKmHhypT42flVDX85ZMVC5NUBblXFScyjvc5EXw8GwuIF)ft5gHNmFSWiYi4otTvIUyjBQvf(h0SnJZjgAfizpTILStLLbTbcojl55DkxGtFeb(Pug4MC8zPxz0bEHY5r35gBG)vyVQqnJL0yKUdcdG)8ut5aAXMciJ9pSePv5bRsGbG08cKcAOubipFoWNh4tB5p2X9b(Y2WnASIkezqAErT1EK5Xc69KGiEYf6utE6EngJJiA5aIu5tyj1vDiCfkjKk0zPz4bcYQMc9SBLgRDWM68w1EiMlm07OqL4OYKwzuAVBMeRaqJdU764aEr5KGLMu9G7PPsUOUW)Ap9mK9k5(b56YTKn155Z6xhZYmh0xRih2x6yBR1e3FWYwU3rnv)oi1BX50)NM0OPAsGxx1SDmwpmWxh4rTrBDLV22K9)4IuI7f2Th7OaxZwfXHidnlkuAi1w72rC9XR3xhGywCVz4w7F(EPQP2B8ftvVCGVbIi2M6QSa0U0GNKTYdx9vX32GCr8GSYCAJnE(D5vfNPW0bERWAn(27iElFbSoYER4085FKLCqy1yT4oRdvzn5QcOvqQu5W9OTbURUQYy9N0G2stuLmWX7VEpGRhbEG)GVfutNOe0zqggXobAgWeFK4wzWlkEsPLf1zKwbOWs3(xHhd8FpW)3V5aIjO09JBc8d7uYDXrl0h7YAGRne5)ScFvs5l64nJorjh6s6FJAQ2ZP55wkqHWFqKMfBAruMpGt6Ok6eL(ZH20nAmPRl3awkXUcJFw4XhkPggzy5aHC0joGQ97mwwY3Xfa63tT9Zto3SxxO(T1FyK1KBu5RBwMcpogI2LMX9DANGyGwwWwYRHH)vcgq8EpfvF59ppFAFd3VCib9u8hHHFbqFTqeXK1Xv2PG6ROn0DNI(nJPCT(oQqFfecG0ZJF(xUeRVKiEmQ30S5k3E01jruc2K6QPx623byGOfbSVg79R6f)Wb6Lu(61CIK4UcMPJQusInS)7p]] )
+spec:RegisterPack( "Combat", 20230211, [[Hekili:Dw1Y2TTnq0VfTrBQRI1d300ALfnBI9cVHoztpbeqGdLWrKa8aaAfTbF7DgsjtqgkDS7cjboZCVdMh8k2C2ZSKmHhypT42flVDX85ZMVC5NUBblXFScyjvc5EXw8GwuIF)ft5gHNmFSWiYi4otTvIUyjBQvf(h0SnJZjgAfizpTILStLLbTbcojl55DkxGtFeb(Pug4MC8zPxz0bEHY5r35gBG)vyVQqnJL0yKUdcdG)8ut5aAXMciJ9pSePv5bRsGbG08cKcAOubipFoWNh4tB5p2X9b(Y2WnASIkezqAErT1EK5Xc69KGiEYf6utE6EngJJiA5aIu5tyj1vDiCfkjKk0zPz4bcYQMc9SBLgRDWM68w1EiMlm07OqL4OYKwzuAVBMeRaqJdU764aEr5KGLMu9G7PPsUOUW)Ap9mK9k5(b56YTKn155Z6xhZYmh0xRih2x6yBR1e3FWYwU3rnv)oi1BX50)NM0OPAsGxx1SDmwpmWxh4rTrBDLV22K9)4IuI7f2Th7OaxZwfXHidnlkuAi1w72rC9XR3xhGywCVz4w7F(EPQP2B8ftvVCGVbIi2M6QSa0U0GNKTYdx9vX32GCr8GSYCAJnE(D5vfNPW0bERWAn(27iElFbSoYER4085FKLCqy1yT4oRdvzn5QcOvqQu5W9OTbURUQYy9N0G2stuLmWX7VEpGRhbEG)GVfutNOe0zqggXobAgWeFK4wzWlkEsPLf1zKwbOWs3(xHhd8FpW)3V5aIjO09JBc8d7uYDXrl0h7YAGRne5)ScFvs5l64nJorjh6s6FJAQ2ZP55wkqHWFqKMfBAruMpGt6Ok6eL(ZH20nAmPRl3awkXUcJFw4XhkPggzy5aHC0joGQ97mwwY3Xfa63tT9Zto3SxxO(T1FyK1KBu5RBwMcpogI2LMX9DANGyGwwWwYRHH)vcgq8EpfvF59ppFAFd3VCib9u8hHHFbqFTqeXK1Xv2PG6ROn0DNI(nJPCT(oQqFfecG0ZJF(xUeRVKiEmQ30S5k3E01jruc2K6QPx623byGOfbSVg79R6f)Wb6Lu(61CIK4UcMPJQusInS)7p]] )
 
 
 spec:RegisterPackSelector( "assassination", "Assassination (wowtbc.gg)", "|T132292:0|t Assassination",
-    "如果你在|T132292:0|t刺杀天赋中投入的点数多于其他天赋，将会为你自动选择该优先级。",
+    "If you have spent more points in |T132292:0|t Assassination than in any other tree, this priority will be automatically selected for you.",
     function( tab1, tab2, tab3 )
         return tab1 > max( tab2, tab3 )
     end )
 
 spec:RegisterPackSelector( "combat", "Combat", "|T132090:0|t Combat",
-    "如果你在|T132090:0|t战斗天赋中投入的点数多于其他天赋，将会为你自动选择该优先级。",
+    "If you have spent more points in |T132090:0|t Combat than in any other tree, this priority will be automatically selected for you.",
     function( tab1, tab2, tab3 )
         return tab2 > max( tab1, tab3 )
     end )
 
 spec:RegisterPackSelector( "subtlety", nil, "|T132320:0|t Subtlety",
-    "如果你在|T132320:0|t敏锐天赋中投入的点数多于其他天赋，将会为你自动选择该优先级。",
+    "If you have spent more points in |T132320:0|t Subtlety than in any other tree, this priority will be automatically selected for you.",
     function( tab1, tab2, tab3 )
         return tab3 > max( tab1, tab2 )
     end )
