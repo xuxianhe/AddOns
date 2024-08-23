@@ -23,10 +23,6 @@
 
 ## Dependencies: BigWigs
 ## LoadOnDemand: 1
-<<<<<<< Updated upstream
-## Version: v11.0.12
-=======
-## Version: v11.0.14
->>>>>>> Stashed changes
+## Version: v11.0.16
 
 ## X-BigWigs-Minimum: 352

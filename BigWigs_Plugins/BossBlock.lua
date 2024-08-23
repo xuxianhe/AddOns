@@ -445,20 +445,6 @@ do
 	local levelUpTbl = nil
 	local CL = BigWigsAPI:GetLocale("BigWigs: Common")
 	local function printMessage(self, tbl)
-<<<<<<< Updated upstream
-		if type(tbl.title) == "string" and #tbl.title > 2 then
-			self:SendMessage("BigWigs_Message", self, nil, (tbl.title):upper(), self.db.profile.toastsColor, nil, nil, 4)
-		end
-		if delayedTbl and delayedTbl.title and #delayedTbl.title > 2 then
-			self:SendMessage("BigWigs_Message", self, nil, (delayedTbl.title):upper(), self.db.profile.toastsColor, nil, nil, 4)
-			delayedTbl.title = nil
-		end
-		if type(tbl.subtitle) == "string" and #tbl.subtitle > 2 then
-			self:SendMessage("BigWigs_Message", self, nil, tbl.subtitle, self.db.profile.toastsColor, nil, nil, 4)
-		end
-		if type(tbl.instructionText) == "string" and #tbl.instructionText > 2 then
-			self:SendMessage("BigWigs_Message", self, nil, tbl.instructionText, self.db.profile.toastsColor, nil, nil, 4)
-=======
 		if delayedTbl and tbl == delayedTbl then
 			plugin:UnregisterEvent("ITEM_DATA_LOAD_RESULT")
 			local concatTbl = {}
@@ -489,7 +475,6 @@ do
 		end
 		if type(tbl.instructionText) == "string" and #tbl.instructionText > 2 then
 			self:SendMessage("BigWigs_Message", self, nil, tbl.instructionText, self.db.profile.toastsColor, icon, nil, tbl.bwDuration)
->>>>>>> Stashed changes
 		end
 		if type(tbl.showSoundKitID) == "number" then
 			PlaySound(tbl.showSoundKitID)
@@ -529,21 +514,6 @@ do
 				end
 			elseif tbl.eventToastID == 1 then -- Level up
 				-- tbl.title is "Level 42"
-<<<<<<< Updated upstream
-				tbl.subtitle = nil -- Remove "You've Reached" text
-				printMessage(self, tbl)
-			elseif tbl.eventToastID == 156 then -- Talent point
-				-- tbl.title is "New Talent Point Available"
-				-- tbl.subtitle is "Your power increased!"
-				tbl.subtitle = tbl.title -- We only want the title, but we don't want it uppercase
-				tbl.title = nil
-				printMessage(self, tbl)
-			elseif tbl.eventToastID == 5 then -- Dungeon zone in popup
-				if not self.db.profile.blockDungeonToasts then
-					printMessage(self, tbl)
-				end
-			else --if tbl.eventToastID == 3 then -- New ability
-=======
 				-- tbl.subtitle is "You've Reached"
 				tbl.subtitle = nil -- Remove "You've Reached" text
 				tbl.bwDuration = 4.5
@@ -596,7 +566,6 @@ do
 				-- We just hide this as we already show that you unlocked a point alongside the level up message
 				tbl.title = nil
 			else -- Something we don't support, pass to Blizz to process
->>>>>>> Stashed changes
 				return
 			end
 			RemoveCurrentToast()

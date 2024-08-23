@@ -71,19 +71,12 @@ function mod:VoidCorruption(args)
 end
 
 function mod:VoidCorruptionApplied(args)
-<<<<<<< Updated upstream
-	-- in non-Mythic this doesn't apply to everyone so play the sound only if on you
-	if not self:Mythic() and self:Me(args.destGUID) then
-		self:PersonalMessage(427461)
-		self:PlaySound(427461, "warning")
-=======
 	if self:Me(args.destGUID) then
 		self:PersonalMessage(427461)
 		-- in non-Mythic this doesn't apply to everyone so play the sound only if on you
 		if not self:Mythic() then
 			self:PlaySound(427461, "warning")
 		end
->>>>>>> Stashed changes
 	end
 end
 

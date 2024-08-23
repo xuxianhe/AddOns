@@ -29,16 +29,11 @@ if L then
 	L.sticky_web_say = "蛛網" -- Singular of Webs
 	L.infest_message = "正在對你施放寄生！"
 	L.infest_say = "寄生"
-<<<<<<< Updated upstream
-	--L.experimental_dosage_say = "Soak Egg"
-	--L.unstable_infusion = "Swirls"
-=======
 	--L.experimental_dosage = "Egg Breaks"
 	--L.experimental_dosage_say = "Egg Break"
 	--L.ingest_black_blood = "Next Container"
 	--L.unstable_infusion = "Swirls"
 
->>>>>>> Stashed changes
 	L.custom_on_experimental_dosage_marks = "實驗療法分配"
 	L.custom_on_experimental_dosage_marks_desc = "將受到「實驗療法」影響的玩家，按照近戰 > 遠程 > 治療的優先級，標記為 {rt6}{rt4}{rt3}{rt7}，包含喊話與目標訊息。"
 end
@@ -48,8 +43,6 @@ if L then
 	L.assasination = "幻影"
 	L.twiligt_massacre = "衝鋒"
 	L.nexus_daggers = "匕首"
-<<<<<<< Updated upstream
-=======
 end
 
 L = BigWigs:NewBossLocale("The Silken Court", "zhTW")
@@ -65,5 +58,4 @@ if L then
 	--L.cataclysmic_entropy = "Big Boom" -- Interrupt before it casts
 	--L.spike_eruption = "Spikes"
 	--L.unleashed_swarm = "Swarm"
->>>>>>> Stashed changes
 end
