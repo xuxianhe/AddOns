@@ -29,8 +29,8 @@ local DifficultyIcons = {
 	[6] = app.asset("Difficulty_Heroic"),
 	[7] = app.asset("Difficulty_LFR"),
 	[9] = app.asset("Difficulty_Mythic"),
-	[11] = app.asset("Difficulty_Normal"),
-	[12] = app.asset("Difficulty_Heroic"),
+	[11] = app.asset("Difficulty_Heroic"),
+	[12] = app.asset("Difficulty_Normal"),
 	[14] = app.asset("Difficulty_Normal"),
 	[15] = app.asset("Difficulty_Heroic"),
 	[16] = app.asset("Difficulty_Mythic"),
@@ -250,8 +250,13 @@ app.AddEventHandler("OnLoad", function()
 		end,
 	});
 end);
+local CurrentDifficultyRemapper ={
+	[205] = 1,	-- Follower Dungeon -> Normal Dungeon
+}
 app.GetCurrentDifficultyID = function()
-	return IsInInstance() and select(3, GetInstanceInfo()) or 0;
+	if not IsInInstance() then return 0 end
+	local diff = select(3, GetInstanceInfo()) or 0
+	return CurrentDifficultyRemapper[diff] or diff
 end
 app.GetRelativeDifficultyIcon = function(t)
 	return DifficultyIcons[GetRelativeValue(t, "difficultyID") or 1];

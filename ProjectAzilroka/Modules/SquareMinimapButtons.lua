@@ -362,9 +362,8 @@ function SMB:GrabMinimapButtons(forceUpdate)
 		if not (not btn:IsObjectType('Button') or -- Don't want frames only buttons
 			SMB.IgnoreButton[name] or -- Ignored by default
 			btn.isSkinned or -- Skinned buttons
-			btn.uiMapID or -- HereBeDragons | HandyNotes
+			btn.uiMapID or btn.minimap or btn.acquired or -- HereBeDragons | HandyNotes
 			btn.arrow or -- HandyNotes | TomCat Tours
-			btn.texture or -- HandyNotes
 			(btn.waypoint or btn.isZygorWaypoint) or -- Zygor
 			(btn.nodeID or btn.title and btn.x and btn.y) or -- GatherMate2
 			(btn.data and btn.data.UiMapID) or (name and strmatch(name, "^QuestieFrame")) or -- Questie
@@ -380,6 +379,14 @@ function SMB:GrabMinimapButtons(forceUpdate)
 	if UpdateBar then
 		SMB:Update()
 	end
+end
+
+function SMB:OnDragStart()
+	SMB.Bar:StartMoving()
+end
+
+function SMB:OnDragStop()
+	SMB.Bar:StopMovingOrSizing()
 end
 
 function SMB:Update()
@@ -422,8 +429,8 @@ function SMB:Update()
 			Button:SetScale(1)
 			Button:SetFrameStrata(SMB.db.Strata)
 			Button:SetFrameLevel(SMB.db.Level + 1)
-			Button:SetScript('OnDragStart', nil)
-			Button:SetScript('OnDragStop', nil)
+			Button:SetScript('OnDragStart', (not (PA.ElvUI or PA.Tukui) and SMB.OnDragStart or nil))
+			Button:SetScript('OnDragStop', (not (PA.ElvUI or PA.Tukui) and SMB.OnDragStop or nil))
 
 			SMB:LockButton(Button)
 
@@ -526,8 +533,6 @@ function SMB:PLAYER_ENTERING_WORLD()
 end
 
 function SMB:Initialize()
-	SMB:UpdateSettings()
-
 	if SMB.db.Enable ~= true then
 		return
 	end
@@ -556,6 +561,8 @@ function SMB:Initialize()
 		_G.Tukui[1]['Movers']:RegisterFrame(SMB.Bar)
 	elseif PA.ElvUI then
 		_G.ElvUI[1]:CreateMover(SMB.Bar, 'SquareMinimapButtonBarMover', 'SquareMinimapButtonBar Anchor', nil, nil, nil, 'ALL,GENERAL')
+	else
+		SMB.Bar:RegisterForDrag('LeftButton')
 	end
 
 	SMB:RegisterEvent("PLAYER_ENTERING_WORLD")
