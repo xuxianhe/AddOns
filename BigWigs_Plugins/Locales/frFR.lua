@@ -2,6 +2,7 @@ local L = BigWigsAPI:NewLocale("BigWigs: Plugins", "frFR")
 if not L then return end
 
 L.general = "Général"
+--L.advanced = "Advanced"
 L.comma = ", "
 
 L.positionX = "Position X"
@@ -189,10 +190,10 @@ L.blockTalkingHeadTimewalking = "Marcheurs du temps (donjons & raids)"
 L.blockTalkingHeadScenarios = "Scénarios"
 
 L.redirectPopups = "Redirige les popups vers les messages BigWigs"
-L.redirectPopupsDesc = "Les popups qui s'affichent au milieu de votre écran telle que la bannière de '|cFF33FF99emplacement de la grande chambre-forte débloqué|r' ou les popups que vous voyez en entrant dans un donjon Mythique+ seront bloqués et seront convertis en messages BigWigs. Ces popups sont parfois larges, restent affichés longtemps et vous empêchent de cliquer à travers."
+--L.redirectPopupsDesc = "Popup banners in the middle of your screen such as the '|cFF33FF99vault slot unlocked|r' banner will instead be displayed as BigWigs messages. Ces popups sont parfois larges, restent affichés longtemps et vous empêchent de cliquer à travers."
 L.redirectPopupsColor = "Couleur du message redirigé"
 L.blockDungeonPopups = "Bloque les popups de donjons"
-L.blockDungeonPopupsDesc = "Les popups qui s'affichent lorsque vous entrez dans un donjon contiennent parfois beaucoup de texte. Activer cette option désactivera complètement ces messages au lieu de les convertir en message BigWigs."
+L.blockDungeonPopupsDesc = "Les popups qui s'affichent lorsque vous entrez dans un donjon contiennent parfois beaucoup de texte. Activer cette option désactivera complètement ces messages."
 L.itemLevel = "Niveau d'objet %d"
 
 L.userNotifySfx = "Les effets sonores étaient désactivés par BossBlock, la réactivation a été forcée."
@@ -328,9 +329,8 @@ L.fadeTimeDesc = "Définit pendant combien de temps un message doit s'estomper (
 --L.showBorderDesc = "Show a border around the icon."
 --L.borderColor = "Border Color"
 --L.borderSize = "Border Size"
---L.timer = "Timer"
---L.showTimer = "Show Timer"
---L.showTimerDesc = "Show a text timer on the icon."
+--L.showNumbers = "Show Numbers"
+--L.showNumbersDesc = "Show numbers on the icon."
 --L.cooldown = "Cooldown"
 --L.showCooldownSwipe = "Show Swipe"
 --L.showCooldownSwipeDesc = "Show a swipe on the icon when the cooldown is active."
@@ -338,7 +338,7 @@ L.fadeTimeDesc = "Définit pendant combien de temps un message doit s'estomper (
 --L.showCooldownEdgeDesc = "Show an edge on the cooldown when the cooldown is active."
 --L.inverse = "Inverse"
 --L.inverseSwipeDesc = "Invert the cooldown animations."
---L.iconGlow = "Icon Glow"
+--L.glow = "Glow"
 --L.enableExpireGlow = "Enable Expire Glow"
 --L.enableExpireGlowDesc = "Show a glow around the icon when the cooldown has expired."
 --L.glowColor = "Glow Color"
@@ -348,6 +348,8 @@ L.fadeTimeDesc = "Définit pendant combien de temps un message doit s'estomper (
 --L.nameplateTextSettings = "Text Settings"
 --L.fixate_test = "Fixate Test" -- Text that displays to test on the frame
 --L.resetNameplateTextDesc = "Reset all the options related to nameplate text."
+--L.autoScale = "Auto Scale"
+--L.autoScaleDesc = "Automatically change scale according to the nameplate scale."
 
 -- Glow types as part of LibCustomGlow
 --L.pixelGlow = "Pixel Glow"

@@ -31,6 +31,7 @@ local heroes = {
 	Illari = "Illari",
 	JunkerQueen = "Junker Queen",
 	Junkrat = "Junkrat",
+	Juno = "Juno",
 	Kiriko = "Kiriko",
 	Lifeweaver = "Lifeweaver",
 	Lucio = "Lúcio",
@@ -60,16 +61,39 @@ local heroes = {
 }
 
 -- After Sigma, all the countdowns were changed to 3..2..1 :\
-local three = {
-	Echo = true,
-	Sojourn = true,
-	JunkerQueen = true,
-	Lifeweaver = true,
-	Kiriko = true,
-	Ramattra = true,
-	Illari = true,
-	Mauga = true,
-	Venture = true,
+local five = {
+	Announcer = true,
+	Ana = true,
+	Ashe = true,
+	Baptiste = true,
+	Bastion = true,
+	Brigitte = true,
+	McCree = true,
+	DVa = true,
+	Doomfist = true,
+	Genji = true,
+	Hanzo = true,
+	Junkrat = true,
+	Lucio = true,
+	Mei = true,
+	Mercy = true,
+	Moira = true,
+	Orisa = true,
+	Pharah = "Pharah" ,
+	Reaper = true,
+	Reinhardt = true,
+	Roadhog = true,
+	Sigma = true,
+	Soldier76 = true,
+	Sombra = true,
+	Symmetra = true,
+	Torbjorn = true,
+	Tracer = true,
+	Widowmaker = true,
+	Winston = true,
+	WreckingBall = true,
+	Zarya = true,
+	Zenyatta = true,
 }
 
 local function register(locale)
@@ -89,21 +113,21 @@ local function register(locale)
 				"Interface\\AddOns\\BigWigs_Countdown_Overwatch\\enUS\\Bastion_4.ogg",
 				"Interface\\AddOns\\BigWigs_Countdown_Overwatch\\enUS\\Bastion_5.ogg",
 			})
-		elseif three[k] then
-			BigWigsAPI:RegisterCountdown(id, ("%s [3]"):format(name), {
-				path:format(k, 1),
-				path:format(k, 2),
-				path:format(k, 3),
-				false,
-				false,
-			})
-		else
+		elseif five[k] then
 			BigWigsAPI:RegisterCountdown(id, name, {
 				path:format(k, 1),
 				path:format(k, 2),
 				path:format(k, 3),
 				path:format(k, 4),
 				path:format(k, 5),
+			})
+		else
+			BigWigsAPI:RegisterCountdown(id, ("%s [3]"):format(name), {
+				path:format(k, 1),
+				path:format(k, 2),
+				path:format(k, 3),
+				false,
+				false,
 			})
 		end
 	end
