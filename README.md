@@ -11,13 +11,22 @@ pre {
 --setregion=CN --setlanguage=zht
 
 ### 单人开团宏
-``
+```
 /click [@party1,noexists]PlayerFrame RightButton
 /click [@party1,noexists]DropDownList1Button20
 /run ConvertToRaid()
 /stopmacro [group]
 /invite anyone
-``
+```
+
+### 打镜像蛛网宏
+```
+#showtooltip
+/cast [mod:alt,@focus] 技能
+/cast 技能
+/petattack [target=裹体之网]
+/petattack [target=镜像]
+```
 
 ### iTank
 ```
