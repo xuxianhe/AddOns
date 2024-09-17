@@ -46,6 +46,7 @@ function mod:GetOptions()
 		{456696, "NAMEPLATE"}, -- Obsidian Stomp
 		-- Twilight Destroyer
 		{451613, "SAY", "NAMEPLATE"}, -- Twilight Flame
+		451614, -- Twilight Ember
 		{451939, "NAMEPLATE"}, -- Umbral Wind
 		-- Twilight Beguiler
 		{76711, "NAMEPLATE"}, -- Sear Mind
@@ -62,6 +63,7 @@ function mod:GetOptions()
 		451387, -- Ascension
 		-- Faceless Corruptor
 		{451391, "NAMEPLATE"}, -- Mind Piercer
+		{451395, "NAMEPLATE"}, -- Corrupt
 	}, {
 		[451871] = L.twilight_earthcaller,
 		[456696] = L.twilight_brute,
@@ -92,6 +94,8 @@ function mod:OnBossEnable()
 		-- Twilight Destroyer
 		self:Log("SPELL_CAST_SUCCESS", "TwilightFlame", 451613)
 		self:Log("SPELL_AURA_APPLIED", "TwilightFlameApplied", 451613)
+		self:Log("SPELL_PERIODIC_DAMAGE", "TwilightEmberDamage", 451614)
+		self:Log("SPELL_PERIODIC_MISSED", "TwilightEmberDamage", 451614)
 		self:Log("SPELL_CAST_START", "UmbralWind", 451939)
 		self:Death("TwilightDestroyerDeath", 224609)
 	end
@@ -128,6 +132,8 @@ function mod:OnBossEnable()
 		-- Faceless Corruptor
 		self:Log("SPELL_CAST_START", "MindPiercer", 451391)
 		self:Log("SPELL_AURA_APPLIED", "MindPiercerApplied", 451394)
+		self:Log("SPELL_CAST_SUCCESS", "Corrupt", 451395)
+		self:Log("SPELL_AURA_APPLIED", "CorruptApplied", 451395)
 		self:Death("FacelessCorruptorDeath", 39392)
 	end
 end
@@ -205,6 +211,17 @@ function mod:TwilightFlameApplied(args)
 	self:PlaySound(args.spellId, "alert", nil, args.destName)
 	if self:Me(args.destGUID) then
 		self:Say(args.spellId, nil, nil, "Twilight Flame")
+	end
+end
+
+do
+	local prev = 0
+	function mod:TwilightEmberDamage(args)
+		if self:Me(args.destGUID) and args.time - prev > 1.5 then
+			prev = args.time
+			self:PersonalMessage(args.spellId, "underyou")
+			self:PlaySound(args.spellId, "underyou")
+		end
 	end
 end
 
@@ -359,6 +376,17 @@ do
 			prev = t
 			self:PlaySound(451391, "info", nil, args.destName)
 		end
+	end
+end
+
+function mod:Corrupt(args)
+	self:Nameplate(args.spellId, 17.0, args.sourceGUID)
+end
+
+function mod:CorruptApplied(args)
+	if self:Me(args.destGUID) then
+		self:PersonalMessage(args.spellId)
+		self:PlaySound(args.spellId, "alert")
 	end
 end
 

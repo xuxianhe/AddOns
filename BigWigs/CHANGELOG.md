@@ -1,10 +1,12 @@
 # BigWigs
 
-## [v358.4](https://github.com/BigWigsMods/BigWigs/tree/v358.4) (2024-09-13)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v358.3...v358.4) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
+## [v361](https://github.com/BigWigsMods/BigWigs/tree/v361) (2024-09-17)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v360.2...v361) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
 
-- Plugins/BossBlock: Support more toasts  
-- Plugins/Nameplates: Fix comment typo  
-- NerubarPalace/Ovinax: Fix a wrong spellname  
-- NerubarPalace/Ovinax: Fix Experimental Dosage bars  
-- Update zhCN (#1819)  
+- bump version  
+- NerubarPalace/TheBloodboundHorror: Update text on the beams castbar  
+- NerubarPalace/Rashanan: Fix renames not showing after an interrupt  
+- NerubarPalace/Ansurek: Update icons used  
+- NerubarPalace/Ansurek: Add mark options, castbars for Apocalypse casts and turn countdown on for the stage 2 knockbacks  
+- NerubarPalace/Kyveza: Remove an unused Regicide spell ID  
+- Core/BossPrototype: Fix registering private auras where multiple IDs are provided for 1 spell  

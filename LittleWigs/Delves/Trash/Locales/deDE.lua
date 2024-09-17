@@ -9,6 +9,7 @@ if L then
 	L.infected_beast = "Infiziertes Wildtier"
 	L.fungal_gutter = "Pilzschlitzer"
 	L.fungarian_flinger = "Fungianischer Werfer"
+	L.fungal_rotcaster = "Pilzverfallwirker"
 	L.particularly_bad_guy = "Besonders fieser Bösewicht"
 end
 
@@ -30,7 +31,7 @@ if L then
 	L.kobyss_witherer = "Siecherer der Kobyss"
 	L.wandering_gutter = "Wandernder Ausweider"
 	L.crazed_predator = "Rasendes Raubtier"
-	--L.deepwater_makura = "Deepwater Makura"
+	L.deepwater_makura = "Tiefwassermakura"
 end
 
 L = BigWigs:NewBossLocale("Nerubian Delve Trash", "deDE")
@@ -79,5 +80,5 @@ if L then
 	L.tala = "Tala"
 	L.velo = "Velo"
 	L.anubvir = "Anub'vir"
-	--L.zekvir = "Zekvir (Random Spawn)"
+	L.zekvir = "Zekvir (Zufälliges Erscheinen)"
 end
