@@ -57,7 +57,7 @@ BigWigs:AddColors("Rasha'nan", {
 	[439789] = "yellow",
 	[439792] = "red",
 	[439795] = "red",
-	[439811] = "yellow",
+	[439811] = {"red","yellow"},
 	[444687] = "purple",
 	[452806] = {"green","yellow"},
 	[454989] = {"blue","yellow"},

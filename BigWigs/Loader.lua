@@ -12,7 +12,7 @@ local strfind = string.find
 -- Generate our version variables
 --
 
-local BIGWIGS_VERSION = 361
+local BIGWIGS_VERSION = 362
 local BIGWIGS_RELEASE_STRING, BIGWIGS_VERSION_STRING
 local versionQueryString, versionResponseString = "Q^%d^%s^%d^%s", "V^%d^%s^%d^%s"
 local customGuildName = false
@@ -39,7 +39,7 @@ do
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "b60af9b" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "f6bc172" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.
@@ -541,7 +541,7 @@ do
 		[-942] = -947, -- Azeroth/BfA
 		[-1536] = -1647, [-1565] = -1647, [-1525] = -1647, [-1533] = -1647, -- Shadowlands
 		[-2022] = -1978, [-2023] = -1978, [-2024] = -1978, [-2085] = -1978, -- Dragon Isles
-		[-2214] = -2274, -- Khaz Algar
+		[-2214] = -2274, [-2215] = -2274, -- Khaz Algar
 	}
 end
 
@@ -1464,9 +1464,9 @@ end
 --
 
 do
-	local DBMdotRevision = "20240917105637" -- The changing version of the local client, changes with every new zip using the project-date-integer packager replacement.
-	local DBMdotDisplayVersion = "11.0.13" -- "N.N.N" for a release and "N.N.N alpha" for the alpha duration.
-	local DBMdotReleaseRevision = "20240917000000" -- Hardcoded time, manually changed every release, they use it to track the highest release version, a new DBM release is the only time it will change.
+	local DBMdotRevision = "20240921150709" -- The changing version of the local client, changes with every new zip using the project-date-integer packager replacement.
+	local DBMdotDisplayVersion = "11.0.15" -- "N.N.N" for a release and "N.N.N alpha" for the alpha duration.
+	local DBMdotReleaseRevision = "20240921000000" -- Hardcoded time, manually changed every release, they use it to track the highest release version, a new DBM release is the only time it will change.
 	local protocol = 3
 	local versionPrefix = "V"
 	local PForceDisable = public.isRetail and 15 or 14
@@ -1735,6 +1735,12 @@ do
 		if type(zoneAddon) == "table" then
 			-- default to the expansion addon for current season modules
 			zoneAddon = zoneAddon[1]
+			if enableZones[id] and not BigWigsTempNameplates then -- XXX temp
+				BigWigsTempNameplates = true
+				CTimerAfter(1, function() sysprint(L.tempNPMsg) end)
+				RaidNotice_AddMessage(RaidWarningFrame, "BigWigs: ".. L.tempNPMsg, {r=1,g=1,b=1}, 10)
+				Popup("BigWigs: ".. L.tempNPMsg)
+			end
 		end
 		if zoneAddon and id > 0 and not fakeZones[id] and not warnedThisZone[id] then
 			if public.usingBigWigsRepo and public.currentExpansion.bigWigsBundled[zoneAddon] then return end -- If we are a BW Git user, then bundled content can't be missing, so return
