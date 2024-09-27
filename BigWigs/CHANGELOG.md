@@ -1,9 +1,14 @@
 # BigWigs
 
-## [v362.1](https://github.com/BigWigsMods/BigWigs/tree/v362.1) (2024-09-22)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v362...v362.1) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
+## [v363.2](https://github.com/BigWigsMods/BigWigs/tree/v363.2) (2024-09-27)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v363.1...v363.2) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
 
-- NerubarPalace/Ansurek: Cast bar for Venom Nova, make sure to apply our renames  
-- NerubarPalace/TheSilkenCourt: Cast bar for Reckless Charge  
-- Loader: Only show nameplate message in an enable zone  
-- Plugins/Nameplates: Tweak frame levels  
+- Update zhCN (#1852)  
+- NerubarPalace/Sikran: Heroic update and add berserk  
+- Plugins: Locale tweak  
+- Update zhCN (#1851)  
+- Loader: Add The Crystal Vale  
+- Plugins/Statistics: Update comments  
+- NerubarPalace/TheSilkenCourt: More LFR p3 times  
+- NerubarPalace/TheSilkenCourt: Fix Burrowed Eruption spell id  
+- NerubarPalace/TheSilkenCourt: More mythic p3 times  
