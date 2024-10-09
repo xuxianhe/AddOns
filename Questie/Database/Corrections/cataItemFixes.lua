@@ -49,6 +49,9 @@ function CataItemFixes.Load()
         [8170] = { -- Rugged Leather
             [itemKeys.vendors] = {},
         },
+        [8705] = { -- OOX-22/FE Distress Beacon
+            [itemKeys.startQuest] = 25475,
+        },
         [10441] = { -- Glowing Shard
             [itemKeys.startQuest] = 0,
         },
@@ -195,6 +198,9 @@ function CataItemFixes.Load()
         },
         [46696] = { -- Panther Figurine
             [itemKeys.class] = itemClasses.QUEST,
+        },
+        [46698] = { -- Moon-kissed Clay
+            [itemKeys.npcDrops] = {},
         },
         [46702] = { -- Ancient Device Fragment
             [itemKeys.class] = itemClasses.QUEST,
@@ -426,6 +432,9 @@ function CataItemFixes.Load()
         [54814] = { -- Talisman of Flame Ascendancy
             [itemKeys.class] = itemClasses.QUEST,
         },
+        [54861] = { -- Glimmerdeep Clam
+            [itemKeys.npcDrops] = {},
+        },
         [55122] = { -- Tholo's Horn
             [itemKeys.class] = itemClasses.QUEST,
         },
@@ -471,6 +480,9 @@ function CataItemFixes.Load()
         [55280] = { -- Deepmoss Venom Sac
             [itemKeys.npcDrops] = {41185,4005,4006,4007},
         },
+        [55807] = { -- Alliance's Proposal
+            [itemKeys.npcDrops] = {41196},
+        },
         [55808] = { -- Horde's Proposal
             [itemKeys.npcDrops] = {41199},
         },
@@ -487,7 +499,7 @@ function CataItemFixes.Load()
             [itemKeys.class] = itemClasses.QUEST,
         },
         [56254] = { -- Merciless Head
-            [itemKeys.npcDrops] = {41601,41729},
+            [itemKeys.npcDrops] = {41601,41729,41747},
         },
         [56569] = { -- Underlight Nibbler
             [itemKeys.npcDrops] = {41916},
@@ -718,6 +730,9 @@ function CataItemFixes.Load()
         [62817] = { -- Neferset Key
             [itemKeys.class] = itemClasses.QUEST,
         },
+        [62820] = { -- Deadwood Honey Glob
+            [itemKeys.objectDrops] = {460015},
+        },
         [62822] = { -- Twilight Collar
             [itemKeys.npcDrops] = {5860,5861,5862,8419,47309,47310,47311},
         },
@@ -757,6 +772,9 @@ function CataItemFixes.Load()
         [63685] = { -- Ancient Copper Scroll
             [itemKeys.npcDrops] = {},
         },
+        [64318] = { -- Fine Dark Cloth
+            [itemKeys.npcDrops] = {},
+        },
         [64404] = { -- Ruby Crystal Cluster
             [itemKeys.npcDrops] = {48533,48639},
         },
@@ -791,6 +809,12 @@ function CataItemFixes.Load()
             [itemKeys.class] = itemClasses.QUEST,
         },
         [69765] = { -- Lucifern
+            [itemKeys.npcDrops] = {},
+        },
+        [69812] = { -- Flame Druid Reagent Pouch
+            [itemKeys.npcDrops] = {},
+        },
+        [69813] = { -- Flame Druid Idol
             [itemKeys.npcDrops] = {},
         },
         [69815] = { -- Seething Cinder

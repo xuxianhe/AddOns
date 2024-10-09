@@ -1,13 +1,9 @@
 # BigWigs
 
-## [v364.1](https://github.com/BigWigsMods/BigWigs/tree/v364.1) (2024-09-29)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v364...v364.1) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
+## [v365.3](https://github.com/BigWigsMods/BigWigs/tree/v365.3) (2024-10-06)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v365.2...v365.3) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
 
-- Update esES (#1865)  
-- Update frFR (#1866)  
-- Core: Cleanup old engage code  
-- Update zhCN (#1863)  
-- Update zhTW (#1859)  
-- KhazAlgar: Try out registering events OnEngage, closes #1862  
-- Update koKR (#1857)  
-- Update esES (#1856)  
+- Plugins/Nameplates: Remove unused support for hide on expire, cleanups  
+- NerubarPalace/Kyveza: Add a message when daggers are over and increase the Eternal Night castbar until the full room hits.  
+- NerubarPalace/TheBloodboundHorror: Add a castbar for Goresplatter/Run Away  
+- NerubarPalace/Ulgrax: Set Brutal Crush as Tank only (Fixes #1844)  
