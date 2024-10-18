@@ -166,14 +166,12 @@ end
 
 local function SetTextProperties(text, fontSettings, color)
 	text:SetFont(LSM:Fetch("font", fontSettings.font), fontSettings.fontsize, fontSettings.fontflag)
-	if color then
-		text:SetTextColor(color.r, color.g, color.b)
-	end
+	if color then text:SetTextColor(color.r, color.g, color.b) end
 end
 
 local function SkinTitleText(text, color)
 	SetTextProperties(text, fonts.title, color or colors.title.n)
-	local height = text:GetStringHeight() + 2
+	local height = text:GetStringHeight()
 	if height ~= text:GetHeight() then text:SetHeight(height) end
 end
 
@@ -329,7 +327,7 @@ local function GetRequirements(text)
 	local result = matchPatterns(text)
 	if not result then return nil end
 
-	if (result.current and result.required) then
+	if result.current and result.required then
 		result.complete = tonumber(result.current) >= tonumber(result.required)
 	elseif result.percent then
 		result.complete = tonumber(result.percent) >= 100
@@ -695,6 +693,8 @@ end
 
 local function SkinBlock(_, block)
 	if block then
+		local totalHeight = 2
+
 		if block.Stage and not block.mMT_StageSkin then
 			hooksecurefunc(block, "UpdateStageBlock", SkinStageBlock)
 			SkinStageBlock(block)
@@ -726,6 +726,7 @@ local function SkinBlock(_, block)
 				cachedQuests[block.id].title = block.HeaderText:GetText()
 				block.HeaderText:SetText(GetLevelInfoText(cachedQuests[block.id].info.level) .. block.HeaderText:GetText())
 			end
+			totalHeight = totalHeight + block.HeaderText:GetHeight()
 		end
 
 		if block.usedLines then
@@ -742,6 +743,15 @@ local function SkinBlock(_, block)
 		if block.OnHeaderLeave and not block.mMT_OnLeaveHook then
 			hooksecurefunc(block, "OnHeaderLeave", OnHeaderLeave)
 			block.mMT_OnLeaveHook = true
+		end
+
+		if not block.WidgetContainerand and not (C_ChallengeMode.GetActiveChallengeMapID() or IsInInstance()) then
+			if block.usedLines then
+				for _, line in pairs(block.usedLines) do
+					totalHeight = totalHeight + line:GetHeight()
+				end
+			end
+			block:SetHeight(totalHeight)
 		end
 	end
 end
@@ -854,8 +864,11 @@ function module:Initialize()
 					hooksecurefunc(tracker, "AddBlock", SkinBlock)
 					tracker.mMTSkin = true
 				end
+
+				--tracker:SetHeight(5)
 			end
 		end
+		module.hooked = true
 	end
 
 	cachedQuests = BuildQuestCache()
