@@ -1160,6 +1160,9 @@ function CataNpcFixes.Load()
                 },
             },
         },
+        [36163] = { -- Khan Kammah
+            [npcKeys.spawns] = {[zoneIDs.DESOLACE] = {{73.36,41.69}}},
+        },
         [36210] = { -- Sorata Firespinner
             [npcKeys.spawns] = {
                 [zoneIDs.AZSHARA] = {
@@ -2600,8 +2603,17 @@ function CataNpcFixes.Load()
         [53950] = { -- Hired Courier
             [npcKeys.spawns] = {[zoneIDs.STORMWIND_CITY] = {{24.03,44.82}}},
         },
+        [54021] = { -- Hudson Barnes
+            [npcKeys.spawns] = {[zoneIDs.STORMWIND_CITY] = {{64.17,46.29}}},
+        },
+        [54118] = { -- Hudson Barnes
+            [npcKeys.spawns] = {[zoneIDs.STORMWIND_CITY] = {{65.17,33.47}}},
+        },
         [54142] = { -- Hired Courier
             [npcKeys.spawns] = {[zoneIDs.DUROTAR] = {{57.33,9.01}}},
+        },
+        [54170] = { -- Delian Sunshade
+            [npcKeys.spawns] = {[zoneIDs.ORGRIMMAR] = {{71.77,49.78}}},
         },
         [54334] = { -- Darkmoon Faire Mystic Mage
             [npcKeys.spawns] = {
@@ -2997,6 +3009,9 @@ function CataNpcFixes:LoadFactionFixes()
             [npcKeys.spawns] = {[zoneIDs.THE_CAPE_OF_STRANGLETHORN] = {{35.13,29.33}}},
             [npcKeys.zoneID] = zoneIDs.THE_CAPE_OF_STRANGLETHORN,
         },
+        [54114] = { -- Unleashed Void
+            [npcKeys.spawns] = {[zoneIDs.TIRISFAL_GLADES] = {{65.77,74.8}}},
+        },
     }
 
     local npcFixesAlliance = {
@@ -3152,6 +3167,9 @@ function CataNpcFixes:LoadFactionFixes()
         [52762] = { -- [DND] At the Digsite
             [npcKeys.spawns] = {[zoneIDs.THE_CAPE_OF_STRANGLETHORN] = {{55.5,41.26}}},
             [npcKeys.zoneID] = zoneIDs.THE_CAPE_OF_STRANGLETHORN,
+        },
+        [54114] = { -- Unleashed Void
+            [npcKeys.spawns] = {[zoneIDs.STORMWIND_CITY] = {{55.39,43.41}}},
         },
     }
 
