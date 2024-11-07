@@ -471,6 +471,9 @@ function CataQuestFixes.Load()
         [6441] = { -- Satyr Horns
             [questKeys.preQuestSingle] = {26449},
         },
+        [6581] = { -- Warsong Saw Blades
+            [questKeys.parentQuest] = 0,
+        },
         [6622] = { -- Triage
             [questKeys.preQuestSingle] = {},
         },
@@ -3080,8 +3083,23 @@ function CataQuestFixes.Load()
         [24691] = { -- Peculiar Delicacies
             [questKeys.preQuestSingle] = {24690},
         },
+        [24692] = { -- The Fledgling Colossus
+            [questKeys.preQuestSingle] = {24690},
+        },
         [24694] = { -- The Shaper's Terrace
-            [questKeys.preQuestSingle] = {24723},
+            [questKeys.preQuestGroup] = {24720,24721,24722,24723},
+            [questKeys.extraObjectives] = {{nil,Questie.ICON_TYPE_TALK,l10n("Talk to the Un'Goro Examinant"),0,{{"monster",38504}}}},
+        },
+        [24695] = { -- Ever Watching From Above
+            [questKeys.extraObjectives] = {
+                {nil,Questie.ICON_TYPE_INTERACT,l10n("Pull the lever"),0,{{"object",202187}}},
+                {nil,Questie.ICON_TYPE_INTERACT,l10n("Pull the lever"),0,{{"object",202195}}},
+                {nil,Questie.ICON_TYPE_INTERACT,l10n("Pull the lever"),0,{{"object",202196}}},
+                {nil,Questie.ICON_TYPE_INTERACT,l10n("Pull the lever"),0,{{"object",202197}}}
+            },
+        },
+        [24697] = { -- How to Make Meat Fresh Again
+            [questKeys.objectives] = {{{9163,nil,Questie.ICON_TYPE_INTERACT}}},
         },
         [24698] = { -- Adventures in Archaeology
             [questKeys.preQuestSingle] = {24693},
@@ -3105,18 +3123,27 @@ function CataQuestFixes.Load()
         [24705] = { -- Town Dwellers Were Made to be Saved
             [questKeys.name] = 'Town Dwellers Were Made to be Saved',
             [questKeys.preQuestSingle] = {24703},
+            [questKeys.objectives] = {{{38238,nil,Questie.ICON_TYPE_EVENT},{38239,nil,Questie.ICON_TYPE_EVENT},{38240,nil,Questie.ICON_TYPE_EVENT}}}
         },
         [24706] = { -- The Spirits of Golakka Hot Springs
             [questKeys.preQuestGroup] = {24704,24705},
+            [questKeys.objectives] = {{{38254,nil,Questie.ICON_TYPE_EVENT}}}
         },
         [24707] = { -- The Ballad of Maximillian
             [questKeys.preQuestSingle] = {24706},
+            [questKeys.extraObjectives] = {{nil,Questie.ICON_TYPE_EVENT,l10n("Speak to Maximillian"),0,{{"monster",38237}}}},
         },
         [24714] = { -- Chasing A-Me 01
             [questKeys.preQuestSingle] = {24701},
         },
+        [24715] = { -- Repairing A-Me 01
+            [questKeys.requiredSourceItems] = {50237,50238},
+        },
         [24717] = { -- The Apes of Un'Goro
             [questKeys.preQuestSingle] = {24701},
+        },
+        [24719] = { -- Claws of White
+            [questKeys.preQuestSingle] = {},
         },
         [24721] = { -- The Eastern Pylon
             [questKeys.objectives] = {nil,{{164957,"Discover and examine the Eastern Crystal Pylon"}}},
@@ -3157,6 +3184,7 @@ function CataQuestFixes.Load()
         },
         [24733] = { -- The Bait for Lar'korwi
             [questKeys.requiredSourceItems] = {11569,11570},
+            [questKeys.sourceItemId] = 11568,
         },
         [24735] = { -- A Little Help From My Friends
             [questKeys.preQuestSingle] = {24734},
@@ -3165,8 +3193,14 @@ function CataQuestFixes.Load()
         [24737] = { -- Super Sticky
             [questKeys.preQuestSingle] = {24693},
         },
+        [24740] = { -- Volcanic Activity
+            [questKeys.preQuestSingle] = {},
+        },
         [24741] = { -- Trading Up
             [questKeys.extraObjectives] = {{nil,Questie.ICON_TYPE_INTERACT,l10n("Place the Wild Clucker Eggs in the trap"),0,{{"object",201972}}}},
+        },
+        [24742] = { -- Finding the Source
+            [questKeys.objectives] = {{{10541,nil,Questie.ICON_TYPE_EVENT}}}
         },
         [24744] = { -- The Biggest Egg Ever
             [questKeys.extraObjectives] = {{nil,Questie.ICON_TYPE_SLAY,l10n("Kill the Mechachicken"),0,{{"monster",38224}}}},
@@ -3313,6 +3347,9 @@ function CataQuestFixes.Load()
             [questKeys.zoneOrSort] = 215,
             [questKeys.extraObjectives] = {{nil,Questie.ICON_TYPE_INTERACT,l10n("Open the cage"),0,{{"object",202112}}}},
             [questKeys.objectives] = {{{38345,nil,Questie.ICON_TYPE_INTERACT}}},
+        },
+        [24854] = { -- Finding Stormclaw
+            [questKeys.nextQuestInChain] = 24719,
         },
         [24861] = { -- Last Rites, First Rites
             [questKeys.zoneOrSort] = 215,
@@ -3804,6 +3841,9 @@ function CataQuestFixes.Load()
         [25249] = { -- A Change of Heart
             [questKeys.preQuestSingle] = {},
         },
+        [25250] = { -- Sealing the Dream [Horde]
+            [questKeys.objectives] = {{{39834,nil,Questie.ICON_TYPE_EVENT}}},
+        },
         [25251] = { -- Final Confrontation
             [questKeys.preQuestSingle] = {},
             [questKeys.preQuestGroup] = {25214,25243}, -- 25243 or 25244
@@ -3922,6 +3962,7 @@ function CataQuestFixes.Load()
         },
         [25329] = { -- Might of the Stonemaul
             [questKeys.preQuestSingle] = {25344},
+            [questKeys.objectives] = {{{45115,nil,Questie.ICON_TYPE_EVENT}}},
         },
         [25330] = { -- Waste of Flesh
             [questKeys.objectives] = {{{39453,nil,Questie.ICON_TYPE_INTERACT}}},
@@ -3931,8 +3972,17 @@ function CataQuestFixes.Load()
             [questKeys.triggerEnd] = {"Kristoff Escorted Out",{[zoneIDs.MOUNT_HYJAL] = {{27.1,35.9}}}},
             [questKeys.preQuestSingle] = {25328},
         },
+        [25333] = { -- Might of the Sentinels
+            [questKeys.objectives] = {{{45115,nil,Questie.ICON_TYPE_EVENT}}},
+        },
         [25334] = { -- The Looming Threat
             [questKeys.objectives] = {{{39226,nil,Questie.ICON_TYPE_TALK}}},
+        },
+        [25340] = { -- Dark Heart [Horde]
+            [questKeys.requiredSourceItems] = {9530},
+        },
+        [25344] = { -- Ogre Abduction [Horde]
+            [questKeys.objectives] = {{{11443,nil,Questie.ICON_TYPE_EVENT}}},
         },
         [25352] = { -- Sweeping the Shelf
             [questKeys.preQuestSingle] = {25278},
@@ -3954,7 +4004,19 @@ function CataQuestFixes.Load()
         [25359] = { -- Toshe's Vengeance
             [questKeys.nextQuestInChain] = 25439,
         },
+        [25361] = { -- A New Cloak's Sheen
+            [questKeys.preQuestSingle] = {25338},
+        },
+        [25364] = { -- Alpha Strike [Horde]
+            [questKeys.preQuestSingle] = {25363},
+        },
+        [25365] = { -- Woodpaw Investigation
+            [questKeys.preQuestSingle] = {25366},
+        },
         [25367] = { -- Zukk'ash Infestation
+            [questKeys.preQuestSingle] = {25366},
+        },
+        [25369] = { -- Stinglasher (Horde)
             [questKeys.preQuestSingle] = {25427},
         },
         [25370] = { -- Inciting the Elements
@@ -3964,6 +4026,12 @@ function CataQuestFixes.Load()
         },
         [25371] = { -- The Abyssal Ride
             [questKeys.objectives] = {{{39996,nil,Questie.ICON_TYPE_MOUNT_UP}},{{202766}}},
+        },
+        [25374] = { -- Sasquatch Sighting [Horde]
+            [questKeys.preQuestSingle] = {25373},
+        },
+        [25375] = { -- Taming The Tamers [Horde]
+            [questKeys.preQuestSingle] = {25373},
         },
         [25377] = { -- The Horde's Hoard
             [questKeys.startedBy] = {{39918},nil,{53053}},
@@ -3976,6 +4044,9 @@ function CataQuestFixes.Load()
         },
         [25382] = { -- Disrupting the Rituals
             [questKeys.preQuestSingle] = {25584},
+        },
+        [25383] = { -- Ysondre's Farewell [Horde]
+            [questKeys.preQuestSingle] = {25379},
         },
         [25385] = { -- Save the Wee Animals
             [questKeys.preQuestSingle] = {25584},
@@ -3996,6 +4067,12 @@ function CataQuestFixes.Load()
         },
         [25397] = { -- The Land, Corrupted
             [questKeys.preQuestSingle] = {25394},
+        },
+        [25398] = { -- Sealing the Dream [Alliance]
+            [questKeys.objectives] = {{{39834,nil,Questie.ICON_TYPE_EVENT}}},
+        },
+        [25403] = { -- Ogre Abduction [Alliance]
+            [questKeys.objectives] = {{{11443,nil,Questie.ICON_TYPE_EVENT}}},
         },
         [25404] = { -- If You're Not Against Us...
             [questKeys.objectives] = {{{39933,nil,Questie.ICON_TYPE_TALK}}},
@@ -4404,6 +4481,9 @@ function CataQuestFixes.Load()
         [25652] = { -- Commandeer That Balloon!
             [questKeys.extraObjectives] = {{nil,Questie.ICON_TYPE_EVENT,l10n("Climb into the balloon"),0,{{"monster",41019}}}},
             [questKeys.objectives] = {{{40984,nil,Questie.ICON_TYPE_EVENT}}},
+        },
+        [25654] = { -- Dark Heart [Alliance]
+            [questKeys.requiredSourceItems] = {9530},
         },
         [25655] = { -- The Wormwing Problem
             [questKeys.exclusiveTo] = {},
@@ -6834,6 +6914,9 @@ function CataQuestFixes.Load()
         [27106] = { -- A Villain Unmasked
             [questKeys.objectives] = {{{2439,nil,Questie.ICON_TYPE_TALK},{2439}}},
         },
+        [27111] = { -- The Treasure of the Shen'dralar
+            [questKeys.preQuestSingle] = {27110},
+        },
         [27118] = { -- A Broken Trap
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
         },
@@ -8998,10 +9081,12 @@ function CataQuestFixes.Load()
         },
         [28525] = { -- Hero's Call: Un'Goro Crater!
             [questKeys.requiredMaxLevel] = 53,
+            [questKeys.nextQuestInChain] = 24740,
         },
         [28526] = { -- Warchief's Command: Un'Goro Crater!
             [questKeys.objectives] = {},
             [questKeys.requiredMaxLevel] = 53,
+            [questKeys.nextQuestInChain] = 24740,
         },
         [28527] = { -- Warchief's Command: Silithus!
             [questKeys.objectives] = {},
@@ -10958,7 +11043,7 @@ function CataQuestFixes.Load()
             [questKeys.objectives] = {nil,{{460001}}},
             [questKeys.requiredSkill] = {profKeys.ALCHEMY,75},
             [questKeys.specialFlags] = 17,
-            [questKeys.requiredSourceItems] = {19299},
+            [questKeys.requiredSourceItems] = {1645,19299},
         },
         [29507] = { -- Fun for the Little Ones
             [questKeys.startedBy] = {{14847}},
@@ -11153,6 +11238,7 @@ function CataQuestFixes:LoadFactionFixes()
         },
         [24911] = { -- Tropical Paradise Beckons
             [questKeys.startedBy] = {{44374}},
+            [questKeys.nextQuestInChain] = 24740,
         },
         [25619] = { -- Reoccupation
             [questKeys.preQuestSingle] = {},

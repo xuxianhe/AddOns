@@ -64,6 +64,9 @@ function CataItemFixes.Load()
         [8705] = { -- OOX-22/FE Distress Beacon
             [itemKeys.startQuest] = 25475,
         },
+        [9597] = { -- Mountain Giant Muisek
+            [itemKeys.npcDrops] = {40026},
+        },
         [10441] = { -- Glowing Shard
             [itemKeys.startQuest] = 0,
         },
@@ -81,6 +84,12 @@ function CataItemFixes.Load()
         },
         [11114] = { -- Dinosaur Bone
             [itemKeys.npcDrops] = {6501,6502,6503,6504,9162,9163,9164},
+        },
+        [11569] = { -- Preserved Threshadon Meat
+            [itemKeys.npcDrops] = {},
+        },
+        [11570] = { -- Preserved Pheromone Mixture
+            [itemKeys.npcDrops] = {},
         },
         [11818] = { -- Grimesilt Outhouse Key
             [itemKeys.startQuest] = 0,
