@@ -1,8 +1,11 @@
 # LittleWigs
 
-## [v11.0.48](https://github.com/BigWigsMods/LittleWigs/tree/v11.0.48) (2024-11-08)
-[Full Changelog](https://github.com/BigWigsMods/LittleWigs/compare/v11.0.47...v11.0.48) [Previous Releases](https://github.com/BigWigsMods/LittleWigs/releases)
+## [v11.0.49](https://github.com/BigWigsMods/LittleWigs/tree/v11.0.49) (2024-11-09)
+[Full Changelog](https://github.com/BigWigsMods/LittleWigs/compare/v11.0.48...v11.0.49) [Previous Releases](https://github.com/BigWigsMods/LittleWigs/releases)
 
-- TBC/TheUnderbog/Ghazan: Tail Sweep update for Retail  
-- TBC/TheUnderbog/Hungarfen: Fix Spore Cloud on retail  
-- WarWithin/TheDawnbreaker/Anubikkaj: Animate Shadows target  
+- BfA/SiegeOfBoralus: Gate timer updates  
+- BfA/SiegeOfBoralus/Trash: Tooth Breaker, Cursed Slash  
+- BfA/SiegeOfBoralus/Redhook: Initial timers for Heavy Slash  
+- BfA/SiegeOfBoralus/Redhook: Heavy Ordnance message update  
+- Shadowlands/TheNecroticWake/Trash: Boneflay  
+- Cataclysm/GrimBatol/Trash: Rive  

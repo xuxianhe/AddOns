@@ -1798,6 +1798,9 @@ function CataQuestFixes.Load()
         [13844] = { -- The Looting of Althalaxx
             [questKeys.preQuestSingle] = {13509},
         },
+        [13845] = { -- Sealed Vial of Poison
+            [questKeys.zoneOrSort] = 4613,
+        },
         [13848] = { -- Bad News Bear-er
             [questKeys.preQuestSingle] = {13805},
         },
@@ -2252,6 +2255,9 @@ function CataQuestFixes.Load()
         [14202] = { -- Survey the Lakeshore
             [questKeys.preQuestSingle] = {24453},
             [questKeys.objectives] = {{{35488,nil,Questie.ICON_TYPE_EVENT},{35487,nil,Questie.ICON_TYPE_EVENT},{35489,nil,Questie.ICON_TYPE_EVENT}}},
+        },
+        [14203] = { -- Waterlogged Recipe
+            [questKeys.zoneOrSort] = 4613,
         },
         [14204] = { -- From the Shadows
             [questKeys.startedBy] = {{35378}},
@@ -7557,6 +7563,12 @@ function CataQuestFixes.Load()
         [27595] = { -- The Prophet Hadassi
             [questKeys.preQuestSingle] = {28135},
         },
+        [27604] = { -- Jammal'an the Prophet
+            [questKeys.zoneOrSort] = zoneIDs.SUNKEN_TEMPLE,
+        },
+        [27605] = { -- Eranikus
+            [questKeys.zoneOrSort] = zoneIDs.SUNKEN_TEMPLE,
+        },
         [27606] = { -- Blast Him!
             [questKeys.preQuestGroup] = {27584,27586},
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_EVENT, l10n("Use the Heth'Jatari Conch"), 0, {{"object", 205831}}}},
@@ -7608,6 +7620,9 @@ function CataQuestFixes.Load()
         },
         [27631] = { -- The High Commander's Vote
             [questKeys.preQuestSingle] = {27628},
+        },
+        [27633] = { -- The Blood God Hakkar
+            [questKeys.zoneOrSort] = zoneIDs.SUNKEN_TEMPLE,
         },
         [27635] = { -- Decontamination
             [questKeys.objectives] = {{{46185,nil,Questie.ICON_TYPE_MOUNT_UP}}},
@@ -7796,7 +7811,10 @@ function CataQuestFixes.Load()
             [questKeys.exclusiveTo] = {},
         },
         [27704] = { -- Legends of the Sunken Temple
-            [questKeys.triggerEnd] = {"Hall of Masks found", {[zoneIDs.THE_TEMPLE_OF_ATAL_HAKKAR]={{74,44.4}}}},
+            [questKeys.triggerEnd] = {"Hall of Masks found", {[zoneIDs.SWAMP_OF_SORROWS]={{54.27,79.02}}}},
+        },
+        [27705] = { -- Step One: The Priestess
+            [questKeys.startedBy] = {{46071}},
         },
         [27707] = { -- Neferset Prison
             [questKeys.objectives] = {{{46425,nil,Questie.ICON_TYPE_TALK}}},
@@ -7919,6 +7937,12 @@ function CataQuestFixes.Load()
         [27762] = { -- Fuselight, Ho!
             [questKeys.preQuestSingle] = {},
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_MOUNT_UP, l10n("Get in"), 0, {{"monster", 48708}}}},
+        },
+        [27768] = { -- Step Two: The Bloodletter
+            [questKeys.startedBy] = {{46071}},
+        },
+        [27773] = { -- Step Three: Prophet
+            [questKeys.startedBy] = {{46071}},
         },
         [27777] = { -- Core Access Codes
             [questKeys.exclusiveTo] = {},
@@ -8056,6 +8080,10 @@ function CataQuestFixes.Load()
         [27869] = { -- The Dragon and the Temple
             [questKeys.nextQuestInChain] = 27694,
         },
+        [27870] = { -- To Marshtide Watch
+            [questKeys.preQuestSingle] = {27914},
+            [questKeys.nextQuestInChain] = 27821,
+        },
         [27871] = { -- To Stonard
             [questKeys.preQuestSingle] = {27914},
             [questKeys.nextQuestInChain] = 27852,
@@ -8089,6 +8117,7 @@ function CataQuestFixes.Load()
         [27915] = { -- The Heart of the Temple
             [questKeys.preQuestSingle] = {27914},
             [questKeys.nextQuestInChain] = 27605,
+            [questKeys.zoneOrSort] = zoneIDs.SUNKEN_TEMPLE,
         },
         [27916] = { -- Ruag's Report
             [questKeys.nextQuestInChain] = 28553,
