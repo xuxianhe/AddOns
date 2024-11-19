@@ -1,12 +1,10 @@
----@type QuestieQuestBlacklist
-local QuestieQuestBlacklist = QuestieLoader:ImportModule("QuestieQuestBlacklist")
-
-local currentPhase = 5 -- TODO: Use API function which hopefully will come in the future
+---@type ContentPhases
+local ContentPhases = QuestieLoader:ImportModule("ContentPhases")
 
 -- This function blacklists any quests in phases LATER than the currentPhase value
 -- so in Phase 1, quests in phases 2+ are blacklisted, in phase 2, phases 3+ are blacklisted, etc
 -- Phase 1 is omitted, because everything not in this list is supposed to be available in Phase 1
-local questsToBlacklistBySoMPhase = {
+local questsToBlacklistByPhase = {
     [1] = {}, -- Phase 1 - Regular Phase 1 + Dire Maul + Tier 0.5 quests (this is required for counting, but should stay empty)
     [2] = { -- Phase 2 - World Bosses
     },
@@ -160,6 +158,7 @@ local questsToBlacklistBySoMPhase = {
         [8323] = true,
         [8324] = true,
         [8275] = true,
+        [8276] = true,
         [8309] = true,
         [8310] = true,
         [8315] = true,
@@ -190,7 +189,6 @@ local questsToBlacklistBySoMPhase = {
         [8318] = true,
         [8320] = true,
         [8361] = true,
-        [8276] = true,
         [8747] = true,
         [8748] = true,
         [8749] = true,
@@ -391,10 +389,6 @@ local questsToBlacklistBySoMPhase = {
         [8822] = true,
         [8821] = true,
         [8819] = true,
-        [9415] = true,
-        [9416] = true,
-        [9419] = true,
-        [9422] = true,
     },
     [6] = { --Phase 6 - Naxxramas
         [9085] = true,
@@ -516,16 +510,26 @@ local questsToBlacklistBySoMPhase = {
         [9244] = true,
         [9245] = true,
         [9246] = true,
-        [9248] = true,
         [9250] = true,
         [9251] = true,
+        -- Silithus/EPL PvP
+        [9248] = true,
+        [9422] = true,
+        [9415] = true,
+        [9419] = true,
+        [9416] = true,
     },
 }
 
----@return table<number, table<number, boolean>> @All quests that should be blacklisted separated by phase
-function QuestieQuestBlacklist:GetSoMQuestsToBlacklist()
-    for phase = 1, currentPhase do
-        questsToBlacklistBySoMPhase[phase] = {} -- empty table instead of nil to keep table size
+---@param questsToBlacklist table<QuestId, boolean>
+---@param contentPhase number
+---@return table<QuestId, boolean>
+function ContentPhases.BlacklistClassicQuestsByPhase(questsToBlacklist, contentPhase)
+    for phase = contentPhase + 1, #questsToBlacklistByPhase do
+        for questId in pairs(questsToBlacklistByPhase[phase]) do
+            questsToBlacklist[questId] = true
+        end
     end
-    return questsToBlacklistBySoMPhase
+
+    return questsToBlacklist
 end
