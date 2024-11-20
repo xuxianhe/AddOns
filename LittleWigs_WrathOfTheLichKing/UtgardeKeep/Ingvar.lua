@@ -32,7 +32,8 @@ end
 
 function mod:OnBossEnable()
 	if self:Classic() then
-		self:CheckForEngage()
+		self:RegisterEvent("PLAYER_REGEN_DISABLED", "CheckForEngage")
+		self:RegisterEvent("PLAYER_REGEN_ENABLED", "CheckForWipe")
 	else
 		self:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT", "CheckBossStatus")
 	end
@@ -47,9 +48,6 @@ end
 
 function mod:OnEngage()
 	deaths = 0
-	if self:Classic() then
-		self:CheckForWipe()
-	end
 	self:MessageOld("stages", "cyan", nil, CL.stage:format(1), false)
 end
 

@@ -1,3 +1,4 @@
+if not BigWigsLoader.isBeta then return end
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -22,7 +23,6 @@ function mod:GetOptions()
 	return {
 		{451026, "CASTBAR"}, -- Darkness Comes
 		{426735, "DISPEL"}, -- Burning Shadows
-		{428086, "OFF"}, -- Shadow Bolt
 		-- Normal / Heroic
 		425264, -- Obsidian Blast
 		445996, -- Collapsing Darkness
@@ -39,7 +39,6 @@ function mod:OnBossEnable()
 	self:Log("SPELL_CAST_START", "DarknessComes", 451026)
 	self:Log("SPELL_CAST_SUCCESS", "BurningShadows", 426734)
 	self:Log("SPELL_AURA_APPLIED", "BurningShadowsApplied", 426735)
-	self:Log("SPELL_CAST_START", "ShadowBolt", 428086)
 
 	-- Normal / Heroic
 	self:Log("SPELL_CAST_START", "ObsidianBlast", 425264)
@@ -48,8 +47,6 @@ function mod:OnBossEnable()
 	-- Mythic
 	self:Log("SPELL_CAST_START", "ObsidianBeam", 453212)
 	self:Log("SPELL_CAST_START", "CollapsingNight", 453140)
-	self:Log("SPELL_PERIODIC_DAMAGE", "CollapsingNightDamage", 453173)
-	self:Log("SPELL_PERIODIC_MISSED", "CollapsingNightDamage", 453173)
 end
 
 function mod:OnEngage()
@@ -100,8 +97,8 @@ function mod:DarknessComes(args)
 		end
 	end
 	self:Message(args.spellId, "cyan", CL.percent:format(percent, args.spellName))
-	self:CastBar(args.spellId, 15)
 	self:PlaySound(args.spellId, "warning")
+	self:CastBar(args.spellId, 15)
 end
 
 function mod:BurningShadows()
@@ -116,49 +113,30 @@ function mod:BurningShadowsApplied(args)
 	end
 end
 
-function mod:ShadowBolt(args)
-	local _, interruptReady = self:Interrupter()
-	if interruptReady then
-		self:Message(args.spellId, "red", CL.casting:format(args.spellName))
-		self:PlaySound(args.spellId, "alert")
-	end
-end
-
 -- Normal / Heroic
 
 function mod:ObsidianBlast(args)
 	self:Message(args.spellId, "purple")
-	self:CDBar(args.spellId, 13.3)
 	self:PlaySound(args.spellId, "alarm")
+	self:CDBar(args.spellId, 13.9)
 end
 
 function mod:CollapsingDarkness(args)
 	self:Message(args.spellId, "orange")
-	self:CDBar(args.spellId, 15.7)
 	self:PlaySound(args.spellId, "long")
+	self:CDBar(args.spellId, 15.7)
 end
 
 -- Mythic
 
 function mod:ObsidianBeam(args)
 	self:Message(args.spellId, "purple")
-	self:CDBar(args.spellId, 24.3)
 	self:PlaySound(args.spellId, "alarm")
+	self:CDBar(args.spellId, 24.3)
 end
 
 function mod:CollapsingNight(args)
 	self:Message(args.spellId, "orange")
-	self:CDBar(args.spellId, 24.8)
 	self:PlaySound(args.spellId, "long")
-end
-
-do
-	local prev = 0
-	function mod:CollapsingNightDamage(args)
-		if self:Me(args.destGUID) and args.time - prev > 1.25 then
-			prev = args.time
-			self:PersonalMessage(453140, "underyou")
-			self:PlaySound(453140, "underyou")
-		end
-	end
+	self:CDBar(args.spellId, 24.8)
 end

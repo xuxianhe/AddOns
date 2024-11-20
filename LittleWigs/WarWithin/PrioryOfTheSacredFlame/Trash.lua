@@ -1,3 +1,4 @@
+if not BigWigsLoader.isBeta then return end
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -15,9 +16,8 @@ mod:RegisterEnableMob(
 	206696, -- Arathi Knight
 	206705, -- Arathi Footman
 	206697, -- Devout Priest
-	206698, -- Fanatical Conjuror
+	206698, -- Fanatical Mage / Fanatical Conjuror
 	206710, -- Lightspawn
-	206704, -- Ardent Paladin
 	221760, -- Risen Mage
 	217658 -- Sir Braunpyke
 )
@@ -38,9 +38,8 @@ if L then
 	L.arathi_knight = "Arathi Knight"
 	L.arathi_footman = "Arathi Footman"
 	L.devout_priest = "Devout Priest"
-	L.fanatical_conjuror = "Fanatical Conjuror"
+	L.fanatical_mage = "Fanatical Mage"
 	L.lightspawn = "Lightspawn"
-	L.ardent_paladin = "Ardent Paladin"
 	L.risen_mage = "Risen Mage"
 	L.sir_braunpyke = "Sir Braunpyke"
 
@@ -85,12 +84,10 @@ function mod:GetOptions()
 		-- Devout Priest
 		{427356, "NAMEPLATE"}, -- Greater Heal
 		{427346, "DISPEL", "NAMEPLATE"}, -- Inner Fire
-		-- Fanatical Conjuror
+		-- Fanatical Mage
 		{427484, "NAMEPLATE"}, -- Flamestrike
 		-- Lightspawn
 		427601, -- Burst of Light
-		-- Ardent Paladin
-		{424429, "NAMEPLATE"}, -- Consecration
 		-- Risen Mage
 		{444743, "NAMEPLATE"}, -- Fireball Volley
 	}, {
@@ -104,9 +101,8 @@ function mod:GetOptions()
 		[427609] = L.arathi_knight,
 		[427342] = L.arathi_footman,
 		[427356] = L.devout_priest,
-		[427484] = L.fanatical_conjuror,
+		[427484] = L.fanatical_mage,
 		[427601] = L.lightspawn,
-		[424429] = L.ardent_paladin,
 		[444743] = L.risen_mage,
 	}
 end
@@ -169,18 +165,12 @@ function mod:OnBossEnable()
 	self:Log("SPELL_AURA_APPLIED", "InnerFireApplied", 427346)
 	self:Death("DevoutPriestDeath", 206697)
 
-	-- Fanatical Conjuror
+	-- Fanatical Mage
 	self:Log("SPELL_CAST_START", "Flamestrike", 427484)
-	self:Death("FanaticalConjurorDeath", 206698)
+	self:Death("FanaticalMageDeath", 206698)
 
 	-- Lightspawn
 	self:Log("SPELL_CAST_START", "BurstOfLight", 427601)
-
-	-- Ardent Paladin
-	self:Log("SPELL_CAST_SUCCESS", "Consecration", 424429)
-	self:Log("SPELL_PERIODIC_DAMAGE", "ConsecrationDamage", 424430) -- no alert on APPLIED, doesn't damage for 1.5s
-	self:Log("SPELL_PERIODIC_MISSED", "ConsecrationDamage", 424430)
-	self:Death("ArdentPaladinDeath", 206704)
 
 	-- Risen Mage
 	self:Log("SPELL_CAST_START", "FireballVolley", 444743)
@@ -548,7 +538,7 @@ function mod:DevoutPriestDeath(args)
 	self:ClearNameplate(args.destGUID)
 end
 
--- Fanatical Conjuror
+-- Fanatical Mage
 
 do
 	local prev = 0
@@ -563,43 +553,15 @@ do
 	end
 end
 
-function mod:FanaticalConjurorDeath(args)
+function mod:FanaticalMageDeath(args)
 	self:ClearNameplate(args.destGUID)
 end
 
 -- Lightspawn
 
-do
-	local prev = 0
-	function mod:BurstOfLight(args)
-		local t = args.time
-		if t - prev > 2 then
-			prev = t
-			self:Message(args.spellId, "yellow")
-			self:PlaySound(args.spellId, "long")
-		end
-	end
-end
-
--- Ardent Paladin
-
-function mod:Consecration(args)
-	self:Nameplate(args.spellId, 23.0, args.sourceGUID)
-end
-
-do
-	local prev = 0
-	function mod:ConsecrationDamage(args)
-		if self:Me(args.destGUID) and args.time - prev > 2 then
-			prev = args.time
-			self:PersonalMessage(424429, "underyou")
-			self:PlaySound(424429, "underyou")
-		end
-	end
-end
-
-function mod:ArdentPaladinDeath(args)
-	self:ClearNameplate(args.destGUID)
+function mod:BurstOfLight(args)
+	self:Message(args.spellId, "yellow")
+	self:PlaySound(args.spellId, "long")
 end
 
 -- Risen Mage

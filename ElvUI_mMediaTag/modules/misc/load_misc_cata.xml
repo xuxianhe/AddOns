@@ -7,7 +7,4 @@
 	<Script file="afk.lua"/>
 	<Script file="cosmeticbars.lua"/>
 	<Script file="instancedifficulty.lua"/>
-	<Script file="details.lua"/>
-	<Script file="minimap_aspect_ratio.lua"/>
-	<Script file="minimap_skin.lua"/>
 </Ui>

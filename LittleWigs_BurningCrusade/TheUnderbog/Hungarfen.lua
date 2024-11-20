@@ -1,41 +1,37 @@
 -------------------------------------------------------------------------------
--- Module Declaration
---
+--  Module Declaration
 
 local mod, CL = BigWigs:NewBoss("Hungarfen", 546, 576)
 if not mod then return end
 mod:RegisterEnableMob(17770)
---mod:SetEncounterID(1946) -- doesn't fire ENCOUNTER_END on a wipe
---mod:SetRespawnTime(0) -- resets, doesn't respawn
+-- mod.engageId = 1946 -- doesn't fire ENCOUNTER_END on a wipe
+-- mod.respawnTime = 0 -- resets, doesn't respawn
 
 -------------------------------------------------------------------------------
--- Initialization
---
+--  Initialization
 
 function mod:GetOptions()
 	return {
 		{-6008, "CASTBAR"}, -- Foul Spores
-		{34168, "ME_ONLY"}, -- Spore Cloud
+		{31689, "ME_ONLY"}, -- Spore Cloud
 	}, {
 		[-6008] = "general",
-		[34168] = -6006, -- Underbog Mushroom
+		[31689] = -6006, -- Underbog Mushroom
 	}
 end
 
 function mod:OnBossEnable()
-	if self:Retail() then
-		self:Log("SPELL_AURA_APPLIED", "SporeCloud", 455539)
-	else -- Classic
-		self:Log("SPELL_AURA_APPLIED", "SporeCloudClassic", 31689)
-		self:Log("SPELL_AURA_APPLIED_DOSE", "SporeCloudClassic", 31689)
-		self:Log("SPELL_AURA_REMOVED", "SporeCloudRemovedClassic", 31689)
-	end
+	self:Log("SPELL_AURA_APPLIED", "SporeCloud", 31689)
+	self:Log("SPELL_AURA_APPLIED_DOSE", "SporeCloud", 31689)
+	self:Log("SPELL_AURA_REMOVED", "SporeCloudRemoved", 31689)
+
 	self:Log("SPELL_AURA_APPLIED", "FoulSpores", 31673) -- channel that can be offensively dispelled
 	self:Log("SPELL_AURA_REMOVED", "FoulSporesRemoved", 31673)
 	self:Log("SPELL_DAMAGE", "FoulSporesDamage", 31697)
 	self:Log("SPELL_MISSED", "FoulSporesDamage", 31697)
+
 	if self:Classic() then
-		self:CheckForEngage()
+		self:RegisterEvent("PLAYER_REGEN_DISABLED", "CheckForEngage")
 		self:RegisterEvent("UNIT_HEALTH")
 	else
 		self:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT", "CheckBossStatus")
@@ -46,21 +42,20 @@ end
 
 function mod:OnEngage()
 	if self:Classic() then
-		self:CheckForWipe()
+		self:RegisterEvent("PLAYER_REGEN_ENABLED", "CheckForWipe")
 	end
 end
 
 -------------------------------------------------------------------------------
--- Event Handlers
---
+--  Event Handlers
 
 function mod:SporeCloud(args)
-	if self:Me(args.destGUID) then
-		self:PersonalMessage(34168, "near")
-		self:PlaySound(34168, "underyou")
-	else
-		self:TargetMessage(34168, "orange", args.destName)
-	end
+	self:StackMessageOld(args.spellId, args.destName, args.amount, "orange", self:Me(args.destGUID) and "warning" or "info")
+	self:TargetBar(args.spellId, 20, args.destName)
+end
+
+function mod:SporeCloudRemoved(args)
+	self:StopBar(args.spellName, args.destName)
 end
 
 function mod:FoulSpores(args)
@@ -97,17 +92,4 @@ function mod:UNIT_HEALTH(event, unit)
 			self:MessageOld(-6008, "orange", nil, CL.soon:format(self:SpellName(-6008))) -- Foul Spores
 		end
 	end
-end
-
--------------------------------------------------------------------------------
--- Classic Event Handlers
---
-
-function mod:SporeCloudClassic(args)
-	self:StackMessageOld(34168, args.destName, args.amount, "orange", self:Me(args.destGUID) and "warning" or "info")
-	self:TargetBar(34168, 20, args.destName)
-end
-
-function mod:SporeCloudRemovedClassic(args)
-	self:StopBar(args.spellName, args.destName)
 end

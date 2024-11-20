@@ -4,7 +4,6 @@ if L then
 	L.tirnenn_villager = "Жительница Тирна Скитта"
 	L.drust_harvester = "Друст-жнец"
 	L.drust_soulcleaver = "Друст-душеруб"
-	L.drust_spiteclaw = "Друст - злобный коготь"
 	L.drust_boughbreaker = "Друст-древолом"
 	L.mistveil_defender = "Туманная защитница"
 	L.mistveil_gorgegullet = "Жоробрюх Туманной Завесы"
@@ -18,11 +17,14 @@ if L then
 	L.spinemaw_acidgullet = "Иглобрюх-кислотник"
 	L.spinemaw_staghorn = "Иглобрюх-рогач"
 	L.spinemaw_gorger = "Иглобрюх-поглотитель"
-	L.gormling_larva = "Личинка горма"
-	L.spinemaw_reaver = "Иглобрюх-разоритель"
 end
 
 L = BigWigs:NewBossLocale("Mistcaller", "ruRU")
 if L then
 	L.vulpin = "Лисохвост"
+end
+
+L = BigWigs:NewBossLocale("Tred'ova", "ruRU")
+if L then
+	L.parasite = "Паразит"
 end

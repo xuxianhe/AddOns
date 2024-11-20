@@ -18,4 +18,3 @@ Media\Media.lua
 
 # Modules
 Modules\Load_Wrath.xml
-Templates.xml

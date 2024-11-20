@@ -3,7 +3,6 @@ local DT = E:GetModule("DataTexts")
 
 --Lua functions
 local format = format
-local IsAddOnLoaded = _G.C_AddOns and _G.C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 
 --Variables
 local Config = {

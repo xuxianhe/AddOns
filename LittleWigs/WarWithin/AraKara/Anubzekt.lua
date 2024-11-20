@@ -1,3 +1,4 @@
+if not BigWigsLoader.isBeta then return end
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -16,18 +17,6 @@ mod:SetStage(1)
 local inBurrowChargeCombo = false
 local burrowChargeRemaining = 1
 local eyeOfTheSwarmCount = 1
-local bloodstainedWebmageCount = 1
-
---------------------------------------------------------------------------------
--- Localization
---
-
-local L = mod:GetLocale()
-if L then
-	L.bloodstained_webmage = -28975
-	L.bloodstained_webmage_desc = "Anub'zekt summons a Bloodstained Webmage.\n\n{-28975}"
-	L.bloodstained_webmage_icon = "spell_nature_web"
-end
 
 --------------------------------------------------------------------------------
 -- Initialization
@@ -40,14 +29,11 @@ function mod:GetOptions()
 		{439506, "SAY"}, -- Burrow Charge
 		{433740, "ME_ONLY", "SAY"}, -- Infestation
 		433766, -- Eye of the Swarm
-		"bloodstained_webmage",
 		-- Bloodstained Web Mage (Mythic)
 		442210, -- Silken Restraints
 	}, {
 		[435012] = self.displayName,
 		[442210] = CL.extra:format(self:SpellName(-28975), CL.mythic), -- Bloodstained Webmage
-	}, {
-		["bloodstained_webmage"] = CL.add_spawned, -- Bloodstained Webmage (Add spawned)
 	}
 end
 
@@ -61,7 +47,6 @@ function mod:OnBossEnable()
 	self:Log("SPELL_AURA_REMOVED", "EyeOfTheSwarmOver", 434408)
 
 	-- Bloodstained Webmage (Mythic)
-	self:Log("SPELL_CAST_SUCCESS", "EncounterEvent", 181089) -- Bloodstained Webmage spawning
 	self:Log("SPELL_CAST_START", "SilkenRestraints", 442210)
 end
 
@@ -69,13 +54,9 @@ function mod:OnEngage()
 	inBurrowChargeCombo = false
 	burrowChargeRemaining = 1
 	eyeOfTheSwarmCount = 1
-	bloodstainedWebmageCount = 1
 	self:SetStage(1)
 	self:CDBar(435012, 4.6) -- Impale
 	self:CDBar(439506, 14.3) -- Burrow Charge
-	if self:Mythic() then
-		self:CDBar("bloodstained_webmage", 17.5, CL.count:format(CL.add_spawning, bloodstainedWebmageCount), L.bloodstained_webmage_icon) -- Bloodstained Webmage
-	end
 	self:CDBar(433766, 29.1, CL.count:format(self:SpellName(433766), eyeOfTheSwarmCount)) -- Eye of the Swarm
 end
 
@@ -132,9 +113,6 @@ function mod:CHAT_MSG_RAID_BOSS_EMOTE(_, msg)
 		-- boss runs to the center on this emote, these bars will be restarted when the cast begins
 		self:StopBar(435012) -- Impale
 		self:StopBar(439506) -- Burrow Charge
-		if self:Mythic() then
-			self:StopBar(CL.count:format(CL.add_spawning, bloodstainedWebmageCount))
-		end
 	end
 end
 
@@ -146,9 +124,6 @@ function mod:EyeOfTheSwarm(args)
 	eyeOfTheSwarmCount = eyeOfTheSwarmCount + 1
 	self:CDBar(435012, 10.9) -- Impale
 	self:CDBar(439506, 46.9) -- Burrow Charge
-	if self:Mythic() then
-		self:CDBar("bloodstained_webmage", 49.8, CL.count:format(CL.add_spawning, bloodstainedWebmageCount), L.bloodstained_webmage_icon) -- Bloodstained Webmage
-	end
 	self:CDBar(args.spellId, 78.9, CL.count:format(args.spellName, eyeOfTheSwarmCount))
 	self:PlaySound(args.spellId, "long")
 end
@@ -165,17 +140,6 @@ function mod:EyeOfTheSwarmOver(args)
 end
 
 -- Bloodstained Webmage (Mythic)
-
-function mod:EncounterEvent(args) -- Bloodstained Webmage spawning
-	-- always spawns ~3s after Burrow Charge cast start, and there's an additional spawn ~17s after every even add spawn
-	self:StopBar(CL.count:format(CL.add_spawning, bloodstainedWebmageCount))
-	self:Message("bloodstained_webmage", "cyan", CL.count:format(CL.add_spawned, bloodstainedWebmageCount), L.bloodstained_webmage_icon)
-	bloodstainedWebmageCount = bloodstainedWebmageCount + 1
-	if bloodstainedWebmageCount % 2 == 1 then -- the 3rd, 5th, 7th... etc spawn
-		self:CDBar("bloodstained_webmage", 17.4, CL.count:format(CL.add_spawning, bloodstainedWebmageCount), L.bloodstained_webmage_icon)
-	end
-	self:PlaySound("bloodstained_webmage", "info")
-end
 
 function mod:SilkenRestraints(args)
 	self:Message(args.spellId, "red", CL.casting:format(args.spellName))

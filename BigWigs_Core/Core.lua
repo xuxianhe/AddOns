@@ -3,11 +3,10 @@
 -- @module BigWigs
 -- @alias core
 
-local core, plugins, bossPrototype, pluginPrototype
+local core, bossPrototype, pluginPrototype
 do
 	local _, tbl =...
 	core = tbl.core
-	plugins = tbl.plugins
 	bossPrototype = tbl.bossPrototype
 	pluginPrototype = tbl.pluginPrototype
 
@@ -26,16 +25,15 @@ local CL = BigWigsAPI:GetLocale("BigWigs: Common")
 local loader = BigWigsLoader
 core.SendMessage = loader.SendMessage
 
-local mod, bosses = {}, {}
+local mod, bosses, plugins = {}, {}, {}
 local coreEnabled = false
 
 -- Try to grab unhooked copies of critical loading funcs (hooked by some crappy addons)
 local GetBestMapForUnit = loader.GetBestMapForUnit
 local SendAddonMessage = loader.SendAddonMessage
 local GetInstanceInfo = loader.GetInstanceInfo
-local UnitName = loader.UnitName
-local UnitGUID = loader.UnitGUID
-local UnitIsDeadOrGhost = loader.UnitIsDeadOrGhost
+local UnitName = BigWigsLoader.UnitName
+local UnitGUID = BigWigsLoader.UnitGUID
 
 -- Upvalues
 local next, type, setmetatable = next, type, setmetatable
@@ -197,6 +195,14 @@ function core:RegisterEnableMob(module, ...)
 	end
 end
 
+function core:GetEnableMobs()
+	local t = {}
+	for k,v in next, enablemobs do
+		t[k] = v
+	end
+	return t
+end
+
 -------------------------------------------------------------------------------
 -- Communication
 --
@@ -273,7 +279,7 @@ end
 do
 	local function DisableModules()
 		for _, module in next, bosses do
-			if module:IsEngaged() and (module:GetJournalID() or module:GetAllowWin()) and UnitIsDeadOrGhost("player") then
+			if module:IsEngaged() and (module:GetJournalID() or module:GetAllowWin()) then
 				module:Wipe()
 			end
 			module:Disable()
@@ -307,7 +313,7 @@ do
 	local function zoneChanged()
 		-- Not if you released spirit on a world boss or if the GUI is open
 		if not UnitIsDeadOrGhost("player") and (not BigWigsOptions or not BigWigsOptions:IsOpen()) then
-			local bars = plugins.Bars
+			local bars = core:GetPlugin("Bars", true)
 			if not bars or not bars:HasActiveBars() then -- Not if bars are showing
 				DisableCore() -- Alive in a non-enable zone, disable
 			end
@@ -317,16 +323,6 @@ do
 	local function EnablePlugins()
 		for _, module in next, plugins do
 			module:Enable()
-		end
-	end
-	local zoneList = loader.zoneTbl
-	local function CheckIfLeavingDelve(_, oldId, newId)
-		if zoneList[oldId] and not zoneList[newId] then
-			DisableCore() -- Leaving a Delve
-		elseif zoneList[newId] then
-			-- Joining a delve but we were already enabled from something
-			DisableCore()
-			--core:Enable() -- We rely on the 0 second delay from the loader to re-enable the core
 		end
 	end
 	function core:Enable(unit)
@@ -339,9 +335,6 @@ do
 			core.RegisterEvent(mod, "UPDATE_MOUSEOVER_UNIT", updateMouseover)
 			core.RegisterEvent(mod, "UNIT_TARGET", unitTargetChanged)
 			core.RegisterEvent(mod, "PLAYER_LEAVING_WORLD", DisableCore) -- Simple disable when leaving instances
-			if C_EventUtils.IsEventValid("PLAYER_MAP_CHANGED") then
-				core.RegisterEvent(mod, "PLAYER_MAP_CHANGED", CheckIfLeavingDelve)
-			end
 			local _, instanceType = GetInstanceInfo()
 			if instanceType == "none" then -- We don't want to be disabling in instances
 				core.RegisterEvent(mod, "ZONE_CHANGED_NEW_AREA", zoneChanged) -- Special checks for disabling after world bosses
@@ -449,14 +442,13 @@ do
 	end
 
 	local pluginMeta = { __index = pluginPrototype, __metatable = false }
-	function core:NewPlugin(moduleName, globalFuncs)
+	function core:NewPlugin(moduleName)
 		if plugins[moduleName] then
 			core:Print(errorAlreadyRegistered:format(moduleName))
 		else
 			local m = setmetatable({
 				name = "BigWigs_Plugins_"..moduleName, -- XXX AceAddon/AceDB backwards compat
 				moduleName = moduleName,
-				globalFuncs = globalFuncs or {"db"},
 
 				-- Embed callback handler
 				RegisterMessage = loader.RegisterMessage,
@@ -487,28 +479,15 @@ function core:GetBossModule(moduleName, silent)
 	end
 end
 
-function core:GetPluginOptions()
-	local tbl = {}
-	for moduleName,module in next, plugins do
-		tbl[moduleName] = {module.pluginOptions, module.subPanelOptions}
-	end
-	return tbl
+function core:IteratePlugins()
+	return next, plugins
 end
 
 function core:GetPlugin(moduleName, silent)
-	if not plugins[moduleName] then
-		if not silent then
-			error(("No plugin named '%s' found."):format(moduleName))
-		else
-			return
-		end
+	if not silent and not plugins[moduleName] then
+		error(("No plugin named '%s' found."):format(moduleName))
 	else
-		local moduleTbl = {}
-		for i = 1, #plugins[moduleName].globalFuncs do
-			local entry = plugins[moduleName].globalFuncs[i]
-			moduleTbl[entry] = plugins[moduleName][entry]
-		end
-		return moduleTbl
+		return plugins[moduleName]
 	end
 end
 
@@ -644,17 +623,26 @@ do
 		end
 	end
 
+	local function profileUpdate()
+		core:SendMessage("BigWigs_ProfileUpdate")
+	end
+
 	function core:RegisterPlugin(module)
 		if type(module.defaultDB) == "table" then
 			module.db = core.db:RegisterNamespace(module.name, { profile = module.defaultDB } )
+			module.db.RegisterCallback(module, "OnProfileChanged", profileUpdate)
+			module.db.RegisterCallback(module, "OnProfileCopied", profileUpdate)
+			module.db.RegisterCallback(module, "OnProfileReset", profileUpdate)
 		end
+
+		setupOptions(module)
 
 		-- Call the module's OnRegister (which is our OnInitialize replacement)
 		if type(module.OnRegister) == "function" then
 			module:OnRegister()
 			module.OnRegister = nil
 		end
-		core:SendMessage("BigWigs_PluginOptionsReady", module.moduleName, module.pluginOptions, module.subPanelOptions)
+		core:SendMessage("BigWigs_PluginRegistered", module.moduleName, module)
 
 		if coreEnabled then
 			module:Enable() -- Support LoD plugins that load after we're enabled (e.g. zone based)

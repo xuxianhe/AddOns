@@ -42,6 +42,15 @@ local function configTable()
 						name = L["Roll Button"],
 						args = {},
 					},
+					chat = {
+						order = 4,
+						type = "group",
+						name = L["Chat Button"],
+						hidden = function()
+							return not E.Retail
+						end,
+						args = {},
+					},
 					keystochat = {
 						order = 5,
 						type = "group",
@@ -152,10 +161,10 @@ local function configTable()
 						end,
 						args = {},
 					},
-					individual_professions = {
+					firstandsecondprofession = {
 						order = 8,
 						type = "group",
-						name = L["Individual Professions"],
+						name = L["First and Second Profession"],
 						args = {},
 					},
 					durabilityanditemlevel = {
@@ -280,46 +289,8 @@ local function configTable()
 						name = L["Tooltip Icon"],
 						args = {},
 					},
-					objectivetracker = {
-						order = 5,
-						type = "group",
-						name = L["Objective Tracker"],
-						hidden = function()
-							return not E.Retail
-						end,
-						childGroups = "tab",
-						args = {},
-					},
-					datapanels = {
-						order = 8,
-						type = "group",
-						name = L["Datapanels"],
-						childGroups = "tab",
-						args = {},
-					},
-					minimap = {
-						order = 9,
-						type = "group",
-						name = L["Minimap"],
-						args = {},
-					},
-					textures = {
-						order = 20,
-						type = "group",
-						name = L["Textures"],
-						args = {},
-					},
-				},
-			},
-			unitframes = {
-				order = 8,
-				type = "group",
-				name = L["Unitframes"],
-				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\unitframes.tga",
-				childGroups = "tab",
-				args = {
 					uftextures = {
-						order = 1,
+						order = 2,
 						type = "group",
 						name = L["Custom Unitframe Textures"],
 						childGroups = "tab",
@@ -338,8 +309,14 @@ local function configTable()
 							},
 						},
 					},
+					-- classcolor = {
+					-- 	order = 3,
+					-- 	type = "group",
+					-- 	name = L["Custom Class colors"],
+					-- 	args = {},
+					-- },
 					roleicons = {
-						order = 2,
+						order = 4,
 						type = "group",
 						name = L["Role Icons"],
 						hidden = function()
@@ -347,18 +324,51 @@ local function configTable()
 						end,
 						args = {},
 					},
+					objectivetracker = {
+						order = 5,
+						type = "group",
+						name = L["Objective Tracker"],
+						hidden = function()
+							return not E.Retail
+						end,
+						childGroups = "tab",
+						args = {},
+					},
 					unitframeicons = {
-						order = 3,
+						order = 6,
 						type = "group",
 						name = L["Unitframe Icons"],
 						childGroups = "tab",
 						args = {},
 					},
 					portraits = {
-						order = 4,
+						order = 7,
 						type = "group",
 						name = L["Portraits"],
 						childGroups = "tab",
+						args = {},
+					},
+					datapanels = {
+						order = 8,
+						type = "group",
+						name = L["Datapanels"],
+						childGroups = "tab",
+						args = {},
+					},
+					questicons = {
+						order = 9,
+						type = "group",
+						name = L["Quest Icons"],
+						hidden = function()
+							return not E.Retail
+						end,
+						childGroups = "tab",
+						args = {},
+					},
+					textures = {
+						order = 20,
+						type = "group",
+						name = L["Textures"],
 						args = {},
 					},
 				},
@@ -369,20 +379,7 @@ local function configTable()
 				name = L["Misc"],
 				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\misc.tga",
 				childGroups = "tab",
-				args = {
-					customDocks = {
-						order = 1,
-						type = "group",
-						name = L["Custom Docks"],
-						args = {},
-					},
-					details = {
-						order = 2,
-						type = "group",
-						name = L["Details embeded"],
-						args = {},
-					},
-				},
+				args = {},
 			},
 			about = {
 				order = 10,
@@ -392,20 +389,12 @@ local function configTable()
 				childGroups = "tab",
 				args = {},
 			},
-			license = {
-				order = 11,
-				type = "group",
-				name = format("|CFF0080ff%s|r", L["License"]),
-				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\license.tga",
-				childGroups = "tab",
-				args = {},
-			},
 			changelog = {
-				order = 12,
+				order = 11,
 				type = "group",
 				name = format("|CFFFF0094%s|r", L["Changelog"]),
 				icon = "Interface\\Addons\\ElvUI_mMediaTag\\media\\system\\changelog.tga",
-				childGroups = "select",
+				childGroups = "tab",
 				args = {},
 			},
 			dev = {

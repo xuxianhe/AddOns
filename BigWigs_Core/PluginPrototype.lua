@@ -30,6 +30,8 @@ function plugin:Enable()
 		if type(self.OnPluginEnable) == "function" then
 			self:OnPluginEnable()
 		end
+
+		self:SendMessage("BigWigs_OnPluginEnable", self)
 	end
 end
 

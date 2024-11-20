@@ -1,7 +1,7 @@
 
 BigWigs:AddColors("Hungarfen", {
 	[-6008] = {"blue","orange","yellow"},
-	[34168] = {"blue","orange"},
+	[31689] = {"blue","orange"},
 })
 
 BigWigs:AddColors("Ghaz'an", {

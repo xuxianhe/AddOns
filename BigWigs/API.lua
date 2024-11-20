@@ -130,36 +130,13 @@ do
 	local _, tbl = ...
 	-- A custom profile name and callback function is completely optional
 	-- When specified, a callback function will be called with a boolean as the first arg. True if the user accepted, false otherwise
-	function API.RegisterProfile(addonName, profileString, optionalCustomProfileName, optionalCallbackFunction)
+	function API:ImportProfileString(addonName, profileString, optionalCustomProfileName, optionalCallbackFunction)
 		if type(addonName) ~= "string" or #addonName < 3 then error("Invalid addon name for profile import.") end
 		if type(profileString) ~= "string" or #profileString < 3 then error("Invalid profile string for profile import.") end
 		if optionalCustomProfileName and (type(optionalCustomProfileName) ~= "string" or #optionalCustomProfileName < 3) then error("Invalid custom profile name for the string you want to import.") end
 		if optionalCallbackFunction and type(optionalCallbackFunction) ~= "function" then error("Invalid custom callback function for the string you want to import.") end
 		tbl.LoadCoreAndOptions()
 		BigWigsOptions:SaveImportStringDataFromAddOn(addonName, profileString, optionalCustomProfileName, optionalCallbackFunction)
-	end
-
-	-- DEVS: Use BigWigsAPI.RegisterProfile, nothing changed other than the name of the API and access via . instead of :
-	function API:ImportProfileString(addonName, profileString, optionalCustomProfileName, optionalCallbackFunction) -- DEPRECATED
-		API.RegisterProfile(addonName, profileString, optionalCustomProfileName, optionalCallbackFunction)
-		geterrorhandler()(("The addon %q is using the deprecated import API for BigWigs, tell the author to update."):format(addonName))
-	end
-end
-
---------------------------------------------------------------------------------
--- Spell renames
---
-
-do
-	local tbl = {}
-	-- This function provides external addons with the spell renames that we use in our modules
-	function API.GetSpellRename(spellId)
-		return tbl[spellId]
-	end
-	function API.SetSpellRename(spellId, text)
-		if type(spellId) ~= "number" then error("Invalid spell ID for spell rename.") end
-		if type(text) ~= "string" or #text < 3 then error("Invalid spell text for spell rename.") end
-		tbl[spellId] = text
 	end
 end
 

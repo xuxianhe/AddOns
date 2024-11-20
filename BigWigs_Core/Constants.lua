@@ -3,7 +3,6 @@ local BigWigs = {}
 do
 	local _, tbl =...
 	tbl.core = BigWigs
-	tbl.plugins = {}
 end
 
 local C = {}

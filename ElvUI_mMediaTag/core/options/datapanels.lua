@@ -34,18 +34,8 @@ local function configTable()
 				E:StaticPopup_Show("CONFIG_RL")
 			end,
 		},
-		spacer_1 = {
-			order = 2,
-			type = "description",
-			name = "\n",
-		},
-		info = {
-			order = 3,
-			type = "description", --#FFA7A7
-			name = "|CFFFFA7A7" .. L["Info: The Skin can be affected by other addons if they add a skin for all windows. To fix the problem, the skin must be deactivated in the other addon. This is not a bug of mMT."] .. "|r",
-		},
 		header_panels = {
-			order = 4,
+			order = 2,
 			type = "group",
 			inline = true,
 			name = L["Panels"],
@@ -93,7 +83,7 @@ local function configTable()
 			},
 		},
 		header_panel_settings = {
-			order = 5,
+			order = 3,
 			type = "group",
 			inline = true,
 			name = L["Settings"],
@@ -242,7 +232,7 @@ local function configTable()
 			},
 		},
 		header_importexport = {
-			order = 6,
+			order = 4,
 			type = "group",
 			inline = true,
 			name = L["Import/ Export of this Settings"],

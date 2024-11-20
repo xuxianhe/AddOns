@@ -23,7 +23,7 @@ BigWigs:AddSounds("Admiral Ripsnarl", {
 	[92042] = "warning",
 })
 
-BigWigs:AddSounds("Captain Cookie", {
+BigWigs:AddSounds("Cookie", {
 	[89263] = "long",
 	[89267] = "info",
 	[89732] = "alarm",

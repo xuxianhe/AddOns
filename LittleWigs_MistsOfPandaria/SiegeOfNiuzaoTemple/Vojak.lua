@@ -69,11 +69,8 @@ function mod:CausticTar(args)
 end
 
 do
-	local bossGUID
 	local function printTarget(self, player, guid)
-		local bossToken = self:UnitTokenFromGUID(bossGUID)
-		local targetToken = self:UnitTokenFromGUID(guid)
-		if bossToken and targetToken and not self:Tanking(bossToken, targetToken) then
+		if not self:Tanking("boss1", player) then
 			self:TargetMessage(120789, "yellow", player)
 			self:PlaySound(120789, "alarm", nil, player)
 			if self:Me(guid) then
@@ -85,7 +82,6 @@ do
 	end
 
 	function mod:DashingStrike(args)
-		bossGUID = args.sourceGUID
 		self:GetUnitTarget(printTarget, 0.4, args.sourceGUID)
 		self:CDBar(args.spellId, 14.6)
 	end

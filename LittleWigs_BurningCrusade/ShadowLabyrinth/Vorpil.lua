@@ -27,12 +27,12 @@ function mod:OnBossEnable()
 	self:Log("SPELL_AURA_APPLIED", "Banish", 38791)
 	self:Log("SPELL_AURA_REMOVED", "BanishRemoved", 38791)
 
-	self:CheckForEngage()
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "CheckForEngage")
 	self:Death("Win", 18732)
 end
 
 function mod:OnEngage()
-	self:CheckForWipe()
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", "CheckForWipe")
 	self:CDBar(-5267, 44) -- Draw Shadows
 end
 

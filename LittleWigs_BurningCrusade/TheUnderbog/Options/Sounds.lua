@@ -1,7 +1,7 @@
 
 BigWigs:AddSounds("Hungarfen", {
 	[-6008] = {"alarm","alert"},
-	[34168] = {"info","underyou","warning"},
+	[31689] = {"info","warning"},
 })
 
 BigWigs:AddSounds("Ghaz'an", {

@@ -1,3 +1,4 @@
+if not BigWigsLoader.isBeta then return end
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -24,7 +25,6 @@ end
 
 function mod:OnRegister()
 	self.displayName = L.web_general_abenar
-	self:SetSpellRename(448443, CL.curse) -- Curse of Agony (Curse)
 end
 
 function mod:GetOptions()
@@ -32,8 +32,6 @@ function mod:GetOptions()
 		448443, -- Curse of Agony
 		448412, -- Burning Cart
 		448444, -- Runic Shackles
-	},nil,{
-		[448443] = CL.curse, -- Curse of Agony (Curse)
 	}
 end
 
@@ -44,7 +42,7 @@ function mod:OnBossEnable()
 end
 
 function mod:OnEngage()
-	self:CDBar(448443, 6.2, CL.curse) -- Curse of Agony
+	self:CDBar(448443, 6.2) -- Curse of Agony
 	self:CDBar(448412, 12.5) -- Burning Cart
 	self:CDBar(448444, 20.2) -- Runic Shackles
 end
@@ -56,7 +54,7 @@ end
 function mod:CurseOfAgony(args)
 	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
 	self:PlaySound(args.spellId, "alert")
-	self:CDBar(args.spellId, 23.5, CL.curse)
+	self:CDBar(args.spellId, 23.5)
 end
 
 function mod:UNIT_SPELLCAST_SUCCEEDED(_, _, _, spellId)

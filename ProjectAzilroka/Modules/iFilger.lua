@@ -41,9 +41,11 @@ local GetInventoryItemLink = GetInventoryItemLink
 local GetItemCooldown = GetItemCooldown
 local GetItemIcon = GetItemIcon
 local GetItemInfo = GetItemInfo
+local GetSpellBookItemInfo = GetSpellBookItemInfo
+local GetSpellBookItemName = GetSpellBookItemName
 local GetSpellCharges = GetSpellCharges
 local GetSpellCooldown = GetSpellCooldown
-local GetSpellInfo = PA.GetSpellInfo
+local GetSpellInfo = GetSpellInfo
 local GetSpellLink = GetSpellLink
 local GetTime = GetTime
 local IsSpellKnown = IsSpellKnown
@@ -60,6 +62,8 @@ IF.Cooldowns = {}
 IF.ActiveCooldowns = {}
 IF.DelayCooldowns = {}
 IF.IsChargeCooldown = {}
+IF.SpellList = {}
+IF.CompleteSpellBook = {}
 IF.ItemCooldowns = {}
 IF.HasCDDelay = {
 	[5384] = true
@@ -69,16 +73,29 @@ local GLOBAL_COOLDOWN_TIME = 1.5
 local COOLDOWN_MIN_DURATION = .1
 local AURA_MIN_DURATION = .1
 
+-- Simpy Magic
+local t = {}
+for _, name in pairs({'SPELL_RECAST_TIME_SEC','SPELL_RECAST_TIME_MIN','SPELL_RECAST_TIME_CHARGES_SEC','SPELL_RECAST_TIME_CHARGES_MIN'}) do
+    t[name] = _G[name]:gsub('%%%.%dg','[%%d%%.]-'):gsub('%.$','%%.'):gsub('^(.-)$','^%1$')
+end
+
 function IF:Spawn(unit, name, db, filter, position)
 	local object = CreateFrame('Button', 'iFilger_'..name, PA.PetBattleFrameHider)
-	object.db, object.name, object.unit, object.filter, object.Whitelist, object.Blacklist, object.createdIcons, object.anchoredIcons = db, name, unit, filter, db.Whitelist, db.Blacklist, 0, 0
 	object:SetSize(100, 20)
 	object:SetPoint(unpack(position))
+	object.db = db
+	object.name = name
+	object.createdIcons = 0
+	object.anchoredIcons = 0
+	object.Whitelist = db.Whitelist
+	object.Blacklist = db.Blacklist
 	object:EnableMouse(false)
 	IF:CreateMover(object)
 
 	if name ~= 'Cooldowns' and name ~= 'ItemCooldowns' then
 		object:SetAttribute('unit', unit)
+		object.unit = unit
+		object.filter = filter
 		object:RegisterEvent('UNIT_AURA')
 		object:SetScript('OnEvent', function() IF:UpdateAuras(object, unit) end)
 		RegisterUnitWatch(object)
@@ -115,6 +132,71 @@ function IF:EnableUnit(button)
 	end
 
 	IF:ToggleMover(button)
+end
+
+function IF:ScanTooltip(index, bookType)
+	PA.ScanTooltip:SetOwner(_G.UIParent, 'ANCHOR_NONE')
+	PA.ScanTooltip:SetSpellBookItem(index, bookType)
+	PA.ScanTooltip:Show()
+
+	for i = 2, 4 do
+		local str = _G['PAScanTooltipTextRight'..i]
+		local text = str and str:GetText()
+		if text then
+			for _, matchtext in pairs(t) do
+				if strmatch(text, matchtext) then
+					return true
+				end
+			end
+		end
+	end
+end
+
+function IF:ScanSpellBook(bookType, numSpells, offset)
+	offset = offset or 0
+	for index = offset + 1, offset + numSpells, 1 do
+		local skillType, special = GetSpellBookItemInfo(index, bookType)
+		if skillType == 'SPELL' or skillType == 'PETACTION' then
+			local SpellID, SpellName, Rank
+			if PA.Retail then
+				SpellID = select(2, GetSpellLink(index, bookType))
+			else
+				SpellName, Rank, SpellID = GetSpellBookItemName(index, bookType)
+				if Rank ~= '' and Rank ~= nil then
+					SpellName = format('%s %s', SpellName, Rank)
+				end
+			end
+			if SpellID then
+				IF.CompleteSpellBook[SpellID] = true
+				if IF:ScanTooltip(index, bookType) then
+					IF.SpellList[SpellID] = SpellName or true
+				end
+			end
+		elseif skillType == 'FLYOUT' then
+			local flyoutId = special
+			local _, _, numSlots, isKnown = GetFlyoutInfo(flyoutId)
+			if numSlots > 0 and isKnown then
+				for flyoutIndex = 1, numSlots, 1 do
+					local SpellID, overrideId = GetFlyoutSlotInfo(flyoutId, flyoutIndex)
+					if SpellID ~= overrideId then
+						IF.CompleteSpellBook[overrideId] = true
+					else
+						IF.CompleteSpellBook[SpellID] = true
+					end
+					if IF:ScanTooltip(index, bookType) then
+						if SpellID ~= overrideId then
+							IF.SpellList[overrideId] = true
+						else
+							IF.SpellList[SpellID] = true
+						end
+					end
+				end
+			end
+		elseif skillType == 'FUTURESPELL' then
+		elseif not skillType then
+			break
+		end
+	end
 end
 
 function IF:UpdateActiveCooldowns()
@@ -317,7 +399,7 @@ function IF:CustomFilter(element, unit, button, name, texture, count, debuffType
 	elseif element.db.FilterByList == 'None' then
 		if element.name == 'Procs' then
 			if (caster == 'player' or caster == 'pet') then
-				return not PA.SpellBook.Complete[spellID]
+				return not IF.CompleteSpellBook[spellID]
 			end
 		else
 			local isPlayer = (caster == 'player' or caster == 'vehicle' or caster == 'pet')
@@ -351,11 +433,17 @@ function IF:UpdateAuraIcon(element, unit, index, offset, filter, isDebuff, visib
 	if name then
 		local position = visible + offset + 1
 		local button = element[position] or IF:CreateAuraIcon(element, position)
+
+		button.caster = caster
+		button.filter = filter
+		button.isDebuff = isDebuff
+		button.isPlayer = caster == 'player' or caster == 'vehicle'
+		button.expiration = expiration
+		button.duration = duration
+		button.spellID = spellID
+
 		local show = IF:CustomFilter(element, unit, button, name, texture, count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID, canApply, isBossDebuff, casterIsPlayer, nameplateShowAll,timeMod, effect1, effect2, effect3)
 
-		button.caster, button.filter, button.isDebuff, button.expiration, button.duration, button.spellID, button.isPlayer = caster, filter, isDebuff, expiration, duration, spellID, caster == 'player' or caster == 'vehicle'
-
-		button:SetShown(show)
 		if show then
 			if not element.db.StatusBar then
 				if (duration and duration >= AURA_MIN_DURATION) then
@@ -364,11 +452,14 @@ function IF:UpdateAuraIcon(element, unit, index, offset, filter, isDebuff, visib
 				button.Cooldown:SetShown(duration and duration >= AURA_MIN_DURATION)
 			end
 
-			button:SetID(index)
+			button.StatusBar:SetStatusBarColor(unpack(element.db.StatusBarTextureColor))
+
 			button.Texture:SetTexture(texture)
 			button.Stacks:SetText(count > 1 and count or "")
-			button.StatusBar:SetStatusBarColor(unpack(element.db.StatusBarTextureColor))
 			button.StatusBar.Name:SetText(name)
+
+			button:SetID(index)
+			button:Show()
 
 			if isDebuff then
 				button.backdrop:SetBackdropBorderColor(1, 0, 0)
@@ -562,7 +653,7 @@ function IF:CreateAuraIcon(element)
 						s:SetStatusBarColor(color.r, color.g, color.b)
 					end
 				end
-				s.elapsed = 0
+				self.elapsed = 0
 			end
 		end)
 	end
@@ -633,8 +724,14 @@ function IF:UpdateAll()
 end
 
 function IF:SPELLS_CHANGED()
-	PA:AddKeysToTable(IF.db.Cooldowns.SpellCDs, PA.SpellBook.Spells)
-	PA.Options.args.iFilger.args.Cooldowns.args.Spells.args = IF:GenerateSpellOptions()
+	local numPetSpells = _G.HasPetSpells()
+	if numPetSpells then
+		IF:ScanSpellBook(_G.BOOKTYPE_PET, numPetSpells)
+
+		PA:AddKeysToTable(IF.db.Cooldowns.SpellCDs, IF.SpellList)
+
+		PA.Options.args.iFilger.args.Cooldowns.args.Spells.args = IF:GenerateSpellOptions()
+	end
 end
 
 local function GetSelectedSpell()
@@ -647,6 +744,20 @@ local function GetSelectedSpell()
 end
 
 function IF:BuildProfile()
+	for tab = 1, _G.GetNumSpellTabs(), 1 do
+		local name, _, offset, numSpells = _G.GetSpellTabInfo(tab)
+		if name then
+			IF:ScanSpellBook(_G.BOOKTYPE_SPELL, numSpells, offset)
+		end
+	end
+
+	local numPetSpells = _G.HasPetSpells()
+	if numPetSpells then
+		IF:ScanSpellBook(_G.BOOKTYPE_PET, numPetSpells)
+	end
+
+	PA.ScanTooltip:Hide()
+
 	PA.Defaults.profile.iFilger = {
 		Enable = false,
 		Cooldown = CopyTable(PA.Defaults.profile.Cooldown),
@@ -690,7 +801,7 @@ function IF:BuildProfile()
 		end
 	end
 
-	PA.Defaults.profile.iFilger.Cooldowns.SpellCDs = PA.SpellBook.Spells
+	PA.Defaults.profile.iFilger.Cooldowns.SpellCDs = IF.SpellList
 end
 
 function IF:GenerateSpellOptions()
@@ -713,6 +824,8 @@ function IF:GenerateSpellOptions()
 end
 
 function IF:GetOptions()
+	IF:UpdateSettings()
+
 	local iFilger = PA.ACH:Group(IF.Title, IF.Description, nil, 'tab')
 	PA.Options.args.iFilger = iFilger
 
@@ -794,6 +907,8 @@ function IF:UpdateSettings()
 end
 
 function IF:Initialize()
+	IF:UpdateSettings()
+
 	if IF.db.Enable ~= true then
 		return
 	end
@@ -817,6 +932,7 @@ function IF:Initialize()
 
 	IF:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')	-- For Cooldown Queue
 	IF:RegisterEvent('SPELL_UPDATE_COOLDOWN')		-- Process Cooldown Queue
+	IF:RegisterEvent('SPELLS_CHANGED')
 	IF:RegisterEvent('BAG_UPDATE_COOLDOWN')
 	IF:RegisterEvent('PLAYER_TARGET_CHANGED', function() if IF.db.TargetDebuffs.Enable then IF:UpdateAuras(IF.Panels.TargetDebuffs, 'target') end end)
 

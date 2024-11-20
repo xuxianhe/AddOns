@@ -13,9 +13,3 @@ BigWigs:AddColors("Speaker Halven", {
 	[443840] = "yellow",
 	[443908] = "orange",
 })
-
-BigWigs:AddColors("Cult Leaders", {
-	[434740] = "yellow",
-	[443482] = {"red","yellow"},
-	[458874] = "orange",
-})

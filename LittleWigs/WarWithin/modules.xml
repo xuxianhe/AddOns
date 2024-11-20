@@ -9,6 +9,5 @@
 <Include file="TheDawnbreaker\modules.xml"/>
 <Include file="TheRookery\modules.xml"/>
 <Include file="TheStonevault\modules.xml"/>
-<Include file="Scenarios\modules.xml"/>
 
 </Ui>

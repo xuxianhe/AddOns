@@ -21,18 +21,28 @@ local UnitExists = UnitExists
 local VISIBLE = 1
 local HIDDEN = 0
 
-function MA:GetAuraIcon(index)
-	if MA.Holder[position] then
-		return MA.Holder[position]
-	end
+function MA:CreateAuraIcon(index)
+	local button = CreateFrame('Button', MA.Holder:GetName()..'Button'..index, MA.Holder)
+	button:EnableMouse(false)
 
-	local button = CreateFrame('Button', 'MouseoverAurasHolderButton'..index, MA.Holder, 'PA_AuraTemplate')
-	button.Icon:SetTexCoord(unpack(PA.TexCoords))
+	button.cooldown = CreateFrame('Cooldown', '$parentCooldown', button, 'CooldownFrameTemplate')
+	button.cooldown:SetAllPoints()
 
-	PA:SetTemplate(button)
-	PA:RegisterCooldown(button.Cooldown)
+	button.icon = button:CreateTexture(nil, 'ARTWORK')
+	button.icon:SetAllPoints()
+	button.icon:SetTexCoord(unpack(PA.TexCoords))
 
-	MA.Holder.createdIcons = MA.Holder.createdIcons + 1
+	button.countFrame = CreateFrame('Frame', nil, button)
+	button.countFrame:SetAllPoints(button)
+	button.countFrame:SetFrameLevel(button.cooldown:GetFrameLevel() + 1)
+
+	button.count = button.countFrame:CreateFontString(nil, 'OVERLAY', 'NumberFontNormal')
+	button.count:SetPoint('BOTTOMRIGHT', button.countFrame, 'BOTTOMRIGHT', -1, 0)
+
+	PA:CreateBackdrop(button)
+	PA:CreateShadow(button)
+	PA:RegisterCooldown(button.cooldown)
+
 	tinsert(MA.Holder, button)
 
 	return button
@@ -40,57 +50,83 @@ end
 
 function MA:CustomFilter(unit, button, name, texture, count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID, canApply, isBossDebuff, casterIsPlayer)
 	local isPlayer = (caster == 'player' or caster == 'vehicle' or caster == 'pet')
-	return isPlayer and (duration ~= 0)
+
+	if (isPlayer) and (duration ~= 0) then
+		return true
+	else
+		return false
+	end
 end
 
 function MA:UpdateIcon(unit, index, offset, filter, isDebuff, visible)
-	local name, texture, count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID, canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3 = PA:GetAuraData(unit, index, filter)
+	local name, texture, count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID, canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3 = UnitAura(unit, index, filter)
 
 	if name then
 		local position = visible + offset + 1
-		local button = MA:GetAuraIcon(position)
-		local show = MA:CustomFilter(unit, button, name, texture, count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID, canApply, isBossDebuff, casterIsPlayer, nameplateShowAll, timeMod, effect1, effect2, effect3)
-		button.caster, button.filter, button.isDebuff, button.isPlayer = caster, filter, isDebuff, caster == 'player' or caster == 'vehicle'
+		local button = MA.Holder[position]
+
+		if (not button) then
+			button = MA:CreateAuraIcon(position)
+			MA.Holder.createdIcons = MA.Holder.createdIcons + 1
+		end
+
+		button.caster = caster
+		button.filter = filter
+		button.isDebuff = isDebuff
+		button.isPlayer = caster == 'player' or caster == 'vehicle'
+
+		local show = MA:CustomFilter(unit, button, name, texture, count, debuffType, duration, expiration, caster, isStealable, nameplateShowSelf, spellID, canApply, isBossDebuff, casterIsPlayer, nameplateShowAll,timeMod, effect1, effect2, effect3)
 
 		if show then
-			button:SetBackdropBorderColor(isDebuff and 1 or 0, 0, 0)
+			if button.cooldown then
+				button.cooldown:SetShown(duration and duration > 0)
+				button.cooldown:SetCooldown(expiration - duration, duration)
+			end
+
+			if(button.icon) then button.icon:SetTexture(texture) end
+			if(button.count) then button.count:SetText(count > 1 and count or '') end
+
 			button:SetSize(MA.db.Size, MA.db.Size)
 			button:SetID(index)
-			button:SetShown(show)
+			button:Show()
 
-			button.Cooldown:SetShown(duration and duration > 0)
-			button.Cooldown:SetCooldown(expiration - duration, duration)
-			button.Icon:SetTexture(texture)
-			button.Count:SetText(count > 1 and count or '')
+			if button.backdrop then
+				button.backdrop:SetBackdropBorderColor(isDebuff and 1 or 0, 0, 0)
+			end
 
 			return VISIBLE
+		else
+			return HIDDEN
 		end
 	end
-
-	return name and HIDDEN or nil
 end
 
 function MA:SetPosition()
 	if not MA.Holder then return end
 
-	local size, anchor, x, y = MA.db.Size + MA.db.Spacing, 'BOTTOMLEFT', 1, -1
-	local cols = floor(MA.Holder:GetWidth() / size + 0.5)
+	local sizex = MA.db.Size + MA.db.Spacing + 2
+	local sizey = MA.db.Size + MA.db.Spacing + 2
+	local anchor = 'BOTTOMLEFT'
+	local growthx = 1
+	local growthy = -1
+	local cols = floor(MA.Holder:GetWidth() / sizex + 0.5)
 
 	for i, button in ipairs(MA.Holder) do
 		if(not button) then break end
-		local col, row = (i - 1) % cols, floor((i - 1) / cols)
+		local col = (i - 1) % cols
+		local row = floor((i - 1) / cols)
 
 		button:ClearAllPoints()
-		button:SetPoint(anchor, MA.Holder, anchor, col * size * x, row * size * y)
+		button:SetPoint(anchor, MA.Holder, anchor, col * sizex * growthx, row * sizey * growthy)
 	end
 end
 
-function MA:FilterIcons(unit, filter, limit, isDebuff, offset)
-	offset = offset or 0
-
-	local index, visible, hidden = 1, 0, 0
-
-	for index = 1, limit do
+function MA:FilterIcons(unit, filter, limit, isDebuff, offset, dontHide)
+	if (not offset) then offset = 0 end
+	local index = 1
+	local visible = 0
+	local hidden = 0
+	while (visible < limit) do
 		local result = MA:UpdateIcon(unit, index, offset, filter, isDebuff, visible)
 		if (not result) then
 			break
@@ -99,12 +135,13 @@ function MA:FilterIcons(unit, filter, limit, isDebuff, offset)
 		elseif (result == HIDDEN) then
 			hidden = hidden + 1
 		end
+
+		index = index + 1
 	end
 
-	local maxButton = visible + offset + 1
-	for i, button in ipairs(MA.Holder) do
-		if i >= maxButton then
-			button:Hide()
+	if (not dontHide) then
+		for i = visible + offset + 1, #MA.Holder do
+			MA.Holder[i]:Hide()
 		end
 	end
 
@@ -112,11 +149,12 @@ function MA:FilterIcons(unit, filter, limit, isDebuff, offset)
 end
 
 function MA:UpdateAuras(unit)
-	local numBuffs, numDebuffs = 32, 40
+	local numBuffs = 32
+	local numDebuffs = 40
 	local max = numBuffs + numDebuffs
 
-	local visibleBuffs = MA:FilterIcons(unit, 'HELPFUL', min(numBuffs, max), nil, 0, true)
-	local visibleDebuffs = MA:FilterIcons(unit, 'HARMFUL', min(numDebuffs, max - visibleBuffs), true, visibleBuffs)
+	local visibleBuffs = MA:FilterIcons(unit, 'HELPFUL', math.min(numBuffs, max), nil, 0, true)
+	local visibleDebuffs = MA:FilterIcons(unit, 'HARMFUL', math.min(numDebuffs, max - visibleBuffs), true, visibleBuffs)
 
 	if (MA.Holder.createdIcons > MA.Holder.anchoredIcons) then
 		MA:SetPosition()
@@ -125,12 +163,13 @@ function MA:UpdateAuras(unit)
 end
 
 function MA:Update(elapsed)
-	if (not UnitExists('mouseover')) or (PA:GetMouseFocus() and PA:GetMouseFocus():IsForbidden() ) then
+	if (not UnitExists('mouseover')) or GetMouseFocus() and (GetMouseFocus():IsForbidden()) then
 		MA.Holder:Hide()
 		return
 	end
 
-	local scale, x, y = _G.UIParent:GetEffectiveScale(), GetCursorPosition()
+	local x, y = GetCursorPosition()
+	local scale = _G.UIParent:GetEffectiveScale()
 
 	MA.Holder:ClearAllPoints()
 	MA.Holder:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", (x / scale), (y / scale) - 70)
@@ -144,9 +183,12 @@ function MA:Update(elapsed)
 end
 
 function MA:UPDATE_MOUSEOVER_UNIT()
-	local unitExists = UnitExists('mouseover')
-	MA.Holder:SetShown(unitExists)
-	if unitExists then MA:UpdateAuras('mouseover') end
+	if (UnitExists('mouseover')) then
+		MA.Holder:Show()
+		MA:UpdateAuras('mouseover')
+	else
+		MA.Holder:Hide()
+	end
 end
 
 function MA:GetOptions()
@@ -180,6 +222,8 @@ function MA:UpdateSettings()
 end
 
 function MA:Initialize()
+	MA:UpdateSettings()
+
 	if MA.db.Enable ~= true then
 		return
 	end

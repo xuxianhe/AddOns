@@ -28,16 +28,15 @@ local difficultyTable = {
 	[148] = "normal", -- 20 Player (AQ20/ZG)
 	[175] = "N10", -- 10 Player (Ulduar 10 & Karazhan)
 	[176] = "N25", -- 25 Player (Ulduar 25 & TBC raids)
-	[186] = "SOD", -- 40 Player (Onyxia & BWL - Classic Season of Discovery)
+	[186] = "SOD", -- 40 Player (Onyxia - Classic Season of Discovery)
 	[198] = "SOD", -- Normal (10 player Blackfathom Deeps/Gnomeregan - Classic Season of Discovery)
 	[215] = "SOD", -- Normal (20 player Sunken Temple - Classic Season of Discovery)
 	[220] = "story", -- Story
-	[226] = "SOD", -- 20 Player (Molten Core & ZG - Classic Season of Discovery)
+	[226] = "SOD", -- 20 Player (Molten Core - Classic Season of Discovery)
 }
 local SPELL_DURATION_SEC = SPELL_DURATION_SEC -- "%.2f sec"
 local GetTime, date = GetTime, BigWigsLoader.date
 local dontPrint = { -- Don't print a warning message for these difficulties
-	[0] = true, -- Outside
 	[1] = true, -- Normal Dungeon
 	[2] = true, -- Heroic Dungeon
 	[8] = true, -- Mythic+ Dungeon
@@ -113,7 +112,7 @@ local dontPrint = { -- Don't print a warning message for these difficulties
 193. 10 Player (Heroic)
 194. 25 Player (Heroic)
 
-1.15.4
+1.15.3
 1. Normal
 9. 40 Player
 148. 20 Player
@@ -131,7 +130,6 @@ local dontPrint = { -- Don't print a warning message for these difficulties
 214. DNT - Internal only
 215. Normal
 226. 20 Player
-231. Normal
 
 /run for i=1, 1000 do local n = GetDifficultyInfo(i) if n then print(i..".", n) end end
 ]]--
@@ -312,8 +310,7 @@ do
 		local journalId = GetModuleID(module)
 
 		if journalId and id and id > 0 and not module.worldBoss then -- Raid restricted for now
-			local t = GetTime()
-			activeDurations[journalId] = {t}
+			activeDurations[journalId] = GetTime()
 
 			local diff = module:Difficulty()
 			if diff and difficultyTable[diff] then
@@ -339,7 +336,6 @@ do
 					end
 				end
 				if not sDB[difficultyText] then sDB[difficultyText] = {} end
-				activeDurations[journalId][2] = difficultyText
 
 				local best = sDB[difficultyText].best
 				if self.db.profile.showBar and best then
@@ -373,15 +369,31 @@ end
 function plugin:BigWigs_OnBossWin(event, module)
 	local journalId = GetModuleID(module)
 	if journalId and activeDurations[journalId] then
-		local elapsed = GetTime()-activeDurations[journalId][1]
-		local difficultyText = activeDurations[journalId][2]
+		local elapsed = GetTime()-activeDurations[journalId]
 
 		if self.db.profile.printVictory then
 			BigWigs:ScheduleTimer("Print", 1, L.bossVictoryPrint:format(module.displayName, elapsed < 1 and SPELL_DURATION_SEC:format(elapsed) or SecondsToTime(elapsed)))
 		end
 
 		local diff = module:Difficulty()
-		if difficultyText then
+		if difficultyTable[diff] then
+			local difficultyText = difficultyTable[diff]
+			if diff == 226 then
+				if module:GetPlayerAura(458841) then -- Sweltering Heat
+					difficultyText = "level1"
+				elseif module:GetPlayerAura(458842) then -- Blistering Heat
+					difficultyText = "level2"
+				elseif module:GetPlayerAura(458843) then -- Molten Heat
+					difficultyText = "level3"
+				end
+			elseif diff == 9 or diff == 148 then
+				local season = module:GetSeason()
+				if season == 3 then
+					difficultyText = "hardcore"
+				elseif season == 2 and diff == 9 then
+					difficultyText = "SOD"
+				end
+			end
 			local sDB = BigWigsStatsDB[module.instanceId][journalId][difficultyText]
 			if not sDB.kills then
 				sDB.kills = 1
@@ -413,8 +425,7 @@ end
 function plugin:BigWigs_OnBossWipe(event, module)
 	local journalId = GetModuleID(module)
 	if journalId and activeDurations[journalId] then
-		local elapsed = GetTime()-activeDurations[journalId][1]
-		local difficultyText = activeDurations[journalId][2]
+		local elapsed = GetTime()-activeDurations[journalId]
 
 		if elapsed > 30 then -- Fight must last longer than 30 seconds to be an actual wipe worth noting
 			if self.db.profile.printDefeat then
@@ -422,9 +433,26 @@ function plugin:BigWigs_OnBossWipe(event, module)
 			end
 
 			local diff = module:Difficulty()
-			if not difficultyText and IsInRaid() and not dontPrint[diff] then
+			if not difficultyTable[diff] and IsInRaid() and not dontPrint[diff] then
 				BigWigs:Error("Tell the devs, the stats for this boss were not recorded because a new difficulty id was found: "..diff)
-			elseif difficultyText then
+			elseif difficultyTable[diff] then
+				local difficultyText = difficultyTable[diff]
+				if diff == 226 then
+					if module:GetPlayerAura(458841) then -- Sweltering Heat
+						difficultyText = "level1"
+					elseif module:GetPlayerAura(458842) then -- Blistering Heat
+						difficultyText = "level2"
+					elseif module:GetPlayerAura(458843) then -- Molten Heat
+						difficultyText = "level3"
+					end
+				elseif diff == 9 or diff == 148 then
+					local season = module:GetSeason()
+					if season == 3 then
+						difficultyText = "hardcore"
+					elseif season == 2 and diff == 9 then
+						difficultyText = "SOD"
+					end
+				end
 				local sDB = BigWigsStatsDB[module.instanceId][journalId][difficultyText]
 				sDB.wipes = sDB.wipes and sDB.wipes + 1 or 1
 			end

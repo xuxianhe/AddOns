@@ -36,12 +36,12 @@ function mod:OnBossEnable()
 	self:Log("SPELL_CAST_START", "PolarityShift", 39096)
 	self:Log("SPELL_CAST_SUCCESS", "PolarityShiftSuccess", 39096)
 
-	self:CheckForEngage()
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "CheckForEngage")
 	self:Death("Win", 19219)
 end
 
 function mod:OnEngage()
-	self:CheckForWipe()
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", "CheckForWipe")
 	if not self:Normal() then
 		self:Berserk(180)
 	end

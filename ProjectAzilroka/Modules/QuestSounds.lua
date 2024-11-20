@@ -55,14 +55,26 @@ function QS:CheckQuest()
 
 	if PA.Retail and C_QuestLog.ReadyForTurnIn(QS.QuestID) then
 		QS:ResetSoundPlayback()
-		QS:PlaySoundFile(QS.db.UseSoundID and QS.db.QuestCompleteID or QS.db.QuestComplete)
+		if QS.db.UseSoundID then
+			QS:PlaySoundFile(QS.db.QuestCompleteID)
+		else
+			QS:PlaySoundFile(QS.db.QuestComplete)
+		end
 	else
 		QS.ObjectivesCompleted, QS.ObjectivesTotal = QS:CountCompletedObjectives(QS.QuestID)
 
 		if QS.ObjectivesCompleted > QS.ObjectivesTotal then
-			QS:PlaySoundFile(QS.db.UseSoundID and QS.db.ObjectiveCompleteID or QS.db.ObjectiveComplete)
+			if QS.db.UseSoundID then
+				QS:PlaySoundFile(QS.db.ObjectiveCompleteID)
+			else
+				QS:PlaySoundFile(QS.db.ObjectiveComplete)
+			end
 		else
-			QS:PlaySoundFile(QS.db.UseSoundID and QS.db.ObjectiveProgressID or QS.db.ObjectiveProgress)
+			if QS.db.UseSoundID then
+				QS:PlaySoundFile(QS.db.ObjectiveProgressID)
+			else
+				QS:PlaySoundFile(QS.db.ObjectiveProgress)
+			end
 		end
 	end
 end
@@ -168,28 +180,21 @@ function QS:BuildProfile()
 	}
 end
 
-function QS:UpdateSettings()
-	QS.db = PA.db.QuestSounds
-end
-
 function QS:Initialize()
+	QS.db = PA.db.QuestSounds
+
 	if QS.db.Enable ~= true then
 		return
 	end
 
 	local KT = _G.LibStub('AceAddon-3.0'):GetAddon('!KalielsTracker', true)
-	local popup = KT and KT.db.profile.soundQuest or PA:IsAddOnEnabled('QuestGuruSounds', PA.MyName)
 
-	if popup then
-		_G.StaticPopupDialogs.PROJECTAZILROKA.text = format('%s and QuestSounds will make double sounds. Which one do you want to disable? %s', KT and 'Kaliels Tracker' or 'QuestGuru Sounds', KT and '|n|n(This does not disable Kaliels Tracker)' or '')
-		_G.StaticPopupDialogs.PROJECTAZILROKA.button1 = KT and 'KT Quest Sound' or 'QuestGuru Sounds'
+	if KT and KT.db.profile.soundQuest then
+		_G.StaticPopupDialogs.PROJECTAZILROKA.text = 'Kaliels Tracker Quest Sound and QuestSounds will make double sounds. Which one do you want to disable?|n|n(This does not disable Kaliels Tracker)'
+		_G.StaticPopupDialogs.PROJECTAZILROKA.button1 = 'KT Quest Sound'
 		_G.StaticPopupDialogs.PROJECTAZILROKA.button2 = 'Quest Sounds'
 		_G.StaticPopupDialogs.PROJECTAZILROKA.OnAccept = function()
-			if KT then
-				KT.db.profile.soundQuest = false
-			else
-				_G.DisableAddOn('QuestGuruSounds')
-			end
+			KT.db.profile.soundQuest = false
 			_G.ReloadUI()
 		end
 		_G.StaticPopupDialogs.PROJECTAZILROKA.OnCancel = function() QS.db.Enable = false end
@@ -197,7 +202,21 @@ function QS:Initialize()
 		return
 	end
 
-	QS.ObjectivesComplete, QS.ObjectivesTotal, QS.IsPlaying, QS.isEnabled = 0, 0, true, false
+	if PA:IsAddOnEnabled('QuestGuruSounds', PA.MyName) then
+		_G.StaticPopupDialogs.PROJECTAZILROKA.text = 'QuestGuru Sounds and QuestSounds will make double sounds. Which one do you want to disable?'
+		_G.StaticPopupDialogs.PROJECTAZILROKA.button1 = 'KT Quest Sound'
+		_G.StaticPopupDialogs.PROJECTAZILROKA.button2 = 'Quest Sounds'
+		_G.StaticPopupDialogs.PROJECTAZILROKA.OnAccept = function() _G.DisableAddOn('QuestGuruSounds') _G.ReloadUI() end
+		_G.StaticPopupDialogs.PROJECTAZILROKA.OnCancel = function() QS.db.Enable = false end
+		_G.StaticPopup_Show('PROJECTAZILROKA')
+		return
+	end
+
+	QS.isEnabled = true
+
+	QS.ObjectivesComplete = 0
+	QS.ObjectivesTotal = 0
+	QS.IsPlaying = false
 
 	QS:RegisterEvent('UNIT_QUEST_LOG_CHANGED')
 	QS:RegisterEvent('QUEST_WATCH_UPDATE')

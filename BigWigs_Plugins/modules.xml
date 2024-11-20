@@ -10,7 +10,6 @@
 <Script file="Messages.lua"/>
 <Script file="BarStyles.lua"/>
 <Script file="Bars.lua"/>
-<Script file="Nameplates.lua"/>
 <Script file="BossBlock.lua"/>
 <Script file="InfoBox.lua"/>
 <Script file="RaidIcon.lua"/>

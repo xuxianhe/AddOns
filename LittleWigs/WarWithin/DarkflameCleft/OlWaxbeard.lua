@@ -1,3 +1,4 @@
+if not BigWigsLoader.isBeta then return end
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -17,7 +18,7 @@ mod:SetRespawnTime(30)
 
 function mod:GetOptions()
 	return {
-		{422116, "SAY", "SAY_COUNTDOWN"}, -- Reckless Charge
+		{422116, "SAY"}, -- Reckless Charge
 		{422245, "TANK_HEALER"}, -- Rock Buster
 		{423693, "ME_ONLY_EMPHASIZE"}, -- Luring Candleflame
 		-- TODO Underhanded Track-tics (Mythic)
@@ -41,12 +42,11 @@ end
 --
 
 do
-	local function printTarget(self, name, guid, elapsed)
+	local function printTarget(self, name, guid)
 		self:TargetMessage(422116, "orange", name)
 		self:PlaySound(422116, "alarm", nil, name)
 		if self:Me(guid) then
 			self:Say(422116, nil, nil, "Reckless Charge")
-			self:SayCountdown(422116, 5 - elapsed)
 		end
 	end
 

@@ -78,6 +78,8 @@ function LC:UpdateSettings()
 end
 
 function LC:Initialize()
+	LC:UpdateSettings()
+
 	if LC.db.Enable ~= true then
 		return
 	end

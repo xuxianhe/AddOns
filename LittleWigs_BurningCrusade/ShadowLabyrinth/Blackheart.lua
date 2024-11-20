@@ -21,12 +21,12 @@ end
 function mod:OnBossEnable()
 	self:Log("SPELL_CAST_SUCCESS", "Chaos", 33676)
 
-	self:CheckForEngage()
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "CheckForEngage")
 	self:Death("Win", 18667)
 end
 
 function mod:OnEngage()
-	self:CheckForWipe()
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", "CheckForWipe")
 	self:CDBar(33676, 15) -- Incite Chaos
 end
 

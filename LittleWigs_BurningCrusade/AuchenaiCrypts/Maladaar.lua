@@ -31,12 +31,12 @@ function mod:OnBossEnable()
 	self:Log("SPELL_AURA_APPLIED", "StolenSoul", 32346)
 	self:Log("SPELL_CAST_SUCCESS", "SummonAvatar", 32424)
 
-	self:CheckForEngage()
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "CheckForEngage")
 	self:Death("Win", 18373)
 end
 
 function mod:OnEngage()
-	self:CheckForWipe()
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", "CheckForWipe")
 	self:RegisterEvent("UNIT_HEALTH")
 end
 

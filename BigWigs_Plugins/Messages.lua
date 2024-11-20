@@ -89,7 +89,7 @@ local function updateProfile()
 	if db.align ~= "LEFT" and db.align ~= "CENTER" and db.align ~= "RIGHT" then
 		db.align = plugin.defaultDB.align
 	end
-	if db.fontSize < 14 or db.fontSize > 200 then
+	if db.fontSize < 10 or db.fontSize > 200 then
 		db.fontSize = plugin.defaultDB.fontSize
 	end
 	if db.emphFontSize < 20 or db.emphFontSize > 200 then
@@ -315,11 +315,6 @@ do
 	local testCount = 0
 	local colors = {"green", "red", "orange", "yellow", "cyan", "blue", "purple"}
 	local sounds = {"Long", "Warning", "Alert", "Alarm", "Info", "underyou", "Info"}
-	local testIcons = {
-		"Interface\\AddOns\\BigWigs\\Media\\Icons\\minimap_legacy.tga",
-		"Interface\\AddOns\\BigWigs\\Media\\Icons\\minimap_raid.tga",
-		"Interface\\AddOns\\BigWigs\\Media\\Icons\\minimap_party.tga",
-	}
 	plugin.pluginOptions = {
 		type = "group",
 		name = "|TInterface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Messages:20|t ".. L.messages,
@@ -366,7 +361,7 @@ do
 					local color = colors[testCount]
 					local sound = sounds[testCount]
 					local emphasized = testCount == 2
-					plugin:SendMessage("BigWigs_Message", plugin, nil, L[color], color, testIcons[(testCount%3)+1], emphasized)
+					plugin:SendMessage("BigWigs_Message", plugin, nil, L[color], color, "Interface\\AddOns\\BigWigs\\Media\\Icons\\minimap_raid.tga", emphasized)
 					plugin:SendMessage("BigWigs_Sound", plugin, nil, sound)
 					if testCount == 7 then testCount = 0 end
 				end,
@@ -411,8 +406,10 @@ do
 						name = L.fontSize,
 						desc = L.fontSizeDesc,
 						order = 3,
+						max = 200, softMax = 72,
+						min = 10,
+						step = 1,
 						width = 2,
-						softMax = 100, max = 200, min = 14, step = 1,
 					},
 					monochrome = {
 						type = "toggle",
@@ -506,7 +503,7 @@ do
 						type = "execute",
 						name = L.resetAll,
 						desc = L.resetMessagesDesc,
-						func = function() plugin.db:ResetProfile() updateProfile() end,
+						func = function() plugin.db:ResetProfile() end,
 						order = 15,
 					},
 				},
@@ -765,13 +762,11 @@ do
 		return old
 	end
 
-	function plugin:Print(_, text, r, g, b, _, _, _, _, _, icon, customDisplayTime)
+	function plugin:Print(_, text, r, g, b, _, _, _, _, _, icon)
 		normalMessageFrame:Show()
 
 		local slot = db.growUpwards and getNextSlotUp() or getNextSlotDown()
 		local slotIcon = slot.icon
-		slot.animFade:SetStartDelay(customDisplayTime or db.displaytime)
-		slotIcon.animFade:SetStartDelay(customDisplayTime or db.displaytime)
 		slot:SetText(text)
 		slot:SetTextColor(r, g, b, 1)
 
@@ -819,12 +814,11 @@ do
 	anim:SetDuration(1.2)
 	anim:SetStartDelay(1)
 
-	function plugin:EmphasizedPrint(_, text, r, g, b, _, _, _, _, _, _, customDisplayTime)
+	function plugin:EmphasizedPrint(_, text, r, g, b)
 		emphMessageAnchor.header:Hide() -- Hide the header, for config mode
 		emphMessageText:SetText(text)
 		emphMessageText:SetTextColor(r, g, b)
 		updater:Stop()
-		anim:SetStartDelay(customDisplayTime or 1)
 		emphMessageFrame:Show()
 		updater:Play()
 	end
@@ -833,7 +827,7 @@ end
 do
 	local unpack, type = unpack, type
 	local format, upper, gsub = string.format, string.upper, string.gsub
-	function plugin:BigWigs_Message(event, module, key, text, color, icon, emphasized, customDisplayTime)
+	function plugin:BigWigs_Message(event, module, key, text, color, icon, emphasized)
 		if not text then return end
 
 		local r, g, b = 1, 1, 1 -- Default to white.
@@ -854,9 +848,9 @@ do
 				text = upper(text)
 				text = gsub(text, "(:%d+|)T", "%1t") -- Fix texture paths that need to end in lowercase |t
 			end
-			self:EmphasizedPrint(nil, text, r, g, b, nil, nil, nil, nil, nil, nil, customDisplayTime)
+			self:EmphasizedPrint(nil, text, r, g, b)
 		elseif not db.disabled then
-			self:Print(nil, text, r, g, b, nil, nil, nil, nil, nil, icon, customDisplayTime)
+			self:Print(nil, text, r, g, b, nil, nil, nil, nil, nil, icon)
 		end
 		if db.chat then
 			-- http://www.wowpedia.org/UI_escape_sequences

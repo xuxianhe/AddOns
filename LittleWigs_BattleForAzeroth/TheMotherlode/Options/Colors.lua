@@ -8,7 +8,7 @@ BigWigs:AddColors("Coin-Operated Crowd Pummeler", {
 	[271867] = {"blue","red"},
 })
 
-BigWigs:AddColors("Azerokk", {
+BigWigs:AddColors("Tik'ali", {
 	[257582] = {"blue","red"},
 	[257593] = "cyan",
 	[258622] = "orange",

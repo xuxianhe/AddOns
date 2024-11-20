@@ -71,11 +71,9 @@ function FL:GetOptions()
 	FasterLoot.args.Authors = PA.ACH:Description(FL.Authors, -1, 'large')
 end
 
-function FL:UpdateSettings()
-	FL.db = PA.db.FasterLoot
-end
-
 function FL:Initialize()
+	FL.db = PA.db.FasterLoot
+
 	if PA.db.FasterLoot.Enable ~= true then
 		return
 	end

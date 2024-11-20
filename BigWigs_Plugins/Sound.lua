@@ -2,12 +2,7 @@
 -- Module Declaration
 --
 
-local plugin = BigWigs:NewPlugin("Sounds", {
-	"db",
-	"soundOptions",
-	"SetSoundOptions",
-	"GetDefaultSound",
-})
+local plugin = BigWigs:NewPlugin("Sounds")
 if not plugin then return end
 
 -------------------------------------------------------------------------------
@@ -32,7 +27,7 @@ local sounds = {
 }
 
 --------------------------------------------------------------------------------
--- Profile
+-- Options
 --
 
 plugin.defaultDB = {
@@ -54,30 +49,6 @@ plugin.defaultDB = {
 	underyou = {},
 	privateaura = {},
 }
-
-local function updateProfile()
-	db = plugin.db.profile
-	for k, v in next, db do
-		local defaultType = type(plugin.defaultDB[k])
-		if defaultType == "nil" then
-			db[k] = nil
-		elseif type(v) ~= defaultType then
-			db[k] = plugin.defaultDB[k]
-		end
-	end
-	for k, v in next, db.media do
-		local defaultType = type(plugin.defaultDB.media[k])
-		if defaultType == "nil" then
-			db.media[k] = nil
-		elseif type(v) ~= defaultType then
-			db.media[k] = plugin.defaultDB.media[k]
-		end
-	end
-end
-
---------------------------------------------------------------------------------
--- Options
---
 
 plugin.pluginOptions = {
 	type = "group",
@@ -195,7 +166,7 @@ plugin.pluginOptions = {
 			type = "execute",
 			name = L.resetAll,
 			desc = L.resetAllCustomSound,
-			func = function() plugin.db:ResetProfile() updateProfile() end,
+			func = function() plugin.db:ResetProfile() end,
 			order = 28,
 		},
 	}
@@ -246,6 +217,26 @@ end
 -------------------------------------------------------------------------------
 -- Initialization
 --
+
+local function updateProfile()
+	db = plugin.db.profile
+	for k, v in next, db do
+		local defaultType = type(plugin.defaultDB[k])
+		if defaultType == "nil" then
+			db[k] = nil
+		elseif type(v) ~= defaultType then
+			db[k] = plugin.defaultDB[k]
+		end
+	end
+	for k, v in next, db.media do
+		local defaultType = type(plugin.defaultDB.media[k])
+		if defaultType == "nil" then
+			db.media[k] = nil
+		elseif type(v) ~= defaultType then
+			db.media[k] = plugin.defaultDB.media[k]
+		end
+	end
+end
 
 function plugin:OnRegister()
 	updateProfile()

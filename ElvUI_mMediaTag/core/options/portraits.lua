@@ -4,46 +4,27 @@ local L = mMT.Locales
 local tinsert = tinsert
 
 local form = {
-	SQ = L["Old"] .. " " .. L["Drop"],
-	RO = L["Old"] .. " " .. L["Drop round"],
-	CI = L["Old"] .. " " .. L["Circle"],
-	PI = L["Old"] .. " " .. L["Pad"],
-	RA = L["Old"] .. " " .. L["Diamond"],
-	QA = L["Old"] .. " " .. L["Square"],
-	MO = L["Old"] .. " " .. L["Moon"],
-	SQT = L["Old"] .. " " .. L["Drop flipped"],
-	ROT = L["Old"] .. " " .. L["Drop round flipped"],
-	TH = L["Old"] .. " " .. L["Thin"],
-	circle = L["Circle"],
-	diamond = L["Diamond"],
-	drop = L["Drop round"],
-	dropsharp = L["Drop"],
-	dropflipp = L["Drop round flipped"],
-	dropsharpflipp = L["Drop flipped"],
-	octagon = L["Octagon"],
-	pad = L["Pad"],
-	pure = L["Pure round"],
-	puresharp = L["Pure"],
-	shield = L["Shield"],
-	square = L["Square"],
-	thin = L["Thin"],
+	SQ = L["Drop"],
+	RO = L["Drop round"],
+	CI = L["Circle"],
+	PI = L["Pad"],
+	RA = L["Diamond"],
+	QA = L["Square"],
+	MO = L["Moon"],
+	SQT = L["Drop flipped"],
+	ROT = L["Drop round flipped"],
+	TH = L["Thin"],
 }
 
 local style = {
-	a = "FLAT",
-	b = "SMOOTH",
-	c = "METALLIC",
+	flat = "FLAT",
+	smooth = "SMOOTH",
+	metal = "METALLIC",
 }
 
-local extraStyle = {
-	a = L["Style"] .. " A",
-	b = L["Style"] .. " B",
-	c = L["Style"] .. " C",
-	d = L["Style"] .. " D",
-	e = L["Style"] .. " E",
+local ClassIconStyle = {
+	BLIZZARD = "Blizzard",
 }
-
-local ClassIconStyle = {}
 
 local frameStrata = {
 	BACKGROUND = "BACKGROUND",
@@ -56,28 +37,19 @@ local frameStrata = {
 }
 
 function BuildIconStylesTable()
-	for iconStyle, value in pairs(mMT.ClassIcons.mMT) do
-		ClassIconStyle[iconStyle] = value.name
-	end
-
-	for iconStyle, value in pairs(mMT.ClassIcons.Custom) do
-		ClassIconStyle[iconStyle] = value.name
-	end
-end
-
-function BuildCustomTexturesTable()
-	for textureStyle, value in pairs(mMT.Media.CustomPortraits) do
-		form[textureStyle] = value.name
+	for id, name in pairs(mMT.ElvUI_JiberishIcons.styles) do
+		ClassIconStyle[id] = name
 	end
 end
 
 local function configTable()
 	local sizeString = ":16:16:0:0:64:64:4:60:4:60"
 
-	BuildIconStylesTable()
-	BuildCustomTexturesTable()
+	if mMT.ElvUI_JiberishIcons.loaded then
+		BuildIconStylesTable()
+	end
 
-	E.Options.args.mMT.args.unitframes.args.portraits.args = {
+	E.Options.args.mMT.args.cosmetic.args.portraits.args = {
 		toggle_enable = {
 			order = 1,
 			type = "toggle",
@@ -132,10 +104,31 @@ local function configTable()
 									end,
 									set = function(info, value)
 										E.db.mMT.portraits.general.classiconstyle = value
-										mMT.Modules.Portraits:Initialize()
 										E:StaticPopup_Show("CONFIG_RL")
 									end,
 									values = ClassIconStyle,
+								},
+								select_texture = {
+									order = 3,
+									type = "select",
+									name = L["Background Texture"],
+									disabled = function()
+										return not E.db.mMT.portraits.general.classicons
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.general.bgstyle
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.general.bgstyle = value
+										mMT.Modules.Portraits:Initialize()
+									end,
+									values = {
+										[1] = L["Style"] .. " 1",
+										[2] = L["Style"] .. " 2",
+										[3] = L["Style"] .. " 3",
+										[4] = L["Style"] .. " 4",
+										[5] = L["Style"] .. " 5",
+									},
 								},
 							},
 						},
@@ -211,191 +204,43 @@ local function configTable()
 								},
 							},
 						},
-						misc = {
-							order = 3,
-							type = "group",
-							inline = true,
-							name = L["Misc"],
-							args = {
-								trilinear = {
-									order = 1,
-									type = "toggle",
-									name = L["Trilinear Filtering"],
-									get = function(info)
-										return E.db.mMT.portraits.general.trilinear
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.general.trilinear = value
-										mMT.Modules.Portraits:Initialize()
-										E:StaticPopup_Show("CONFIG_RL")
-									end,
-								},
-								desaturation = {
-									order = 2,
-									type = "toggle",
-									name = L["Dead desaturation"],
-									get = function(info)
-										return E.db.mMT.portraits.general.desaturation
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.general.desaturation = value
-										mMT.Modules.Portraits:Initialize()
-										E:StaticPopup_Show("CONFIG_RL")
-									end,
-								},
-							},
-						},
 					},
 				},
 				header_style = {
 					order = 2,
 					type = "group",
-					name = L["Textures & Styles"],
+					name = L["Texture Style"],
 					args = {
-						header_portrait_texture = {
+						select_style = {
 							order = 1,
-							type = "group",
-							name = L["Portrait Texture"],
-							inline = true,
-							args = {
-								desc_note = {
-									order = 1,
-									type = "description",
-									name = L["This works only with the mMT Textures for Portraits."],
-								},
-								select_style = {
-									order = 2,
-									type = "select",
-									name = L["Texture Style"],
-									get = function(info)
-										return E.db.mMT.portraits.general.style
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.general.style = value
-										mMT.Modules.Portraits:Initialize()
-									end,
-									values = style,
-								},
-								toggle_corner = {
-									order = 3,
-									type = "toggle",
-									name = L["Enable Corner"],
-									get = function(info)
-										return E.db.mMT.portraits.general.corner
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.general.corner = value
-										mMT.Modules.Portraits:Initialize()
-									end,
-								},
-							},
+							type = "select",
+							name = L["Texture Style"],
+							get = function(info)
+								return E.db.mMT.portraits.general.style
+							end,
+							set = function(info, value)
+								E.db.mMT.portraits.general.style = value
+								mMT.Modules.Portraits:Initialize()
+							end,
+							values = style,
 						},
-						header_rare_texture = {
+						toggle_corner = {
 							order = 2,
-							type = "group",
-							name = L["Extra Texture Style"],
-							inline = true,
-							args = {
-								desc_note = {
-									order = 1,
-									type = "description",
-									name = L["Info! These styles are only available for the new textures."],
-								},
-								desc_note2 = {
-									order = 2,
-									type = "description",
-									name = L["This works only with the mMT Textures for Portraits."],
-								},
-								desc_space = {
-									order = 3,
-									type = "description",
-									name = "\n\n",
-								},
-								select_style_rare = {
-									order = 4,
-									type = "select",
-									name = L["Rare Texture Style"],
-									get = function(info)
-										return E.db.mMT.portraits.extra.rare
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.extra.rare = value
-										mMT.Modules.Portraits:Initialize()
-									end,
-									values = extraStyle,
-								},
-								select_style_elite = {
-									order = 5,
-									type = "select",
-									name = L["Elite/ Rare Elite Texture Style"],
-									get = function(info)
-										return E.db.mMT.portraits.extra.elite
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.extra.elite = value
-										mMT.Modules.Portraits:Initialize()
-									end,
-									values = extraStyle,
-								},
-								select_style_boss = {
-									order = 6,
-									type = "select",
-									name = L["Boss Texture Style"],
-									get = function(info)
-										return E.db.mMT.portraits.extra.boss
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.extra.boss = value
-										mMT.Modules.Portraits:Initialize()
-									end,
-									values = extraStyle,
-								},
-								toggle_color = {
-									order = 7,
-									type = "toggle",
-									name = L["Use Texture Color"],
-									get = function(info)
-										return E.db.mMT.portraits.general.usetexturecolor
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.general.usetexturecolor = value
-										mMT.Modules.Portraits:Initialize()
-									end,
-								},
-							},
-						},
-						header_bgtexture = {
-							order = 4,
-							type = "group",
-							name = L["Background Texture"],
-							inline = true,
-							args = {
-								select_texture = {
-									order = 3,
-									type = "select",
-									name = L["Background Texture"],
-									get = function(info)
-										return E.db.mMT.portraits.general.bgstyle
-									end,
-									set = function(info, value)
-										E.db.mMT.portraits.general.bgstyle = value
-										mMT.Modules.Portraits:Initialize()
-									end,
-									values = {
-										[1] = L["Style"] .. " 1",
-										[2] = L["Style"] .. " 2",
-										[3] = L["Style"] .. " 3",
-										[4] = L["Style"] .. " 4",
-										[5] = L["Style"] .. " 5",
-									},
-								},
-							},
+							type = "toggle",
+							name = L["Enable Corner"],
+							get = function(info)
+								return E.db.mMT.portraits.general.corner
+							end,
+							set = function(info, value)
+								E.db.mMT.portraits.general.corner = value
+								mMT.Modules.Portraits:Initialize()
+							end,
 						},
 						custom = {
-							order = 5,
+							order = 3,
 							type = "group",
-							name = L["Custom Portrait Textures"],
 							inline = true,
+							name = L["Custom Portrait Textures"],
 							args = {
 								toggle_enable = {
 									order = 1,
@@ -419,415 +264,254 @@ local function configTable()
 									type = "description",
 									name = L["Info! To achieve an optimal result with the portraits, a texture should be set for the texture, border and mask.\nThe mask is always required and no portrait will be visible without it.\n\n"],
 								},
-								desc_note1 = {
+								texture = {
 									order = 4,
-									type = "description",
-									name = L["If your texture or the cutout for the portrait is not symmetrical in the middle, you need a 2nd mask texture, which must be exactly mirror-inverted. Use the 2nd mask texture for this."],
-								},
-								main = {
-									order = 5,
-									type = "group",
-									name = L["Main Textures"],
-									inline = true,
-									args = {
-										texture = {
-											order = 1,
-											desc = L["This is the main texture for the portraits."],
-											name = function()
-												if E.db.mMT.portraits.custom.texture and (E.db.mMT.portraits.custom.texture ~= "") then
-													return L["Texture"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.texture, sizeString)
-												else
-													return L["Texture"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.texture
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.texture = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-										mask = {
-											order = 2,
-											desc = L["This is the Mask texture for the portraits. This texture is used to cut out the portrait of the Unit."],
-											name = function()
-												if E.db.mMT.portraits.custom.mask and (E.db.mMT.portraits.custom.mask ~= "") then
-													return L["Mask"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.mask, sizeString)
-												else
-													return L["Mask"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.mask
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.mask = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-									},
-								},
-								desc_note2 = {
-									order = 6,
-									type = "description",
-									name = L["Optional textures, these textures are not mandatory, but improve the appearance of the portraits."],
+									desc = L["This is the main texture for the portraits."],
+									name = function()
+										if E.db.mMT.portraits.custom.texture and (E.db.mMT.portraits.custom.texture ~= "") then
+											return L["Texture"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.texture, sizeString)
+										else
+											return L["Texture"] .. "  > " .. L["No Texture found"]
+										end
+									end,
+									type = "input",
+									width = "smal",
+									disabled = function()
+										return not E.db.mMT.portraits.custom.enable
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.custom.texture
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.custom.texture = value
+										E:StaticPopup_Show("CONFIG_RL")
+									end,
 								},
 								spacer_texture2 = {
+									order = 5,
+									type = "description",
+									name = "\n\n",
+								},
+								extra = {
+									order = 6,
+									desc = L["This is the Rare & Elite texture for the portraits."],
+									name = function()
+										if E.db.mMT.portraits.custom.extra and (E.db.mMT.portraits.custom.extra ~= "") then
+											return L["Rare & Elite"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.extra, sizeString)
+										else
+											return L["Rare & Elite"] .. "  > " .. L["No Texture found"]
+										end
+									end,
+									type = "input",
+									width = "smal",
+									disabled = function()
+										return not E.db.mMT.portraits.custom.enable
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.custom.extra
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.custom.extra = value
+										E:StaticPopup_Show("CONFIG_RL")
+									end,
+								},
+								spacer_texture3 = {
 									order = 7,
 									type = "description",
 									name = "\n\n",
 								},
-								optional = {
+								extraborder = {
 									order = 8,
-									type = "group",
-									name = L["Optional Textures"],
-									inline = true,
-									args = {
-										border = {
-											order = 1,
-											desc = L["This is the Border texture for the portraits."],
-											name = function()
-												if E.db.mMT.portraits.custom.border and (E.db.mMT.portraits.custom.border ~= "") then
-													return L["Border"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.border, sizeString)
-												else
-													return L["Border"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.border
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.border = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-										shadow = {
-											order = 2,
-											desc = L["This is the shadow texture for the portraits."],
-											name = function()
-												if E.db.mMT.portraits.custom.shadow and (E.db.mMT.portraits.custom.shadow ~= "") then
-													return L["Shadow"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.shadow, sizeString)
-												else
-													return L["Shadow"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.shadow
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.shadow = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-										inner = {
-											order = 3,
-											desc = L["This is the inner shadow texture for the portraits."],
-											name = function()
-												if E.db.mMT.portraits.custom.inner and (E.db.mMT.portraits.custom.inner ~= "") then
-													return L["Inner Shadow"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.inner, sizeString)
-												else
-													return L["Inner Shadow"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.inner
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.inner = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-									},
+									desc = L["This is the Border texture for the Rare & Elite texture."],
+									name = function()
+										if E.db.mMT.portraits.custom.extraborder and (E.db.mMT.portraits.custom.extraborder ~= "") then
+											return L["Rare & Elite - Border"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.extraborder, sizeString)
+										else
+											return L["Rare & Elite - Border"] .. "  > " .. L["No Texture found"]
+										end
+									end,
+									type = "input",
+									width = "smal",
+									disabled = function()
+										return not E.db.mMT.portraits.custom.enable
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.custom.extraborder
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.custom.extraborder = value
+										E:StaticPopup_Show("CONFIG_RL")
+									end,
 								},
-								rare = {
+								spacer_texture4 = {
 									order = 9,
-									type = "group",
-									name = L["Rare Textures"],
-									inline = true,
-									args = {
-										rare = {
-											order = 1,
-											desc = L["This is the Rare texture for the portraits."],
-											name = function()
-												if E.db.mMT.portraits.custom.extra and (E.db.mMT.portraits.custom.extra ~= "") then
-													return L["Rare"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.extra, sizeString)
-												else
-													return L["Rare"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.extra
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.extra = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-										rare_border = {
-											order = 2,
-											desc = L["This is the Border texture for the Rare texture."],
-											name = function()
-												if E.db.mMT.portraits.custom.extraborder and (E.db.mMT.portraits.custom.extraborder ~= "") then
-													return L["Rare - Border"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.extraborder, sizeString)
-												else
-													return L["Rare - Border"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.extraborder
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.extraborder = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-										rare_shadow = {
-											order = 3,
-											desc = L["This is the shadow texture for the Rare texture."],
-											name = function()
-												if E.db.mMT.portraits.custom.extrashadow and (E.db.mMT.portraits.custom.extrashadow ~= "") then
-													return L["Rare - Shadow"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.extrashadow, sizeString)
-												else
-													return L["Rare - Shadow"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.extrashadow
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.extrashadow = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-									},
+									type = "description",
+									name = "\n\n",
 								},
-								elite = {
+								extrashadow= {
 									order = 10,
-									type = "group",
-									name = L["Elite Textures"],
-									inline = true,
-									args = {
-										elite = {
-											order = 1,
-											desc = L["This is the Elite texture for the portraits."],
-											name = function()
-												if E.db.mMT.portraits.custom.elite and (E.db.mMT.portraits.custom.elite ~= "") then
-													return L["Elite"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.elite, sizeString)
-												else
-													return L["Elite"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.elite
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.elite = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-										elite_border = {
-											order = 2,
-											desc = L["This is the Border texture for the Elite texture."],
-											name = function()
-												if E.db.mMT.portraits.custom.eliteborder and (E.db.mMT.portraits.custom.eliteborder ~= "") then
-													return L["Elite - Border"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.eliteborder, sizeString)
-												else
-													return L["Elite - Border"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.eliteborder
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.eliteborder = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-										elite_shadow = {
-											order = 3,
-											desc = L["This is the shadow texture for the Elite texture."],
-											name = function()
-												if E.db.mMT.portraits.custom.eliteshadow and (E.db.mMT.portraits.custom.eliteshadow ~= "") then
-													return L["Elite - Shadow"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.eliteshadow, sizeString)
-												else
-													return L["Elite - Shadow"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.eliteshadow
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.eliteshadow = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-									},
+									desc = L["This is the shadow texture for the Rare & Elite texture."],
+									name = function()
+										if E.db.mMT.portraits.custom.extrashadow and (E.db.mMT.portraits.custom.extrashadow ~= "") then
+											return L["Rare & Elite - Shadow"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.extrashadow, sizeString)
+										else
+											return L["Rare & Elite - Shadow"] .. "  > " .. L["No Texture found"]
+										end
+									end,
+									type = "input",
+									width = "smal",
+									disabled = function()
+										return not E.db.mMT.portraits.custom.enable
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.custom.extrashadow
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.custom.extrashadow = value
+										E:StaticPopup_Show("CONFIG_RL")
+									end,
 								},
-								boss = {
+								spacer_texture5 = {
+									order = 11,
+									type = "description",
+									name = "\n\n",
+								},
+								border = {
 									order = 12,
-									type = "group",
-									name = L["Boss Textures"],
-									inline = true,
-									args = {
-										rare = {
-											order = 1,
-											desc = L["This is the Boss texture for the portraits."],
-											name = function()
-												if E.db.mMT.portraits.custom.boss and (E.db.mMT.portraits.custom.boss ~= "") then
-													return L["Boss"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.boss, sizeString)
-												else
-													return L["Boss"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.boss
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.boss = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-										boss_border = {
-											order = 2,
-											desc = L["This is the Border texture for the Boss texture."],
-											name = function()
-												if E.db.mMT.portraits.custom.bossborder and (E.db.mMT.portraits.custom.bossborder ~= "") then
-													return L["Boss - Border"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.bossborder, sizeString)
-												else
-													return L["Boss - Border"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.bossborder
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.bossborder = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-										boss_shadow = {
-											order = 3,
-											desc = L["This is the shadow texture for the Boss texture."],
-											name = function()
-												if E.db.mMT.portraits.custom.bossshadow and (E.db.mMT.portraits.custom.bossshadow ~= "") then
-													return L["Boss - Shadow"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.bossshadow, sizeString)
-												else
-													return L["Boss - Shadow"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.bossshadow
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.bossshadow = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-									},
+									desc = L["This is the Border texture for the portraits."],
+									name = function()
+										if E.db.mMT.portraits.custom.border and (E.db.mMT.portraits.custom.border ~= "") then
+											return L["Border"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.border, sizeString)
+										else
+											return L["Border"] .. "  > " .. L["No Texture found"]
+										end
+									end,
+									type = "input",
+									width = "smal",
+									disabled = function()
+										return not E.db.mMT.portraits.custom.enable
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.custom.border
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.custom.border = value
+										E:StaticPopup_Show("CONFIG_RL")
+									end,
 								},
-								mask_b = {
+								spacer_texture6 = {
 									order = 13,
-									type = "group",
-									name = L["Second Mask Texture"],
-									inline = true,
-									args = {
-										maskb = {
-											order = 1,
-											desc = L["This is the mirrored Mask texture for the portraits. This texture is used to cut out the portrait of the Unit."],
-											name = function()
-												if E.db.mMT.portraits.custom.maskb and (E.db.mMT.portraits.custom.maskb ~= "") then
-													return L["Mirrored Mask"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.maskb, sizeString)
-												elseif E.db.mMT.portraits.custom.mask and (E.db.mMT.portraits.custom.mask ~= "") then
-													return L["Mirrored Mask"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.mask, sizeString)
-												else
-													return L["Mirrored Mask"] .. "  > " .. L["No Texture found"]
-												end
-											end,
-											type = "input",
-											width = "smal",
-											disabled = function()
-												return not E.db.mMT.portraits.custom.enable
-											end,
-											get = function(info)
-												return E.db.mMT.portraits.custom.maskb
-											end,
-											set = function(info, value)
-												E.db.mMT.portraits.custom.maskb = value
-												E:StaticPopup_Show("CONFIG_RL")
-											end,
-										},
-									},
+									type = "description",
+									name = "\n\n",
+								},
+								shadow = {
+									order = 14,
+									desc = L["This is the shadow texture for the portraits."],
+									name = function()
+										if E.db.mMT.portraits.custom.shadow and (E.db.mMT.portraits.custom.shadow ~= "") then
+											return L["Shadow"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.shadow, sizeString)
+										else
+											return L["Shadow"] .. "  > " .. L["No Texture found"]
+										end
+									end,
+									type = "input",
+									width = "smal",
+									disabled = function()
+										return not E.db.mMT.portraits.custom.enable
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.custom.shadow
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.custom.shadow = value
+										E:StaticPopup_Show("CONFIG_RL")
+									end,
+								},
+								spacer_texture7 = {
+									order = 15,
+									type = "description",
+									name = "\n\n",
+								},
+								inner = {
+									order = 16,
+									desc = L["This is the inner shadow texture for the portraits."],
+									name = function()
+										if E.db.mMT.portraits.custom.inner and (E.db.mMT.portraits.custom.inner ~= "") then
+											return L["Inner Shadow"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.inner, sizeString)
+										else
+											return L["Inner Shadow"] .. "  > " .. L["No Texture found"]
+										end
+									end,
+									type = "input",
+									width = "smal",
+									disabled = function()
+										return not E.db.mMT.portraits.custom.enable
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.custom.inner
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.custom.inner = value
+										E:StaticPopup_Show("CONFIG_RL")
+									end,
+								},
+								spacer_texture8= {
+									order = 17,
+									type = "description",
+									name = "\n\n",
+								},
+								mask = {
+									order = 18,
+									desc = L["This is the Mask texture for the portraits. This texture is used to cut out the portrait of the Unit."],
+									name = function()
+										if E.db.mMT.portraits.custom.mask and (E.db.mMT.portraits.custom.mask ~= "") then
+											return L["Mask"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.mask, sizeString)
+										else
+											return L["Mask"] .. "  > " .. L["No Texture found"]
+										end
+									end,
+									type = "input",
+									width = "smal",
+									disabled = function()
+										return not E.db.mMT.portraits.custom.enable
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.custom.mask
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.custom.mask = value
+										E:StaticPopup_Show("CONFIG_RL")
+									end,
+								},
+								spacer_texture9= {
+									order = 19,
+									type = "description",
+									name = "\n\n",
+								},
+								maskb = {
+									order = 20,
+									desc = L["This is the mirrored Mask texture for the portraits. This texture is used to cut out the portrait of the Unit."],
+									name = function()
+										if E.db.mMT.portraits.custom.maskb and (E.db.mMT.portraits.custom.maskb ~= "") then
+											return L["Mirrored Mask"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.maskb, sizeString)
+										elseif E.db.mMT.portraits.custom.mask and (E.db.mMT.portraits.custom.mask ~= "") then
+											return L["Mirrored Mask"] .. "  > " .. E:TextureString(E.db.mMT.portraits.custom.mask, sizeString)
+										else
+											return L["Mirrored Mask"] .. "  > " .. L["No Texture found"]
+										end
+									end,
+									type = "input",
+									width = "smal",
+									disabled = function()
+										return not E.db.mMT.portraits.custom.enable
+									end,
+									get = function(info)
+										return E.db.mMT.portraits.custom.maskb
+									end,
+									set = function(info, value)
+										E.db.mMT.portraits.custom.maskb = value
+										E:StaticPopup_Show("CONFIG_RL")
+									end,
 								},
 							},
 						},
@@ -838,18 +522,148 @@ local function configTable()
 					type = "group",
 					name = L["Portrait Offset/ Zoom"],
 					args = {
-						zoom = {
+						range_sq = {
 							order = 1,
-							name = L["Zoom"],
+							name = L["Drop"],
 							type = "range",
 							min = 0,
-							max = 5,
-							step = 0.001,
+							max = 10,
+							step = 0.1,
 							get = function(info)
-								return E.db.mMT.portraits.zoom
+								return E.db.mMT.portraits.offset.SQ
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.zoom = value
+								E.db.mMT.portraits.offset.SQ = value
+								mMT.Modules.Portraits:Initialize()
+							end,
+						},
+						range_ro = {
+							order = 2,
+							name = L["Drop round"],
+							type = "range",
+							min = 0,
+							max = 10,
+							step = 0.1,
+							get = function(info)
+								return E.db.mMT.portraits.offset.RO
+							end,
+							set = function(info, value)
+								E.db.mMT.portraits.offset.RO = value
+								mMT.Modules.Portraits:Initialize()
+							end,
+						},
+						range_ci = {
+							order = 3,
+							name = L["CIRCLE/ MOON"],
+							type = "range",
+							min = 0,
+							max = 10,
+							step = 0.1,
+							get = function(info)
+								return E.db.mMT.portraits.offset.CI
+							end,
+							set = function(info, value)
+								E.db.mMT.portraits.offset.CI = value
+								E.db.mMT.portraits.offset.MO = value
+								mMT.Modules.Portraits:Initialize()
+							end,
+						},
+						range_pi = {
+							order = 4,
+							name = L["Pad"],
+							type = "range",
+							min = 0,
+							max = 15,
+							step = 0.1,
+							get = function(info)
+								return E.db.mMT.portraits.offset.PI
+							end,
+							set = function(info, value)
+								E.db.mMT.portraits.offset.PI = value
+								mMT.Modules.Portraits:Initialize()
+							end,
+						},
+						range_ra = {
+							order = 5,
+							name = L["Diamond"],
+							type = "range",
+							min = 0,
+							max = 10,
+							step = 0.1,
+							get = function(info)
+								return E.db.mMT.portraits.offset.RA
+							end,
+							set = function(info, value)
+								E.db.mMT.portraits.offset.RA = value
+								mMT.Modules.Portraits:Initialize()
+							end,
+						},
+						range_qa = {
+							order = 5,
+							name = L["Square"],
+							type = "range",
+							min = 0,
+							max = 20,
+							step = 0.1,
+							get = function(info)
+								return E.db.mMT.portraits.offset.QA
+							end,
+							set = function(info, value)
+								E.db.mMT.portraits.offset.QA = value
+								mMT.Modules.Portraits:Initialize()
+							end,
+						},
+						range_th = {
+							order = 6,
+							name = L["Thin"],
+							type = "range",
+							min = 0,
+							max = 10,
+							step = 0.1,
+							get = function(info)
+								return E.db.mMT.portraits.offset.TH
+							end,
+							set = function(info, value)
+								E.db.mMT.portraits.offset.TH = value
+								mMT.Modules.Portraits:Initialize()
+							end,
+						},
+						range_custom = {
+							order = 8,
+							name = L["Custom"],
+							type = "range",
+							min = 0,
+							max = 60,
+							step = 0.1,
+							get = function(info)
+								return E.db.mMT.portraits.offset.CUSTOM
+							end,
+							set = function(info, value)
+								E.db.mMT.portraits.offset.CUSTOM = value
+								mMT.Modules.Portraits:Initialize()
+							end,
+						},
+						spacer_1 = {
+							order = 20,
+							type = "description",
+							name = "\n\n",
+						},
+						reset = {
+							order = 40,
+							type = "execute",
+							name = L["Reset"],
+							func = function()
+								E.db.mMT.portraits.offset = {
+									SQ = 5.5,
+									RO = 5.5,
+									CI = 5.5,
+									PI = 10,
+									RA = 6,
+									QA = 0,
+									MO = 5.5,
+									TH = 4,
+									CUSTOM = 5.5,
+								}
 								mMT.Modules.Portraits:Initialize()
 							end,
 						},
@@ -886,10 +700,17 @@ local function configTable()
 							type = "select",
 							name = L["Texture Form"],
 							get = function(info)
-								return E.db.mMT.portraits.player.texture
+								return E.db.mMT.portraits.player.flippe and E.db.mMT.portraits.player.texture .. "T" or E.db.mMT.portraits.player.texture
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.player.texture = value
+								E.db.mMT.portraits.player.flippe = (value == "SQT" or value == "ROT")
+								if value == "SQT" then
+									E.db.mMT.portraits.player.texture = "SQ"
+								elseif value == "ROT" then
+									E.db.mMT.portraits.player.texture = "RO"
+								else
+									E.db.mMT.portraits.player.texture = value
+								end
 								mMT.Modules.Portraits:Initialize()
 							end,
 							values = form,
@@ -899,10 +720,10 @@ local function configTable()
 							name = L["Size"],
 							type = "range",
 							min = 16,
-							max = 512,
+							max = 256,
 							step = 1,
 							softMin = 16,
-							softMax = 512,
+							softMax = 256,
 							get = function(info)
 								return E.db.mMT.portraits.player.size
 							end,
@@ -921,7 +742,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.player.cast = value
-								mMT.Modules.Portraits:Initialize(true)
+								mMT.Modules.Portraits:Initialize()
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},
@@ -1066,10 +887,17 @@ local function configTable()
 							type = "select",
 							name = L["Texture Form"],
 							get = function(info)
-								return E.db.mMT.portraits.target.texture
+								return E.db.mMT.portraits.target.flippe and E.db.mMT.portraits.target.texture .. "T" or E.db.mMT.portraits.target.texture
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.target.texture = value
+								E.db.mMT.portraits.target.flippe = (value == "SQT" or value == "ROT")
+								if value == "SQT" then
+									E.db.mMT.portraits.target.texture = "SQ"
+								elseif value == "ROT" then
+									E.db.mMT.portraits.target.texture = "RO"
+								else
+									E.db.mMT.portraits.target.texture = value
+								end
 
 								mMT.Modules.Portraits:Initialize()
 							end,
@@ -1080,10 +908,10 @@ local function configTable()
 							name = L["Size"],
 							type = "range",
 							min = 16,
-							max = 512,
+							max = 256,
 							step = 1,
 							softMin = 16,
-							softMax = 512,
+							softMax = 256,
 							get = function(info)
 								return E.db.mMT.portraits.target.size
 							end,
@@ -1114,7 +942,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.target.cast = value
-								mMT.Modules.Portraits:Initialize(true)
+								mMT.Modules.Portraits:Initialize()
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},
@@ -1271,10 +1099,17 @@ local function configTable()
 							type = "select",
 							name = L["Texture Form"],
 							get = function(info)
-								return E.db.mMT.portraits.targettarget.texture
+								return E.db.mMT.portraits.targettarget.flippe and E.db.mMT.portraits.targettarget.texture .. "T" or E.db.mMT.portraits.targettarget.texture
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.targettarget.texture = value
+								E.db.mMT.portraits.targettarget.flippe = (value == "SQT" or value == "ROT")
+								if value == "SQT" then
+									E.db.mMT.portraits.targettarget.texture = "SQ"
+								elseif value == "ROT" then
+									E.db.mMT.portraits.targettarget.texture = "RO"
+								else
+									E.db.mMT.portraits.targettarget.texture = value
+								end
 
 								mMT.Modules.Portraits:Initialize()
 							end,
@@ -1285,10 +1120,10 @@ local function configTable()
 							name = L["Size"],
 							type = "range",
 							min = 16,
-							max = 512,
+							max = 256,
 							step = 1,
 							softMin = 16,
-							softMax = 512,
+							softMax = 256,
 							get = function(info)
 								return E.db.mMT.portraits.targettarget.size
 							end,
@@ -1438,10 +1273,17 @@ local function configTable()
 							type = "select",
 							name = L["Texture Form"],
 							get = function(info)
-								return E.db.mMT.portraits.pet.texture
+								return E.db.mMT.portraits.pet.flippe and E.db.mMT.portraits.pet.texture .. "T" or E.db.mMT.portraits.pet.texture
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.pet.texture = value
+								E.db.mMT.portraits.pet.flippe = (value == "SQT" or value == "ROT")
+								if value == "SQT" then
+									E.db.mMT.portraits.pet.texture = "SQ"
+								elseif value == "ROT" then
+									E.db.mMT.portraits.pet.texture = "RO"
+								else
+									E.db.mMT.portraits.pet.texture = value
+								end
 
 								mMT.Modules.Portraits:Initialize()
 							end,
@@ -1452,10 +1294,10 @@ local function configTable()
 							name = L["Size"],
 							type = "range",
 							min = 16,
-							max = 512,
+							max = 256,
 							step = 1,
 							softMin = 16,
-							softMax = 512,
+							softMax = 256,
 							get = function(info)
 								return E.db.mMT.portraits.pet.size
 							end,
@@ -1605,10 +1447,17 @@ local function configTable()
 							type = "select",
 							name = L["Texture Form"],
 							get = function(info)
-								return E.db.mMT.portraits.focus.texture
+								return E.db.mMT.portraits.focus.flippe and E.db.mMT.portraits.focus.texture .. "T" or E.db.mMT.portraits.focus.texture
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.focus.texture = value
+								E.db.mMT.portraits.focus.flippe = (value == "SQT" or value == "ROT")
+								if value == "SQT" then
+									E.db.mMT.portraits.focus.texture = "SQ"
+								elseif value == "ROT" then
+									E.db.mMT.portraits.focus.texture = "RO"
+								else
+									E.db.mMT.portraits.focus.texture = value
+								end
 
 								mMT.Modules.Portraits:Initialize()
 							end,
@@ -1619,10 +1468,10 @@ local function configTable()
 							name = L["Size"],
 							type = "range",
 							min = 16,
-							max = 512,
+							max = 256,
 							step = 1,
 							softMin = 16,
-							softMax = 512,
+							softMax = 256,
 							get = function(info)
 								return E.db.mMT.portraits.focus.size
 							end,
@@ -1653,7 +1502,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.focus.cast = value
-								mMT.Modules.Portraits:Initialize(true)
+								mMT.Modules.Portraits:Initialize()
 							end,
 						},
 					},
@@ -1797,10 +1646,17 @@ local function configTable()
 							type = "select",
 							name = L["Texture Form"],
 							get = function(info)
-								return E.db.mMT.portraits.party.texture
+								return E.db.mMT.portraits.party.flippe and E.db.mMT.portraits.party.texture .. "T" or E.db.mMT.portraits.party.texture
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.party.texture = value
+								E.db.mMT.portraits.party.flippe = (value == "SQT" or value == "ROT")
+								if value == "SQT" then
+									E.db.mMT.portraits.party.texture = "SQ"
+								elseif value == "ROT" then
+									E.db.mMT.portraits.party.texture = "RO"
+								else
+									E.db.mMT.portraits.party.texture = value
+								end
 
 								mMT.Modules.Portraits:Initialize()
 							end,
@@ -1811,10 +1667,10 @@ local function configTable()
 							name = L["Size"],
 							type = "range",
 							min = 16,
-							max = 512,
+							max = 256,
 							step = 1,
 							softMin = 16,
-							softMax = 512,
+							softMax = 256,
 							get = function(info)
 								return E.db.mMT.portraits.party.size
 							end,
@@ -1833,7 +1689,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.party.cast = value
-								mMT.Modules.Portraits:Initialize(true)
+								mMT.Modules.Portraits:Initialize()
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},
@@ -1978,10 +1834,17 @@ local function configTable()
 							type = "select",
 							name = L["Texture Form"],
 							get = function(info)
-								return E.db.mMT.portraits.boss.texture
+								return E.db.mMT.portraits.boss.flippe and E.db.mMT.portraits.boss.texture .. "T" or E.db.mMT.portraits.boss.texture
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.boss.texture = value
+								E.db.mMT.portraits.boss.flippe = (value == "SQT" or value == "ROT")
+								if value == "SQT" then
+									E.db.mMT.portraits.boss.texture = "SQ"
+								elseif value == "ROT" then
+									E.db.mMT.portraits.boss.texture = "RO"
+								else
+									E.db.mMT.portraits.boss.texture = value
+								end
 
 								mMT.Modules.Portraits:Initialize()
 							end,
@@ -1992,10 +1855,10 @@ local function configTable()
 							name = L["Size"],
 							type = "range",
 							min = 16,
-							max = 512,
+							max = 256,
 							step = 1,
 							softMin = 16,
-							softMax = 512,
+							softMax = 256,
 							get = function(info)
 								return E.db.mMT.portraits.boss.size
 							end,
@@ -2014,7 +1877,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.boss.cast = value
-								mMT.Modules.Portraits:Initialize(true)
+								mMT.Modules.Portraits:Initialize()
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},
@@ -2159,10 +2022,17 @@ local function configTable()
 							type = "select",
 							name = L["Texture Form"],
 							get = function(info)
-								return E.db.mMT.portraits.arena.texture
+								return E.db.mMT.portraits.arena.flippe and E.db.mMT.portraits.arena.texture .. "T" or E.db.mMT.portraits.arena.texture
 							end,
 							set = function(info, value)
-								E.db.mMT.portraits.arena.texture = value
+								E.db.mMT.portraits.arena.flippe = (value == "SQT" or value == "ROT")
+								if value == "SQT" then
+									E.db.mMT.portraits.arena.texture = "SQ"
+								elseif value == "ROT" then
+									E.db.mMT.portraits.arena.texture = "RO"
+								else
+									E.db.mMT.portraits.arena.texture = value
+								end
 
 								mMT.Modules.Portraits:Initialize()
 							end,
@@ -2173,10 +2043,10 @@ local function configTable()
 							name = L["Size"],
 							type = "range",
 							min = 16,
-							max = 512,
+							max = 256,
 							step = 1,
 							softMin = 16,
-							softMax = 512,
+							softMax = 256,
 							get = function(info)
 								return E.db.mMT.portraits.arena.size
 							end,
@@ -2195,7 +2065,7 @@ local function configTable()
 							end,
 							set = function(info, value)
 								E.db.mMT.portraits.arena.cast = value
-								mMT.Modules.Portraits:Initialize(true)
+								mMT.Modules.Portraits:Initialize()
 								E:StaticPopup_Show("CONFIG_RL")
 							end,
 						},
@@ -3147,44 +3017,8 @@ local function configTable()
 						},
 					},
 				},
-				boss = {
-					order = 20,
-					type = "group",
-					inline = true,
-					name = L["BOSS"],
-					args = {
-						color_a = {
-							type = "color",
-							order = 1,
-							name = "A",
-							hasAlpha = true,
-							get = function(info)
-								local t = E.db.mMT.portraits.colors.boss.a
-								return t.r, t.g, t.b, t.a
-							end,
-							set = function(info, r, g, b, a)
-								local t = E.db.mMT.portraits.colors.boss.a
-								t.r, t.g, t.b, t.a = r, g, b, a
-							end,
-						},
-						color_b = {
-							type = "color",
-							order = 2,
-							name = "B",
-							hasAlpha = true,
-							get = function(info)
-								local t = E.db.mMT.portraits.colors.boss.b
-								return t.r, t.g, t.b, t.a
-							end,
-							set = function(info, r, g, b, a)
-								local t = E.db.mMT.portraits.colors.boss.b
-								t.r, t.g, t.b, t.a = r, g, b, a
-							end,
-						},
-					},
-				},
 				enemy = {
-					order = 21,
+					order = 20,
 					type = "group",
 					inline = true,
 					name = L["ENEMY"],
@@ -3220,7 +3054,7 @@ local function configTable()
 					},
 				},
 				neutral = {
-					order = 22,
+					order = 21,
 					type = "group",
 					inline = true,
 					name = L["NEUTRAL"],
@@ -3256,7 +3090,7 @@ local function configTable()
 					},
 				},
 				friendly = {
-					order = 23,
+					order = 22,
 					type = "group",
 					inline = true,
 					name = L["FRIENDLY"],

@@ -106,7 +106,6 @@ local function CreateMarker(castbar)
 end
 
 function module:InterruptChecker(castbar, isUnitFrame)
-	if not castbar then return end
 	if castbar.InterruptMarker then
 		castbar.InterruptMarker:Hide()
 	end

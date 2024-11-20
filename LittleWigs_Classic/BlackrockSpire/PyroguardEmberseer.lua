@@ -13,7 +13,7 @@ mod:SetAllowWin(true)
 
 local L = mod:GetLocale()
 if L then
-	L.pyroguard_emberseer = "Pyroguard Emberseer"
+	L.bossName = "Pyroguard Emberseer"
 end
 
 --------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ end
 --
 
 function mod:OnRegister()
-	self.displayName = L.pyroguard_emberseer
+	self.displayName = L.bossName
 end
 
 function mod:GetOptions()

@@ -27,7 +27,7 @@ if not AceConfig then return end
 local pcall, error, type, pairs = pcall, error, type, pairs
 
 -- -------------------------------------------------------------------
--- :RegisterOptionsTable(appName, options, slashcmd)
+-- :RegisterOptionsTable(appName, options, slashcmd, persist)
 --
 -- - appName - (string) application name
 -- - options - table or function ref, see AceConfigRegistry

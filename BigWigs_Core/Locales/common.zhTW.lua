@@ -92,18 +92,6 @@ L.killed = "%s已擊殺"
 L.mob_killed = "%s已擊殺（%d/%d）"
 L.mob_remaining = "%s已擊殺，剩餘 %d"
 
--- NPCs for follower dungeons
-L.garrick = "蓋瑞克船長" -- AI paladin tank (NPC 209057)
-L.garrick_short = "*蓋瑞克"
-L.meredy = "美芮迪‧漢茲威爾" -- AI mage dps (NPC 209059)
-L.meredy_short = "*美芮迪"
-L.shuja = "秀嘉‧嚴斧" -- AI shaman dps (NPC 214390)
-L.shuja_short = "*秀嘉"
-L.crenna = "『大地之女』克蘭娜" -- AI druid healer (NPC 209072)
-L.crenna_short = "*克蘭娜"
-L.austin = "奧斯汀‧哈克斯沃" -- AI hunter dps (NPC 209065)
-L.austin_short = "*奧斯汀"
-
 -- Localizers note:
 -- The default mod:Berserk(600) uses spell ID 26662 to get the Berserk name
 L.custom_start = "%1$s參戰 - %3$d分後%2$s"
@@ -130,8 +118,8 @@ L.link_with_rticon = "{rt%d}與%s連結"
 L.link_both = "%s和%s連結"
 L.link_both_icon = "|T13700%d:0|t%s和|T13700%d:0|t%s連結"
 L.link_removed = "連結移除"
-L.link_say_option_name = "重覆「連結」喊話"
-L.link_say_option_desc = "不停地喊話你和誰連結了。" -- 可能需要再改
+--L.link_say_option_name = "Repeating 'Linked' say messages"
+--L.link_say_option_desc = "Repeating say messages in chat stating who you are linked with."
 
 -- Abbreviated numbers
 L.amount_one = "%.2f億" -- Billions 1,000,000,000
@@ -225,11 +213,3 @@ L.soaks = "分攤" -- Plural of L.soak
 L.spell_reflection = "法術反射" -- Any ability that reflects spells
 L.parasite = "寄生" -- Any ability where a parasite is involved e.g. "Parasitic Infection", "Parasitic Growth", etc
 L.rooted = "被定身" -- Any ability that roots you in place, preventing you from moving
-
--- Common ability name replacements A-Z
-L.dodge = "躲開" -- 躲開/躲避/閃避/躲圈? When you need to continually run around to dodge abilities, like missiles landing on the ground under you
-L.health_drain = "吸血" -- Any ability that drains health from the player 吸血類的技能，就是術士的吸取生命那種直接吸血的法術
-L.smash = "重擊" -- Short for any ability with the name "smash" in it e.g. "Darkrift Smash" or "Seismic Smash" or "Arcing Smash"
-L.spike = "尖刺" -- Short for any ability with the name "spike" in it e.g. "Glacial Spike" or "Fel Spike" or "Volatile Spike"
-L.spikes = "尖刺" -- Plural of L.spike
-L.waves = "波浪" -- Multiple waves of a bad ability coming from a boss, like waves in the ocean
