@@ -1,15 +1,10 @@
 # BigWigs
 
-## [v352](https://github.com/BigWigsMods/BigWigs/tree/v352) (2024-08-09)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v351.1...v352) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
+## [v368](https://github.com/BigWigsMods/BigWigs/tree/v368) (2024-11-20)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v367.3...v368) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
 
+- NerubarPalace: Update option files  
 - bump version  
-- Rename `NAMEPLATEBAR` to `NAMEPLATE` and remove old API  
-- VaultOfTheIncarnates: Remove commented out nameplate code  
-- Core/BossPrototype: Tweak nameplate API some more  
-- Update zhCN (#1745)  
-- Plugins/Proximity: Fix invalid ranges on classic era, and fix not being able to click the close button  
-- Core/BossPrototype: Some fixes to old deprecated API  
-- Core/BossPrototype: Drop support for functions in `:Log()`  
-- Core/BossPrototype: Allow registering `SPELL\_DISPEL` and `SPELL\_INTERRUPT` with a spell ID  
-- Update frFR (#1742)  
+- bump toc  
+- Plugins/Countdown: Fix a rare issue with countdowns not counting all the way to 1 when dealing with a short timer that's within specific decimal values  
+- NerubarPalace/Ansurek: Update Infest timer in mythic  

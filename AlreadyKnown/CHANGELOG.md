@@ -1,6 +1,6 @@
 # Already Known?
 
-## [1.77](https://github.com/ahakola/AlreadyKnown/tree/1.77) (2024-11-03)
-[Full Changelog](https://github.com/ahakola/AlreadyKnown/compare/1.76...1.77) [Previous Releases](https://github.com/ahakola/AlreadyKnown/releases)
+## [1.78](https://github.com/ahakola/AlreadyKnown/tree/1.78) (2024-11-20)
+[Full Changelog](https://github.com/ahakola/AlreadyKnown/compare/1.77...1.78) [Previous Releases](https://github.com/ahakola/AlreadyKnown/releases)
 
 - .toc bump  

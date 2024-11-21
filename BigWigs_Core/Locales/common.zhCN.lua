@@ -92,6 +92,18 @@ L.killed = "%s已击杀"
 L.mob_killed = "%s已击杀（%d/%d）"
 L.mob_remaining = "%s已击杀，剩余 %d"
 
+-- NPCs for follower dungeons
+L.garrick = "嘉里克船长" -- AI paladin tank (NPC 209057)
+L.garrick_short = "*嘉里克"
+L.meredy = "梅瑞迪·寻涌" -- AI mage dps (NPC 209059)
+L.meredy_short = "*梅瑞迪"
+L.shuja = "修加·恐斧" -- AI shaman dps (NPC 214390)
+L.shuja_short = "*修加"
+L.crenna = "科蕾娜·大地之女" -- AI druid healer (NPC 209072)
+L.crenna_short = "*科蕾娜"
+L.austin = "奥斯汀·哈克斯沃斯" -- AI hunter dps (NPC 209065)
+L.austin_short = "*奥斯汀"
+
 -- Localizers note:
 -- The default mod:Berserk(600) uses spell ID 26662 to get the Berserk name
 L.custom_start = "%1$s激活 - %3$d分后%2$s"
@@ -213,3 +225,11 @@ L.soaks = "分摊" -- Plural of L.soak
 L.spell_reflection = "法术反射" -- Any ability that reflects spells
 L.parasite = "寄生" -- Any ability where a parasite is involved e.g. "Parasitic Infection", "Parasitic Growth", etc
 L.rooted = "定身" -- Any ability that roots you in place, preventing you from moving
+
+-- Common ability name replacements A-Z
+L.dodge = "躲开" -- When you need to continually run around to dodge abilities, like missiles landing on the ground under you
+L.health_drain = "吸血" -- Any ability that drains health from the player
+L.smash = "重击" -- Short for any ability with the name "smash" in it e.g. "Darkrift Smash" or "Seismic Smash" or "Arcing Smash"
+L.spike = "尖刺" -- Short for any ability with the name "spike" in it e.g. "Glacial Spike" or "Fel Spike" or "Volatile Spike"
+L.spikes = "尖刺" -- Plural of L.spike
+L.waves = "波浪" -- Multiple waves of a bad ability coming from a boss, like waves in the ocean

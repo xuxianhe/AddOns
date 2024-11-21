@@ -2,6 +2,7 @@ local L = BigWigsAPI:NewLocale("BigWigs: Plugins", "zhTW")
 if not L then return end
 
 L.general = "一般"
+L.advanced = "進階"
 L.comma = "，"
 
 L.positionX = "X 座標"
@@ -12,10 +13,12 @@ L.width = "寬度"
 L.height = "高度"
 L.sizeDesc = "通常透過拖動錨點來條整尺寸，如果你需要一個精確的尺寸大小，可以調整這個值，或直接輸入到框中。"
 L.fontSizeDesc = "調整捲動軸以更改字型大小，或在輸入框輸入精確數值，最大可以到 200。"
+L.disabled = "停用"
 L.disableDesc = "即將禁用「%s」的功能，但|cffff4411不建議|r這麼做。\n\n你確定要這麼做嗎？"
-L.transparency = "透明度"
 
 -- Anchor Points
+L.UP = "向上"
+L.DOWN = "向下"
 L.TOP = "上"
 L.RIGHT = "右"
 L.BOTTOM = "下"
@@ -36,7 +39,6 @@ L.destinationPoint = "相對錨點"
 L.altPowerTitle = "替代能量"
 L.altPowerDesc = "只有在有替代能量作用於玩家的首領戰才會顯示，這類首領數量不多，甚至可以說相當罕見；這個框架會顯示你與團隊中擁有的替代能量，其中團隊的替代能量是以清單的方式列出。如果要調整框架，點擊下方的「測試」按鈕。"
 L.toggleDisplayPrint = "顯示將在下次出現。完全禁用此首領戰鬥，需在首領戰鬥選項中切換關閉。"
-L.disabled = "停用"
 L.disabledDisplayDesc = "停用全部模組顯示。"
 L.resetAltPowerDesc = "重設所有替代能量自訂選項，包括錨點和位置。"
 L.test = "測試"
@@ -89,30 +91,6 @@ L.toggleAnchorsBtnShow = "顯示移動錨點"
 L.toggleAnchorsBtnHide = "隱藏移動錨點"
 L.toggleAnchorsBtnHide_desc = "隱藏所有移動錨點，並鎖定所有元素的位置。"
 L.toggleBarsAnchorsBtnShow_desc = "顯示所有移動錨點，使你可以移動計時條。"
-
-L.nameplateBars = "名條計時條"
-L.nameplateAutoWidth = "匹配名條寬度"
-L.nameplateAutoWidthDesc = "使計時條的寬度跟隨名條寬度自動調整。"
-L.nameplateOffsetY = "Y 座標偏移"
-L.nameplateOffsetYDesc = "勾選向上成長時，計時條在名條上方的垂直偏移量。未勾選向上成長時，則代表計時條位於名條下方的垂直偏移量。"
-L.nameplateAlphaDesc = "調整名條計時條的透明度。"
-L.testNameplate = "檢測到目標，在目標名條上創建一個測試計時條。 |cFF33FF99這個功能相當少用，並且通常一次只會有一條；通常用於分別監視多個目標的同個技能冷卻。|r"
-
-L.clickableBars = "可點擊計時條"
-L.clickableBarsDesc = "BigWigs 計時條預設是點擊穿越的，在預設情況下，當滑鼠指針劃過計時條時可以點擊到遊戲中的物件，這樣可以選擇目標或使用 AoE 法術攻擊物體，更改鏡頭角度等等。|cffff4411如果啟用可點擊計時條，這些將不能實現。|r計時條將攔截任何滑鼠點擊並阻止相應功能。"
-L.interceptMouseDesc = "啟用計時條接受點擊。"
-L.modifier = "修改"
-L.modifierDesc = "按住選定的修改鍵以啟用計時條點擊操作。"
-L.modifierKey = "只與修改鍵配合"
-L.modifierKeyDesc = "除非修改鍵被按下否則允許計時條點擊穿越，此時游標以下動作可用。"
-
-L.temporaryCountdownDesc = "臨時性地啟用與此技能相關的倒數計時。"
-L.report = "報告"
-L.reportDesc = "報告目前計時條狀態到合適的聊天頻道；無論是副本頻道、團隊、隊伍或是說。"
-L.remove = "移除"
-L.removeBarDesc = "臨時性地移除此計時條。"
-L.removeOther = "移除其它"
-L.removeOtherBarDesc = "臨時性地移除除了此計時條以外的所有計時條。"
 
 L.emphasizeAt = "…（秒）後強調"
 L.growingUpwards = "向上成長"
@@ -211,11 +189,11 @@ L.blockTalkingHeadRaids = "團隊副本"
 L.blockTalkingHeadTimewalking = "時光漫遊（地城 & 團隊副本）"
 L.blockTalkingHeadScenarios = "事件"
 
-L.redirectPopups = "以 BigWigs 訊息取代地城橫幅"
-L.redirectPopupsDesc = "封鎖地城中的彈出式橫幅，改為以 BigWigs 訊息顯示其文本。彈出式橫幅是傳奇鑰石地城開始時顯示的副本訊息、或者其他副本提示例如「|cFF33FF99寶庫已解鎖|r」；它會懸浮在畫面中央數秒，遮擋你的視野，妨礙你點擊被橫幅蓋住的目標。"
+L.redirectPopups = "以 BigWigs 訊息取代通知橫幅"
+L.redirectPopupsDesc = "以 BigWigs 訊息取代螢幕中央的通知橫幅，例如「|cFF33FF99寶庫欄位解鎖|r」。這些通知橫幅範圍太大、顯示時間太長，會遮擋介面上的其他元素，導致你無法點擊橫幅之後的東西。"
 L.redirectPopupsColor = "橫幅替代訊息顏色"
-L.blockDungeonPopups = "封鎖地城橫幅"
-L.blockDungeonPopupsDesc = "有時候，進入地城彈出的橫幅會顯示很長的文本，啟用此選項可以完全隱藏橫幅，而非以 BigWigs 訊息替代。"
+L.blockDungeonPopups = "封鎖地城通知橫幅"
+L.blockDungeonPopupsDesc = "有時候，進入地城彈出的通知橫幅會顯示很長的文本，啟用此選項可以完全隱藏它們。"
 L.itemLevel = "物品等級%d"
 
 L.userNotifySfx = "音效原被「首領戰訊息封鎖」功能關閉，現已強制重啟。"
@@ -287,10 +265,10 @@ L.infoBox = "訊息盒"
 L.sinkDescription = "向外通過 BigWigs 插件訊息顯示。這些包含了圖示，顏色和在同一時間在螢幕上的顯示4個訊息。新的訊息將再一次快速的放大和縮小來提醒用戶。新插入的訊息將增大並立即縮小提醒用戶注意。"
 L.emphasizedSinkDescription = "以 BigWigs 強調訊息輸出此插件資訊。此訊息支持文字和顏色，同一時間只能顯示一條訊息。"
 L.resetMessagesDesc = "重設所有訊息自訂選項，包括錨點和位置。"
---L.toggleMessagesAnchorsBtnShow_desc = "Show all the moving anchors, allowing you to move the messages."
+L.toggleMessagesAnchorsBtnShow_desc = "顯示所有移動錨點，使你可以移動訊息的位置。"
 
---L.testMessagesBtn = "Create Test Message"
---L.testMessagesBtn_desc = "Creates a message for you to test your current display settings with."
+L.testMessagesBtn = "創建測試訊息"
+L.testMessagesBtn_desc = "生成一個測試用的訊息，讓你查看目前設定的訊息外觀。"
 
 L.bwEmphasized = "BigWigs 強調"
 L.messages = "訊息"
@@ -319,6 +297,81 @@ L.displayTime = "顯示時間"
 L.displayTimeDesc = "以秒計訊息顯示時間。"
 L.fadeTime = "消退時間"
 L.fadeTimeDesc = "以秒計訊息消退時間。"
+
+-----------------------------------------------------------------------
+-- Nameplates.lua
+--
+
+L.nameplates = "名條"
+L.testNameplateIconBtn = "顯示測試圖示"
+L.testNameplateIconBtn_desc = "創建一個測試圖示，在當前目標的名條上測試外觀設定。"
+L.testNameplateTextBtn = "顯示測試文字"
+L.testNameplateTextBtn_desc = "創建一個測試文字，在當前目標的名條上測試文字設定。"
+L.stopTestNameplateBtn = "停止測試"
+L.stopTestNameplateBtn_desc = "停止名條上的圖示與文字測試。"
+L.noNameplateTestTarget = "你需要先選擇一個可攻擊的敵對目標，並顯示它的名條，才能使用測試功能。"
+L.anchoring = "定位"
+L.growStartPosition = "起始位置"
+L.growStartPositionDesc = "第一個圖示的位置。"
+L.growDirection = "增長方向"
+L.growDirectionDesc = "存在複數圖示時，後續圖示的增長方向。"
+L.iconSpacingDesc = "調整圖示與圖示之間的間距。"
+L.nameplateIconSettings = "圖示設定"
+L.keepAspectRatio = "維持寬高比"
+L.keepAspectRatioDesc = "維持圖示的 1:1 寬高比，不隨名條的框架大小而拉伸。"
+L.iconColor = "圖示顏色"
+L.iconColorDesc = "更改圖示的材質顏色。"
+L.desaturate = "去飽和度"
+L.desaturateDesc = "使圖示顏色變成灰階，而非彩色。"
+L.zoom = "縮放"
+L.zoomDesc = "調整圖示的材質大小。"
+L.showBorder = "顯示邊框"
+L.showBorderDesc = "替圖示顯示邊框。"
+L.borderColor = "邊框顏色"
+L.borderSize = "邊框大小"
+L.showNumbers = "數字"
+L.showNumbersDesc = "替圖示顯示數字。"
+L.cooldown = "冷卻"
+L.showCooldownSwipe = "顯示冷卻動畫"
+L.showCooldownSwipeDesc = "當圖示代表的技能正在冷卻中，顯示轉圈的冷卻動畫效果。"
+L.showCooldownEdge = "顯示冷卻指針" -- not sure there' s a term in zh already or not, probably not
+L.showCooldownEdgeDesc = "當圖示代表的技能正在冷卻中，顯示轉圈的發光指針效果。"
+L.inverse = "反轉"
+L.inverseSwipeDesc = "反轉冷卻動畫效果。"
+L.glow = "發光效果"
+L.enableExpireGlow = "啟用結束發光效果"
+L.enableExpireGlowDesc = "當技能冷卻結束，在圖示周圍顯示發光動畫效果。"
+L.glowColor = "發光顏色"
+L.glowType = "發光樣式"
+L.glowTypeDesc = "替圖示周圍的發光動畫效果選擇樣式。"
+L.resetNameplateIconsDesc = "將名條的圖示設定全部重設為預設值。"
+L.nameplateTextSettings = "文字設定"
+L.fixate_test = "鎖定" -- Text that displays to test on the frame
+L.resetNameplateTextDesc = "將名條的文字設定全部重設為預設值。"
+L.autoScale = "自動縮放"
+L.autoScaleDesc = "根據名條的縮放比，自動調整圖示大小。"
+L.glowAt = "開始發光（秒）"
+L.glowAt_desc = "設定技能的冷卻時間剩下幾秒時觸發發光效果。"
+
+-- Glow types as part of LibCustomGlow
+L.pixelGlow = "像素發光"
+L.autocastGlow = "自動施法發光" -- 寵物的自動攻擊那種發光
+L.buttonGlow = "快捷鍵發光"
+L.procGlow = "脈衝發光" -- wa是"觸發光暈"?
+L.speed = "速度"
+L.animation_speed_desc = "發光動畫效果的播放速度。"
+L.lines = "線條"
+L.lines_glow_desc = "設定發光動畫效果中有幾條線條。"
+L.intensity = "強度"
+L.intensity_glow_desc = "設定發光動畫的強度，強度越高，閃光點越多。"
+L.length = "長度"
+L.length_glow_desc = "設定發光動畫效果中線條的長度。"
+L.thickness = "粗細"
+L.thickness_glow_desc = "設定發光動畫效果中線條的粗細。"
+L.scale = "縮放"
+L.scale_glow_desc = "調整發光動畫中閃光點的大小。"
+L.startAnimation = "起始動畫"
+L.startAnimation_glow_desc = "你選擇的發光效果有起始動畫效果，通常是一個閃爍。這個選項可以選擇是否啟用起始動畫。"
 
 -----------------------------------------------------------------------
 -- Proximity.lua
@@ -412,19 +465,19 @@ L.resetAllCustomSound = "如果設置全部首領戰鬥自訂的聲音，此按�
 --
 
 L.bossStatistics = "首領統計"
-L.bossStatsDescription = "Recording of various boss-related statistics such as the amount of times you were victorious, the amount of times you were defeated, date of first victory, and the fastest victory。你可以在每個首領的頁面查看統計數據，沒有首領記錄的統計數據會被隱藏。"
+L.bossStatsDescription = "記錄與首領相關的各種統計數據，例如你獲勝的次數、被擊敗的次數、首勝日期和最快紀錄。你可以在每個首領的頁面查看統計資料，沒有記錄的首領會隱藏統計資料。"
 L.createTimeBar = "顯示「最快擊敗」計時條"
 L.bestTimeBar = "最快時間"
 L.healthPrint = "血量：%s。"
 L.healthFormat = "%s（%.1f%%）"
 L.chatMessages = "聊天訊息"
---L.newFastestVictoryOption = "New fastest victory"
---L.victoryOption = "You were victorious"
---L.defeatOption = "You were defeated"
+L.newFastestVictoryOption = "新的最佳紀錄"
+L.victoryOption = "你的勝利"
+L.defeatOption = "你的戰敗"
 L.bossHealthOption = "首領血量"
---L.bossVictoryPrint = "You were victorious against '%s' after %s." -- You were victorious against 'BOSS_NAME' after COMBAT_DURATION.
---L.bossDefeatPrint = "You were defeated by '%s' after %s." -- You were defeated by 'BOSS_NAME' after COMBAT_DURATION.
---L.newFastestVictoryPrint = "New fastest victory: (-%s)" -- New fastest victory: (-COMBAT_DURATION)
+L.bossVictoryPrint = "你擊敗了「%s」，用時%s。" -- You were victorious against 'BOSS_NAME' after COMBAT_DURATION.
+L.bossDefeatPrint = "你被「%s」擊敗，用時%s。" -- You were defeated by 'BOSS_NAME' after COMBAT_DURATION.
+L.newFastestVictoryPrint = "新的最快紀錄：（-%s）" -- New fastest victory: (-COMBAT_DURATION)
 
 -----------------------------------------------------------------------
 -- Victory.lua

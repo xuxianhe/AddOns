@@ -1,6 +1,7 @@
 # Transcriptor
 
-## [v11.0.8](https://github.com/BigWigsMods/Transcriptor/tree/v11.0.8) (2024-10-28)
-[Full Changelog](https://github.com/BigWigsMods/Transcriptor/compare/v11.0.7...v11.0.8) [Previous Releases](https://github.com/BigWigsMods/Transcriptor/releases)
+## [v11.0.9](https://github.com/BigWigsMods/Transcriptor/tree/v11.0.9) (2024-11-20)
+[Full Changelog](https://github.com/BigWigsMods/Transcriptor/compare/v11.0.8...v11.0.9) [Previous Releases](https://github.com/BigWigsMods/Transcriptor/releases)
 
-- Add more DBM callbacks, closes #46  
+- Fix error on right-click, closes #47  
+- bump toc  

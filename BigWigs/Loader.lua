@@ -12,7 +12,7 @@ local strfind = string.find
 -- Generate our version variables
 --
 
-local BIGWIGS_VERSION = 352
+local BIGWIGS_VERSION = 368
 local BIGWIGS_RELEASE_STRING, BIGWIGS_VERSION_STRING
 local versionQueryString, versionResponseString = "Q^%d^%s^%d^%s", "V^%d^%s^%d^%s"
 local customGuildName = false
@@ -39,7 +39,7 @@ do
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "ced3a68" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "64eecad" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.
@@ -92,7 +92,7 @@ local tooltipFunctions = {}
 local next, tonumber, type, strsplit, strsub = next, tonumber, type, strsplit, string.sub
 local SendAddonMessage, RegisterAddonMessagePrefix, CTimerAfter, CTimerNewTicker = C_ChatInfo.SendAddonMessage, C_ChatInfo.RegisterAddonMessagePrefix, C_Timer.After, C_Timer.NewTicker
 local GetInstanceInfo, GetBestMapForUnit, GetMapInfo = GetInstanceInfo, C_Map.GetBestMapForUnit, C_Map.GetMapInfo
-local Ambiguate, UnitName, UnitGUID = Ambiguate, UnitName, UnitGUID
+local Ambiguate, UnitName, UnitGUID = Ambiguate, UnitNameUnmodified or UnitName, UnitGUID
 local debugstack, print = debugstack, print
 local myLocale = GetLocale()
 
@@ -117,17 +117,20 @@ public.RegisterAddonMessagePrefix = RegisterAddonMessagePrefix
 public.SendAddonMessage = SendAddonMessage
 public.SetRaidTarget = SetRaidTarget
 public.SendChatMessage = SendChatMessage
+public.UnitCanAttack = UnitCanAttack
 public.UnitDetailedThreatSituation = UnitDetailedThreatSituation
 public.UnitThreatSituation = UnitThreatSituation
 public.UnitGUID = UnitGUID
 public.UnitHealth = UnitHealth
 public.UnitHealthMax = UnitHealthMax
+public.UnitIsDeadOrGhost = UnitIsDeadOrGhost
 public.UnitName = UnitName
 public.UnitSex = UnitSex
+public.UnitTokenFromGUID = UnitTokenFromGUID
 public.isTestBuild = GetCurrentRegion() == 72 -- PTR/beta
 do
 	local _, _, _, build = GetBuildInfo()
-	public.isBeta = build >= 110002
+	public.isBeta = build >= 120000
 end
 
 -- Version
@@ -158,6 +161,7 @@ local fakeZones = { -- Fake zones used as GUI menus
 	[-947]=true, -- Azeroth
 	[-1647]=true, -- Shadowlands
 	[-1978]=true, -- Dragon Isles
+	[-2274]=true, -- Khaz Algar
 }
 
 do
@@ -219,16 +223,36 @@ do
 			littleWigsBundled = {},
 			zones = {},
 		}
-	elseif public.isBeta then -- TWW Beta
+	--elseif public.isBeta and public.isTestBuild then -- Retail Beta
+	--	public.currentExpansion = { -- Change on new expansion releases
+	--		name = tww,
+	--		bigWigsBundled = {
+	--			[df] = true,
+	--			[tww] = true,
+	--		},
+	--		littlewigsDefault = lw_cs,
+	--		littleWigsBundled = {
+	--			[lw_df] = true,
+	--			[lw_tww] = true,
+	--			[lw_delves] = true,
+	--			[lw_cs] = true,
+	--		},
+	--		littleWigsExtras = {
+	--			lw_delves,
+	--			lw_cs,
+	--		},
+	--		zones = {
+	--			[2657] = "BigWigs_NerubarPalace",
+	--		}
+	--	}
+	else -- Retail
 		public.currentExpansion = { -- Change on new expansion releases
 			name = tww,
 			bigWigsBundled = {
-				[df] = true,
 				[tww] = true,
 			},
 			littlewigsDefault = lw_cs,
 			littleWigsBundled = {
-				[lw_df] = true,
 				[lw_tww] = true,
 				[lw_delves] = true,
 				[lw_cs] = true,
@@ -239,26 +263,6 @@ do
 			},
 			zones = {
 				[2657] = "BigWigs_NerubarPalace",
-			}
-		}
-	else -- Dragonflight
-		public.currentExpansion = { -- Change on new expansion releases
-			name = df,
-			bigWigsBundled = {
-				[df] = true,
-			},
-			littlewigsDefault = lw_cs,
-			littleWigsBundled = {
-				[lw_df] = true,
-				[lw_cs] = true,
-			},
-			littleWigsExtras = {
-				lw_cs,
-			},
-			zones = {
-				[2522] = "BigWigs_VaultOfTheIncarnates",
-				[2569] = "BigWigs_Aberrus",
-				[2549] = "BigWigs_Amirdrassil",
 			}
 		}
 	end
@@ -280,6 +284,7 @@ do
 		[531] = c, -- Ahn'Qiraj Temple
 		[2789] = public.isSeasonOfDiscovery and c or nil, -- The Tainted Scar (Lord Kazzak) [Classic Season of Discovery Only]
 		[2791] = public.isSeasonOfDiscovery and c or nil, -- Storm Cliffs (Azuregos) [Classic Season of Discovery Only]
+		[2804] = public.isSeasonOfDiscovery and c or nil, -- The Crystal Vale (Thunderaan) [Classic Season of Discovery Only]
 		--[[ BigWigs: The Burning Crusade ]]--
 		[-101] = bc, -- Outland (Fake Menu)
 		[-1945] = bc, -- Outland (Fake Menu) [Classic Only]
@@ -343,6 +348,7 @@ do
 		[2569] = df, -- Aberrus, the Shadowed Crucible
 		[2549] = df, -- Amirdrassil, the Dream's Hope
 		--[[ BigWigs: The War Within ]]--
+		[-2274] = tww, -- Khaz Algar (Fake Menu)
 		[2657] = tww, -- Nerub'ar Palace
 
 		--[[ LittleWigs: Classic ]]--
@@ -411,7 +417,7 @@ do
 		[939] = lw_cata, -- Well of Eternity
 		[940] = lw_cata, -- Hour of Twilight
 		[657] = lw_cata, -- The Vortex Pinnacle
-		[670] = public.isBeta and {lw_cata, lw_cs} or lw_cata, -- Grim Batol
+		[670] = public.isRetail and {lw_cata, lw_cs} or lw_cata, -- Grim Batol
 		--[[ LittleWigs: Mists of Pandaria ]]--
 		[959] = lw_mop, -- Shado-Pan Monastery
 		[960] = lw_mop, -- Temple of the Jade Serpent
@@ -452,7 +458,7 @@ do
 		[1754] = lw_bfa, -- Freehold
 		[1762] = lw_bfa, -- King's Rest
 		[1864] = lw_bfa, -- Shrine of the Storm
-		[1822] = public.isBeta and {lw_bfa, lw_cs} or lw_bfa, -- Siege of Boralus
+		[1822] = public.isRetail and {lw_bfa, lw_cs} or lw_bfa, -- Siege of Boralus
 		[1877] = lw_bfa, -- Temple of Sethraliss
 		[1594] = lw_bfa, -- The Undermine
 		[1771] = lw_bfa, -- Tol Dagor
@@ -464,32 +470,33 @@ do
 		--[[ LittleWigs: Shadowlands ]]--
 		[2284] = lw_s, -- Sanguine Depths
 		[2285] = lw_s, -- Spires of Ascension
-		[2286] = public.isBeta and {lw_s, lw_cs} or lw_s, -- The Necrotic Wake
+		[2286] = public.isRetail and {lw_s, lw_cs} or lw_s, -- The Necrotic Wake
 		[2287] = lw_s, -- Halls of Atonement
 		[2289] = lw_s, -- Plaguefall
-		[2290] = public.isBeta and {lw_s, lw_cs} or lw_s, -- Mists of Tirna Scithe
+		[2290] = public.isRetail and {lw_s, lw_cs} or lw_s, -- Mists of Tirna Scithe
 		[2291] = lw_s, -- De Other Side
 		[2293] = lw_s, -- Theater of Pain
 		[2441] = lw_s, -- Tazavesh, the Veiled Market
 		--[[ LittleWigs: Dragonflight ]]--
-		[2451] = not public.isBeta and {lw_df, lw_cs} or lw_df, -- Uldaman: Legacy of Tyr
-		[2515] = not public.isBeta and {lw_df, lw_cs} or lw_df, -- The Azure Vault
-		[2516] = not public.isBeta and {lw_df, lw_cs} or lw_df, -- The Nokhud Offensive
-		[2519] = not public.isBeta and {lw_df, lw_cs} or lw_df, -- Neltharus
-		[2520] = not public.isBeta and {lw_df, lw_cs} or lw_df, -- Brackenhide Hollow
-		[2521] = not public.isBeta and {lw_df, lw_cs} or lw_df, -- Ruby Life Pools
-		[2526] = not public.isBeta and {lw_df, lw_cs} or lw_df, -- Algeth'ar Academy
-		[2527] = not public.isBeta and {lw_df, lw_cs} or lw_df, -- Halls of Infusion
+		[2451] = lw_df, -- Uldaman: Legacy of Tyr
+		[2515] = lw_df, -- The Azure Vault
+		[2516] = lw_df, -- The Nokhud Offensive
+		[2519] = lw_df, -- Neltharus
+		[2520] = lw_df, -- Brackenhide Hollow
+		[2521] = lw_df, -- Ruby Life Pools
+		[2526] = lw_df, -- Algeth'ar Academy
+		[2527] = lw_df, -- Halls of Infusion
 		[2579] = lw_df, -- Dawn of the Infinite
 		--[[ LittleWigs: The War Within ]]--
 		[2648] = lw_tww, -- The Rookery
 		[2649] = lw_tww, -- Priory of the Sacred Flame
 		[2651] = lw_tww, -- Darkflame Cleft
-		[2652] = public.isBeta and {lw_tww, lw_cs} or lw_tww, -- The Stonevault
-		[2660] = public.isBeta and {lw_tww, lw_cs} or lw_tww, -- Ara-Kara, City of Echoes
+		[2652] = public.isRetail and {lw_tww, lw_cs} or lw_tww, -- The Stonevault
+		[2660] = public.isRetail and {lw_tww, lw_cs} or lw_tww, -- Ara-Kara, City of Echoes
 		[2661] = lw_tww, -- Cinderbrew Meadery
-		[2662] = public.isBeta and {lw_tww, lw_cs} or lw_tww, -- The Dawnbreaker
-		[2669] = public.isBeta and {lw_tww, lw_cs} or lw_tww, -- City of Threads
+		[2662] = public.isRetail and {lw_tww, lw_cs} or lw_tww, -- The Dawnbreaker
+		[2669] = public.isRetail and {lw_tww, lw_cs} or lw_tww, -- City of Threads
+		[2710] = lw_tww, -- Awakening the Machine
 		--[[ LittleWigs: Delves ]]--
 		[2664] = lw_delves, -- Fungal Folly
 		[2679] = lw_delves, -- Mycomancer Cavern
@@ -537,6 +544,7 @@ do
 		[-942] = -947, -- Azeroth/BfA
 		[-1536] = -1647, [-1565] = -1647, [-1525] = -1647, [-1533] = -1647, -- Shadowlands
 		[-2022] = -1978, [-2023] = -1978, [-2024] = -1978, [-2085] = -1978, -- Dragon Isles
+		[-2214] = -2274, [-2215] = -2274, [-2213] = -2274, [-2248] = -2274, -- Khaz Algar
 	}
 end
 
@@ -1001,8 +1009,8 @@ function mod:ADDON_LOADED(addon)
 	--bwFrame:RegisterEvent("GLOBAL_MOUSE_DOWN")
 	--bwFrame:RegisterEvent("GLOBAL_MOUSE_UP")
 
-	if C_EventUtils.IsEventValid("ACTIVE_DELVE_DATA_UPDATE") then -- Temporary workaround until the new event for delves is implemented
-		bwFrame:RegisterEvent("ACTIVE_DELVE_DATA_UPDATE")
+	if C_EventUtils.IsEventValid("PLAYER_MAP_CHANGED") then
+		bwFrame:RegisterEvent("PLAYER_MAP_CHANGED")
 	end
 	bwFrame:RegisterEvent("ZONE_CHANGED")
 	bwFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -1106,12 +1114,12 @@ function mod:ADDON_LOADED(addon)
 	self:BigWigs_CoreOptionToggled(nil, "fakeDBMVersion", self.isFakingDBM)
 
 	local num = tonumber(C_CVar.GetCVar("Sound_NumChannels")) or 0
-	if num < 64 then
-		C_CVar.SetCVar("Sound_NumChannels", "64") -- Blizzard keeps screwing with addon sound priority so we force this minimum
+	if num < 90 then
+		C_CVar.SetCVar("Sound_NumChannels", "90") -- 64 is the default, enforce a little higher as a minimum to prevent sound clipping issues with addons
 	end
 	num = tonumber(C_CVar.GetCVar("Sound_MaxCacheSizeInBytes")) or 0
-	if num < 67108864 then
-		C_CVar.SetCVar("Sound_MaxCacheSizeInBytes", "67108864") -- Set the cache to the "Small (64MB)" setting as a minimum
+	if num < 134217728 then
+		C_CVar.SetCVar("Sound_MaxCacheSizeInBytes", "134217728") -- "Large (128MB)" is the default, enforce it as a minimum
 	end
 
 	--bwFrame:UnregisterEvent("ADDON_LOADED")
@@ -1241,6 +1249,10 @@ do
 		BigWigs_CastleNathria = "BigWigs_Shadowlands",
 		BigWigs_SanctumOfDomination = "BigWigs_Shadowlands",
 		BigWigs_SepulcherOfTheFirstOnes = "BigWigs_Shadowlands",
+		BigWigs_Aberrus = "BigWigs_Dragonflight",
+		BigWigs_Amirdrassil = "BigWigs_Dragonflight",
+		BigWigs_DragonIsles = "BigWigs_Dragonflight",
+		BigWigs_VaultOfTheIncarnates = "BigWigs_Dragonflight",
 	}
 	local delayedMessages = {}
 	local foundReqAddons = {} -- Deciding whether or not we show a warning for core/options/plugins addons not existing
@@ -1261,6 +1273,7 @@ do
 		BigWigs_Legion = true,
 		BigWigs_BattleForAzeroth = true,
 		BigWigs_Shadowlands = true,
+		BigWigs_Dragonflight = true,
 		LittleWigs = true,
 		LittleWigs_Classic = true,
 		LittleWigs_BurningCrusade = true,
@@ -1271,10 +1284,9 @@ do
 		LittleWigs_Legion = true,
 		LittleWigs_BattleForAzeroth = true,
 		LittleWigs_Shadowlands = true,
+		LittleWigs_Dragonflight = true,
 		-- Dynamic content
-		BigWigs_DragonIsles = true,
-		BigWigs_VaultOfTheIncarnates = true,
-		BigWigs_Aberrus = true,
+		BigWigs_NerubarPalace = true,
 	}
 	-- Try to teach people not to force load our modules.
 	for i = 1, GetNumAddOns() do
@@ -1345,7 +1357,7 @@ do
 		--itIT = "Italian (itIT)",
 		--koKR = "Korean (koKR)",
 		--esES = "Spanish (esES)",
-		--esMX = "Spanish (esMX)",
+		esMX = "Spanish (esMX)",
 		--deDE = "German (deDE)",
 		--ptBR = "Portuguese (ptBR)",
 		--frFR = "French (frFR)",
@@ -1353,14 +1365,16 @@ do
 	local realms = {
 		--[542] = locales.frFR, -- frFR
 		--[3207] = locales.ptBR, [3208] = locales.ptBR, [3209] = locales.ptBR, [3210] = locales.ptBR, [3234] = locales.ptBR, -- ptBR
-		--[1425] = locales.esMX, [1427] = locales.esMX, [1428] = locales.esMX, -- esMX
+		[1425] = locales.esMX, [1427] = locales.esMX, [1428] = locales.esMX, -- esMX
 		--[1309] = locales.itIT, [1316] = locales.itIT, -- itIT
 		--[1378] = locales.esES, [1379] = locales.esES, [1380] = locales.esES, [1381] = locales.esES, [1382] = locales.esES, [1383] = locales.esES, -- esES
 	}
 	local language = locales[myLocale]
 	local realmLanguage = realms[GetRealmID()]
 	if public.isRetail and (language or realmLanguage) then
-		delayedMessages[#delayedMessages+1] = ("BigWigs is missing translations for %s. Can you help? Ask us on Discord for more info."):format(language or realmLanguage)
+		delayedMessages[#delayedMessages+1] = ("BigWigs is missing translations for %s."):format(language or realmLanguage)
+		delayedMessages[#delayedMessages+1] = "Can you help?"
+		delayedMessages[#delayedMessages+1] = "Ask us on Discord for more info."
 	end
 
 	if #delayedMessages > 0 then
@@ -1455,12 +1469,12 @@ end
 --
 
 do
-	local DBMdotRevision = "20240728191115" -- The changing version of the local client, changes with every new zip using the project-date-integer packager replacement.
-	local DBMdotDisplayVersion = "11.0.2" -- "N.N.N" for a release and "N.N.N alpha" for the alpha duration.
-	local DBMdotReleaseRevision = "20240728000000" -- Hardcoded time, manually changed every release, they use it to track the highest release version, a new DBM release is the only time it will change.
+	local DBMdotRevision = "20241119210112" -- The changing version of the local client, changes with every new zip using the project-date-integer packager replacement.
+	local DBMdotDisplayVersion = "11.0.30" -- "N.N.N" for a release and "N.N.N alpha" for the alpha duration.
+	local DBMdotReleaseRevision = "20241119000000" -- Hardcoded time, manually changed every release, they use it to track the highest release version, a new DBM release is the only time it will change.
 	local protocol = 3
 	local versionPrefix = "V"
-	local PForceDisable = 14
+	local PForceDisable = public.isRetail and 15 or 14
 
 	local timer = nil
 	local function sendDBMMsg()
@@ -1721,11 +1735,17 @@ do
 		end
 
 		-- Lacking zone modules
-		if (BigWigs and BigWigs.db.profile.showZoneMessages == false) or self.isShowingZoneMessages == false then return end
+		if (BigWigs and BigWigs.db.profile.showZoneMessages == false) or mod.isShowingZoneMessages == false then return end
 		local zoneAddon = public.zoneTbl[id]
 		if type(zoneAddon) == "table" then
 			-- default to the expansion addon for current season modules
 			zoneAddon = zoneAddon[1]
+			if enableZones[id] and not BigWigsTempNameplates then -- XXX temp
+				BigWigsTempNameplates = true
+				CTimerAfter(1, function() sysprint(L.tempNPMsg) end)
+				RaidNotice_AddMessage(RaidWarningFrame, "BigWigs: ".. L.tempNPMsg, {r=1,g=1,b=1}, 10)
+				Popup("BigWigs: ".. L.tempNPMsg)
+			end
 		end
 		if zoneAddon and id > 0 and not fakeZones[id] and not warnedThisZone[id] then
 			if public.usingBigWigsRepo and public.currentExpansion.bigWigsBundled[zoneAddon] then return end -- If we are a BW Git user, then bundled content can't be missing, so return
@@ -1745,8 +1765,12 @@ do
 			end
 		end
 	end
-	if public.isBeta then
-		mod.ACTIVE_DELVE_DATA_UPDATE = mod.PLAYER_ENTERING_WORLD
+	function mod:PLAYER_MAP_CHANGED(oldId, newId)
+		if oldId ~= -1 then -- Skip non-delve events
+			if enableZones[newId] then
+				CTimerAfter(0, mod.PLAYER_ENTERING_WORLD) -- Unfortunately, GetInstanceInfo() is not accurate until 1 frame later
+			end
+		end
 	end
 end
 
@@ -1813,7 +1837,13 @@ function mod:BigWigs_BossModuleRegistered(_, _, module)
 	if module.worldBoss then
 		local id = -(module.mapId)
 		enableZones[id] = "world"
-		worldBosses[module.worldBoss] = id
+		if type(module.worldBoss) == "table" then
+			for i = 1, #module.worldBoss do
+				worldBosses[module.worldBoss[i]] = id
+			end
+		else
+			worldBosses[module.worldBoss] = id
+		end
 	elseif type(module.instanceId) == "table" then
 		for i = 1, #module.instanceId do
 			enableZones[module.instanceId[i]] = true

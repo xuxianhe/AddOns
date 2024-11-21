@@ -1,7 +1,7 @@
-## Interface: 11504, 20504, 30403, 40401, 110005
+## Interface: 11505, 20504, 30403, 40401, 110005
 ## Author: Sanex (Arathor EU)
 ## Title: Already Known?
-## Version: 1.77
+## Version: 1.78
 ## Notes: Puts green/blue/yellow/cyan/purple tint on already known scrolls/pets/other learnable items on vendors
 ## SavedVariables: AlreadyKnownSettings
 

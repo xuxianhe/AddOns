@@ -92,6 +92,18 @@ L.killed = "%s 처치"
 L.mob_killed = "%s 처치 (%d/%d)"
 L.mob_remaining = "%s 처치, %d 남음"
 
+-- NPCs for follower dungeons
+L.garrick = "대장 개릭" -- AI paladin tank (NPC 209057)
+L.garrick_short = "*개릭"
+L.meredy = "메레디 헌츠웰" -- AI mage dps (NPC 209059)
+L.meredy_short = "*메레디"
+L.shuja = "슈자 그림액스" -- AI shaman dps (NPC 214390)
+L.shuja_short = "*슈자"
+L.crenna = "대지의 딸 크렌나" -- AI druid healer (NPC 209072)
+L.crenna_short = "*크렌나"
+L.austin = "오스틴 헉스워스" -- AI hunter dps (NPC 209065)
+L.austin_short = "*오스틴"
+
 -- Localizers note:
 -- The default mod:Berserk(600) uses spell ID 26662 to get the Berserk name
 L.custom_start = "%1$s 전투 개시 - %3$d분 후 %2$s"
@@ -213,3 +225,11 @@ L.soaks = "같이 맞기" -- Plural of L.soak
 L.spell_reflection = "주문 반사" -- Any ability that reflects spells
 L.parasite = "기생충" -- Any ability where a parasite is involved e.g. "Parasitic Infection", "Parasitic Growth", etc
 L.rooted = "묶임" -- Any ability that roots you in place, preventing you from moving
+
+-- Common ability name replacements A-Z
+L.dodge = "피하기" -- When you need to continually run around to dodge abilities, like missiles landing on the ground under you
+L.health_drain = "체력 흡수" -- Any ability that drains health from the player
+L.smash = "강타" -- Short for any ability with the name "smash" in it e.g. "Darkrift Smash" or "Seismic Smash" or "Arcing Smash"
+L.spike = "쐐기" -- Short for any ability with the name "spike" in it e.g. "Glacial Spike" or "Fel Spike" or "Volatile Spike"
+L.spikes = "쐐기" -- Plural of L.spike
+L.waves = "웨이브" -- Multiple waves of a bad ability coming from a boss, like waves in the ocean
