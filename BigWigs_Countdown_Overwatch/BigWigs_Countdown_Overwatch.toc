@@ -1,4 +1,4 @@
-## Interface: 11504, 11503, 20504, 30403, 40400, 40401, 110005, 110000, 110002
+## Interface: 11504, 11505, 20504, 30403, 40400, 40401, 110005, 110007, 110002
 ## Title: BigWigs |cffff7f3f+|r|cffffffffCountdown: Overwatch|r
 ## Title-deDE: BigWigs |cffff7f3f+|r|cffffffffCountdown: Overwatch|r
 ## Title-esES: BigWigs |cffff7f3f+|r|cffffffffCuenta Atrás: Overwatch|r
@@ -12,7 +12,7 @@
 ## Title-zhTW: BigWigs |cffff7f3f+|r|cffffffff倒數：鬥陣特攻|r
 ## IconTexture: Interface\AddOns\BigWigs\Media\Icons\core-enabled
 ## Author: Neb
-## Version: 1.5.1
+## Version: 1.5.2
 ## Dependencies: BigWigs
 ## X-Curse-Project-ID: 100172
 ## X-WoWI-ID: 26066
