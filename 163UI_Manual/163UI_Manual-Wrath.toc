@@ -1,0 +1,14 @@
+## Interface: 30403
+## Title: |cff880303[163UI]|r Manual
+## Version: r20240625
+## Author: NetEase Inc.
+## IconTexture: Interface\AddOns\!!!163UI!!!\Media\Textures\UI2-logo
+## SavedVariables: GLOBAL_MANUAL_SAVED
+## SavedVariablesPerCharacter: 
+## Dependencies: !!!163UI!!!
+
+load.xml
+
+## Title: |cff880303[163UI]|r 163UI_Manual
+## Title-zhCN: |cff880303[有爱]|r 163UI 手册
+## X-Vendor: NetEase
