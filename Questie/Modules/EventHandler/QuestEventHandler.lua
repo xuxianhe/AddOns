@@ -264,8 +264,8 @@ function QuestEventHandler:QuestTurnedIn(questId, xpReward, moneyReward)
 
     local _, _, _, quality, _, itemID = GetQuestLogRewardInfo(GetNumQuestLogRewards(questId), questId)
 
-    if itemID ~= nil and quality == 1 then
-        Questie:Debug(Questie.DEBUG_DEVELOP, "Quest:", questId, "Recieved a possible Quest Item - do a full Quest Log check")
+    if itemID ~= nil and quality == Enum.ItemQuality.Standard then
+        Questie:Debug(Questie.DEBUG_DEVELOP, "Quest:", questId, "Received a possible Quest Item - do a full Quest Log check")
         doFullQuestLogScan = true
         skipNextUQLCEvent = false
     else
@@ -432,6 +432,7 @@ function _QuestEventHandler:UpdateAllQuests()
 
             QuestieNameplate:UpdateNameplate()
             QuestieQuest:UpdateQuest(questId)
+            QuestieTracker.UpdateQuestLines(questId)
         end
         QuestieCombatQueue:Queue(function()
             C_Timer.After(1.0, function()

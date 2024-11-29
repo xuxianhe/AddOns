@@ -140,7 +140,7 @@ function AR:FilterCheck(db, isReverse)
 end
 
 function AR:Reminder_Update()
-	if UnitIsDeadOrGhost('player') or UnitInVehicle('player') then return end
+	if UnitIsDeadOrGhost('player') or (not PA.Classic and UnitInVehicle('player')) then return end
 
 	for _, button in ipairs(AR.CreatedReminders) do
 		button:Hide()
@@ -750,9 +750,11 @@ function AR:BuildProfile()
 	DefaultFilters = CopyTable(PA.Defaults.profile.AuraReminder.Filters)
 end
 
-function AR:Initialize()
+function AR:UpdateSettings()
 	AR.db = PA.db.AuraReminder
+end
 
+function AR:Initialize()
 	if AR.db.Enable ~= true then
 		return
 	end

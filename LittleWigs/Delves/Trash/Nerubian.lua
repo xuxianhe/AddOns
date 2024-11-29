@@ -1,4 +1,3 @@
-if not BigWigsLoader.isBeta then return end
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -14,10 +13,12 @@ mod:RegisterEnableMob(
 	220462, -- Weaver's Instructions (The Spiral Weave gossip NPC)
 	218103, -- Nerubian Lord
 	208242, -- Nerubian Darkcaster
+	220485, -- Peculiar Nerubian
 	216584, -- Nerubian Captain
 	228954, -- Nerubian Marauder
 	216583, -- Chittering Fearmonger
 	208245, -- Skittering Swarmer
+	220148, -- Gem Hoarder
 	216621, -- Nerubian Webspinner
 	219810 -- Nerubian Ritualist
 )
@@ -44,9 +45,15 @@ end
 
 function mod:OnRegister()
 	self.displayName = L.nerubian_trash
+	self:SetSpellRename(450714, CL.frontal_cone) -- Jagged Barbs (Frontal Cone)
+	self:SetSpellRename(449318, CL.bomb) -- Shadows of Strife (Bomb)
+	self:SetSpellRename(450546, CL.shield) -- Webbed Aegis (Shield)
+	self:SetSpellRename(450509, CL.frontal_cone) -- Wide Swipe (Frontal Cone)
+	self:SetSpellRename(433410, CL.fear) -- Fearful Shriek (Fear)
+	self:SetSpellRename(450197, CL.charge) -- Skitter Charge (Charge)
 end
 
-local autotalk = mod:AddAutoTalkOption(true)
+local autotalk = mod:AddAutoTalkOption(false)
 function mod:GetOptions()
 	return {
 		autotalk,
@@ -54,9 +61,9 @@ function mod:GetOptions()
 		450714, -- Jagged Barbs
 		450637, -- Leeching Swarm
 		-- Nerubian Darkcaster
-		449318, -- Shadows of Strife
+		{449318, "SAY", "SAY_COUNTDOWN"}, -- Shadows of Strife
 		-- Nerubian Captain / Nerubian Marauder
-		450546, -- Webbed Aegis
+		{450546, "DISPEL"}, -- Webbed Aegis
 		450509, -- Wide Swipe
 		-- Chittering Fearmonger
 		433410, -- Fearful Shriek
@@ -64,13 +71,20 @@ function mod:GetOptions()
 		450197, -- Skitter Charge
 		-- Nerubian Webspinner
 		433448, -- Web Launch
-	}, {
+	},{
 		[450714] = L.nerubian_lord,
 		[449318] = L.nerubian_darkcaster,
 		[450546] = L.nerubian_captain,
 		[433410] = L.chittering_fearmonger,
 		[450197] = L.skittering_swarmer,
 		[433448] = L.nerubian_webspinner,
+	},{
+		[450714] = CL.frontal_cone, -- Jagged Barbs (Frontal Cone)
+		[449318] = CL.bomb, -- Shadows of Strife (Bomb)
+		[450546] = CL.shield, -- Webbed Aegis (Shield)
+		[450509] = CL.frontal_cone, -- Wide Swipe (Frontal Cone)
+		[433410] = CL.fear, -- Fearful Shriek (Fear)
+		[450197] = CL.charge, -- Skitter Charge (Charge)
 	}
 end
 
@@ -84,9 +98,12 @@ function mod:OnBossEnable()
 
 	-- Nerubian Darkcaster
 	self:Log("SPELL_CAST_START", "ShadowsOfStrife", 449318)
+	self:Log("SPELL_AURA_APPLIED", "ShadowsOfStrifeApplied", 449318)
+	self:Log("SPELL_AURA_REMOVED", "ShadowsOfStrifeRemoved", 449318)
 
 	-- Nerubian Captain / Nerubian Marauder
 	self:Log("SPELL_CAST_START", "WebbedAegis", 450546)
+	self:Log("SPELL_AURA_APPLIED", "WebbedAegisApplied", 450546)
 	self:Log("SPELL_CAST_START", "WideSwipe", 450509)
 
 	-- Chittering Fearmonger
@@ -97,6 +114,12 @@ function mod:OnBossEnable()
 
 	-- Nerubian Webspinner
 	self:Log("SPELL_CAST_SUCCESS", "WebLaunch", 433448)
+
+	-- also enable the Rares module
+	local raresModule = BigWigs:GetBossModule("Delve Rares", true)
+	if raresModule then
+		raresModule:Enable()
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -138,8 +161,10 @@ end
 -- Nerubian Lord
 
 function mod:JaggedBarbs(args)
-	self:Message(args.spellId, "orange")
-	self:PlaySound(args.spellId, "alarm")
+	if self:MobId(args.sourceGUID) == 218103 then -- Nerubian Lord
+		self:Message(args.spellId, "orange", CL.frontal_cone)
+		self:PlaySound(args.spellId, "alarm")
+	end
 end
 
 function mod:LeechingSwarm(args)
@@ -150,24 +175,52 @@ end
 -- Nerubian Darkcaster
 
 function mod:ShadowsOfStrife(args)
-	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
+	self:Message(args.spellId, "red", CL.casting:format(CL.bomb))
 	self:PlaySound(args.spellId, "alert")
+end
+
+function mod:ShadowsOfStrifeApplied(args)
+	if self:Me(args.destGUID) then
+		self:Say(args.spellId, CL.bomb, nil, "Bomb")
+		self:SayCountdown(args.spellId, 8)
+	end
+end
+
+function mod:ShadowsOfStrifeRemoved(args)
+	if self:Me(args.destGUID) then
+		self:CancelSayCountdown(args.spellId)
+	end
 end
 
 -- Nerubian Captain / Nerubian Marauder
 
 function mod:WebbedAegis(args)
-	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
-	self:PlaySound(args.spellId, "alert")
+	local mobId = self:MobId(args.sourceGUID)
+	if mobId == 216584 or mobId == 228954 then -- Nerubian Captain, Nerubian Marauder
+		self:Message(args.spellId, "red", CL.casting:format(CL.shield))
+		self:PlaySound(args.spellId, "alert")
+	end
+end
+
+function mod:WebbedAegisApplied(args)
+	local mobId = self:MobId(args.sourceGUID)
+	if self:Dispeller("magic", true, args.spellId) and (mobId == 216584 or mobId == 228954) then -- Nerubian Captain, Nerubian Marauder
+		if self:Player(args.destFlags) then
+			self:TargetMessage(args.spellId, "green", args.destName, CL.shield)
+		else
+			self:Message(args.spellId, "red", CL.other:format(CL.shield, args.destName))
+			self:PlaySound(args.spellId, "alert")
+		end
+	end
 end
 
 do
 	local prev = 0
 	function mod:WideSwipe(args)
-		local t = args.time
-		if t - prev > 2 then
-			prev = t
-			self:Message(args.spellId, "purple")
+		local mobId = self:MobId(args.sourceGUID)
+		if args.time - prev > 2 and (mobId == 216584 or mobId == 228954) then -- Nerubian Captain, Nerubian Marauder
+			prev = args.time
+			self:Message(args.spellId, "purple", CL.frontal_cone)
 			self:PlaySound(args.spellId, "alarm")
 		end
 	end
@@ -176,15 +229,17 @@ end
 -- Chittering Fearmonger
 
 function mod:FearfulShriek(args)
-	self:Message(args.spellId, "orange")
+	self:Message(args.spellId, "orange", CL.fear)
 	self:PlaySound(args.spellId, "alarm")
 end
 
 -- Skittering Swarmer
 
 function mod:SkitterCharge(args)
-	self:Message(args.spellId, "yellow")
-	self:PlaySound(args.spellId, "alarm")
+	if self:MobId(args.sourceGUID) == 208245 then -- Skittering Swarmer
+		self:Message(args.spellId, "yellow", CL.charge)
+		self:PlaySound(args.spellId, "alarm")
+	end
 end
 
 -- Nerubian Webspinner

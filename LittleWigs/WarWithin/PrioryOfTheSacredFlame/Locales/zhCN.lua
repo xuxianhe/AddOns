@@ -11,8 +11,9 @@ if L then
 	L.arathi_knight = "阿拉希骑士"
 	L.arathi_footman = "阿拉希步兵"
 	L.devout_priest = "虔诚的牧师"
-	L.fanatical_mage = "狂热的法师"
+	L.fanatical_conjuror = "狂热的咒术师"
 	L.lightspawn = "光耀之子"
+	L.ardent_paladin = "热切的圣骑士"
 	L.risen_mage = "亡灵法师"
 	L.sir_braunpyke = "布朗派克爵士"
 

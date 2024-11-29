@@ -4,6 +4,9 @@
 
 local mod, CL = BigWigs:NewBoss("Erudax", 670, 134)
 if not mod then return end
+if mod:Retail() then
+	mod:SetJournalID(2619) -- Journal ID was changed in The War Within
+end
 mod:RegisterEnableMob(40484) -- Erudax
 mod:SetEncounterID(1049)
 mod:SetRespawnTime(30)
@@ -30,9 +33,13 @@ function mod:GetOptions()
 		450077, -- Void Surge
 		450088, -- Void Infusion
 		{450100, "TANK_HEALER"}, -- Crush
-		448057, -- Abyssal Corruption (Mythic)
+		-- Void Tendril
+		450087, -- Depth's Grasp
+		-- Mythic
+		{448057, "SAY"}, -- Abyssal Corruption
 	}, {
-		[448057] = CL.mythic, -- Abyssal Corruption
+		[450087] = -29619, -- Void Tendril
+		[448057] = CL.mythic,
 	}, {
 		[450088] = CL.adds, -- Void Infusion (Adds)
 	}
@@ -43,7 +50,13 @@ function mod:OnBossEnable()
 	self:Log("SPELL_CAST_START", "VoidSurge", 450077)
 	self:Log("SPELL_CAST_SUCCESS", "VoidInfusion", 450088)
 	self:Log("SPELL_CAST_START", "Crush", 450100)
+
+	-- Void Tendril
+	self:Log("SPELL_AURA_APPLIED", "DepthsGraspApplied", 450087)
+
+	-- Mythic
 	self:Log("SPELL_CAST_START", "AbyssalCorruption", 448057)
+	self:Log("SPELL_AURA_APPLIED", "AbyssalCorruptionApplied", 448057)
 end
 
 function mod:OnEngage()
@@ -112,10 +125,34 @@ function mod:Crush(args)
 	self:CDBar(args.spellId, 50.0)
 end
 
-function mod:AbyssalCorruption(args)
-	self:Message(args.spellId, "red")
-	self:PlaySound(args.spellId, "alert")
-	self:CDBar(args.spellId, 50.0)
+-- Void Tendril
+
+function mod:DepthsGraspApplied(args)
+	if self:Me(args.destGUID) then
+		self:PersonalMessage(args.spellId)
+		self:PlaySound(args.spellId, "alarm")
+	end
+end
+
+-- Mythic
+
+do
+	local playerList = {}
+
+	function mod:AbyssalCorruption(args)
+		playerList = {}
+		self:Message(args.spellId, "red", CL.casting:format(args.spellName))
+		self:CDBar(args.spellId, 50.0)
+	end
+
+	function mod:AbyssalCorruptionApplied(args)
+		playerList[#playerList + 1] = args.destName
+		self:TargetsMessage(args.spellId, "red", playerList, 2)
+		if self:Me(args.destGUID) then
+			self:Say(args.spellId, nil, nil, "Abyssal Corruption")
+		end
+		self:PlaySound(args.spellId, "alarm", nil, playerList)
+	end
 end
 
 --------------------------------------------------------------------------------

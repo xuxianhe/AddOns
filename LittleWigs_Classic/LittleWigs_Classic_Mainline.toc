@@ -1,4 +1,4 @@
-## Interface: 100207, 110000, 110002
+## Interface: 110005, 110007, 110002
 
 ## Title: LittleWigs [|cffeda55fClassic|r]
 ## Title-deDE: LittleWigs [|cffeda55fClassic|r]
@@ -18,4 +18,5 @@
 
 ## X-Category: Party
 
+#Deadmines\modules.xml
 #modules.xml

@@ -12,6 +12,7 @@ BigWigs:AddColors("Anub'zekt", {
 	[435012] = "purple",
 	[439506] = {"blue","orange"},
 	[442210] = "red",
+	["bloodstained_webmage"] = "cyan",
 })
 
 BigWigs:AddColors("Ki'katal the Harvester", {
@@ -23,16 +24,22 @@ BigWigs:AddColors("Ki'katal the Harvester", {
 })
 
 BigWigs:AddColors("Ara-Kara, City of Echoes Trash", {
+	[432967] = "cyan",
+	[433002] = "purple",
+	[433785] = "purple",
 	[433841] = "red",
 	[433845] = "orange",
 	[434252] = "yellow",
 	[434793] = "red",
 	[434802] = "red",
 	[434824] = "orange",
+	[434830] = "blue",
+	[436614] = {"blue","orange"},
 	[438622] = "yellow",
 	[438826] = {"blue","yellow"},
 	[438877] = "cyan",
 	[439208] = "green",
 	[448248] = "red",
 	[453161] = "orange",
+	[465012] = "yellow",
 })

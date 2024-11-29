@@ -1,4 +1,3 @@
-if not BigWigsLoader.isBeta then return end
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -35,9 +34,11 @@ end
 
 function mod:OnRegister()
 	self.displayName = L.kobold_trash
+	self:SetSpellRename(449071, CL.frontal_cone) -- Blazing Wick (Frontal Cone)
+	self:SetSpellRename(445210, CL.charge) -- Fire Charge (Charge)
 end
 
-local autotalk = mod:AddAutoTalkOption(true)
+local autotalk = mod:AddAutoTalkOption(false)
 function mod:GetOptions()
 	return {
 		autotalk,
@@ -46,12 +47,16 @@ function mod:GetOptions()
 		448399, -- Battle Cry
 		-- Spitfire Charger
 		445210, -- Fire Charge
+		445191, -- Wicklighter Volley
 		-- Spitfire Fusetender
 		448528, -- Throw Dynamite
-	}, {
+	},{
 		[449071] = L.kobold_taskfinder,
 		[445210] = L.spitfire_charger,
 		[448528] = L.spitfire_fusetender,
+	},{
+		[449071] = CL.frontal_cone, -- Blazing Wick (Frontal Cone)
+		[445210] = CL.charge, -- Fire Charge (Charge)
 	}
 end
 
@@ -62,12 +67,21 @@ function mod:OnBossEnable()
 	-- Kobold Taskfinder / Kobold Guardian
 	self:Log("SPELL_CAST_START", "BlazingWick", 449071)
 	self:Log("SPELL_CAST_START", "BattleCry", 448399)
+	self:Log("SPELL_AURA_APPLIED", "BattleCryApplied", 448399)
 
 	-- Spitfire Charger
 	self:Log("SPELL_CAST_START", "FireCharge", 445210)
+	self:Log("SPELL_CAST_START", "WicklighterVolley", 445191)
+	self:Log("SPELL_AURA_APPLIED", "WicklighterVolleyApplied", 445191)
 
 	-- Spitfire Fusetender
 	self:Log("SPELL_CAST_SUCCESS", "ThrowDynamite", 448528)
+
+	-- also enable the Rares module
+	local raresModule = BigWigs:GetBossModule("Delve Rares", true)
+	if raresModule then
+		raresModule:Enable()
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -87,7 +101,7 @@ function mod:GOSSIP_SHOW()
 		elseif self:GetGossipID(120018) then -- The Waterworks, start Delve (Foreman Bruknar)
 			-- 120018:|cFF0000FF(Delve)|r I'll rescue the rest of your workers from the kobolds.
 			self:SelectGossipID(120018)
-		elseif self:GetGossipID(120096) then
+		elseif self:GetGossipID(120096) then -- The Waterworks, continue Delve (Foreman Bruknar)
 			-- 120096:|cFF0000FF(Delve)|r I'll take the stomping shoes and use them to get your stolen goods back.
 			self:SelectGossipID(120096)
 		elseif self:GetGossipID(120081) then -- The Waterworks, start Delve (Pagsly)
@@ -103,7 +117,7 @@ end
 -- Kobold Taskfinder
 
 function mod:BlazingWick(args)
-	self:Message(args.spellId, "orange")
+	self:Message(args.spellId, "orange", CL.frontal_cone)
 	self:PlaySound(args.spellId, "alarm")
 end
 
@@ -112,11 +126,30 @@ function mod:BattleCry(args)
 	self:PlaySound(args.spellId, "alert")
 end
 
+function mod:BattleCryApplied(args)
+	if self:Dispeller("enrage", true) and args.sourceGUID == args.destGUID then -- Throttle to the caster
+		self:Message(args.spellId, "yellow", CL.other:format(args.spellName, args.destName))
+		self:PlaySound(args.spellId, "info")
+	end
+end
+
 -- Spitfire Charger
 
 function mod:FireCharge(args)
-	self:Message(args.spellId, "red")
+	self:Message(args.spellId, "orange", CL.charge)
 	self:PlaySound(args.spellId, "alarm")
+end
+
+function mod:WicklighterVolley(args)
+	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
+	self:PlaySound(args.spellId, "alert")
+end
+
+function mod:WicklighterVolleyApplied(args)
+	if self:Me(args.destGUID) then
+		self:PersonalMessage(args.spellId)
+		self:PlaySound(args.spellId, "info")
+	end
 end
 
 -- Spitfire Fusetender

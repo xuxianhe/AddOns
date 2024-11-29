@@ -16,15 +16,13 @@ local print = print
 local format = format
 local strsplit, strmatch, strlen, strsub = strsplit, strmatch, strlen, strsub
 
-local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
-local GetAddOnEnableState = GetAddOnEnableState
+local GetAddOnMetadata = C_AddOns.GetAddOnMetadata
+local GetAddOnEnableState = C_AddOns.GetAddOnEnableState
 local UnitName = UnitName
 local UnitClass = UnitClass
 local GetRealmName = GetRealmName
 local UIParent = UIParent
 local CreateFrame = CreateFrame
-local BNGetFriendInfo = BNGetFriendInfo
-local BNGetGameAccountInfo = BNGetGameAccountInfo
 
 -- Ace Libraries
 PA.AC = LibStub('AceConfig-3.0')
@@ -89,7 +87,7 @@ function PA:IsAddOnEnabled(addon, character)
 		character = nil
 	end
 
-	return GetAddOnEnableState(character, addon) == 2
+	return GetAddOnEnableState(addon, character) == 2
 end
 
 function PA:IsAddOnPartiallyEnabled(addon, character)
@@ -97,7 +95,7 @@ function PA:IsAddOnPartiallyEnabled(addon, character)
 		character = nil
 	end
 
-	return GetAddOnEnableState(character, addon) == 1
+	return GetAddOnEnableState(addon, character) == 1
 end
 
 PA.Title = GetAddOnMetadata('ProjectAzilroka', 'Title')
@@ -120,7 +118,6 @@ PA.ElvUI = PA:IsAddOnEnabled('ElvUI', PA.MyName)
 PA.SLE = PA:IsAddOnEnabled('ElvUI_SLE', PA.MyName)
 PA.NUI = PA:IsAddOnEnabled('ElvUI_NihilistzscheUI', PA.MyName)
 PA.Tukui = PA:IsAddOnEnabled('Tukui', PA.MyName)
-PA.AzilUI = PA:IsAddOnEnabled('AzilUI', PA.MyName)
 PA.SpartanUI = PA:IsAddOnEnabled('SpartanUI', PA.MyName)
 PA.AddOnSkins = PA:IsAddOnEnabled('AddOnSkins', PA.MyName)
 
@@ -128,7 +125,7 @@ PA.AddOnSkins = PA:IsAddOnEnabled('AddOnSkins', PA.MyName)
 local function GetoUF()
 	local key = PA.ElvUI and "ElvUI_Libraries" or PA.Tukui and "Tukui" or PA.SpartanUI and "SpartanUI"
 	if not key then return end
-	return _G[_G.GetAddOnMetadata(key, 'X-oUF')]
+	return _G[GetAddOnMetadata(key, 'X-oUF')]
 end
 PA.oUF = GetoUF()
 
@@ -148,7 +145,7 @@ end
 local Color = PA:GetClassColor(PA.MyClass)
 PA.ClassColor = { Color.r, Color.g, Color.b }
 
-PA.ScanTooltip = CreateFrame('GameTooltip', 'PAScanTooltip', _G.UIParent, 'GameTooltipTemplate')
+PA.ScanTooltip = CreateFrame('GameTooltip', 'PAScanTooltip', UIParent, 'GameTooltipTemplate')
 PA.ScanTooltip:SetOwner(_G.UIParent, "ANCHOR_NONE")
 
 PA.PetBattleFrameHider = CreateFrame('Frame', 'PA_PetBattleFrameHider', UIParent, 'SecureHandlerStateTemplate')
@@ -322,63 +319,181 @@ function PA:SetOutside(obj, anchor, xOffset, yOffset, anchor2)
 	obj:SetPoint('BOTTOMRIGHT', anchor2 or anchor, 'BOTTOMRIGHT', xOffset, -yOffset)
 end
 
-local accountInfo = { gameAccountInfo = {} }
-function PA:GetBattleNetInfo(friendIndex)
-	if not PA.Classic then
-		accountInfo = _G.C_BattleNet.GetFriendAccountInfo(friendIndex)
+-- backwards compatibility
+do
+	-- Unit Aura
+	local GetAuraDataByIndex = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
+	local UnpackAuraData = AuraUtil and AuraUtil.UnpackAuraData
+	local UnitAura = UnitAura
 
-		return accountInfo
-	else
-		local bnetIDAccount, accountName, battleTag, isBattleTag, _, bnetIDGameAccount, _, isOnline, lastOnline, isBnetAFK, isBnetDND, messageText, noteText, _, messageTime, _, isReferAFriend, canSummonFriend, isFavorite = BNGetFriendInfo(friendIndex)
+	function PA:GetAuraData(unitToken, index, filter)
+		if PA.Retail then
+			return UnpackAuraData(GetAuraDataByIndex(unitToken, index, filter))
+		else
+			return UnitAura(unitToken, index, filter)
+		end
+	end
 
-		if not bnetIDGameAccount then return end
+	-- GetMouseFocus
+	local GetMouseFocus = GetMouseFocus
+	local GetMouseFoci = GetMouseFoci
+	function PA:GetMouseFocus()
+		if GetMouseFoci then
+			local frames = GetMouseFoci()
+			return frames and frames[1]
+		else
+			return GetMouseFocus()
+		end
+	end
 
-		local hasFocus, characterName, client, realmName, realmID, faction, race, class, guild, zoneName, level, gameText, broadcastText, broadcastTime, _, toonID, _, isGameAFK, isGameBusy, guid, wowProjectID, mobile  = BNGetGameAccountInfo(bnetIDGameAccount)
+	-- EasyMenu
+	local HandleMenuList
+	HandleMenuList = function(root, menuList, submenu, depth)
+		if submenu then root = submenu end
 
-		accountInfo.bnetAccountID = bnetIDAccount
-		accountInfo.accountName = accountName
-		accountInfo.battleTag = battleTag
-		accountInfo.isBattleTagFriend = isBattleTag
-		accountInfo.isDND = isBnetDND
-		accountInfo.isAFK = isBnetAFK
-		accountInfo.isFriend = true
-		accountInfo.isFavorite = isFavorite
-		accountInfo.note = noteText
-		accountInfo.rafLinkType = 0
-		accountInfo.appearOffline = false
-		accountInfo.customMessage = messageText
-		accountInfo.lastOnlineTime = lastOnline
-		accountInfo.customMessageTime = messageTime
+		for _, list in next, menuList do
+			local previous
+			if list.isTitle then
+				root:CreateTitle(list.text)
+			elseif list.func or list.hasArrow then
+				local name = list.text or ('test'..depth)
 
-		accountInfo.gameAccountInfo.clientProgram = client or "App"
-		accountInfo.gameAccountInfo.richPresence = gameText ~= '' and gameText or PA.ACL["Mobile"]
-		accountInfo.gameAccountInfo.gameAccountID = bnetIDGameAccount
-		accountInfo.gameAccountInfo.isOnline = isOnline
-		accountInfo.gameAccountInfo.isGameAFK = isGameAFK
-		accountInfo.gameAccountInfo.isGameBusy = isGameBusy
-		accountInfo.gameAccountInfo.isWowMobile = mobile
-		accountInfo.gameAccountInfo.hasFocus = hasFocus
-		accountInfo.gameAccountInfo.canSummon = canSummonFriend
+				local func = (list.arg1 or list.arg2) and (function() list.func(nil, list.arg1, list.arg2) end) or list.func
+				local checked = list.checked and (not list.notCheckable and function() return list.checked(list) end) or E.noop
+				if checked then
+					previous = root:CreateCheckbox(list.text or name, checked, func)
+				else
+					previous = root:CreateButton(list.text or name, func)
+				end
+			end
 
-		if wowProjectID == _G.WOW_PROJECT_MAINLINE then
-			zoneName, realmName = strsplit("-", gameText)
+			if list.menuList then -- loop it
+				HandleMenuList(root, list.menuList, list.hasArrow and previous, depth + 1)
+			end
+		end
+	end
+
+	function PA:EasyMenu(menuList, menuFrame, anchor, x, y, displayMode, autoHideDelay)
+		if _G.EasyMenu then
+			_G.EasyMenu(menuList, menuFrame, anchor, x, y, displayMode, autoHideDelay)
+		else
+			_G.MenuUtil.CreateContextMenu(menuFrame, function(_, root) HandleMenuList(root, menuList, nil, 1) end)
+		end
+	end
+
+	-- Spell Book 
+	local BOOKTYPE_SPELL = (Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Player) or BOOKTYPE_SPELL
+	local BOOKTYPE_PET = (Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Pet) or BOOKTYPE_PET
+	local GetSpellBookItemName = C_SpellBook.GetSpellBookItemName or GetSpellBookItemName
+	local HasPetSpells = C_SpellBook.HasPetSpells or HasPetSpells
+
+	local GetSpellCooldown = C_Spell.GetSpellCooldown or function(info, bookType)
+		local startTime, duration, isEnabled, modRate = GetSpellCooldown(info, bookType)
+		return { startTime = startTime, duration = duration, isEnabled = isEnabled, modRate = modRate }
+	end
+
+	local GetSpellCharges = C_Spell.GetSpellCharges or function(index, bookType)
+		local currentCharges, maxCharges, cooldownStart, cooldownDuration, chargeModRate = GetSpellCharges(info, bookType)
+		return { currentCharges	= currentCharges, maxCharges = maxCharges, cooldownStartTime = cooldownStart, cooldownDuration = cooldownDuration, chargeModRate = chargeModRate }
+	end
+
+	local bookTypes = { SPELL = 1, FUTURESPELL = 2, PETACTION = 3, FLYOUT = 4 }
+	local GetSpellBookItemInfo = C_SpellBook.GetSpellBookItemInfo or function(index, bookType)
+		local spellType, id = GetSpellBookItemInfo(index, bookType)
+		local _, spellSubName = GetSpellBookItemName(index, bookType)
+		local name, _, icon, castTime, minRange, maxRange, spellID, originalIcon = GetSpellInfo(index, bookType)
+		return { actionID = id, spellID = spellID, itemType = bookTypes[spellType], name = name, subName = spellSubName or '', iconID = icon, isPassive = false, isOffSpec = false, skillLineIndex = index }
+	end
+
+	local GetSpellInfo = C_Spell.GetSpellInfo or function(index, bookType)
+		local name, _, iconID, castTime, minRange, maxRange, spellID, originalIcon = GetSpellInfo(index, bookType)
+		return { name = name, iconID = iconID, castTime = castTime, minRange = minRange, maxRange = maxRange, spellID = spellID, originalIcon = originalIcon }
+	end
+
+	local GetNumSpellBookSkillLines = C_SpellBook.GetNumSpellBookSkillLines or GetNumSpellTabs
+	local GetSpellBookSkillLineInfo = C_SpellBook.GetSpellBookSkillLineInfo or function(index)
+		local name, texture, offset, numSlots, isGuild, offspecID = GetSpellTabInfo(index)
+		return { name = name, iconID = texture, itemIndexOffset = offset, numSpellBookItems = numSlots, isGuild = isGuild, offSpecID = offspecID, shouldHide = false, specID = false }
+	end
+
+	-- Need for modules
+	PA.GetSpellInfo = GetSpellInfo
+	PA.GetSpellCooldown = GetSpellCooldown
+	PA.GetSpellCharges = GetSpellCharges
+
+	PA.SpellBook = { Complete = {}, Spells = {} }
+
+	-- Simpy Magic
+	local t = {}
+	for _, name in pairs({'SPELL_RECAST_TIME_SEC','SPELL_RECAST_TIME_MIN','SPELL_RECAST_TIME_CHARGES_SEC','SPELL_RECAST_TIME_CHARGES_MIN'}) do
+		t[name] = _G[name]:gsub('%%%.%dg','[%%d%%.]-'):gsub('%.$','%%.'):gsub('^(.-)$','^%1$')
+	end
+
+	local function scanTooltip(spellID)
+		PA.ScanTooltip:SetOwner(_G.UIParent, 'ANCHOR_NONE')
+		PA.ScanTooltip:SetSpellByID(spellID)
+		PA.ScanTooltip:Show()
+
+		for i = 2, 4 do
+			local str = _G['PAScanTooltipTextRight'..i]
+			local text = str and str:GetText()
+			if text then
+				for _, matchtext in next, t do
+					if strmatch(text, matchtext) then return true end
+				end
+			end
+		end
+	end
+
+	local function ScanSpellBook(bookType, numSpells, offset)
+		offset = offset or 0
+
+		for index = offset + 1, offset + numSpells do
+			local info = GetSpellBookItemInfo(index, bookType)
+			local flyoutID, spellName = PA.Retail and info.actionID or info.spellID
+
+			if info.itemType == 1 or info.itemType == 3 then
+				if not PA.Retail and info.subName then spellName = format('%s %s', info.name, info.subName) end
+				PA.SpellBook.Complete[info.spellID] = info
+				if scanTooltip(info.spellID) then PA.SpellBook.Spells[info.spellID] = spellName or true end
+			elseif info.itemType == 4 then
+				local _, _, numSlots, isKnown = GetFlyoutInfo(flyoutID)
+				if numSlots > 0 then
+					for flyoutIndex = 1, numSlots, 1 do
+						local flyoutSpellID, overrideId = GetFlyoutSlotInfo(flyoutID, flyoutIndex)
+						local spellID = overrideId or flyoutSpellID
+
+						PA.SpellBook.Complete[spellID] = GetSpellInfo(spellID)
+						if scanTooltip(spellID) then PA.SpellBook.Spells[spellID] = true end
+					end
+				end
+			end
 		end
 
-		local isWow = client == _G.BNET_CLIENT_WOW
+		PA.ScanTooltip:Hide()
+	end
 
-		accountInfo.gameAccountInfo.characterName = isWow and characterName
-		accountInfo.gameAccountInfo.factionName = isWow and faction ~= '' and faction
-		accountInfo.gameAccountInfo.playerGuid = isWow and guid
-		accountInfo.gameAccountInfo.wowProjectID = isWow and wowProjectID
-		accountInfo.gameAccountInfo.realmID = isWow and realmID
-		accountInfo.gameAccountInfo.realmDisplayName = isWow and realmName
-		accountInfo.gameAccountInfo.realmName = isWow and realmName
-		accountInfo.gameAccountInfo.areaName = isWow and zoneName
-		accountInfo.gameAccountInfo.className = isWow and class
-		accountInfo.gameAccountInfo.characterLevel = isWow and level
-		accountInfo.gameAccountInfo.raceName = isWow and race
+	function PA:SPELLS_CHANGED()
+		local numPetSpells = HasPetSpells()
+		if numPetSpells then
+			ScanSpellBook(BOOKTYPE_PET, numPetSpells)
 
-		return accountInfo
+			-- Process Modules Event
+			for _, module in PA:IterateModules() do
+				if module.SPELLS_CHANGED then
+					PA:CallModuleFunction(module, module.SPELLS_CHANGED)
+				end
+			end
+		end
+	end
+
+	function PA:ScanSpellBook()
+		for tab = 1, GetNumSpellBookSkillLines() do
+			local info = GetSpellBookSkillLineInfo(tab)
+			ScanSpellBook(BOOKTYPE_SPELL, info.numSpellBookItems, info.itemIndexOffset)
+		end
+
+		PA:SPELLS_CHANGED()
 	end
 end
 
@@ -455,7 +570,7 @@ function PA:BuildProfile()
 	PA.Options.args.profiles = LibStub('AceDBOptions-3.0'):GetOptionsTable(PA.data)
 	PA.Options.args.profiles.order = -2
 
-	PA.db = PA.data.profile
+	PA:SetupProfile()
 end
 
 function PA:SetupProfile()
@@ -478,8 +593,9 @@ function PA:PLAYER_LOGIN()
 
 	PA.AS = _G.AddOnSkins and _G.AddOnSkins[1]
 	PA.EP = LibStub('LibElvUIPlugin-1.0', true)
-
 	PA.Options.childGroups = PA.EC and 'tab' or 'tree'
+
+	PA:ScanSpellBook()
 
 	for _, module in PA:IterateModules() do
 		if module.BuildProfile then PA:CallModuleFunction(module, module.BuildProfile) end
@@ -497,13 +613,11 @@ function PA:PLAYER_LOGIN()
 	PA:UpdateCooldownSettings('all')
 
 	for _, module in PA:IterateModules() do
-		if module.GetOptions then
-			PA:CallModuleFunction(module, module.GetOptions)
-		end
-		if module.Initialize then
-			PA:CallModuleFunction(module, module.Initialize)
-		end
+		if module.GetOptions then PA:CallModuleFunction(module, module.GetOptions) end
+		if module.Initialize then PA:CallModuleFunction(module, module.Initialize) end
 	end
+
+	PA:RegisterEvent('SPELLS_CHANGED')
 end
 
 PA:RegisterEvent('PLAYER_LOGIN')

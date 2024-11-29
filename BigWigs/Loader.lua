@@ -27,6 +27,7 @@ do
 	public.isRetail = tbl.isRetail
 	public.isClassic = tbl.isClassic
 	public.isVanilla = tbl.isVanilla
+	public.season = tbl.season
 	public.isSeasonOfDiscovery = tbl.isSeasonOfDiscovery
 	public.isTBC = tbl.isTBC
 	public.isWrath = tbl.isWrath
@@ -39,7 +40,7 @@ do
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "fca9574" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "f8b0ae7" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.

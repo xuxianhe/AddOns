@@ -91,6 +91,18 @@ L.killed = "%s killed"
 L.mob_killed = "%s killed (%d/%d)"
 L.mob_remaining = "%s killed, %d remaining"
 
+-- NPCs for follower dungeons
+L.garrick = "Captain Garrick" -- AI paladin tank (NPC 209057)
+L.garrick_short = "*Garrick"
+L.meredy = "Meredy Huntswell" -- AI mage dps (NPC 209059)
+L.meredy_short = "*Meredy"
+L.shuja = "Shuja Grimaxe" -- AI shaman dps (NPC 214390)
+L.shuja_short = "*Shuja"
+L.crenna = "Crenna Earth-Daughter" -- AI druid healer (NPC 209072)
+L.crenna_short = "*Crenna"
+L.austin = "Austin Huxworth" -- AI hunter dps (NPC 209065)
+L.austin_short = "*Austin"
+
 -- Localizers note:
 -- The default mod:Berserk(600) uses spell ID 26662 to get the Berserk name
 L.custom_start = "%s engaged - %s in %d min"
@@ -212,3 +224,11 @@ L.soaks = "Soaks" -- Plural of L.soak
 L.spell_reflection = "Spell Reflection" -- Any ability that reflects spells
 L.parasite = "Parasite" -- Any ability where a parasite is involved e.g. "Parasitic Infection", "Parasitic Growth", etc
 L.rooted = "Rooted" -- Any ability that roots you in place, preventing you from moving
+
+-- Common ability name replacements A-Z
+L.dodge = "Dodge" -- When you need to continually run around to dodge abilities, like missiles landing on the ground under you
+L.health_drain = "Health Drain" -- Any ability that drains health from the player
+L.smash = "Smash" -- Short for any ability with the name "smash" in it e.g. "Darkrift Smash" or "Seismic Smash" or "Arcing Smash"
+L.spike = "Spike" -- Short for any ability with the name "spike" in it e.g. "Glacial Spike" or "Fel Spike" or "Volatile Spike"
+L.spikes = "Spikes" -- Plural of L.spike
+L.waves = "Waves" -- Multiple waves of a bad ability coming from a boss, like waves in the ocean

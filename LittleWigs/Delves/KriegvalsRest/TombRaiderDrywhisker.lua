@@ -1,4 +1,3 @@
-if not BigWigsLoader.isBeta then return end
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -37,8 +36,12 @@ end
 
 function mod:OnBossEnable()
 	self:Log("SPELL_CAST_START", "Flamestorm", 449242)
+	self:Log("SPELL_PERIODIC_DAMAGE", "FlamestormDamage", 449266)
+	self:Log("SPELL_PERIODIC_MISSED", "FlamestormDamage", 449266)
 	self:Log("SPELL_CAST_START", "GroundSlam", 449295)
 	self:Log("SPELL_CAST_START", "RagingTantrum", 449339)
+	self:Log("SPELL_INTERRUPT", "RagingTantrumInterrupt", 449339)
+	self:Log("SPELL_AURA_APPLIED", "RagingTantrumApplied", 449339)
 end
 
 function mod:OnEngage()
@@ -57,6 +60,17 @@ function mod:Flamestorm(args)
 	self:CDBar(args.spellId, 17.8)
 end
 
+do
+	local prev = 0
+	function mod:FlamestormDamage(args)
+		if self:Me(args.destGUID) and args.time - prev > 1.5 then
+			prev = args.time
+			self:PersonalMessage(449242, "underyou")
+			self:PlaySound(449242, "underyou")
+		end
+	end
+end
+
 function mod:GroundSlam(args)
 	self:Message(args.spellId, "orange")
 	self:PlaySound(args.spellId, "alarm")
@@ -67,4 +81,15 @@ function mod:RagingTantrum(args)
 	self:Message(args.spellId, "red", CL.casting:format(args.spellName))
 	self:PlaySound(args.spellId, "alert")
 	self:CDBar(args.spellId, 31.6)
+end
+
+function mod:RagingTantrumInterrupt(args)
+	self:Message(449339, "green", CL.interrupted_by:format(args.extraSpellName, self:ColorName(args.sourceName)))
+end
+
+function mod:RagingTantrumApplied(args)
+	if self:Dispeller("enrage", true) then
+		self:Message(args.spellId, "red", CL.onboss:format(args.spellName))
+		self:PlaySound(args.spellId, "info")
+	end
 end

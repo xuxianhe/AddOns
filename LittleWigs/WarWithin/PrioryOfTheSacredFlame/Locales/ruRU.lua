@@ -11,8 +11,9 @@ if L then
 	--L.arathi_knight = "Arathi Knight"
 	--L.arathi_footman = "Arathi Footman"
 	--L.devout_priest = "Devout Priest"
-	--L.fanatical_mage = "Fanatical Mage"
+	L.fanatical_conjuror = "Окудница-фанатичка"
 	--L.lightspawn = "Lightspawn"
+	L.ardent_paladin = "Ревностный паладин"
 	--L.risen_mage = "Risen Mage"
 	--L.sir_braunpyke = "Sir Braunpyke"
 

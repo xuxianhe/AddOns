@@ -1,4 +1,3 @@
-if not BigWigsLoader.isBeta then return end
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -32,6 +31,7 @@ end
 
 function mod:OnRegister()
 	self.displayName = L.under_lord_viktis
+	self:SetSpellRename(448634, CL.frontal_cone) -- Impale (Frontal Cone)
 end
 
 function mod:GetOptions()
@@ -39,6 +39,8 @@ function mod:GetOptions()
 		448634, -- Impale
 		448644, -- Burrowing Tremors
 		448663, -- Stinging Swarm
+	},nil,{
+		[448634] = CL.frontal_cone, -- Impale (Frontal Cone)
 	}
 end
 
@@ -52,9 +54,9 @@ function mod:OnEngage()
 	local t = GetTime()
 	nextImpale = t + 6.0
 	nextStingingSwarm = t + 26.6
-	self:CDBar(448634, 6.0) -- Impale
+	self:CDBar(448634, 6.0, CL.frontal_cone) -- Impale
 	self:CDBar(448644, 12.0) -- Burrowing Tremors
-	self:CDBar(448663, 26.6) -- Stinging Swarm
+	self:CDBar(448663, 23.1) -- Stinging Swarm
 end
 
 --------------------------------------------------------------------------------
@@ -62,37 +64,37 @@ end
 --
 
 function mod:Impale(args)
-	self:Message(args.spellId, "orange")
-	self:PlaySound(args.spellId, "alarm")
+	self:Message(args.spellId, "orange", CL.frontal_cone)
 	nextImpale = GetTime() + 14.5
-	self:CDBar(args.spellId, 14.5)
+	self:CDBar(args.spellId, 14.5, CL.frontal_cone)
+	self:PlaySound(args.spellId, "alarm")
 end
 
 function mod:BurrowingTremors(args)
 	local t = GetTime()
 	self:Message(args.spellId, "red")
+	self:CDBar(args.spellId, 31.5)
+	-- 10.91 minimum to Impale or Stinging Swarm
+	if nextImpale - t < 10.91 then
+		nextImpale = t + 10.91
+		self:CDBar(448634, {10.91, 14.5}, CL.frontal_cone) -- Impale
+	end
+	if nextStingingSwarm - t < 10.91 then
+		nextStingingSwarm = t + 10.91
+		self:CDBar(448663, {10.91, 32.8}) -- Stinging Swarm
+	end
 	self:PlaySound(args.spellId, "long")
-	self:CDBar(args.spellId, 31.6)
-	-- 14.56 minimum to Impale or Stinging Swarm
-	if nextImpale - t < 14.56 then
-		nextImpale = t + 14.56
-		self:CDBar(448634, 14.56) -- Impale
-	end
-	if nextStingingSwarm - t < 14.56 then
-		nextStingingSwarm = t + 14.56
-		self:CDBar(448663, {14.56, 32.8}) -- Stinging Swarm
-	end
 end
 
 function mod:StingingSwarm(args)
 	local t = GetTime()
 	self:Message(args.spellId, "yellow")
-	self:PlaySound(args.spellId, "alert")
-	nextStingingSwarm = GetTime() + 32.8
+	nextStingingSwarm = t + 32.8
 	self:CDBar(args.spellId, 32.8)
-	-- 8.87 minimum to Impale
-	if nextImpale - t < 8.87 then
-		nextImpale = t + 8.87
-		self:CDBar(448634, {8.87, 14.5}) -- Impale
+	-- 8.51 minimum to Impale
+	if nextImpale - t < 8.51 then
+		nextImpale = t + 8.51
+		self:CDBar(448634, {8.51, 14.5}, CL.frontal_cone) -- Impale
 	end
+	self:PlaySound(args.spellId, "alert")
 end

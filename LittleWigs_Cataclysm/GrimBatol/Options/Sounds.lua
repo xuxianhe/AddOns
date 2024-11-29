@@ -22,8 +22,9 @@ BigWigs:AddSounds("Forgemaster Throngus", {
 
 BigWigs:AddSounds("Drahga Shadowburner", {
 	[75218] = "info",
-	[82850] = {"alert","warning"},
+	[82850] = "warning",
 	[90950] = "alarm",
+	[447966] = "alert",
 	[448013] = "info",
 	[448105] = "alarm",
 	[450095] = "alert",
@@ -35,9 +36,10 @@ BigWigs:AddSounds("Erudax", {
 	[75664] = "alert",
 	[75755] = "alarm",
 	[75763] = "warning",
-	[448057] = "alert",
+	[448057] = "alarm",
 	[449939] = "info",
 	[450077] = "alert",
+	[450087] = "alarm",
 	[450088] = "long",
 	[450100] = "alert",
 })
@@ -45,9 +47,14 @@ BigWigs:AddSounds("Erudax", {
 BigWigs:AddSounds("Grim Batol Trash", {
 	[76711] = "alert",
 	[451224] = "alert",
+	[451241] = "alert",
+	[451364] = "alert",
+	[451378] = "alert",
 	[451387] = "info",
 	[451391] = {"alarm","info"},
-	[451613] = "alert",
+	[451395] = "alert",
+	[451612] = "alert",
+	[451614] = "underyou",
 	[451871] = "alert",
 	[451939] = "alarm",
 	[451965] = "info",
