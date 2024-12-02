@@ -10,7 +10,7 @@ local function configTable()
 	for key, icon in pairs(mMT.Media.Role) do
 		icons[key] = E:TextureString(icon, ":14:14") .. " " .. key
 	end
-	E.Options.args.mMT.args.cosmetic.args.roleicons.args = {
+	E.Options.args.mMT.args.unitframes.args.roleicons.args = {
 		header_roleicons = {
 			order = 1,
 			type = "group",
@@ -197,7 +197,7 @@ local function configTable()
 			inline = true,
 			name = L["Explanation"],
 			args = {
-				explanation = {
+				text = {
 					order = 1,
 					type = "description",
 					name = L["Attention! The path of the custom texture must comply with WoW standards. Example: Interface\\MYFOLDER\\MYFILE.tga. If you see a green box, the path is incorrect or you have a typo."],

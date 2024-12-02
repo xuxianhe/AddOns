@@ -3,8 +3,10 @@
 	<Script file="icons.lua"/>
 	<Script file="functions.lua"/>
 	<Script file="rollbutton.lua"/>
-	<Script file="chatbutton.lua"/>
 	<Script file="Tags.lua"/>
 	<Script file="afk.lua"/>
 	<Script file="cosmeticbars.lua"/>
+	<Script file="details.lua"/>
+	<Script file="minimap_aspect_ratio.lua"/>
+	<Script file="minimap_skin.lua"/>
 </Ui>

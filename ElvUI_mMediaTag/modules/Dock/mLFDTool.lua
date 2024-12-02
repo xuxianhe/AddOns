@@ -10,6 +10,7 @@ local format = format
 local _G = _G
 local IsInInstance = IsInInstance
 local PVEFrame_ToggleFrame = PVEFrame_ToggleFrame
+local UIParentLoadAddOn = UIParentLoadAddOn
 
 --Variables
 local mInstanceInfoText, keyText, mAffixesText, vaultinforaidText, vaultinfomplusText, vaultinfopvpText = {}, {}, {}, {}, {}, {}
@@ -42,15 +43,9 @@ local function MakeIconString(tank, healer, damage)
 	end
 
 	local str = ""
-	if tank then
-		str = str .. TANK_ICON
-	end
-	if healer then
-		str = str .. HEALER_ICON
-	end
-	if damage then
-		str = str .. DPS_ICON
-	end
+	if tank then str = str .. TANK_ICON end
+	if healer then str = str .. HEALER_ICON end
+	if damage then str = str .. DPS_ICON end
 
 	return str
 end
@@ -115,83 +110,52 @@ local function mLFDTooltip()
 	local _, hc, myth, mythp, other, title, tip = mMT:mColorDatatext()
 	local isMaxLevel = E:XPIsLevelMax()
 
-	mInstanceInfoText = mMT:InstanceInfo()
-	if mInstanceInfoText then
-		DT.tooltip:AddLine(" ")
-		DT.tooltip:AddLine(mInstanceInfoText[1])
-		DT.tooltip:AddLine(mInstanceInfoText[2])
-		DT.tooltip:AddLine(mInstanceInfoText[3])
-	end
-
-	if E.Retail and E.db.mMT.dockdatatext.lfd.keystone and isMaxLevel then
-		keyText = mMT:OwenKeystone()
-		if keyText then
+	local function addLines(lines)
+		if lines then
 			DT.tooltip:AddLine(" ")
-			DT.tooltip:AddLine(keyText[1])
-			DT.tooltip:AddLine(keyText[2])
-		end
-	end
-
-	if E.Retail and E.db.mMT.dockdatatext.lfd.score and isMaxLevel then
-		DT.tooltip:AddLine(" ")
-		DT.tooltip:AddDoubleLine(DUNGEON_SCORE, mMT:GetDungeonScore())
-	end
-
-	if E.Retail and E.db.mMT.dockdatatext.lfd.affix then
-		mAffixesText = mMT:WeeklyAffixes()
-		if mAffixesText then
-			DT.tooltip:AddLine(" ")
-			if mAffixesText[3] then
-				DT.tooltip:AddLine(mAffixesText[3])
-			else
-				DT.tooltip:AddLine(mAffixesText[1])
-				DT.tooltip:AddLine(mAffixesText[2])
+			for _, line in ipairs(lines) do
+				DT.tooltip:AddLine(line)
 			end
 		end
 	end
 
-	if E.Retail and E.db.mMT.dockdatatext.lfd.greatvault and isMaxLevel then
-		local vaultinfohighest, ok = nil, false
-		vaultinforaidText, vaultinfomplusText, vaultinfopvpText, vaultinfohighest, ok = mMT:mGetVaultInfo()
-		if ok then
+	addLines(mMT:InstanceInfo())
+
+	if E.Retail and isMaxLevel then
+		if E.db.mMT.dockdatatext.lfd.keystone then addLines(mMT:OwenKeystone()) end
+
+		if E.db.mMT.dockdatatext.lfd.score then
 			DT.tooltip:AddLine(" ")
-			DT.tooltip:AddLine(format("%s%s|r", title, GREAT_VAULT_REWARDS))
-
-			if vaultinfohighest then
-				DT.tooltip:AddDoubleLine(format("%s%s|r", other, L["Actual reward:"]), vaultinfohighest or "-")
-			end
-
-			if vaultinforaidText[1] then
-				DT.tooltip:AddDoubleLine(format("%sRaid|r", myth), format("%s, %s, %s", vaultinforaidText[1] or "-", vaultinforaidText[2] or "-", vaultinforaidText[3] or "-"))
-			end
-
-			if vaultinfomplusText[1] then
-				DT.tooltip:AddDoubleLine(format("%sMyth+|r", mythp), format("%s, %s, %s", vaultinfomplusText[1] or "-", vaultinfomplusText[2] or "-", vaultinfomplusText[3] or "-"))
-			end
-
-			if vaultinfopvpText[1] then
-				DT.tooltip:AddDoubleLine(format("%sPvP|r", hc), format("%s, %s, %s", vaultinfopvpText[1] or "-", vaultinfopvpText[2] or "-", vaultinfopvpText[3] or "-"))
-			end
+			DT.tooltip:AddDoubleLine(DUNGEON_SCORE, mMT:GetDungeonScore())
 		end
-		if C_WeeklyRewards.HasAvailableRewards() then
-			DT.tooltip:AddLine(" ")
-			DT.tooltip:AddLine(format("%s%s|r", title, GREAT_VAULT_REWARDS_WAITING))
+
+		if E.db.mMT.dockdatatext.lfd.affix then addLines(mMT:WeeklyAffixes()) end
+
+		if E.db.mMT.dockdatatext.lfd.greatvault then
+			local rewards = mMT:mGetVaultInfo()
+			if rewards then
+				DT.tooltip:AddLine(" ")
+				DT.tooltip:AddLine(format("%s%s|r", title, GREAT_VAULT_REWARDS))
+				DT.tooltip:AddDoubleLine(rewards.raid.name, table.concat(rewards.raid.rewards, WrapTextInColorCode(" - ", "FFFFFFFF")))
+				DT.tooltip:AddDoubleLine(rewards.dungeons.name, table.concat(rewards.dungeons.rewards, WrapTextInColorCode(" - ", "FFFFFFFF")))
+				DT.tooltip:AddDoubleLine(rewards.world.name, table.concat(rewards.world.rewards, WrapTextInColorCode(" - ", "FFFFFFFF")))
+			end
+			if C_WeeklyRewards.HasAvailableRewards() then
+				DT.tooltip:AddLine(" ")
+				DT.tooltip:AddLine(format("%s%s|r", title, GREAT_VAULT_REWARDS_WAITING))
+			end
 		end
 	end
 
 	DT.tooltip:AddLine(" ")
 	DT.tooltip:AddLine(format("%s %s%s|r", mMT:mIcon(mMT.Media.Mouse["LEFT"]), tip, L["left click to open LFD Window"]))
-	if E.Retail and E.db.mMT.dockdatatext.lfd.greatvault then
-		DT.tooltip:AddLine(format("%s %s%s|r", mMT:mIcon(mMT.Media.Mouse["RIGHT"]), tip, L["right click to open Great Vault Window"]))
-	end
+	if E.Retail and E.db.mMT.dockdatatext.lfd.greatvault then DT.tooltip:AddLine(format("%s %s%s|r", mMT:mIcon(mMT.Media.Mouse["RIGHT"]), tip, L["right click to open Great Vault Window"])) end
 end
 
 local function OnEnter(self)
 	mMT:Dock_OnEnter(self, Config)
 
-	if E.Retail then
-		mMT:UpdateNotificationState(self, C_WeeklyRewards.HasAvailableRewards())
-	end
+	if E.Retail then mMT:UpdateNotificationState(self, C_WeeklyRewards.HasAvailableRewards()) end
 
 	if E.db.mMT.dockdatatext.tip.enable then
 		DT.tooltip:ClearLines()
@@ -214,9 +178,7 @@ local function OnEvent(self, event)
 	local isRaid = IsInRaid()
 	local text = nil
 
-	if E.db.mMT.dockdatatext.lfd.cta and not inInstance then
-		text = getCallToArmsInfo()
-	end
+	if E.db.mMT.dockdatatext.lfd.cta and not inInstance then text = getCallToArmsInfo() end
 
 	if E.db.mMT.dockdatatext.lfd.difficulty and (inInstance or isGroup) then
 		if inInstance then
@@ -230,23 +192,17 @@ local function OnEvent(self, event)
 
 	self.mMT_Dock.TextA:SetText(text or "")
 
-	if E.Retail then
-		mMT:UpdateNotificationState(self, C_WeeklyRewards.HasAvailableRewards())
-	end
+	if E.Retail then mMT:UpdateNotificationState(self, C_WeeklyRewards.HasAvailableRewards()) end
 end
 
 local function OnLeave(self)
-	if E.db.mMT.dockdatatext.tip.enable then
-		DT.tooltip:Hide()
-	end
+	if E.db.mMT.dockdatatext.tip.enable then DT.tooltip:Hide() end
 
 	mMT:Dock_OnLeave(self, Config)
 end
 
 local function OnClick(self, button)
-	if E.Retail then
-		mMT:UpdateNotificationState(self, C_WeeklyRewards.HasAvailableRewards())
-	end
+	if E.Retail then mMT:UpdateNotificationState(self, C_WeeklyRewards.HasAvailableRewards()) end
 
 	if mMT:CheckCombatLockdown() then
 		mMT:Dock_Click(self, Config)
@@ -254,9 +210,7 @@ local function OnClick(self, button)
 			if button == "LeftButton" then
 				PVEFrame_ToggleFrame("GroupFinderFrame", _G.LFDParentFrame)
 			elseif E.Retail then
-				if not _G.WeeklyRewardsFrame then
-					LoadAddOn("Blizzard_WeeklyRewards")
-				end
+				if not _G.WeeklyRewardsFrame then UIParentLoadAddOn("Blizzard_WeeklyRewards") end
 				if _G.WeeklyRewardsFrame:IsVisible() then
 					_G.WeeklyRewardsFrame:Hide()
 				else
@@ -269,4 +223,16 @@ local function OnClick(self, button)
 	end
 end
 
-DT:RegisterDatatext(Config.name, Config.category, { "LFG_UPDATE_RANDOM_INFO", "CHALLENGE_MODE_START", "CHALLENGE_MODE_RESET", "CHALLENGE_MODE_COMPLETED", "GROUP_ROSTER_UPDATE", "CHAT_MSG_LOOT" }, OnEvent, nil, OnClick, OnEnter, OnLeave, Config.localizedName, nil, nil)
+DT:RegisterDatatext(
+	Config.name,
+	Config.category,
+	{ "LFG_UPDATE_RANDOM_INFO", "CHALLENGE_MODE_START", "CHALLENGE_MODE_RESET", "CHALLENGE_MODE_COMPLETED", "GROUP_ROSTER_UPDATE", "CHAT_MSG_LOOT" },
+	OnEvent,
+	nil,
+	OnClick,
+	OnEnter,
+	OnLeave,
+	Config.localizedName,
+	nil,
+	nil
+)

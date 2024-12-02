@@ -1,7 +1,10 @@
 local E = unpack(ElvUI)
+local DT = E:GetModule("DataTexts")
+local L = mMT.Locales
 
 --Lua functions
 local format = format
+local IsAddOnLoaded = _G.C_AddOns and _G.C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 
 function mMT:ConvertDB()
 	E.db.mMT.objectivetracker = {
@@ -57,6 +60,17 @@ function mMT:ConvertDB()
 			class = true,
 		},
 	}
+end
+
+function mMT:GetElvUIDataText(name)
+	local dt = DT.RegisteredDataTexts[name]
+
+	if dt and dt.category ~= "Data Broker" then return dt end
+end
+
+function mMT:ConnectVirtualFrameToDataText(dataTextName, virtualFrame)
+	local dt = self:GetElvUIDataText(dataTextName)
+	if dt.applySettings then dt.applySettings(virtualFrame, E.media.hexvaluecolor) end
 end
 
 function GetTableLng(tbl)
@@ -136,9 +150,7 @@ function mMT:Check_ElvUI_EltreumUI()
 end
 
 function mMT:mIcon(icon, x, y)
-	if icon then
-		return format("|T%s:%s:%s:0:0:64:64:4:60:4:60|t", icon, x or 16, y or 16)
-	end
+	if icon then return format("|T%s:%s:%s:0:0:64:64:4:60:4:60|t", icon, x or 16, y or 16) end
 end
 
 function mMT:mCurrencyLink(id)
