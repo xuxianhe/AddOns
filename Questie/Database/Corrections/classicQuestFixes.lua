@@ -136,6 +136,9 @@ function QuestieQuestFixes:Load()
             [questKeys.startedBy] = {{429,431,432,433,434,568,579,703,947},nil,{1962}},
             [questKeys.objectivesText] = {"Bring the Faded Shadowhide Pendant to Theocritus the Mage. NOTE: This is a very rare drop!"},
         },
+        [184] = { -- Furlbrow's Deed
+            [questKeys.startedBy] = {{116,474,583,880,881,6846,6866,6927},nil,{1972}},
+        },
         [201] = {
             [questKeys.triggerEnd] = {"Locate the hunters' camp", {[zoneIDs.STRANGLETHORN_VALE]={{35.65,10.59}}}},
         },
@@ -944,6 +947,9 @@ function QuestieQuestFixes:Load()
         },
         [1521] = {
             [questKeys.exclusiveTo] = {1518},
+        },
+        [1523] = {
+            [questKeys.startedBy] = {{5906}},
         },
         [1558] = {
             [questKeys.triggerEnd] = {"Go to the top of the Stonewrought Dam in Loch Modan.", {[zoneIDs.LOCH_MODAN]={{47.63,14.33}}}},

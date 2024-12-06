@@ -3813,6 +3813,9 @@ function CataQuestFixes.Load()
             [questKeys.preQuestSingle] = {},
             [questKeys.preQuestGroup] = {26886,26887},
         },
+        [25167] = { -- Breaking the chain
+            [questKeys.preQuestGroup] = {},
+        },
         [25171] = { -- Riding On
             [questKeys.preQuestSingle] = {25169},
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_TALK, l10n("Get a ride to Razor Hill"), 0, {{"monster", 10676}}}},
@@ -4357,7 +4360,11 @@ function CataQuestFixes.Load()
             [questKeys.preQuestSingle] = {25505},
             [questKeys.requiredSourceItems] = {54821},
         },
-        [25533] = { -- Pirate Accuracy Increasing
+        [25532] = { -- Pirate Accuracy Increasing (Alliance)
+            [questKeys.preQuestSingle] = {},
+            [questKeys.preQuestGroup] = {25515,25517,25524},
+        },
+        [25533] = { -- Pirate Accuracy Increasing (Horde)
             [questKeys.preQuestSingle] = {},
             [questKeys.preQuestGroup] = {25516,25518,25526},
         },
