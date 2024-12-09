@@ -2,19 +2,18 @@
 -- Module Declaration
 --
 
-if BigWigsLoader.isSeasonOfDiscovery then return end
-local mod, CL = BigWigs:NewBoss("Ysondre", -1444)
+local mod, CL = BigWigs:NewBoss("Lethon Season of Discovery", 2832)
 if not mod then return end
-mod:RegisterEnableMob(14887)
+mod:RegisterEnableMob(235180)
+mod:SetEncounterID(3112)
 mod:SetAllowWin(true)
-mod.otherMenu = -947
-mod.worldBoss = 14887
 
 --------------------------------------------------------------------------------
 -- Locals
 --
 
 local warnHP = 80
+local whirlCount = 0
 
 --------------------------------------------------------------------------------
 -- Localization
@@ -22,9 +21,7 @@ local warnHP = 80
 
 local L = mod:GetLocale()
 if L then
-	L.bossName = "Ysondre"
-
-	L.engage_trigger = "The strands of LIFE have been severed! The Dreamers must be avenged!"
+	L.bossName = "Lethon"
 end
 
 --------------------------------------------------------------------------------
@@ -33,16 +30,15 @@ end
 
 function mod:GetOptions()
 	return {
-		-- 24819, -- Lightning Wave
-		24795, -- Summon Demented Druid Spirit
+		24821, -- Shadow Bolt Whirl
+		1214002, -- Draw Spirit
 		-- Shared
-		24818, -- Noxious Breath
+		1213170, -- Noxious Breath
 		24814, -- Seeping Fog
 	},{
-		[24818] = CL.general,
+		[1213170] = CL.general,
 	},{
-		[24795] = CL.adds, -- Summon Demented Druid Spirit (Adds)
-		[24818] = CL.breath, -- Noxious Breath (Breath)
+		[1213170] = CL.breath, -- Noxious Breath (Breath)
 	}
 end
 
@@ -51,36 +47,27 @@ function mod:OnRegister()
 end
 
 function mod:OnBossEnable()
-	self:RegisterEvent("CHAT_MSG_MONSTER_YELL")
-
-	self:Log("SPELL_CAST_SUCCESS", "NoxiousBreath", 24818)
-	self:Log("SPELL_AURA_APPLIED", "NoxiousBreathApplied", 24818)
-	self:Log("SPELL_AURA_APPLIED_DOSE", "NoxiousBreathApplied", 24818)
+	self:Log("SPELL_CAST_SUCCESS", "NoxiousBreath", 1213170)
+	self:Log("SPELL_AURA_APPLIED", "NoxiousBreathApplied", 1213170)
+	self:Log("SPELL_AURA_APPLIED_DOSE", "NoxiousBreathApplied", 1213170)
 	self:Log("SPELL_CAST_SUCCESS", "SeepingFog", 24814)
-	self:Log("SPELL_CAST_SUCCESS", "SummonDementedDruidSpirit", 24795)
-
-	self:RegisterEvent("PLAYER_REGEN_DISABLED", "CheckForEngage")
-
-	self:Death("Win", 14887)
+	self:Log("SPELL_CAST_SUCCESS", "DrawSpirit", 1214002)
+	self:Log("SPELL_DAMAGE", "ShadowBoltWhirlDamage", 24820, 24821, 24822, 24823, 24835, 24836, 24837, 24838)
+	self:Log("SPELL_MISSED", "ShadowBoltWhirlDamage", 24820, 24821, 24822, 24823, 24835, 24836, 24837, 24838)
 end
 
 function mod:OnEngage()
 	warnHP = 80
+	whirlCount = 0
 	self:RegisterEvent("UNIT_HEALTH")
-	self:RegisterEvent("PLAYER_REGEN_ENABLED", "CheckForWipe")
+	self:Message(1213170, "yellow", CL.custom_start_s:format(self.displayName, CL.breath, 10), false)
+	self:Bar(1213170, 10, CL.breath) -- Noxious Breath
+	self:Bar(24821, 20) -- Shadow Bolt Whirl
 end
 
 --------------------------------------------------------------------------------
 -- Event Handlers
 --
-
-function mod:CHAT_MSG_MONSTER_YELL(_, msg)
-	if msg:find(L.engage_trigger, nil, true) then
-		self:Engage()
-		self:Message(24818, "yellow", CL.custom_start_s:format(self.displayName, CL.breath, 10), false)
-		self:Bar(24818, 10, CL.breath) -- Noxious Breath
-	end
-end
 
 function mod:NoxiousBreath(args)
 	self:Bar(args.spellId, 10, CL.breath)
@@ -108,18 +95,35 @@ do
 	end
 end
 
-function mod:SummonDementedDruidSpirit(args)
-	self:Message(args.spellId, "cyan", CL.incoming:format(CL.adds), false)
+function mod:DrawSpirit(args)
+	self:Message(args.spellId, "red")
+	self:Bar(args.spellId, 5)
 	self:PlaySound(args.spellId, "long")
 end
 
+do
+	local prev = 0
+	function mod:ShadowBoltWhirlDamage(args) -- Bolts are fired 4x on left side then 4x on right side of the dragon, repeating
+		if args.time-prev > 4 then
+			prev = args.time
+			whirlCount = whirlCount + 1
+			if whirlCount == 4 then
+				whirlCount = 0
+				self:Message(24821, "yellow", CL.count:format(self:SpellName(24821), 4))
+				self:Bar(24821, 20)
+				self:PlaySound(24821, "alert")
+			end
+		end
+	end
+end
+
 function mod:UNIT_HEALTH(event, unit)
-	if self:MobId(self:UnitGUID(unit)) == 14887 then
+	if self:MobId(self:UnitGUID(unit)) == 235180 then
 		local hp = self:GetHealth(unit)
 		if hp < warnHP then -- 80, 55, 30
 			warnHP = warnHP - 25
 			if hp > warnHP then -- avoid multiple messages when joining mid-fight
-				self:Message(24795, "cyan", CL.soon:format(CL.adds), false)
+				self:Message(1214002, "red", CL.soon:format(self:SpellName(1214002)), false) -- Draw Spirit
 			end
 			if warnHP < 30 then
 				self:UnregisterEvent(event)
