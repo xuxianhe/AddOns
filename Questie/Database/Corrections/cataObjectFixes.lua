@@ -10,6 +10,7 @@ local ZoneDB = QuestieLoader:ImportModule("ZoneDB")
 function CataObjectFixes.Load()
     local objectKeys = QuestieDB.objectKeys
     local zoneIDs = ZoneDB.zoneIDs
+    local waypointPresets = QuestieDB.waypointPresets
 
     return {
         [2712] = { -- Calcified Elven Gem
@@ -292,6 +293,14 @@ function CataObjectFixes.Load()
         [204091] = { -- Induction Samophlange
             [objectKeys.spawns] = {[zoneIDs.AZSHARA]={{55.28,49.89}}},
         },
+        [204279] = { -- Spool of Rope
+            [objectKeys.spawns] = {[zoneIDs.DEEPHOLM]={{61.79,46.28}}},
+            [objectKeys.waypoints] = waypointPresets.ALLIANCE_GUNSHIP,
+        },
+        [204280] = { -- Bottle of Whiskey
+            [objectKeys.spawns] = {[zoneIDs.DEEPHOLM]={{61.79,46.28}}},
+            [objectKeys.waypoints] = waypointPresets.ALLIANCE_GUNSHIP,
+        },
         [204281] = { -- Worm Mound
             [objectKeys.spawns] = {[1519]={{49.24,18.03},{52.53,14.86},{64.01,16.59},{63.39,5.73},{64.93,8.47},{56.45,22.58},{55.73,16.51},{53.73,19.56},{60.51,6.85},{58.05,10.49},{62.12,17.65},{59.07,20.64}}},
         },
@@ -310,10 +319,6 @@ function CataObjectFixes.Load()
             [objectKeys.spawns] = {[zoneIDs.EASTERN_PLAGUELANDS]={{77.86,70.85}}},
             [objectKeys.zoneID] = zoneIDs.EASTERN_PLAGUELANDS,
         },
-        [206585] = { -- Totem of Ruumbo
-            [objectKeys.questStarts] = {27989,27994,27995},
-            [objectKeys.questEnds] = {27989,27994,28100},
-        },
         [206111] = { -- Hero's Call Board -- Stormwind AH
             [objectKeys.spawns] = {[zoneIDs.STORMWIND_CITY] = {{62.86,71.49}}},
             [objectKeys.zoneID] = zoneIDs.STORMWIND_CITY,
@@ -323,6 +328,21 @@ function CataObjectFixes.Load()
             [objectKeys.spawns] = {[zoneIDs.STORMWIND_CITY] = {{62.23,29.86}}},
             [objectKeys.zoneID] = zoneIDs.STORMWIND_CITY,
             [objectKeys.questStarts] = {27724,27726,27727,28551,28552,28558,28562,28563,28564,28576,28578,28579,28582,28666,28673,28675,28699,28702,28708,28709,28716,29156,29387,29391},
+        },
+        [206320] = { -- Wild Black Dragon Egg
+            [objectKeys.spawns] = {[zoneIDs.BADLANDS]={{73.72,48.82},{65.32,53.65},{64.59,49.09},{72.68,49.58},{65.05,50.85},{65.15,47.31},{66.58,45.8},{67.55,45.7},{67.91,44.59},{68.99,42.67},{72.69,39.42},{73.41,42.84},{69.16,53.41},{71.04,53.64},{69.52,37.81},{69.35,39.53},{68.29,43.55},{74.12,44.57},{71.49,49.73},{73.73,43.71},{71.25,52.02},{70.28,54.17},{73.16,41.22},{74.84,46.06},{74.4,47.56},{72.22,38.14},{70.61,37.55},{68.97,41.04}}},
+        },
+        [206550] = { -- The Sun
+            [objectKeys.spawns] = {[zoneIDs.BADLANDS] = {{49.13,57.28},{54.02,46.75},{17.07,65.65},{14.32,53.07},{22.85,47.96},{35.5,50.75},{27.27,38.97},{33.84,36.98},{28.34,58.8},{39.33,59.84},{44.18,35.91}}},
+            [objectKeys.zoneID] = zoneIDs.BADLANDS,
+        },
+        [206585] = { -- Totem of Ruumbo
+            [objectKeys.questStarts] = {27989,27994,27995},
+            [objectKeys.questEnds] = {27989,27994,28100},
+        },
+        [207162] = { -- Crate of Fine Cloth
+            [objectKeys.spawns] = {[zoneIDs.TWILIGHT_HIGHLANDS] = {{80.78,29.09}}},
+            [objectKeys.waypoints] = {[zoneIDs.TWILIGHT_HIGHLANDS] = {{{73.69,52.50},{73.23,52.59},{72.21,52.53},{71.32,51.62},{70.61,50.03},{70.43,48.73},{70.44,47.08},{70.59,45.07},{70.76,43.60},{70.99,41.88},{71.24,40.05},{71.49,38.21},{71.71,36.51},{71.87,34.99},{72.02,33.05},{72.09,31.44},{72.09,29.95},{72.04,28.35},{71.89,26.64},{71.67,24.97},{71.45,23.37},{71.23,21.62},{71.00,19.88},{70.88,18.34},{71.05,16.48},{71.66,15.10},{72.79,14.50},{73.94,14.23},{75.09,14.03},{76.18,14.47},{76.64,14.85},{76.66,14.87},{77.31,15.28},{78.36,16.28},{78.92,17.55},{79.36,18.90},{79.77,20.57},{80.14,22.60},{80.34,24.12},{80.50,25.68},{80.65,27.38},{80.79,29.16},{80.91,30.98},{81.02,32.79},{81.13,34.53},{81.24,36.27},{81.39,38.10},{81.54,39.96},{81.67,41.80},{81.75,43.53},{81.75,45.10},{81.65,46.47},{81.24,48.18},{80.50,49.45},{79.58,50.30},{78.58,50.99},{77.52,51.59},{76.29,52.00},{75.06,52.26},{74.02,52.44},{73.69,52.50}}}},
         },
         [207320] = { -- Hero's Call Board -- Ironforge
             [objectKeys.spawns] = {[zoneIDs.IRONFORGE] = {{25.46,69.78}}},
@@ -722,6 +742,21 @@ function CataObjectFixes.Load()
             [objectKeys.spawns] = {[zoneIDs.REDRIDGE_MOUNTAINS]={{71.94,44.82}}},
             [objectKeys.zoneID] = zoneIDs.REDRIDGE_MOUNTAINS,
         },
+        [460022] = {
+            [objectKeys.name] = "Cultist Cage",
+            [objectKeys.spawns] = {[zoneIDs.WESTERN_PLAGUELANDS]={{64.71,46.24},{67.17,45.51},{68.03,47.98},{67.58,46.85},{64.98,47.89},{65.56,46.69},{65.65,49.15},{66.74,48.84},{67.2,48.55},{66.69,47.04}}},
+            [objectKeys.zoneID] = zoneIDs.WESTERN_PLAGUELANDS,
+        },
+        [460024] = {
+            [objectKeys.name] = "Timeless Eye",
+            [objectKeys.spawns] = {[zoneIDs.TANARIS]={{57.89,56.05}}},
+            [objectKeys.zoneID] = zoneIDs.TANARIS,
+        },
+        [460025] = {
+            [objectKeys.name] = "Timeless Eye",
+            [objectKeys.spawns] = {[5786]={{59.2,20.4}},[zoneIDs.THE_NEXUS] = {{-1,-1}}},
+            [objectKeys.zoneID] = 5786,
+        },
     }
 end
 
@@ -732,6 +767,21 @@ function CataObjectFixes:LoadFactionFixes()
     local objectFixesHorde = {
         [180449] = { -- Forsaken Stink Bomb
             [objectKeys.spawns] = {[zoneIDs.STORMWIND_CITY]={{71.9,73.37},{72.97,66.13},{73.77,59.68},{73.62,52.32},{71.2,46.14},{65.58,40.17},{61.68,30.26},{62.75,33.49},{58.73,36.76},{55.11,44.8},{55.47,48.75},{58.21,53.72},{54.01,54.66},{50.43,52.9},{46.47,53.99},{48.12,62.84},{48.34,67.39},{50.01,71.56},{53.45,71.01},{57.88,68.15},{60.17,71.63},{62.18,73.99},{65.23,75.58},{67.4,79.36}}},
+        },
+        [180743] = { -- Carefully Wrapped Present
+            [objectKeys.spawns] = {[zoneIDs.ORGRIMMAR]={{49.29,78.27}}},
+        },
+        [180746] = { -- Gently Shaken Gift
+            [objectKeys.spawns] = {[zoneIDs.ORGRIMMAR]={{49.19,77.75}}},
+        },
+        [180747] = { -- Gaily Wrapped Present
+            [objectKeys.spawns] = {[zoneIDs.ORGRIMMAR]={{49.53,78.1}}},
+        },
+        [180748] = { -- Ticking Present
+            [objectKeys.spawns] = {[zoneIDs.ORGRIMMAR]={{49.19,77.75}}},
+        },
+        [180793] = { -- Festive Gift
+            [objectKeys.spawns] = {[zoneIDs.ORGRIMMAR]={{49.54,77.82}}},
         },
         [186189] = { -- Complimentary Brewfest Sampler
             [objectKeys.spawns] = {[zoneIDs.DUROTAR]={{41.56,17.56},{41.52,17.5},{41.39,17.42},{40.74,16.82},{40.34,16.81},{40.13,17.48},{40.39,18.04},{40.85,18.28},{40.9,18.31}}},
@@ -750,6 +800,9 @@ function CataObjectFixes:LoadFactionFixes()
                 [zoneIDs.EVERSONG_WOODS]={{47.58,46.24}},
             },
         },
+        [187236] = { -- Winter Veil Gift
+            [objectKeys.spawns] = {[zoneIDs.ORGRIMMAR]={{49.39,77.62}}},
+        },
         [195122] = { -- Forsaken Stink Bomb Cloud
             [objectKeys.spawns] = {[zoneIDs.UNDERCITY]={{83.7,47.97},{81.66,37.08},{77.76,27.23},{64.27,19.51},{54.97,24.69},{51.59,31.68},{49.66,41.7},{51.01,53.73},{56.21,63.97},{63.71,68.2},{71.03,63.23},{78.75,59.37},{84.11,52.19},{71.06,20.77},{65.98,24.28},{66.01,37.53},{67.8,41.42},{64.28,41.54},{63.66,47.05},{67.2,47.66},{69.54,38.78},{68.4,33.68},{63.31,33.81},{59.41,39.68},{58.97,47.16},{62.18,53.13},{67.4,55.15},{71.57,51.18},{73.04,44.58},{71.95,38.48},{65.9,31.49},{62.32,20.03},{57.95,22.51}}},
         },
@@ -761,6 +814,21 @@ function CataObjectFixes:LoadFactionFixes()
     local objectFixesAlliance = {
         [180449] = { -- Forsaken Stink Bomb
             [objectKeys.spawns] = {[zoneIDs.UNDERCITY]={{83.7,47.97},{81.66,37.08},{77.76,27.23},{64.27,19.51},{54.97,24.69},{51.59,31.68},{49.66,41.7},{51.01,53.73},{56.21,63.97},{63.71,68.2},{71.03,63.23},{78.75,59.37},{84.11,52.19},{71.06,20.77},{65.98,24.28},{66.01,37.53},{67.8,41.42},{64.28,41.54},{63.66,47.05},{67.2,47.66},{69.54,38.78},{68.4,33.68},{63.31,33.81},{59.41,39.68},{58.97,47.16},{62.18,53.13},{67.4,55.15},{71.57,51.18},{73.04,44.58},{71.95,38.48},{65.9,31.49},{62.32,20.03},{57.95,22.51}}},
+        },
+        [180743] = {
+            [objectKeys.spawns] = {[zoneIDs.IRONFORGE]={{33.86,65.69}}},
+        },
+        [180746] = {
+            [objectKeys.spawns] = {[zoneIDs.IRONFORGE]={{33.46,65.57}}},
+        },
+        [180747] = {
+            [objectKeys.spawns] = {[zoneIDs.IRONFORGE]={{33.78,66.4}}},
+        },
+        [180748] = {
+            [objectKeys.spawns] = {[zoneIDs.IRONFORGE]={{33.9,66.68}}},
+        },
+        [180793] = {
+            [objectKeys.spawns] = {[zoneIDs.IRONFORGE]={{33.96,65.86}}},
         },
         [186189] = { -- Complimentary Brewfest Sampler
             [objectKeys.spawns] = {[zoneIDs.DUN_MOROGH]={{54.03,38.92},{54.03,38.95},{54.17,38.31},{54.67,37.93},{54.8,37.9},{54.69,37.94},{55.32,37.26},{55.3,37.28},{55.7,38.16},{55.67,38.17},{56.53,36.68},{55.63,36.48},{55.65,36.48},{56.26,37.94},{56.26,37.97},{55.9,36.43},{55.9,36.4},{56.29,37.96},{59.79,33.5},{59.77,33.51}}},
@@ -778,6 +846,9 @@ function CataObjectFixes:LoadFactionFixes()
                 [zoneIDs.DUN_MOROGH]={{53.53,52.09}},
                 [zoneIDs.AZUREMYST_ISLE]={{48.99,51.02}},
             },
+        },
+        [187236] = { -- Winter Veil Gift
+            [objectKeys.spawns] = {[zoneIDs.IRONFORGE]={{33.71,65.85}}},
         },
         [195122] = { -- Forsaken Stink Bomb Cloud
             [objectKeys.spawns] = {[zoneIDs.STORMWIND_CITY]={{71.9,73.37},{72.97,66.13},{73.77,59.68},{73.62,52.32},{71.2,46.14},{65.58,40.17},{61.68,30.26},{62.75,33.49},{58.73,36.76},{55.11,44.8},{55.47,48.75},{58.21,53.72},{54.01,54.66},{50.43,52.9},{46.47,53.99},{48.12,62.84},{48.34,67.39},{50.01,71.56},{53.45,71.01},{57.88,68.15},{60.17,71.63},{62.18,73.99},{65.23,75.58},{67.4,79.36}}},

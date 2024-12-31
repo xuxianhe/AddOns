@@ -49,6 +49,9 @@ function SeasonOfDiscovery:LoadQuests()
         [8742] = { -- The Might of Kalimdor
             [questKeys.preQuestGroup] = {8741,86442,86445},
         },
+        [8801] = { -- C'Thun's Legacy
+            [questKeys.nextQuestInChain] = 86670,
+        },
         [8922] = { -- A Supernatural Device
             [questKeys.preQuestSingle] = {84147,84148,84149,84150,84151,84152,84153,84154},
         },
@@ -816,10 +819,12 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.zoneOrSort] = sortKeys.SEASONAL,
         },
         [79486] = { -- A Smokywood Pastures' Thank You! (Alliance)
+            [questKeys.preQuestSingle] = {79484},
             [questKeys.questFlags] = questFlags.RAID,
             [questKeys.zoneOrSort] = sortKeys.SEASONAL,
         },
         [79487] = { -- A Smokywood Pastures' Thank You! (Horde)
+            [questKeys.preQuestSingle] = {79485},
             [questKeys.questFlags] = questFlags.RAID,
             [questKeys.zoneOrSort] = sortKeys.SEASONAL,
         },
@@ -2619,81 +2624,97 @@ function SeasonOfDiscovery:LoadQuests()
         },
         [84179] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.DRUID,
+            [questKeys.objectives] = {nil,nil,{{226713},{226709},{226710}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.IRONFORGE,
         },
         [84180] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.HUNTER,
+            [questKeys.objectives] = {nil,nil,{{226722},{226719},{226716}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.IRONFORGE,
         },
         [84181] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.MAGE,
+            [questKeys.objectives] = {nil,nil,{{226730},{226727},{226726}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.IRONFORGE,
         },
         [84182] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.PALADIN,
+            [questKeys.objectives] = {nil,nil,{{226738},{226736},{226735}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.IRONFORGE,
         },
         [84183] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.PRIEST,
+            [questKeys.objectives] = {nil,nil,{{226743},{226747},{226741}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.IRONFORGE,
         },
         [84184] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.ROGUE,
+            [questKeys.objectives] = {nil,nil,{{226703},{226705},{226706}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.IRONFORGE,
         },
         [84185] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.WARLOCK,
+            [questKeys.objectives] = {nil,nil,{{226763},{226760},{226756}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.IRONFORGE,
         },
         [84186] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.WARRIOR,
+            [questKeys.objectives] = {nil,nil,{{226764},{226767},{226768}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.IRONFORGE,
         },
         [84187] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.DRUID,
+            [questKeys.objectives] = {nil,nil,{{226713},{226709},{226710}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.ORGRIMMAR,
         },
         [84188] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.HUNTER,
+            [questKeys.objectives] = {nil,nil,{{226722},{226719},{226716}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.ORGRIMMAR,
         },
         [84189] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.MAGE,
+            [questKeys.objectives] = {nil,nil,{{226730},{226727},{226726}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.ORGRIMMAR,
         },
         [84190] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.PRIEST,
+            [questKeys.objectives] = {nil,nil,{{226743},{226747},{226741}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.ORGRIMMAR,
         },
         [84191] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.ROGUE,
+            [questKeys.objectives] = {nil,nil,{{226703},{226705},{226706}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.ORGRIMMAR,
         },
         [84192] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.SHAMAN,
+            [questKeys.objectives] = {nil,nil,{{226752},{226750},{226753}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.ORGRIMMAR,
         },
         [84193] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.WARLOCK,
+            [questKeys.objectives] = {nil,nil,{{226763},{226760},{226756}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.ORGRIMMAR,
         },
         [84194] = { -- Anthion's Parting Words
             [questKeys.requiredClasses] = classIDs.WARRIOR,
+            [questKeys.objectives] = {nil,nil,{{226764},{226767},{226768}}},
             [questKeys.preQuestSingle] = {9015},
             [questKeys.zoneOrSort] = zoneIDs.ORGRIMMAR,
         },
@@ -2860,6 +2881,11 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.preQuestSingle] = {84319},
             [questKeys.objectives] = {nil,nil,{{227690}}},
             [questKeys.zoneOrSort] = sortKeys.PALADIN,
+        },
+        [84331] = { -- The Miracle
+            [questKeys.objectives] = {nil,{{462201}}},
+            [questKeys.preQuestSingle] = {84329},
+            [questKeys.zoneOrSort] = sortKeys.PRIEST,
         },
         [84332] = { -- A Thane's Gratitude
             [questKeys.preQuestSingle] = {84414},
@@ -3910,6 +3936,19 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.reputationReward] = {{factionIDs.BROOD_OF_NOZDORMU,200}},
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_EVENT, l10n("Use Arcanite Buoy"),0,{{"object", 180669}}}},
         },
+        [86449] = { -- Treasure of the Timeless One
+            [questKeys.preQuestSingle] = {8742},
+            [questKeys.zoneOrSort] = zoneIDs.SILITHUS,
+            [questKeys.requiredMinRep] = {factionIDs.BROOD_OF_NOZDORMU,0},
+            [questKeys.reputationReward] = {{factionIDs.BROOD_OF_NOZDORMU,200}},
+        },
+        [86670] = { -- The Savior of Kalimdor
+            [questKeys.startedBy] = {{15379}},
+            [questKeys.finishedBy] = {{15192}},
+            [questKeys.preQuestSingle] = {8801},
+            [questKeys.zoneOrSort] = zoneIDs.AHN_QIRAJ,
+            [questKeys.reputationReward] = {{factionIDs.CENARION_CIRCLE,200},{factionIDs.BROOD_OF_NOZDORMU,1000}},
+        },
         [86671] = { -- Imperial Qiraji Regalia
             [questKeys.startedBy] = {{15378}},
             [questKeys.finishedBy] = {{15378}},
@@ -3919,6 +3958,12 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.startedBy] = {{15378}},
             [questKeys.finishedBy] = {{15378}},
             [questKeys.zoneOrSort] = zoneIDs.AHN_QIRAJ,
+        },
+        [86673] = { -- The Fall of Ossirian
+            [questKeys.startedBy] = {{15339},nil,{21220}},
+            [questKeys.finishedBy] = {{15181}},
+            [questKeys.zoneOrSort] = zoneIDs.RUINS_OF_AHN_QIRAJ,
+            [questKeys.reputationReward] = {{factionIDs.CENARION_CIRCLE,200},{factionIDs.BROOD_OF_NOZDORMU,200}},
         },
         [86675] = { -- Volunteer's Battlegear
             [questKeys.startedBy] = {{15176}},
@@ -3952,6 +3997,18 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.zoneOrSort] = zoneIDs.SILITHUS,
             [questKeys.reputationReward] = {{factionIDs.BROOD_OF_NOZDORMU,50}},
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
+        },
+        [86679] = { -- Shrouded in Nightmare
+            [questKeys.startedBy] = {{14887,14888,14889,14890},nil,{20644}},
+            [questKeys.finishedBy] = {{11832}},
+            [questKeys.zoneOrSort] = sortKeys.EPIC,
+            [questKeys.reputationReward] = {{factionIDs.CENARION_CIRCLE,200}},
+        },
+        [86680] = { -- Waking Legends
+            [questKeys.triggerEnd] = {"Waking Legends.",{[zoneIDs.MOONGLADE]={{40.0,48.6}}}},
+            [questKeys.preQuestSingle] = {86679},
+            [questKeys.zoneOrSort] = sortKeys.EPIC,
+            [questKeys.reputationReward] = {{factionIDs.CENARION_CIRCLE,200}},
         },
         [86724] = { -- Dust to Dust
             [questKeys.zoneOrSort] = zoneIDs.SILITHUS,
@@ -8164,6 +8221,26 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.objectivesText] = {"Use the Legion Portal Tuner on a fel scar, and send your Explorer Imp inside until you get a Portal Tuner Tuner. Use it on the Legion Portal Tuner to create a Overcharged Portal Tuner. Then use it on a Fel Scar and send your Explorer Imp back in, and he will return with the rune."},
             [questKeys.requiredSpell] = -440922,
             [questKeys.zoneOrSort] = sortKeys.WARLOCK,
+        },
+        [91000] = {
+            [questKeys.name] = "Rune Broker",
+            [questKeys.startedBy] = {{233335}},
+            [questKeys.finishedBy] = nil,
+            [questKeys.requiredLevel] = 1,
+            [questKeys.questLevel] = 1,
+            [questKeys.requiredRaces] = raceIDs.ALL_ALLIANCE,
+            [questKeys.requiredClasses] = classIDs.NONE,
+            [questKeys.zoneOrSort] = sortKeys.SPECIAL,
+        },
+        [91001] = {
+            [questKeys.name] = "Rune Broker",
+            [questKeys.startedBy] = {{233428}},
+            [questKeys.finishedBy] = nil,
+            [questKeys.requiredLevel] = 1,
+            [questKeys.questLevel] = 1,
+            [questKeys.requiredRaces] = raceIDs.ALL_HORDE,
+            [questKeys.requiredClasses] = classIDs.NONE,
+            [questKeys.zoneOrSort] = sortKeys.SPECIAL,
         },
     }
 end

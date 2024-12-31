@@ -187,6 +187,10 @@ function QuestieQuestFixes:Load()
         [310] = {
             [questKeys.childQuests] = {308,403},
         },
+        [337] = { -- An Old History Book
+            [questKeys.startedBy] = {{3,48,202,203,205,206,210,212,215,218,511,531,533,570,604,785,787,889,891,892,898,909,910,920,948,1110,1251,1270,1487},nil,{2794}},
+            [questKeys.objectivesText] = {"Return the book: The History of Stormwind, to the Stormwind Library. NOTE: This is a very rare drop!"},
+        },
         [353] = {
             [questKeys.preQuestSingle] = {}, -- #2364
         },
@@ -1170,7 +1174,8 @@ function QuestieQuestFixes:Load()
             [questKeys.exclusiveTo] = {}, -- #1466
         },
         [2259] = {
-            [questKeys.exclusiveTo] = {2260, 2281}, -- #1825, #2476
+            [questKeys.exclusiveTo] = {2281}, -- #1825, #2476
+            [questKeys.preQuestSingle] = {},
         },
         [2260] = {
             [questKeys.preQuestSingle] = {},
@@ -1179,15 +1184,13 @@ function QuestieQuestFixes:Load()
         [2278] = {
             [questKeys.objectives] = {{{7172,"Learn what lore that the stone watcher has to offer"}}},
         },
-        [2281] = {
-            [questKeys.exclusiveTo] = {2299}, -- #1817
-        },
         [2298] = {
             [questKeys.preQuestSingle] = {},
             [questKeys.exclusiveTo] = {2281}, -- #1825
         },
         [2299] = {
             [questKeys.exclusiveTo] = {2281}, -- #1817
+            [questKeys.preQuestSingle] = {},
         },
         [2300] = {
             [questKeys.preQuestSingle] = {}, -- #1825
@@ -1636,6 +1639,11 @@ function QuestieQuestFixes:Load()
         [4261] = {
             [questKeys.triggerEnd] = {"Help Arei get to Safety", {[zoneIDs.FELWOOD]={{49.42,14.54}}}},
         },
+        [4264] = {
+            -- There are more mobs to drop this quest, but it would flood the map, as nearly all are inside BRD.
+            -- This at least show some icons.
+            [questKeys.startedBy] = {{8917,9319},nil,{11446}},
+        },
         [4265] = {
             [questKeys.triggerEnd] = {"Free Raschal.", {[zoneIDs.FERALAS]={{72.13,63.84}}}},
         },
@@ -1898,7 +1906,9 @@ function QuestieQuestFixes:Load()
             [questKeys.preQuestSingle] = {},
         },
         [5103] = {
+            [questKeys.requiredLevel] = 55,
             [questKeys.requiredSourceItems] = {12812},
+            [questKeys.requiredSkill] = {profKeys.BLACKSMITHING,270},
         },
         [5122] = {
             [questKeys.specialFlags] = specialFlags.REPEATABLE, -- #1140
@@ -1913,6 +1923,10 @@ function QuestieQuestFixes:Load()
             [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.PALADIN + classIDs.SHAMAN,
             [questKeys.objectives] = {{{10918,"Listen to Lorax's Tale"}}},
             [questKeys.zoneOrSort] = sortKeys.BLACKSMITHING,
+            [questKeys.requiredSkill] = {profKeys.BLACKSMITHING,270},
+        },
+        [5127] = {
+            [questKeys.requiredSkill] = {profKeys.BLACKSMITHING,270},
         },
         [5143] = {
             [questKeys.preQuestSingle] = {2853},
@@ -1932,6 +1946,7 @@ function QuestieQuestFixes:Load()
         [5211] = {
             [questKeys.preQuestSingle] = {}, -- #983
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_SLAY, l10n("Slay ghouls to free Darrowshire spirits"), 0, {{"monster", 8530}, {"monster", 8531}, {"monster", 8532}}}},
+            [questKeys.objectives] = {{{11064,nil,Questie.ICON_TYPE_TALK}}},
         },
         [5214] = {
             [questKeys.name] = "The Great Ezra Grimm",
@@ -2030,6 +2045,7 @@ function QuestieQuestFixes:Load()
         },
         [5526] = {
             [questKeys.zoneOrSort] = zoneIDs.DIRE_MAUL,
+            [questKeys.requiredSourceItems] = {18501},
         },
         [5561] = {
             [questKeys.objectives] = {nil,nil,nil,nil,{{{4700,4701,4702},4700,"Kodos Tamed"}}},
@@ -2116,6 +2132,7 @@ function QuestieQuestFixes:Load()
         },
         [5721] = {
             [questKeys.extraObjectives] = {{{[zoneIDs.EASTERN_PLAGUELANDS]={{38.8,91.2}}}, Questie.ICON_TYPE_EVENT, l10n("Place the Relic Bundle in the Town Square."),}},
+            [questKeys.objectives] = {{{10936,nil,Questie.ICON_TYPE_TALK}}},
         },
         -- Salve via Hunting/Mining/Gathering/Skinning/Disenchanting non repeatable quests
         -- Alliance

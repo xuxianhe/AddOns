@@ -1,6 +1,8 @@
 # LittleWigs
 
-## [v11.0.55](https://github.com/BigWigsMods/LittleWigs/tree/v11.0.55) (2024-12-06)
-[Full Changelog](https://github.com/BigWigsMods/LittleWigs/compare/v11.0.54...v11.0.55) [Previous Releases](https://github.com/BigWigsMods/LittleWigs/releases)
+## [v11.0.57](https://github.com/BigWigsMods/LittleWigs/tree/v11.0.57) (2024-12-18)
+[Full Changelog](https://github.com/BigWigsMods/LittleWigs/compare/v11.0.56...v11.0.57) [Previous Releases](https://github.com/BigWigsMods/LittleWigs/releases)
 
-- Classic/ZulFarrak: Fix encounter detection in Cataclysm Classic (#1229)  
+- WarWithin/TheStonevault/Trash: Shadow Claw cooldown update  
+- Cataclysm/GrimBatol/Trash: Lava Fist cooldown update  
+- WarWithin/CityOfThreads/OratorKrixvizk: Scope Subjugate to tanks and healers  

@@ -109,6 +109,12 @@ function CataItemFixes.Load()
         [12842] = { -- Crudely-Written Log
             [itemKeys.startQuest] = 28471,
         },
+        [13202] = { -- Extended Annals of Darrowshire
+            [itemKeys.npcDrops] = {11063},
+        },
+        [13250] = { -- Head of Balnazzar
+            [itemKeys.startQuest] = 0,
+        },
         [16790] = { -- Damp Note
             [itemKeys.startQuest] = 0,
         },
@@ -715,8 +721,23 @@ function CataItemFixes.Load()
         [60862] = { -- Forsaken Insignia
             [itemKeys.npcDrops] = {45197},
         },
+        [60878] = { -- Silverlaine's Enchanted Crystal
+            [itemKeys.npcDrops] = {3887},
+        },
         [60879] = { -- Commander's Holy Symbol
             [itemKeys.npcDrops] = {4278},
+        },
+        [60880] = { -- Springvale's Sharpening Stone
+            [itemKeys.npcDrops] = {4278},
+        },
+        [60881] = { -- Walden's Talisman
+            [itemKeys.npcDrops] = {46963},
+        },
+        [60885] = { -- Silverlaine Family Sword
+            [itemKeys.npcDrops] = {3887},
+        },
+        [61285] = { -- Active Liquid Plague Agent
+            [itemKeys.npcDrops] = {8519,8520},
         },
         [61292] = { -- Plague Puffer
             [itemKeys.npcDrops] = {45650},
@@ -880,6 +901,9 @@ function CataItemFixes.Load()
         [69233] = { -- Cone of Cold
             [itemKeys.class] = itemClasses.QUEST,
         },
+        [69238] = { -- Timeless Eye
+            [itemKeys.objectDrops] = {460024},
+        },
         [69765] = { -- Lucifern
             [itemKeys.npcDrops] = {},
         },
@@ -963,6 +987,9 @@ function CataItemFixes:LoadFactionFixes()
     local itemKeys = QuestieDB.itemKeys
 
     local itemFixesHorde = {
+        [17662] = { -- Stolen Treats
+            [itemKeys.objectDrops] = {209506},
+        },
         [56188] = { -- Rescue Flare
             [itemKeys.objectDrops] = {203410},
         },
@@ -972,6 +999,9 @@ function CataItemFixes:LoadFactionFixes()
     }
 
     local itemFixesAlliance = {
+        [17662] = { -- Stolen Treats
+            [itemKeys.objectDrops] = {209497},
+        },
         [56188] = { -- Rescue Flare
             [itemKeys.objectDrops] = {203403},
         },
