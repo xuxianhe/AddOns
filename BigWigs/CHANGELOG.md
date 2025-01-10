@@ -1,7 +1,16 @@
 # BigWigs
 
-## [v370](https://github.com/BigWigsMods/BigWigs/tree/v370) (2024-12-07)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v369...v370) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
+## [v371](https://github.com/BigWigsMods/BigWigs/tree/v371) (2025-01-09)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v370...v371) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
 
+- Loader: Update seasons  
+- LiberationOfUndermine: Localize toc title  
 - bump version  
-- Loader: Add Nightmare Grove ID  
+- bump toc  
+- Update zhCN (#1908)  
+- Loader: Add Operation: Floodgate  
+- LiberationOfUndermine: Add modules and some drycodes  
+- NerubarPalace/Ansurek: Fix Chamber Acolyte marking  
+- Loader: Classic Deadmines (#1906)  
+- Update zhTW (#1905)  
+- Update koKR (#1903)  
