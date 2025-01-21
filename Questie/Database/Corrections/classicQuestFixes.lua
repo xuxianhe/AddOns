@@ -9,8 +9,12 @@ local QuestieDB = QuestieLoader:ImportModule("QuestieDB")
 local ZoneDB = QuestieLoader:ImportModule("ZoneDB")
 ---@type QuestieProfessions
 local QuestieProfessions = QuestieLoader:ImportModule("QuestieProfessions")
+---@type QuestieCorrections
+local QuestieCorrections = QuestieLoader:ImportModule("QuestieCorrections")
 ---@type l10n
 local l10n = QuestieLoader:ImportModule("l10n")
+
+QuestieCorrections.itemObjectiveFirst[5088] = true
 
 -- Further information on how to use this can be found at the wiki
 -- https://github.com/Questie/Questie/wiki/Corrections
@@ -576,26 +580,14 @@ function QuestieQuestFixes:Load()
             [questKeys.questLevel] = 1,
             [questKeys.requiredRaces] = raceIDs.ALL_ALLIANCE,
             [questKeys.requiredClasses] = classIDs.NONE,
-            [questKeys.objectivesText] = nil,
-            [questKeys.triggerEnd] = nil,
-            [questKeys.objectives] = {},
-            [questKeys.sourceItemId] = nil,
-            [questKeys.preQuestGroup] = nil,
-            [questKeys.preQuestSingle] = nil,
-            [questKeys.childQuests] = nil,
-            [questKeys.inGroupWith] = nil,
-            [questKeys.exclusiveTo] = nil,
-            [questKeys.zoneOrSort] = 148,
-            [questKeys.requiredSkill] = nil,
-            [questKeys.requiredMinRep] = nil,
-            [questKeys.requiredMaxRep] = nil,
-            [questKeys.requiredSourceItems] = nil,
+            [questKeys.zoneOrSort] = zoneIDs.DARKSHORE,
             [questKeys.nextQuestInChain] = 0,
             [questKeys.questFlags] = 8,
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.parentQuest] = 949, -- workaround, can't mimic ingame 100%
         },
         [961] = {
+            [questKeys.finishedBy] = {{3616}},
             [questKeys.preQuestSingle] = nil,
             [questKeys.exclusiveTo] = nil,
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
@@ -1260,6 +1252,14 @@ function QuestieQuestFixes:Load()
         [2801] = {
             [questKeys.objectives] = {nil,nil,nil,nil,{{{7572},7572,"A Tale of Sorrow"}}},
         },
+        [2841] = {
+            [questKeys.exclusiveTo] = {2842},
+            [questKeys.childQuests] = {},
+        },
+        [2842] = {
+            [questKeys.requiredLevel] = 20,
+            [questKeys.parentQuest] = 0,
+        },
         [2843] = {
             [questKeys.triggerEnd] = {"Goblin Transponder", {[zoneIDs.STRANGLETHORN_VALE]={{27.56,77.42}}}},
         },
@@ -1444,6 +1444,7 @@ function QuestieQuestFixes:Load()
 			},
         },
         [3629] = {
+            [questKeys.specialFlags] = specialFlags.NONE,
             [questKeys.requiredSpecialization] = specKeys.ENGINEERING,
         },
         [3630] = {
@@ -1551,56 +1552,56 @@ function QuestieQuestFixes:Load()
         },
         -- Salve via Hunting/Mining/Gathering/Skinning/Disenchanting repeatable quests
         -- Alliance
-        [4103] = {
-            [questKeys.preQuestSingle] = {5882,5883,5884,5885,5886},
+        [4103] = { -- Salve via Hunting
+            [questKeys.preQuestSingle] = {5882},
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
         },
-        [4104] = {
-            [questKeys.preQuestSingle] = {5882,5883,5884,5885,5886},
+        [4104] = { -- Salve via Mining
+            [questKeys.preQuestSingle] = {5883},
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
         },
-        [4105] = {
-            [questKeys.preQuestSingle] = {5882,5883,5884,5885,5886},
+        [4105] = { -- Salve via Gathering
+            [questKeys.preQuestSingle] = {5884},
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
         },
-        [4106] = {
-            [questKeys.preQuestSingle] = {5882,5883,5884,5885,5886},
+        [4106] = { -- Salve via Skinning
+            [questKeys.preQuestSingle] = {5885},
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
         },
-        [4107] = {
-            [questKeys.preQuestSingle] = {5882,5883,5884,5885,5886},
+        [4107] = { -- Salve via Disenchanting
+            [questKeys.preQuestSingle] = {5886},
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
         },
         -- Horde
-        [4108] = {
+        [4108] = { -- Salve via Hunting
             [questKeys.startedBy] = {{9529},nil,nil},
             [questKeys.finishedBy] = {{9529},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_HORDE,
-            [questKeys.preQuestSingle] = {5887,5888,5889,5890,5891},
+            [questKeys.preQuestSingle] = {5887},
         },
-        [4109] = {
+        [4109] = { -- Salve via Mining
             [questKeys.startedBy] = {{9529},nil,nil},
             [questKeys.finishedBy] = {{9529},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_HORDE,
-            [questKeys.preQuestSingle] = {5887,5888,5889,5890,5891},
+            [questKeys.preQuestSingle] = {5888},
         },
-        [4110] = {
+        [4110] = { -- Salve via Gathering
             [questKeys.startedBy] = {{9529},nil,nil},
             [questKeys.finishedBy] = {{9529},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_HORDE,
-            [questKeys.preQuestSingle] = {5887,5888,5889,5890,5891},
+            [questKeys.preQuestSingle] = {5889},
         },
-        [4111] = {
+        [4111] = { -- Salve via Skinning
             [questKeys.startedBy] = {{9529},nil,nil},
             [questKeys.finishedBy] = {{9529},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_HORDE,
-            [questKeys.preQuestSingle] = {5887,5888,5889,5890,5891},
+            [questKeys.preQuestSingle] = {5890},
         },
-        [4112] = {
+        [4112] = { -- Salve via Disenchanting
             [questKeys.startedBy] = {{9529},nil,nil},
             [questKeys.finishedBy] = {{9529},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_HORDE,
-            [questKeys.preQuestSingle] = {5887,5888,5889,5890,5891},
+            [questKeys.preQuestSingle] = {5891},
         },
         -----------------------
         [4121] = {
@@ -1754,10 +1755,10 @@ function QuestieQuestFixes:Load()
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_EVENT, l10n("Use the Empty Worg Pup Cage to capture it."), 0, {{"monster", 10221}}}},
         },
         [4734] = {
-            [questKeys.objectives] = {nil,{{400062,"Test the Eggscilliscope Prototype"}}},
+            [questKeys.objectives] = {nil,{{175124,"Test the Eggscilliscope Prototype"}}},
         },
         [4735] = {
-            [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Collect eggs using the Collectronic Module."), 0, {{"object", 400062}}}},
+            [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Collect eggs using the Collectronic Module."), 0, {{"object", 175124}}}},
         },
         [4736] = {
             [questKeys.requiredRaces] = raceIDs.ALL_ALLIANCE,
@@ -1828,8 +1829,8 @@ function QuestieQuestFixes:Load()
         [4867] = {
             [questKeys.requiredSourceItems] = {12533,12534},
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Combine Omokk's Head with the Roughshod Pike."),0,{{"object", 175621}}},
-			                               {nil, Questie.ICON_TYPE_OBJECT, l10n("Use it to instantly kill one nearby ogre."),0,{{"object", 400063}}},
-			},
+                                           {nil, Questie.ICON_TYPE_OBJECT, l10n("Use it to instantly kill one nearby ogre."),0,{{"object", 175584}}},
+            },
         },
         [4881] = {
             [questKeys.startedBy] = {{10617},nil,{12564}},
@@ -1892,8 +1893,7 @@ function QuestieQuestFixes:Load()
             [questKeys.preQuestSingle] = {}, -- #1824
         },
         [5088] = {
-            [questKeys.triggerEnd] = {"Light the Sacred Fire of Life", {[zoneIDs.THOUSAND_NEEDLES]={{38.08,35.35}}}},
-            [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Light the Sacred Fire of Life"),0,{{"object", 175944}}}},
+            [questKeys.objectives] = {nil,{{175944}},{{12925}}},
         },
         [5089] = {
             [questKeys.startedBy] = {{9568},nil,{12780}},
@@ -2048,8 +2048,11 @@ function QuestieQuestFixes:Load()
             [questKeys.requiredSourceItems] = {18501},
         },
         [5561] = {
-            [questKeys.objectives] = {nil,nil,nil,nil,{{{4700,4701,4702},4700,"Kodos Tamed"}}},
-            [questKeys.extraObjectives] = {{{[zoneIDs.DESOLACE]={{60.58,62}}}, Questie.ICON_TYPE_EVENT, l10n("Lure the Kodos to Smeed Scrabblescrew."),}},
+            [questKeys.objectives] = {nil,nil,nil,nil,{{{4700,4701,4702},4700,"Kodos Tamed",Questie.ICON_TYPE_INTERACT}}},
+            [questKeys.extraObjectives] = {{{[zoneIDs.DESOLACE]={{60.58,62}}}, Questie.ICON_TYPE_EVENT, l10n("Lure the Kodos to Smeed Scrabblescrew.")}},
+        },
+        [5581] = {
+            [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Close the portal"), 0, {{"object", 177243},{"object", 177365},{"object", 177366},{"object", 177367},{"object", 177368},{"object", 177369},{"object", 177397},{"object", 177398},{"object", 177399},{"object", 177400}}}},
         },
         [5582] = {
             [questKeys.startedBy] = {{10678},nil,{13920}},
@@ -2151,65 +2154,55 @@ function QuestieQuestFixes:Load()
         [5821] = {
             [questKeys.triggerEnd] = {"Escort Gizelton Caravan past Kolkar Centaur Village", {[zoneIDs.DESOLACE]={{67.17,56.62}}}},
         },
-        [5882] = {
+        [5882] = { -- Salve via Hunting
             [questKeys.startedBy] = {{9528},nil,nil},
             [questKeys.finishedBy] = {{9528},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_ALLIANCE,
             [questKeys.preQuestSingle] = {4101},
-            [questKeys.exclusiveTo] = {5883,5884,5885,5886},
         },
-        [5883] = {
+        [5883] = { -- Salve via Mining
             [questKeys.startedBy] = {{9528},nil,nil},
             [questKeys.finishedBy] = {{9528},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_ALLIANCE,
             [questKeys.preQuestSingle] = {4101},
-            [questKeys.exclusiveTo] = {5882,5884,5885,5886},
         },
-        [5884] = {
+        [5884] = { -- Salve via Gathering
             [questKeys.startedBy] = {{9528},nil,nil},
             [questKeys.finishedBy] = {{9528},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_ALLIANCE,
             [questKeys.preQuestSingle] = {4101},
-            [questKeys.exclusiveTo] = {5882,5883,5885,5886},
         },
-        [5885] = {
+        [5885] = { -- Salve via Skinning
             [questKeys.startedBy] = {{9528},nil,nil},
             [questKeys.finishedBy] = {{9528},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_ALLIANCE,
             [questKeys.preQuestSingle] = {4101},
-            [questKeys.exclusiveTo] = {5882,5883,5884,5886},
         },
-        [5886] = {
+        [5886] = { -- Salve via Disenchanting
             [questKeys.startedBy] = {{9528},nil,nil},
             [questKeys.finishedBy] = {{9528},nil},
             [questKeys.requiredRaces] = raceIDs.ALL_ALLIANCE,
             [questKeys.preQuestSingle] = {4101},
-            [questKeys.exclusiveTo] = {5882,5883,5884,5885},
         },
         -- Horde
-        [5887] = {
+        [5887] = { -- Salve via Hunting
             [questKeys.preQuestSingle] = {4102},
-            [questKeys.exclusiveTo] = {5888,5889,5890,5891},
             [questKeys.specialFlags] = 0,
         },
-        [5888] = {
+        [5888] = { -- Salve via Mining
             [questKeys.preQuestSingle] = {4102},
-            [questKeys.exclusiveTo] = {5887,5889,5890,5891},
             [questKeys.specialFlags] = 0,
         },
-        [5889] = {
+        [5889] = { -- Salve via Gathering
             [questKeys.preQuestSingle] = {4102},
-            [questKeys.exclusiveTo] = {5887,5888,5890,5891},
             [questKeys.specialFlags] = 0,
         },
-        [5890] = {
+        [5890] = { -- Salve via Skinning
             [questKeys.preQuestSingle] = {4102},
-            [questKeys.exclusiveTo] = {5887,5888,5889,5891},
             [questKeys.specialFlags] = 0,
         },
-        [5891] = {
+        [5891] = { -- Salve via Disenchanting
             [questKeys.preQuestSingle] = {4102},
-            [questKeys.exclusiveTo] = {5887,5888,5889,5890},
             [questKeys.specialFlags] = 0,
         },
         [5892] = {
@@ -2267,7 +2260,7 @@ function QuestieQuestFixes:Load()
             },
         },
         [6027] = {
-            [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Summon Lord Kragaru"), 0, {{"object", 400060}}}},
+            [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Summon Lord Kragaru"), 0, {{"object", 177673}}}},
         },
         [6041] = {
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Plant the bomb!"), 0, {{"object", 177668}}}},
@@ -3112,6 +3105,15 @@ function QuestieQuestFixes:Load()
         },
         [8447] = {
             [questKeys.triggerEnd] = {"Waking Legends.",{[zoneIDs.MOONGLADE]={{40.0,48.6}}}},
+        },
+        [8466] = {
+            [questKeys.objectivesText] = nil,
+        },
+        [8467] = {
+            [questKeys.objectivesText] = nil,
+        },
+        [8469] = {
+            [questKeys.objectivesText] = nil,
         },
         [8470] = {
             [questKeys.startedBy] = {{7156,7157,7158},nil,{20741}},
@@ -4097,6 +4099,7 @@ function QuestieQuestFixes:Load()
             [questKeys.objectivesText] = {"Retrieve the Wooden Figurine and bring it to Gakin the Darkbinder in the Mage Quarter of Stormwind."},
             [questKeys.objectives] = {nil,nil,{{190309}},nil,nil},
             [questKeys.zoneOrSort] = sortKeys.WARLOCK,
+            [questKeys.requiredSourceItems] = {190307},
             [questKeys.extraObjectives] = {{{[zoneIDs.ASHENVALE]={{26.7,22.5}}}, Questie.ICON_TYPE_EVENT, l10n("Light the Unlit Torch near a fire and use the Burning Torch to set the Archaeologist's Cart on fire."),}},
         },
         [65603] = {

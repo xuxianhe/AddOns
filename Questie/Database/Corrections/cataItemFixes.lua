@@ -48,6 +48,13 @@ function CataItemFixes.Load()
         [5382] = { -- Anaya's Pendant
             [itemKeys.npcDrops] = {33181},
         },
+        [5464] = { -- Iron Shaft
+            [itemKeys.relatedQuests] = {26477},
+            [itemKeys.npcDrops] = {},
+        },
+        [5475] = { -- Wooden Key
+            [itemKeys.class] = itemClasses.QUEST,
+        },
         [5508] = { -- Fallen Moonstone
             [itemKeys.npcDrops] = {3758,3759,3762,3763},
         },
@@ -154,8 +161,11 @@ function CataItemFixes.Load()
         [22978] = { -- Emitter Spare Part
             [itemKeys.npcDrops] = {},
         },
+        [23777] = { -- Diabolical Plans
+            [itemKeys.startQuest] = 26443,
+        },
         [23798] = { -- Diabolical Plans
-            [itemKeys.npcDrops] = {6073},
+            [itemKeys.startQuest] = 26447,
         },
         [24025] = { -- Deathclaw's Paw
             [itemKeys.npcDrops] = {17661},
@@ -163,7 +173,22 @@ function CataItemFixes.Load()
         [24026] = { -- Elder Brown Bear Flank
             [itemKeys.npcDrops] = {17348},
         },
+        [24040] = { -- Blood Mushroom
+            [itemKeys.npcDrops] = {},
+        },
+        [24041] = { -- Aquatic Stinkhorn
+            [itemKeys.npcDrops] = {17673},
+        },
+        [24042] = { -- Ruinous Polyspore
+            [itemKeys.npcDrops] = {},
+        },
+        [24043] = { -- Fel Cone Fungus
+            [itemKeys.npcDrops] = {},
+        },
         [24049] = { -- Ysera's Tear
+            [itemKeys.npcDrops] = {},
+        },
+        [24081] = { -- Satyrnaar Fel Wood
             [itemKeys.npcDrops] = {},
         },
         [24416] = { -- Corrupted Flower
@@ -177,6 +202,9 @@ function CataItemFixes.Load()
         },
         [33009] = { -- Tender Strider Meat
             [itemKeys.npcDrops] = {2956,2957},
+        },
+        [34130] = { -- Recovery Diver's Potion
+            [itemKeys.class] = itemClasses.QUEST,
         },
         [38567] = { -- Maraudine Prisoner Manifest
             [itemKeys.startQuest] = 14330,
@@ -285,6 +313,12 @@ function CataItemFixes.Load()
         },
         [48766] = { -- Kaja'mite Chunk
             [itemKeys.npcDrops] = {},
+        },
+        [48953] = { -- Bleached Skull
+            [itemKeys.npcDrops] = {},
+        },
+        [49136] = { -- Blood-Filled Leech
+            [itemKeys.npcDrops] = {36059},
         },
         [49164] = { -- Cenarion Supply Crate
             [itemKeys.npcDrops] = {},
@@ -682,6 +716,9 @@ function CataItemFixes.Load()
         [59522] = { -- Key of Ilgalar
             [itemKeys.class] = itemClasses.QUEST,
         },
+        [60291] = { -- Tkashi Fetish
+            [itemKeys.npcDrops] = {43977},
+        },
         [60297] = { -- Side of Basilisk Meat
             [itemKeys.npcDrops] = {43981},
         },
@@ -821,7 +858,7 @@ function CataItemFixes.Load()
             [itemKeys.class] = itemClasses.QUEST,
         },
         [62820] = { -- Deadwood Honey Glob
-            [itemKeys.objectDrops] = {460015},
+            [itemKeys.objectDrops] = {430016},
         },
         [62822] = { -- Twilight Collar
             [itemKeys.npcDrops] = {5860,5861,5862,8419,47309,47310,47311},
@@ -941,7 +978,7 @@ function CataItemFixes.Load()
             [itemKeys.class] = itemClasses.QUEST,
         },
         [69238] = { -- Timeless Eye
-            [itemKeys.objectDrops] = {460024},
+            [itemKeys.objectDrops] = {430024},
         },
         [69765] = { -- Lucifern
             [itemKeys.npcDrops] = {},
