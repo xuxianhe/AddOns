@@ -236,6 +236,21 @@ function SeasonOfDiscovery:LoadItems()
         [235046] = { -- Imperial Qiraji Armaments
             [itemKeys.npcDrops] = {15275,15276,15299,15509,15510,15511,15516,15517,15543,15544},
         },
+        [235785] = { -- Deadwind Cage "Key"
+            [itemKeys.npcDrops] = {7369,7371,7372,7379},
+        },
+        [235787] = { -- Ancient Ironwood Branch
+            [itemKeys.npcDrops] = {226923},
+        },
+        [235788] = { -- Enthusiastic Wisp
+            [itemKeys.npcDrops] = {238431},
+        },
+        [235789] = { -- Flame of Life
+            [itemKeys.npcDrops] = {1045,1046,1047,1048,1049,1050},
+        },
+        [235790] = { -- Enchanted Firebrand
+            [itemKeys.class] = itemClasses.QUEST,
+        },
         [236350] = { -- The Phylactery of Kel'Thuzad
             [itemKeys.npcDrops] = {15990},
         },

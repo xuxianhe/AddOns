@@ -859,7 +859,7 @@ function QuestieQuestFixes:Load()
         },
         [1436] = {
             [questKeys.preQuestSingle] = {},
-            [questKeys.preQuestGroup] = {1434,1480},
+            [questKeys.preQuestGroup] = {1434,1435},
         },
         [1440] = {
             [questKeys.triggerEnd] = {"Rescue Dalinda Malem", {[zoneIDs.DESOLACE]={{58.27,30.91}}}},
@@ -2915,8 +2915,9 @@ function QuestieQuestFixes:Load()
         [8171] = {
             [questKeys.specialFlags] = 0,
         },
-        [8183] = {
+        [8183] = { -- The Heart of Hakkar
             [questKeys.startedBy] = {{14834},nil,{19802}},
+            [questKeys.zoneOrSort] = zoneIDs.ZUL_GURUB,
         },
         [8184] = {
             [questKeys.requiredClasses] = classIDs.WARRIOR,
@@ -3104,13 +3105,13 @@ function QuestieQuestFixes:Load()
             [questKeys.triggerEnd] = {"Waking Legends.",{[zoneIDs.MOONGLADE]={{40.0,48.6}}}},
         },
         [8466] = {
-            [questKeys.objectivesText] = nil,
+            [questKeys.objectivesText] = {},
         },
         [8467] = {
-            [questKeys.objectivesText] = nil,
+            [questKeys.objectivesText] = {},
         },
         [8469] = {
-            [questKeys.objectivesText] = nil,
+            [questKeys.objectivesText] = {},
         },
         [8470] = {
             [questKeys.startedBy] = {{7156,7157,7158},nil,{20741}},
@@ -3646,6 +3647,9 @@ function QuestieQuestFixes:Load()
         [8882] = {
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
         },
+        [8883] = {
+            [questKeys.requiredSourceItems] = {21711},
+        },
         [8897] = {
             [questKeys.exclusiveTo] = {8898,8899,8903},
         },
@@ -3806,9 +3810,6 @@ function QuestieQuestFixes:Load()
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
         },
         [9084] = {
-            [questKeys.specialFlags] = specialFlags.REPEATABLE,
-        },
-        [9085] = {
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
         },
         [9086] = {

@@ -28,6 +28,7 @@ local heroes = {
 	Echo = "Echo",
 	Genji = "Genji",
 	Hanzo = "Hanzo",
+	Hazard = "Hazard",
 	Illari = "Illari",
 	JunkerQueen = "Junker Queen",
 	Junkrat = "Junkrat",

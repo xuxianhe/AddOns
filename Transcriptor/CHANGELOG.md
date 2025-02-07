@@ -1,6 +1,10 @@
 # Transcriptor
 
-## [v11.0.10](https://github.com/BigWigsMods/Transcriptor/tree/v11.0.10) (2024-11-21)
-[Full Changelog](https://github.com/BigWigsMods/Transcriptor/compare/v11.0.9...v11.0.10) [Previous Releases](https://github.com/BigWigsMods/Transcriptor/releases)
+## [v11.0.12](https://github.com/BigWigsMods/Transcriptor/tree/v11.0.12) (2025-01-25)
+[Full Changelog](https://github.com/BigWigsMods/Transcriptor/compare/v11.0.11...v11.0.12) [Previous Releases](https://github.com/BigWigsMods/Transcriptor/releases)
 
-- Replace EasyMenu with the new Blizzard\_Menu (#48)  
+- Actually fix IEEU unit checking  
+- Fix boss unit checking for IEEU  
+- Replace `UnitClassification` with `ShowBossFrameWhenUninteractable` for IEEU  
+- Actually check the specific boss unit  
+- Test out recording IEEU events over multiple lines  

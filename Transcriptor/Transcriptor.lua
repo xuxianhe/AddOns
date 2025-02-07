@@ -52,7 +52,7 @@ local debugprofilestop = debugprofilestop
 local C_Scenario, C_DeathInfo_GetSelfResurrectOptions, Enum = C_Scenario, C_DeathInfo.GetSelfResurrectOptions, Enum
 local IsEncounterInProgress, IsEncounterLimitingResurrections, IsEncounterSuppressingRelease = IsEncounterInProgress, IsEncounterLimitingResurrections, IsEncounterSuppressingRelease
 local UnitInRaid, UnitInParty, UnitIsFriend, UnitCastingInfo, UnitChannelInfo = UnitInRaid, UnitInParty, UnitIsFriend, UnitCastingInfo, UnitChannelInfo
-local UnitCanAttack, UnitExists, UnitIsVisible, UnitGUID, UnitClassification = UnitCanAttack, UnitExists, UnitIsVisible, UnitGUID, UnitClassification
+local UnitCanAttack, UnitExists, UnitIsVisible, UnitGUID, UnitClassification, ShowBossFrameWhenUninteractable = UnitCanAttack, UnitExists, UnitIsVisible, UnitGUID, UnitClassification, ShowBossFrameWhenUninteractable
 local UnitName, UnitPower, UnitPowerMax, UnitPowerType, UnitHealth = UnitName, UnitPower, UnitPowerMax, UnitPowerType, UnitHealth
 local UnitLevel, UnitCreatureType, UnitPercentHealthFromGUID, UnitTokenFromGUID = UnitLevel, UnitCreatureType, UnitPercentHealthFromGUID, UnitTokenFromGUID
 local GetInstanceInfo = GetInstanceInfo
@@ -1157,17 +1157,6 @@ function sh.PLAYER_TARGET_CHANGED()
 	end
 end
 
-function sh.INSTANCE_ENCOUNTER_ENGAGE_UNIT(...)
-	return strjoin("#", tostringall("Fake Args:",
-		"boss1", UnitCanAttack("player", "boss1"), UnitExists("boss1"), UnitIsVisible("boss1"), UnitName("boss1"), UnitGUID("boss1"), UnitClassification("boss1"), UnitHealth("boss1"),
-		"boss2", UnitCanAttack("player", "boss2"), UnitExists("boss2"), UnitIsVisible("boss2"), UnitName("boss2"), UnitGUID("boss2"), UnitClassification("boss2"), UnitHealth("boss2"),
-		"boss3", UnitCanAttack("player", "boss3"), UnitExists("boss3"), UnitIsVisible("boss3"), UnitName("boss3"), UnitGUID("boss3"), UnitClassification("boss3"), UnitHealth("boss3"),
-		"boss4", UnitCanAttack("player", "boss4"), UnitExists("boss4"), UnitIsVisible("boss4"), UnitName("boss4"), UnitGUID("boss4"), UnitClassification("boss4"), UnitHealth("boss4"),
-		"boss5", UnitCanAttack("player", "boss5"), UnitExists("boss5"), UnitIsVisible("boss5"), UnitName("boss5"), UnitGUID("boss5"), UnitClassification("boss5"), UnitHealth("boss5"),
-		"Real Args:", ...)
-	)
-end
-
 function sh.UNIT_TARGETABLE_CHANGED(unit)
 	return format("-%s- [CanAttack:%s#Exists:%s#IsVisible:%s#Name:%s#GUID:%s#Classification:%s#Health:%s]", tostringall(unit, UnitCanAttack("player", unit), UnitExists(unit), UnitIsVisible(unit), UnitName(unit), UnitGUID(unit), UnitClassification(unit), (UnitHealth(unit))))
 end
@@ -1546,56 +1535,95 @@ local dbmEvents = {
 	"DBM_NameplatePause",
 	"DBM_NameplateResume",
 }
+local eventHandler
+do
+	local bossUnits = {
+		"boss1", "boss2", "boss3", "boss4", "boss5",
+		"boss6", "boss7", "boss8", "boss9", "boss10",
+		"boss11", "boss12", "boss13", "boss14", "boss15",
+		"arena1", "arena2", "arena3", "arena4", "arena5",
+	}
 
-local function eventHandler(_, event, ...)
-	if TranscriptIgnore[event] then return end
-	local line
-	if sh[event] then
-		line = sh[event](...)
-	else
-		line = strjoin("#", tostringall(...))
-	end
-	if not line then return end
-	local stop = debugprofilestop() / 1000
-	local t = stop - logStartTime
-	local time = date("%H:%M:%S")
-	-- We only have CLEU in the total log, it's way too much information to log twice.
-	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-		currentLog.total[#currentLog.total+1] = format("<%.2f %s> [CLEU] %s", t, time, line)
-	elseif event == "ENCOUNTER_START" then
-		local text = format("<%.2f %s> [%s] %s", t, time, event, line)
-		currentLog.total[#currentLog.total+1] = text
-		local cat = eventCategories[event] or event
-		if cat ~= "NONE" then
-			if type(currentLog[cat]) ~= "table" then currentLog[cat] = {} end
-			tinsert(currentLog[cat], text)
+	function eventHandler(_, event, ...)
+		if TranscriptIgnore[event] then return end
+		local line
+		if sh[event] then
+			line = sh[event](...)
+		else
+			line = strjoin("#", tostringall(...))
 		end
-
-		local instanceInfoLine = strjoin("#", tostringall(GetInstanceInfo()))
-		currentLog.total[#currentLog.total+1] = format("<%.2f %s> [GetInstanceInfo()] %s", t, time, instanceInfoLine)
-
-		local UnitPosition, UnitClass = UnitPosition, UnitClass
-		local _, _, _, myInstance = UnitPosition("player")
-		for unit in Transcriptor:IterateGroup() do
-			local _, _, _, tarInstanceId = UnitPosition(unit)
-			if tarInstanceId == myInstance then
-				local _, class = UnitClass(unit)
-				local name = UnitName(unit)
-				local specId, role, position, talents = nil, nil, nil, nil
-				if playerSpecList[name] then
-					specId, role, position, talents = playerSpecList[name][1], playerSpecList[name][2], playerSpecList[name][3], playerSpecList[name][4]
-				end
-				local playerInfoLine = strjoin("#", tostringall(name, class, UnitGUID(unit), specId, role, position, talents))
-				currentLog.total[#currentLog.total+1] = format("<%.2f %s> [%s] %s", t, time, "PLAYER_INFO", playerInfoLine)
+		if not line then return end
+		local stop = debugprofilestop() / 1000
+		local t = stop - logStartTime
+		local time = date("%H:%M:%S")
+		-- We only have CLEU in the total log, it's way too much information to log twice.
+		if event == "COMBAT_LOG_EVENT_UNFILTERED" then
+			currentLog.total[#currentLog.total+1] = format("<%.2f %s> [CLEU] %s", t, time, line)
+		elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
+			local text = format("<%.2f %s> [%s] %s", t, time, event, line)
+			currentLog.total[#currentLog.total+1] = text
+			local cat = eventCategories[event] or event
+			if cat ~= "NONE" then
+				if type(currentLog[cat]) ~= "table" then currentLog[cat] = {} end
+				tinsert(currentLog[cat], text)
 			end
-		end
-	else
-		local text = format("<%.2f %s> [%s] %s", t, time, event, line)
-		currentLog.total[#currentLog.total+1] = text
-		local cat = eventCategories[event] or event
-		if cat ~= "NONE" then
-			if type(currentLog[cat]) ~= "table" then currentLog[cat] = {} end
-			tinsert(currentLog[cat], text)
+
+			local hasBosses = false
+			for i = 1, #bossUnits do
+				local unit = bossUnits[i]
+				local guid = UnitGUID(unit)
+				if guid then
+					hasBosses = true
+					local info = strjoin("#", tostringall(
+						"Name", UnitName(unit),
+						"GUID", guid,
+						"Health", UnitHealth(unit),
+						"Exists", UnitExists(unit),
+						"Visible", UnitIsVisible(unit),
+						"CanAttack", UnitCanAttack("player", unit),
+						"ShowUninteractable", ShowBossFrameWhenUninteractable(unit))
+					)
+					currentLog.total[#currentLog.total+1] = format("<%.2f %s> [IEEU %s] %s", t, time, unit, info)
+				end
+			end
+			if not hasBosses then
+				currentLog.total[#currentLog.total+1] = format("<%.2f %s> [IEEU] No bosses found", t, time)
+			end
+		elseif event == "ENCOUNTER_START" then
+			local text = format("<%.2f %s> [%s] %s", t, time, event, line)
+			currentLog.total[#currentLog.total+1] = text
+			local cat = eventCategories[event] or event
+			if cat ~= "NONE" then
+				if type(currentLog[cat]) ~= "table" then currentLog[cat] = {} end
+				tinsert(currentLog[cat], text)
+			end
+
+			local instanceInfoLine = strjoin("#", tostringall(GetInstanceInfo()))
+			currentLog.total[#currentLog.total+1] = format("<%.2f %s> [GetInstanceInfo()] %s", t, time, instanceInfoLine)
+
+			local UnitPosition, UnitClass = UnitPosition, UnitClass
+			local _, _, _, myInstance = UnitPosition("player")
+			for unit in Transcriptor:IterateGroup() do
+				local _, _, _, tarInstanceId = UnitPosition(unit)
+				if tarInstanceId == myInstance then
+					local _, class = UnitClass(unit)
+					local name = UnitName(unit)
+					local specId, role, position, talents = nil, nil, nil, nil
+					if playerSpecList[name] then
+						specId, role, position, talents = playerSpecList[name][1], playerSpecList[name][2], playerSpecList[name][3], playerSpecList[name][4]
+					end
+					local playerInfoLine = strjoin("#", tostringall(name, class, UnitGUID(unit), specId, role, position, talents))
+					currentLog.total[#currentLog.total+1] = format("<%.2f %s> [%s] %s", t, time, "PLAYER_INFO", playerInfoLine)
+				end
+			end
+		else
+			local text = format("<%.2f %s> [%s] %s", t, time, event, line)
+			currentLog.total[#currentLog.total+1] = text
+			local cat = eventCategories[event] or event
+			if cat ~= "NONE" then
+				if type(currentLog[cat]) ~= "table" then currentLog[cat] = {} end
+				tinsert(currentLog[cat], text)
+			end
 		end
 	end
 end

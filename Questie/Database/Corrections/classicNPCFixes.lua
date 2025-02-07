@@ -184,6 +184,9 @@ function QuestieNPCFixes:Load()
         [1983] = {
             [npcKeys.spawns] = {[zoneIDs.SILVERPINE_FOREST]={{44,21},{45,20},{45,21}}},
         },
+        [2041] = {
+            [npcKeys.npcFlags] = npcFlags.NONE,
+        },
         [2044] = {
             [npcKeys.zoneID] = zoneIDs.ELWYNN_FOREST,
             [npcKeys.spawns] = {
@@ -383,6 +386,9 @@ function QuestieNPCFixes:Load()
         },
         [3257] = {
             [npcKeys.spawns] = {[zoneIDs.THE_BARRENS]={{59.8,30.6}}},
+        },
+        [3297] = {
+            [npcKeys.npcFlags] = npcFlags.NONE,
         },
         [3352] = {
             [npcKeys.questStarts] = {8151},
@@ -753,6 +759,9 @@ function QuestieNPCFixes:Load()
         [5895] = {
             [npcKeys.zoneID] = zoneIDs.SILVERPINE_FOREST,
             [npcKeys.spawns] = {[zoneIDs.SILVERPINE_FOREST] = {{38.65,44.58}}},
+        },
+        [5952] = {
+            [npcKeys.npcFlags] = npcFlags.NONE,
         },
         [5955] = {
             [npcKeys.spawns] = {[zoneIDs.TANARIS]={{29.48,60.51},{30,65},{30,70},{31.8,74.15}}}, -- #1462
@@ -1290,6 +1299,9 @@ function QuestieNPCFixes:Load()
             [npcKeys.zoneID] = zoneIDs.UPPER_BLACKROCK_SPIRE,
             [npcKeys.spawns] = {[zoneIDs.UPPER_BLACKROCK_SPIRE] = {{-1,-1}}},
         },
+        [10682] = {
+            [npcKeys.npcFlags] = npcFlags.NONE,
+        },
         [10683] = {
             [npcKeys.zoneID] = zoneIDs.UPPER_BLACKROCK_SPIRE,
             [npcKeys.spawns] = {[zoneIDs.UPPER_BLACKROCK_SPIRE] = {{-1,-1}}},
@@ -1421,6 +1433,9 @@ function QuestieNPCFixes:Load()
         [11143] = {
             [npcKeys.zoneID] = zoneIDs.STRATHOLME,
             [npcKeys.spawns] = {[zoneIDs.STRATHOLME] = {{-1,-1}}},
+        },
+        [11190] = {
+            [npcKeys.npcFlags] = npcFlags.NONE,
         },
         [11284] = {
             [npcKeys.zoneID] = zoneIDs.WESTERN_PLAGUELANDS,
@@ -1910,12 +1925,24 @@ function QuestieNPCFixes:Load()
         [14233] = {
             [npcKeys.spawns] = {[zoneIDs.DUSTWALLOW_MARSH] = {{37.8,50.29},{49.06,57.33},{44.08,50.17},{42.35,55},{47.26,54.65}}},
         },
+        [14304] = {
+            [npcKeys.npcFlags] = npcFlags.NONE,
+        },
         [14305] = {
             [npcKeys.zoneID] = zoneIDs.STORMWIND_CITY, -- default zone where you start the chain
             [npcKeys.spawns] = {[zoneIDs.STORMWIND_CITY] = {{47.32,38.58}}}, -- only SW for consistency
         },
         [14373] = {
             [npcKeys.spawns] = {[zoneIDs.FERALAS]={{74.4,44}}},
+        },
+        [14375] = {
+            [npcKeys.npcFlags] = npcFlags.NONE,
+        },
+        [14376] = {
+            [npcKeys.npcFlags] = npcFlags.NONE,
+        },
+        [14377] = {
+            [npcKeys.npcFlags] = npcFlags.NONE,
         },
         [14387] = { -- Lothos Riftwaker
             [npcKeys.spawns] = {
@@ -2018,17 +2045,9 @@ function QuestieNPCFixes:Load()
             [npcKeys.spawns] = {[zoneIDs.FERALAS]={{39.9,21.9},{40.44,22.43},{40.32,24.63},{40.72,24.44},{38.69,23.6},{39.67,22.3},{38.78,21.93},{38.23,20.59},{38.17,21.4},{41.05,22.62},{39.62,22.23}}},
             [npcKeys.zoneID] = zoneIDs.FERALAS,
         },
-        [14661] = {
-            [npcKeys.spawns] = {
-                [zoneIDs.UN_GORO_CRATER] = {
-                    {27.2, 77.0},{39.5, 5.0},{76.99,61.56},{76.99,61.56},
-                    {77.2,61.67},{77.38,62.0},{77.58,61.99},{77.83,62.16},
-                    {78.04,62.48},{78.01,62.78},{78.07,63.04},{78.36,63.01},
-                    {78.45,62.59},{78.33,62.46},{78.06,62.47},{77.84,62.12},
-                    {77.6,62.02},{77.4,62.03},{77.2,61.69},{77.08,61.61},
-                    {76.5,61.32},{75.96,60.93},{75.66,60.84},{73.77,63.23}
-                },
-            },
+        [14661] = { -- Stinglasher
+            [npcKeys.spawns] = {[zoneIDs.FERALAS]={{75.58,60.85}}},
+            [npcKeys.waypoints] = {[zoneIDs.FERALAS]={{{73.81,63.45},{73.78,63.74},{73.71,63.86},{73.60,63.98},{73.55,64.00},{73.37,63.93},{73.29,63.80},{73.24,63.55},{73.28,63.40},{73.36,63.22},{73.43,63.16},{73.50,63.13},{73.61,63.10},{73.64,63.10},{73.81,63.15},{73.93,63.19},{74.05,63.08},{74.05,63.07},{74.11,62.97},{74.17,62.88},{74.25,62.76},{74.30,62.68},{74.37,62.59},{74.53,62.42},{74.63,62.35},{74.76,62.26},{74.85,62.19},{74.88,62.17},{74.98,62.09},{75.08,61.98},{75.15,61.84},{75.23,61.69},{75.33,61.48},{75.36,61.36},{75.39,61.19},{75.41,61.03},{75.46,60.85},{75.58,60.85},{75.68,60.87},{75.77,60.90},{75.89,60.94},{75.97,60.98},{76.11,61.07},{76.12,61.08},{76.25,61.17},{76.28,61.19},{76.40,61.26},{76.55,61.34},{76.62,61.38},{76.66,61.40},{76.84,61.49},{76.92,61.53},{77.00,61.56},{77.09,61.60},{77.15,61.65},{77.16,61.66},{77.25,61.77},{77.32,61.89},{77.42,62.04},{77.43,62.05},{77.54,62.02},{77.74,62.07},{77.88,62.21},{78.03,62.44},{78.14,62.48},{78.15,62.47},{78.32,62.38},{78.42,62.48},{78.49,62.72},{78.47,62.87},{78.46,62.89},{78.42,62.95},{78.19,63.07},{78.09,63.01},{78.02,62.84},{78.06,62.53},{77.97,62.35}}}},
         },
         [14693] = {
             [npcKeys.spawns] = {[zoneIDs.SCARLET_MONASTERY] = {{-1,-1}}},

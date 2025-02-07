@@ -586,6 +586,12 @@ function SeasonOfDiscovery:LoadNPCs()
                 [zoneIDs.FERALAS] = {{84.2,43.8}},
             },
         },
+        [218920] = {
+            [npcKeys.name] = "Agent Keanna",
+            [npcKeys.spawns] = {
+                [zoneIDs.DEADWIND_PASS] = {{52.1,34.12}},
+            },
+        },
         [218931] = { -- Dark Rider Deadwind Pass
             [npcKeys.zoneID] = zoneIDs.DEADWIND_PASS,
             [npcKeys.spawns] = {
@@ -806,6 +812,31 @@ function SeasonOfDiscovery:LoadNPCs()
             [npcKeys.spawns] = {[zoneIDs.NAXXRAMAS] = {{-1,-1}}},
             [npcKeys.questStarts] = {87362,87364},
             [npcKeys.questEnds] = {87362,87364},
+        },
+        [238431] = { -- Enthusiastic Wisp
+            [npcKeys.zoneID] = zoneIDs.WINTERSPRING,
+            [npcKeys.spawns] = {[zoneIDs.WINTERSPRING] = {{52.19,90.51}}},
+        },
+        [237818] = { -- Harrison Jones
+            [npcKeys.spawns] = {[zoneIDs.DEADWIND_PASS] = {{52.3,34.08}}},
+            [npcKeys.questStarts] = {86968},
+            [npcKeys.questEnds] = {86967},
+        },
+        [237819] = { -- Injured Adventurer
+            [npcKeys.spawns] = {[zoneIDs.DEADWIND_PASS] = {{65.43,78.64}}},
+        },
+        [237820] = { -- Deceased Adventurer
+            [npcKeys.spawns] = {[zoneIDs.DEADWIND_PASS] = {{39.99,74.16}}},
+        },
+        [237957] = { -- Archmage Kir-Moldir
+            [npcKeys.minLevel] = 60,
+            [npcKeys.maxLevel] = 60,
+            [npcKeys.zoneID] = zoneIDs.NAXXRAMAS,
+            [npcKeys.spawns] = {[zoneIDs.NAXXRAMAS] = {{-1,-1}}},
+            [npcKeys.questEnds] = {87283},
+        },
+        [238376] = { -- Brother Luctus
+            [npcKeys.spawns] = {[zoneIDs.EASTERN_PLAGUELANDS] = {{80.56,65.46}}},
         },
 
         -- fake NPCs

@@ -2506,7 +2506,7 @@ function QuestieWotlkQuestFixes:Load()
             [questKeys.requiredSourceItems] = {},
         },
         [12631] = {
-            [questKeys.startedBy] = {nil,nil,{38660}},
+            [questKeys.startedBy] = {{28519},nil,{38660}},
             [questKeys.preQuestSingle] = {},
             [questKeys.preQuestGroup] = {},
             [questKeys.exclusiveTo] = {12633},
@@ -2518,7 +2518,7 @@ function QuestieWotlkQuestFixes:Load()
             [questKeys.requiredSourceItems] = {},
         },
         [12633] = {
-            [questKeys.startedBy] = {nil,nil,{38673}},
+            [questKeys.startedBy] = {{28519},nil,{38673}},
             [questKeys.preQuestSingle] = {12238},
             [questKeys.preQuestGroup] = {},
             [questKeys.exclusiveTo] = {12631},
@@ -6418,7 +6418,7 @@ function QuestieWotlkQuestFixes:Load()
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Examine the remains"), 0, {{"monster", 37552}}}},
         },
         [24536] = {
-            [questKeys.objectives] = {{{3296}}},
+            [questKeys.objectives] = {{{3296,nil,Questie.ICON_TYPE_INTERACT}}},
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Use Snagglebolt's Air Analyzer on perfumed guards"), 0, {{"monster", 3296}}}},
             [questKeys.requiredSourceItems] = {},
         },
@@ -6668,10 +6668,11 @@ function QuestieWotlkQuestFixes:Load()
             [questKeys.finishedBy] = {{37172}},
             [questKeys.exclusiveTo] = {24638, 24645, 24647, 24648, 24649, 24650, 24651},
             [questKeys.objectives] = {nil,{{420043,"Chemical Wagon Destroyed"}},nil,nil,{{{38032},38032}}},
+            [questKeys.requiredMaxLevel] = 80,
             [questKeys.requiredSourceItems] = {},
         },
         [24655] = {
-            [questKeys.objectives] = {nil,nil,nil,nil,{{{68,1976},1976}}},
+            [questKeys.objectives] = {nil,nil,nil,nil,{{{68,1976},1976,nil,Questie.ICON_TYPE_INTERACT}}},
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Use Snagglebolt's Air Analyzer on perfumed guards"), 0, {{"monster", 68},{"monster", 1976}}}},
             [questKeys.requiredSourceItems] = {},
         },
@@ -6756,6 +6757,7 @@ function QuestieWotlkQuestFixes:Load()
             [questKeys.finishedBy] = {{38066}},
             [questKeys.exclusiveTo] = {24658, 24659, 24660, 24662, 24663, 24664, 24665},
             [questKeys.objectives] = {nil,{{420043,"Chemical Wagon Destroyed"}},nil,nil,{{{38032},38032}}},
+            [questKeys.requiredMaxLevel] = 80,
             [questKeys.requiredSourceItems] = {},
         },
         [24683] = {
@@ -7002,6 +7004,12 @@ function QuestieWotlkQuestFixes:Load()
             [questKeys.finishedBy] = {{38316}},
             [questKeys.preQuestSingle] = {},
             [questKeys.preQuestGroup] = {24835,24808},
+        },
+        [24849] = { -- Hot On The Trail
+            [questKeys.objectives] = {{{38340,nil,Questie.ICON_TYPE_EVENT},{38341,nil,Questie.ICON_TYPE_EVENT},{38342,nil,Questie.ICON_TYPE_EVENT}}},
+        },
+        [24851] = { -- Hot On The Trail
+            [questKeys.objectives] = {{{38340,nil,Questie.ICON_TYPE_EVENT},{38341,nil,Questie.ICON_TYPE_EVENT},{38342,nil,Questie.ICON_TYPE_EVENT}}},
         },
         [24857] = {
             [questKeys.requiredRaces] = raceIDs.ALL_HORDE,
