@@ -13,7 +13,7 @@
 ## Notes-ptBR: Logging utility for boss encounters.
 ## IconTexture: Interface\AddOns\Transcriptor\icon_on
 ## Author: Funkydude
-## Version: v11.0.12
+## Version: v11.0.13
 ## OptionalDeps: LibSpecialization
 ## X-Credits: Kyahx, Rabbit, MysticalOS, nebula169
 ## X-Category: Development Tools
@@ -27,6 +27,7 @@ Libs\LibStub.lua
 Libs\CallbackHandler-1.0.lua
 Libs\LibDataBroker-1.1.lua
 
+Modules\Instances_Vanilla.lua
 Modules\PlayerSpellBlocklist.lua
 Modules\TimersBlocklist.lua
 Modules\TimersSpecialEvents.lua
