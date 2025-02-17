@@ -299,6 +299,7 @@ function mod:OnBossEnable()
 	-- Weapons Tester
 	self:RegisterEngageMob("WeaponsTesterEngaged", 136934)
 	self:Log("SPELL_CAST_START", "EchoBlade", 268846)
+	self:Log("SPELL_CAST_SUCCESS", "EchoBladeSuccess", 268846)
 	self:Log("SPELL_CAST_START", "ForceCannon", 268865) -- XXX not cast in combat in 11.1
 	self:Death("WeaponsTesterDeath", 136934)
 
@@ -787,8 +788,12 @@ end
 
 function mod:EchoBlade(args)
 	self:Message(args.spellId, "yellow")
-	self:Nameplate(args.spellId, 17.0, args.sourceGUID)
+	self:Nameplate(args.spellId, 0, args.sourceGUID)
 	self:PlaySound(args.spellId, "alarm")
+end
+
+function mod:EchoBladeSuccess(args)
+	self:Nameplate(args.spellId, 16.5, args.sourceGUID)
 end
 
 function mod:ForceCannon(args) -- XXX no longer cast in combat, remove
@@ -806,12 +811,12 @@ end
 -- Venture Co. Mastermind
 
 function mod:VentureCoMastermindEngaged(guid)
-	self:Nameplate(473304, 16.0, guid) -- Brainstorm
+	self:Nameplate(473304, 12.6, guid) -- Brainstorm
 end
 
 function mod:Brainstorm(args)
-	self:Message(args.spellId, "yellow")
-	self:Nameplate(args.spellId, 23.1, args.sourceGUID)
+	self:Message(args.spellId, "orange")
+	self:Nameplate(args.spellId, 16.6, args.sourceGUID)
 	self:PlaySound(args.spellId, "alarm")
 end
 
@@ -896,8 +901,8 @@ end
 -- Venture Co. War Machine
 
 function mod:VentureCoWarMachineEngaged(guid)
+	self:Nameplate(269429, 6.1, guid) -- Charged Shot
 	self:Nameplate(262383, 6.8, guid) -- Deploy Crawler Mine
-	self:Nameplate(269429, 7.0, guid) -- Charged Shot
 end
 
 function mod:ChargedShot(args)
@@ -908,7 +913,11 @@ end
 
 function mod:DeployCrawlerMine(args)
 	self:Message(args.spellId, "cyan")
-	self:Nameplate(args.spellId, 28.0, args.sourceGUID)
+	if isElevenDotOne then
+		self:Nameplate(args.spellId, 35.3, args.sourceGUID)
+	else -- XXX remove in 11.1
+		self:Nameplate(args.spellId, 28.0, args.sourceGUID)
+	end
 	self:PlaySound(args.spellId, "info")
 end
 
@@ -929,10 +938,16 @@ function mod:OrdnanceSpecialistEngaged(guid)
 	self:Nameplate(269090, 0.9, guid) -- Artillery Barrage
 end
 
-function mod:ArtilleryBarrage(args)
-	self:Message(args.spellId, "orange")
-	self:Nameplate(args.spellId, 12.1, args.sourceGUID)
-	self:PlaySound(args.spellId, "alarm")
+do
+	local prev = 0
+	function mod:ArtilleryBarrage(args)
+		self:Nameplate(args.spellId, 12.1, args.sourceGUID) -- cooldown on cast start
+		if args.time - prev > 2 then
+			prev = args.time
+			self:Message(args.spellId, "orange")
+			self:PlaySound(args.spellId, "alarm")
+		end
+	end
 end
 
 function mod:OrdnanceSpecialistDeath(args)

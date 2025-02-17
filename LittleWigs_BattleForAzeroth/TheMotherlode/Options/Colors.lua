@@ -26,7 +26,7 @@ BigWigs:AddColors("Rixxa Fluxflame", {
 
 BigWigs:AddColors("Mogul Razdunk", {
 	[260280] = "yellow",
-	[260829] = {"blue","red"},
+	[260811] = {"blue","orange","red"},
 	[271456] = {"blue","orange"},
 	[276229] = "red",
 	["stages"] = "cyan",
@@ -65,7 +65,7 @@ BigWigs:AddColors("The MOTHERLODE!! Trash", {
 	[281621] = "yellow",
 	[472041] = {"blue","orange"},
 	[473168] = "yellow",
-	[473304] = "yellow",
+	[473304] = "orange",
 	[1213139] = "yellow",
 	[1214754] = "orange",
 	[1215411] = "purple",
