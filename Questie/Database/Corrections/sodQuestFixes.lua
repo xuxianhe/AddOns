@@ -459,7 +459,7 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.zoneOrSort] = sortKeys.SHAMAN,
         },
         [78537] = { -- Elixir of Insight
-            [questKeys.preQuestSingle] = {78506},
+            [questKeys.preQuestSingle] = {85772},
             [questKeys.zoneOrSort] = sortKeys.SHAMAN,
         },
         [78561] = { -- Elixir of Insight
@@ -3770,6 +3770,12 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.requiredSkill] = {profKeys.BLACKSMITHING,200},
             [questKeys.zoneOrSort] = sortKeys.BLACKSMITHING,
         },
+        [85772] = { -- Elemental Distress
+            [questKeys.startedBy] = {{12736}},
+            [questKeys.objectives] = {nil,nil,{{210668},{210667},{210665}}},
+            [questKeys.preQuestSingle] = {78920},
+            [questKeys.zoneOrSort] = sortKeys.SHAMAN,
+        },
         [85798] = { -- Arms for the Field
             [questKeys.startedBy] = {nil,nil,{21260}},
             [questKeys.zoneOrSort] = zoneIDs.SILITHUS,
@@ -4221,52 +4227,50 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
-        [87433] = { -- Argent Dawn Gloves
-            [questKeys.startedBy] = {{16787}},
-            [questKeys.finishedBy] = {{16787}},
+        [87433] = { -- Argent Dawn Plate Gloves
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.PALADIN,
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
-        [87434] = { -- Argent Dawn Gloves
-            [questKeys.startedBy] = {{16786}},
-            [questKeys.finishedBy] = {{16786}},
+        [87434] = { -- Argent Dawn Plate Gloves
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.PALADIN,
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
-        [87435] = { -- Argent Dawn Gloves
-            [questKeys.startedBy] = {{16787}},
-            [questKeys.finishedBy] = {{16787}},
+        [87435] = { -- Argent Dawn Mail Gloves
+            [questKeys.requiredClasses] = classIDs.HUNTER + classIDs.SHAMAN + classIDs.WARRIOR + classIDs.PALADIN,
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
-        [87436] = { -- Argent Dawn Gloves
-            [questKeys.startedBy] = {{16786}},
-            [questKeys.finishedBy] = {{16786}},
+        [87436] = { -- Argent Dawn Mail Gloves
+            [questKeys.requiredClasses] = classIDs.HUNTER + classIDs.SHAMAN + classIDs.WARRIOR + classIDs.PALADIN,
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
-        [87437] = { -- Argent Dawn Gloves
-            [questKeys.startedBy] = {{16787}},
-            [questKeys.finishedBy] = {{16787}},
+        [87437] = { -- Argent Dawn Leather Gloves
+            [questKeys.requiredClasses] = classIDs.ROGUE + classIDs.DRUID + classIDs.HUNTER + classIDs.SHAMAN + classIDs.WARRIOR + classIDs.PALADIN,
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
-        [87438] = { -- Argent Dawn Gloves
-            [questKeys.startedBy] = {{16786}},
-            [questKeys.finishedBy] = {{16786}},
+        [87438] = { -- Argent Dawn Leather Gloves
+            [questKeys.requiredClasses] = classIDs.ROGUE + classIDs.DRUID + classIDs.HUNTER + classIDs.SHAMAN + classIDs.WARRIOR + classIDs.PALADIN,
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
-        [87439] = { -- Argent Dawn Gloves
-            [questKeys.startedBy] = {{16787}},
-            [questKeys.finishedBy] = {{16787}},
+        [87439] = { -- Argent Dawn Cloth Gloves
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
-        [87440] = { -- Argent Dawn Gloves
-            [questKeys.startedBy] = {{16786}},
-            [questKeys.finishedBy] = {{16786}},
+        [87440] = { -- Argent Dawn Cloth Gloves
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
         [87459] = { -- Scarlet Activities
@@ -4416,16 +4420,18 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.zoneOrSort] = sortKeys.INVASION,
             [questKeys.reputationReward] = {{factionIDs.ARGENT_DAWN,50}},
         },
-        [88746] = { -- Blessed Wizard Oil
-            [questKeys.startedBy] = {{16787}},
-            [questKeys.finishedBy] = {{16787}},
-            [questKeys.preQuestSingle] = {88744},
-            [questKeys.zoneOrSort] = sortKeys.INVASION,
-        },
-        [88747] = { -- Blessed Wizard Oil
+        [88746] = { -- Consecrated Sharpening Stones
             [questKeys.startedBy] = {{16786}},
             [questKeys.finishedBy] = {{16786}},
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
+            [questKeys.zoneOrSort] = sortKeys.INVASION,
+        },
+        [88747] = { -- Consecrated Sharpening Stones
+            [questKeys.startedBy] = {{16787}},
+            [questKeys.finishedBy] = {{16787}},
+            [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
         [88748] = { -- Cracked Necrotic Crystal
@@ -4444,12 +4450,14 @@ function SeasonOfDiscovery:LoadQuests()
             [questKeys.startedBy] = {{16787}},
             [questKeys.finishedBy] = {{16787}},
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
         [88883] = { -- Blessed Wizard Oil
             [questKeys.startedBy] = {{16786}},
             [questKeys.finishedBy] = {{16786}},
             [questKeys.preQuestSingle] = {88744},
+            [questKeys.specialFlags] = specialFlags.REPEATABLE,
             [questKeys.zoneOrSort] = sortKeys.INVASION,
         },
         [88968] = { -- The Lord of Blackrock
