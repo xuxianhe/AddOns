@@ -1,0 +1,19 @@
+## Interface: 30403
+## Title: EnhancedMenu-WLK
+## Notes: Extends popup menus.
+## Notes-zhCN: 右键菜单增强
+## Version: 2.4.7.5
+## Author: fyhcslb
+## Degrade: Jason Dev
+
+Libs\LoadLibs.xml
+
+Locales\enUS.lua
+Locales\ruRU.lua
+Locales\esES.lua
+Locales\deDE.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
+
+Core.lua
+Utils.lua
