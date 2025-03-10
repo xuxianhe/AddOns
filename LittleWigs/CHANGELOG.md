@@ -1,18 +1,12 @@
 # LittleWigs
 
-## [v11.0.74](https://github.com/BigWigsMods/LittleWigs/tree/v11.0.74) (2025-02-24)
-[Full Changelog](https://github.com/BigWigsMods/LittleWigs/compare/v11.0.73...v11.0.74) [Previous Releases](https://github.com/BigWigsMods/LittleWigs/releases)
+## [v11.1.11](https://github.com/BigWigsMods/LittleWigs/tree/v11.1.11) (2025-03-09)
+[Full Changelog](https://github.com/BigWigsMods/LittleWigs/compare/v11.1.10...v11.1.11) [Previous Releases](https://github.com/BigWigsMods/LittleWigs/releases)
 
-- WarWithin/TheRookery/VoidstoneMonstrosity: Stormrider's Charge duration update  
-- WarWithin/TheRookery/StormguardGorren: Timer update  
-- Delves/TheSpiralWeave/ThePuppetmaster: Stinging Swarm timer update  
-- Delves/TheWaterworks/Waxface: Noxious Gas under you  
-- WarWithin/PrioryOfTheSacredFlame/BaronBraunpyke: Unleashed Pyre countdown  
-- WarWithin/PrioryOfTheSacredFlame/Trash: Pounce  
-- Delves: Refactor locale (#1270)  
-- Delves/Trash/ZekvirRares: Rename module  
-- WarWithin/DarkflameCleft/OlWaxbeard: Fix custom locale in marker  
-- Update zhCN (#1269)  
-- WarWithin/DarkflameCleft/TheCandleKing: Throw Darkflame targets, timer updates  
-- WarWithin/DarkflameCleft/OlWaxbeard: Auto-mark Dynamite Mine Cart, timer updates  
-- WarWithin/DarkflameCleft/Blazikon: Extinguishing Gust sound, timer updates  
+- WarWithin/OperationFloodgate/Swampface: Tweak  
+- BfA/TheMotherlode/Trash: Throttle Charged Shot and Deploy Crawler Mine  
+- WarWithin/OperationFloodgate: Swampface warmup  
+- WarWithin/OperationFloodgate/DemolitionDuo: Barreling Charge updates, timer updates  
+- Delves/Trash/Goblin: Flurry of Punches, Molotov Cocktail, Destroy  
+- Delves/SidestreetSluice/GoldElemental: Molotov Cocktail scoping  
+- Delves/Trash/UnderpinRares: Treasure Wraith initial timers  

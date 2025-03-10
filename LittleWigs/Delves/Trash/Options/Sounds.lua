@@ -9,7 +9,20 @@ BigWigs:AddSounds("Fungarian Delve Trash", {
 	[424891] = "alarm",
 	[425040] = "alert",
 	[425042] = "alarm",
-	[427710] = "alarm",
+	[1217589] = "alarm",
+})
+
+BigWigs:AddSounds("Goblin Delve Trash", {
+	[472842] = "info",
+	[473541] = "alarm",
+	[473550] = "alarm",
+	[473684] = "alarm",
+	[473696] = "alarm",
+	[473972] = "alarm",
+	[473995] = "alarm",
+	[474001] = "alert",
+	[474004] = "alarm",
+	[1213656] = "info",
 })
 
 BigWigs:AddSounds("Kobold Delve Trash", {
@@ -52,6 +65,16 @@ BigWigs:AddSounds("Nightfall Delve Trash", {
 	[443482] = "alert",
 })
 
+BigWigs:AddSounds("Old God Delve Trash", {
+	[474155] = "underyou",
+	[474206] = "alarm",
+	[474223] = "alert",
+	[474228] = "alert",
+	[474325] = "long",
+	[474482] = "alarm",
+	[474511] = "alert",
+})
+
 BigWigs:AddSounds("The Underkeep Trash", {
 	[448155] = "alarm",
 	[448161] = "info",
@@ -62,29 +85,30 @@ BigWigs:AddSounds("The Underkeep Trash", {
 	[453149] = "alert",
 })
 
-BigWigs:AddSounds("Zekvir Rares", {
-	[400335] = "alarm",
-	[415250] = "warning",
-	[415253] = "alarm",
+BigWigs:AddSounds("Underpin Rares", {
 	[418295] = "alarm",
 	[418297] = "alert",
-	[445718] = "alert",
-	[445781] = "alarm",
-	[449038] = "warning",
-	[450492] = "alarm",
-	[450505] = {"alert","info"},
-	[450519] = "alarm",
-	[457448] = "alarm",
-	[457880] = "long",
-	[458090] = "alarm",
-	[458099] = "alert",
-	[458104] = "alert",
-	[458311] = "alert",
-	[458325] = "info",
-	[458369] = "alert",
-	[458397] = "alarm",
-	[459421] = "alert",
-	[461741] = {"alarm","underyou"},
-	[462686] = "alert",
-	["zekvir_breach"] = "long",
+	[433045] = "warning",
+	[1213497] = "info",
+	[1213852] = "alarm",
+	[1214147] = {"info","long"},
+	[1214238] = "alert",
+	[1214246] = "alarm",
+	[1216790] = "alarm",
+	[1216794] = "alert",
+	[1216805] = "alert",
+	[1216806] = "alarm",
+	[1216937] = "warning",
+	[1217301] = "alarm",
+	[1217326] = "alarm",
+	[1217361] = "alert",
+	[1217371] = "alarm",
+	[1217418] = "info",
+	[1217449] = "info",
+	[1217452] = "info",
+	[1217510] = "info",
+	[1218017] = "alarm",
+	[1218039] = "alarm",
+	[1218061] = "alert",
+	[1220869] = "alert",
 })

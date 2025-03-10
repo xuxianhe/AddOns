@@ -20,7 +20,7 @@ BigWigs:AddColors("The Candle King", {
 	[420696] = {"blue","orange"},
 	[421067] = "blue",
 	[421653] = "blue",
-	[422648] = {"blue","orange"},
+	[422648] = {"blue","yellow"},
 	[426145] = "red",
 })
 
@@ -35,7 +35,6 @@ BigWigs:AddColors("The Darkness", {
 
 BigWigs:AddColors("Darkflame Cleft Trash", {
 	[422393] = "yellow",
-	[422414] = "orange",
 	[422541] = "cyan",
 	[423501] = "orange",
 	[424322] = "red",

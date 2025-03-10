@@ -1,4 +1,3 @@
-if select(4, GetBuildInfo()) < 110100 then return end -- XXX remove when 11.1 is live
 --------------------------------------------------------------------------------
 -- Module Declaration
 --
@@ -9,6 +8,7 @@ mod.displayName = CL.trash
 mod:RegisterEnableMob(
 	230740, -- Shreddinator 3000
 	229069, -- Mechadrone Sniper
+	231014, -- Loaderbot
 	229252, -- Darkfuse Hyena
 	229212, -- Darkfuse Demolitionist
 	231385, -- Darkfuse Inspector
@@ -36,6 +36,7 @@ if L then
 
 	L.shreddinator_3000 = "Shreddinator 3000"
 	L.mechadrone_sniper = "Mechadrone Sniper"
+	L.loaderbot = "Loaderbot"
 	L.darkfuse_hyena = "Darkfuse Hyena"
 	L.darkfuse_demolitionist = "Darkfuse Demolitionist"
 	L.darkfuse_inspector = "Darkfuse Inspector"
@@ -64,6 +65,8 @@ function mod:GetOptions()
 		{465754, "NAMEPLATE"}, -- Flamethrower
 		-- Mechadrone Sniper
 		{1214468, "NAMEPLATE"}, -- Trickshot
+		-- Loaderbot
+		{465120, "NAMEPLATE"}, -- Wind Up
 		-- Darkfuse Hyena
 		{463058, "NAMEPLATE"}, -- Bloodthirsty Cackle
 		-- Darkfuse Demolitionist
@@ -138,7 +141,9 @@ function mod:OnBossEnable()
 	self:Death("MechadroneSniperDeath", 229069)
 
 	-- Loaderbot
-	-- TODO Windup
+	self:RegisterEngageMob("LoaderbotEngaged", 231014)
+	self:Log("SPELL_CAST_SUCCESS", "WindUp", 465120)
+	self:Death("LoaderbotDeath", 231014)
 
 	-- Darkfuse Hyena
 	self:RegisterEngageMob("DarkfuseHyenaEngaged", 229252)
@@ -202,6 +207,7 @@ function mod:OnBossEnable()
 
 	-- Bomb Pile
 	self:Log("SPELL_CAST_START", "PlantBombs", 1214337)
+	self:Log("SPELL_CAST_SUCCESS", "PlantBombsSuccess", 1214337)
 
 	-- Bubbles
 	self:RegisterEngageMob("BubblesEngaged", 231197)
@@ -259,7 +265,7 @@ do
 end
 
 function mod:Flamethrower(args)
-	self:Message(args.spellId, "yellow") -- TODO purple?
+	self:Message(args.spellId, "yellow")
 	self:Nameplate(args.spellId, 26.7, args.sourceGUID)
 	self:PlaySound(args.spellId, "alarm")
 end
@@ -295,6 +301,28 @@ function mod:TrickshotSuccess(args)
 end
 
 function mod:MechadroneSniperDeath(args)
+	self:ClearNameplate(args.destGUID)
+end
+
+-- Loaderbot
+
+function mod:LoaderbotEngaged(guid)
+	self:Nameplate(465120, 9.1, guid) -- Wind Up
+end
+
+do
+	local prev = 0
+	function mod:WindUp(args)
+		self:Nameplate(args.spellId, 17.4, args.sourceGUID)
+		if args.time - prev > 2 then
+			prev = args.time
+			self:Message(args.spellId, "yellow")
+			self:PlaySound(args.spellId, "alarm")
+		end
+	end
+end
+
+function mod:LoaderbotDeath(args)
 	self:ClearNameplate(args.destGUID)
 end
 
@@ -359,7 +387,7 @@ end
 do
 	local prev = 0
 	function mod:SurpriseInspection(args)
-		self:Nameplate(args.spellId, 8.5, args.sourceGUID)
+		self:Nameplate(args.spellId, 10.9, args.sourceGUID) -- cd on cast start
 		if args.time - prev > 2 then
 			prev = args.time
 			self:Message(args.spellId, "orange")
@@ -564,9 +592,29 @@ end
 
 -- Bomb Pile
 
-function mod:PlantBombs(args)
-	self:Message(args.spellId, "green", CL.other:format(self:ColorName(args.sourceName), args.spellName))
-	self:PlaySound(args.spellId, "info")
+do
+	local prev = 0
+	function mod:PlantBombs(args)
+		self:Message(args.spellId, "green", CL.other:format(self:ColorName(args.sourceName), args.spellName))
+		if args.time - prev > 5 then
+			prev = args.time
+			self:PlaySound(args.spellId, "info")
+		end
+	end
+end
+
+do
+	local prev = 0
+	function mod:PlantBombsSuccess(args)
+		if args.time - prev > 10 then
+			prev = args.time
+			local swampfaceModule = BigWigs:GetBossModule("Swampface", true)
+			if swampfaceModule then
+				swampfaceModule:Enable()
+				swampfaceModule:Warmup()
+			end
+		end
+	end
 end
 
 -- Bubbles

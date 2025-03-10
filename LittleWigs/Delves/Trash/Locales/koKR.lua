@@ -13,6 +13,20 @@ if L then
 	L.particularly_bad_guy = "지독한 악당"
 end
 
+L = BigWigs:NewBossLocale("Goblin Delve Trash", "koKR")
+if L then
+	--L.goblin_trash = "Goblin Trash"
+
+	--L.bopper_bot = "Bopper Bot"
+	--L.aerial_support_bot = "Aerial Support Bot"
+	--L.masked_freelancer = "Masked Freelancer"
+	--L.underpaid_brute = "Underpaid Brute"
+	--L.drill_sergeant = "Drill Sergeant"
+	L.punchy_thug = "주먹패 폭력배"
+	--L.flinging_flicker = "Flinging Flicker"
+	L.bomb_bot = "폭발로봇"
+end
+
 L = BigWigs:NewBossLocale("Kobold Delve Trash", "koKR")
 if L then
 	L.kobold_trash = "코볼트"
@@ -58,6 +72,16 @@ if L then
 	L.shadow_elemental = "암흑의 정령"
 end
 
+L = BigWigs:NewBossLocale("Old God Delve Trash", "koKR")
+if L then
+	--L.old_god_trash = "Old God Trash"
+
+	--L.dark_walker = "Dark Walker"
+	--L.hideous_amalgamation = "Hideous Amalgamation"
+	--L.coagulated_mass = "Coagulated Mass"
+	--L.silent_slitherer = "Silent Slitherer"
+end
+
 L = BigWigs:NewBossLocale("The Underkeep Trash", "koKR")
 if L then
 	L.ascended_webfriar = "승천한 그물수사"
@@ -66,23 +90,20 @@ if L then
 	L.web_marauder = "거미줄 약탈자"
 end
 
-L = BigWigs:NewBossLocale("Zekvir Rares", "koKR")
+L = BigWigs:NewBossLocale("Underpin Rares", "koKR")
 if L then
-	L.rares = "희귀"
+	--L.rares = "Underpin Rares"
 
-	L.stolen_loader = "도둑맞은 운반로봇"
-	L.invasive_sporecap = "침략하는 포자갓"
-	L.reno_jackson = "리노 잭슨"
-	L.sir_finley_mrgglton = "핀리 므르글턴 경"
 	L.treasure_wraith = "보물의 망령"
-	L.venombite = "맹독니"
-	L.kasdru = "카스드루"
-	L.tala = "탈라"
-	L.velo = "벨로"
-	L.anubvir = "아눕비르"
-	L.zekvir = "제크비르"
-	L.zekvirs_influence = "제크비르의 영향력"
-	L.zekvir_random = "제크비르 (무작위 등장)"
-	L.zekvir_breach = "제크비르 침투"
-	L.zekvir_breach_desc = "구렁에서 제크비르가 생성될 때 알림을 표시합니다."
+	--L.treasure_crab = "Treasure Crab"
+	--L.hovering_menace = "Hovering Menace"
+	--L.malfunctioning_pummeler = "Malfunctioning Pummeler"
+	--L.underpins_adoring_fan = "Underpin's Adoring Fan"
+	--L.underpins_well_connected_friend = "Underpin's Well-Connected Friend"
+	--L.underpins_explosive_ally = "Underpin's Explosive Ally"
+	--L.underpins_bodyguards_intern = "Underpin's Bodyguard's Intern"
+	--L.aggressively_lost_hobgoblin = "Aggressively Lost Hobgoblin"
+	--L.the_underpin = "The Underpin (Random Spawn)"
+
+	--L.underpin_retreat_trigger = "People always messin' around on my perfectly legal, deeded land!"
 end
