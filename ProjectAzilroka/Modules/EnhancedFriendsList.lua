@@ -30,7 +30,7 @@ local isBNConnected = _G.BNConnected()
 local LEVEL = LEVEL
 
 --[[
-/run for i,v in pairs(_G) do if type(v)=='string' and i:match('BNET_CLIENT_') then print(i,'=',v) end end
+/run for i,v in pairs(_G) do if type(v)=="string" and i:match("BNET_CLIENT_") then print(i,"=",v) end end
 ]]
 
 EFL.Icons = {
@@ -41,7 +41,6 @@ EFL.Icons = {
 		App = { Name = PA.ACL['App'], Order = 4, Color = '82C5FF', Default = BNet_GetClientTexture(_G.BNET_CLIENT_APP), Launcher = MediaPath..'GameIcons/Launcher/BattleNet' },
 		BSAp = { Name = PA.ACL['Mobile'], Order = 5, Color = '82C5FF', Default = BNet_GetClientTexture(_G.BNET_CLIENT_APP), Launcher = MediaPath..'GameIcons/Launcher/Mobile' },
 		D3 = { Name = PA.ACL['Diablo 3'], Color = 'C41F3B', Default = BNet_GetClientTexture(_G.BNET_CLIENT_D3), Launcher = MediaPath..'GameIcons/Launcher/D3' },
-		Fen = { Name = PA.ACL['Diablo 4'], Color = 'C41F3B', Default = BNet_GetClientTexture(_G.BNET_CLIENT_FEN), Launcher = MediaPath..'GameIcons/Launcher/D4' },
 		WTCG = { Name = PA.ACL['Hearthstone'], Color = 'FFB100', Default = BNet_GetClientTexture(_G.BNET_CLIENT_WTCG), Launcher = MediaPath..'GameIcons/Launcher/Hearthstone' },
 		S1 = { Name = PA.ACL['Starcraft'], Color = 'C495DD', Default = BNet_GetClientTexture(_G.BNET_CLIENT_SC), Launcher = MediaPath..'GameIcons/Launcher/SC' },
 		S2 = { Name = PA.ACL['Starcraft 2'], Color = 'C495DD', Default = BNet_GetClientTexture(_G.BNET_CLIENT_SC2), Launcher = MediaPath..'GameIcons/Launcher/SC2' },
@@ -74,8 +73,13 @@ for name, info in next, EFL.Icons.Status do
 end
 
 function EFL:SetGradientColor(button, color1, color2)
-	button.Left:SetGradient('Horizontal', color1, color2)
-	button.Right:SetGradient('Horizontal', color2, color1)
+	if PA.Retail or PA.Wrath then
+		button.Left:SetGradient("Horizontal", color1, color2)
+		button.Right:SetGradient("Horizontal", color2, color1)
+	else
+		button.Left:SetGradientAlpha("Horizontal", color1.r, color1.g, color1.b, color1.a, color2.r, color2.g, color2.b, color2.a)
+		button.Right:SetGradientAlpha("Horizontal", color2.r, color2.g, color2.b, color2.a, color1.r, color1.g, color1.b, color1.a)
+	end
 end
 
 function EFL:CreateTexture(button, type, layer)
@@ -90,14 +94,14 @@ function EFL:CreateTexture(button, type, layer)
 
 	button.efl[type].Left = button:CreateTexture(nil, layer)
 	button.efl[type].Left:SetHeight(32)
-	button.efl[type].Left:SetPoint('LEFT', button, 'CENTER')
-	button.efl[type].Left:SetPoint('TOPLEFT', button, 'TOPLEFT')
+	button.efl[type].Left:SetPoint("LEFT", button, "CENTER")
+	button.efl[type].Left:SetPoint("TOPLEFT", button, "TOPLEFT")
 	button.efl[type].Left:SetTexture('Interface/Buttons/WHITE8X8')
 
 	button.efl[type].Right = button:CreateTexture(nil, layer)
 	button.efl[type].Right:SetHeight(32)
-	button.efl[type].Right:SetPoint('RIGHT', button, 'CENTER')
-	button.efl[type].Right:SetPoint('TOPRIGHT', button, 'TOPRIGHT')
+	button.efl[type].Right:SetPoint("RIGHT", button, "CENTER")
+	button.efl[type].Right:SetPoint("TOPRIGHT", button, "TOPRIGHT")
 	button.efl[type].Right:SetTexture('Interface/Buttons/WHITE8X8')
 end
 
@@ -131,7 +135,7 @@ function EFL:UpdateFriends(button)
 		end
 		button.status:SetTexture(EFL.Icons.Status[status][EFL.db.StatusIconPack])
 	elseif button.buttonType == _G.FRIENDS_BUTTON_TYPE_BNET and isBNConnected then
-		local info = _G.C_BattleNet.GetFriendAccountInfo(button.id);
+		local info = PA:GetBattleNetInfo(button.id);
 		if info then
 			nameText = info.accountName
 			infoText = info.gameAccountInfo.richPresence
@@ -204,7 +208,7 @@ function EFL:UpdateFriends(button)
 
 	if button.Favorite and button.Favorite:IsShown() then
 		button.Favorite:ClearAllPoints()
-		button.Favorite:SetPoint('TOPLEFT', button.name, 'TOPLEFT', button.name:GetStringWidth(), 0);
+		button.Favorite:SetPoint("TOPLEFT", button.name, "TOPLEFT", button.name:GetStringWidth(), 0);
 	end
 end
 
@@ -298,18 +302,20 @@ function EFL:UpdateSettings()
 end
 
 function EFL:Initialize()
+	EFL:UpdateSettings()
+
 	if EFL.db.Enable ~= true then
 		return
 	end
 
 	EFL.isEnabled = true
 
-	EFL:RegisterEvent('BN_CONNECTED', 'HandleBN')
-	EFL:RegisterEvent('BN_DISCONNECTED', 'HandleBN')
+	EFL:RegisterEvent("BN_CONNECTED", 'HandleBN')
+	EFL:RegisterEvent("BN_DISCONNECTED", 'HandleBN')
 
 	if PA.db.FriendGroups and PA.db.FriendGroups.Enable then
 		EFL:SecureHook(_G.FriendGroups, 'FriendGroups_UpdateFriendButton', function(_, button) EFL:UpdateFriends(button) end)
 	else
-		EFL:SecureHook('FriendsFrame_UpdateFriendButton', 'UpdateFriends')
+		EFL:SecureHook("FriendsFrame_UpdateFriendButton", 'UpdateFriends')
 	end
 end

@@ -1530,6 +1530,8 @@ function EPB:UpdateSettings()
 end
 
 function EPB:Initialize()
+	EPB:UpdateSettings()
+
 	if EPB.db.Enable ~= true then
 		return
 	end
@@ -1590,16 +1592,16 @@ function EPB:IsHealingForbidden()
 	return AuraUtil_FindAuraByName(EPB.BattlePetChallengeDebuffName, "player", "HARMFUL") ~= nil
 end
 
-function EPB:SetHealthThresholdOverride(value)
-	self.healthThresholdOverride = value
+function EPB:SetOverrideHealthThreshold(value)
+	self.overrideHealthThreshold = value
 end
 
-function EPB:ClearHealthThresholdOverride()
-	self.healthThresholdOverride = nil
+function EPB:ClearOverrideHealthThreshold()
+	self.overrideHealthThreshold = nil
 end
 
-function EPB:GetHealthThresholdOverride()
-	return self.healthThresholdOverride
+function EPB:GetOverrideHealthThreshold()
+	return self.overrideHealthThreshold
 end
 
 function EPB:BlockHealing()
@@ -1623,7 +1625,7 @@ function EPB:CheckReviveBarVisibility()
 	end
 
 	local health, maxHealth, show, checkPercentage
-	checkPercentage = EPB:GetHealthThresholdOverride() or EPB.db.healthThreshold
+	checkPercentage = EPB:GetOverrideHealthThreshold() or EPB.db.healthThreshold
 	if (EPB.lastBattleWasWild) then
 		checkPercentage = EPB.db.wildHealthThreshold
 	end

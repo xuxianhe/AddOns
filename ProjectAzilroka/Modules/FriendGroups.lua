@@ -110,7 +110,7 @@ function FG:FriendGroups_UpdateFriendButton(button)
 		button.summonButton:SetPoint("TOPRIGHT", button, "TOPRIGHT", 1, -1)
 		FriendsFrame_SummonButton_Update(button.summonButton)
 	elseif button.buttonType == FRIENDS_BUTTON_TYPE_BNET then
-		local accountInfo = _G.C_BattleNet.GetFriendAccountInfo(button.id)
+		local accountInfo = PA:GetBattleNetInfo(button.id);
 		if accountInfo then
 			nameText = accountInfo.accountName
 			infoText = accountInfo.gameAccountInfo.richPresence
@@ -996,11 +996,9 @@ function FG:BuildProfile()
 	}
 end
 
-function FG:UpdateSettings()
-	FG.db = PA.db.FriendGroups
-end
-
 function FG:Initialize()
+	FG.db = PA.db.FriendGroups
+
 	if FG.db.Enable ~= true then
 		return
 	end

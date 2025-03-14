@@ -1,6 +1,6 @@
 # Unlearned Recipes
 
-## [r021](https://github.com/TLDRMissions/UnlearnedRecipes/tree/r021) (2024-07-30)
-[Full Changelog](https://github.com/TLDRMissions/UnlearnedRecipes/compare/r019...r021) [Previous Releases](https://github.com/TLDRMissions/UnlearnedRecipes/releases)
+## [r022](https://github.com/TLDRMissions/UnlearnedRecipes/tree/r022) (2025-03-12)
+[Full Changelog](https://github.com/TLDRMissions/UnlearnedRecipes/compare/r021...r022) [Previous Releases](https://github.com/TLDRMissions/UnlearnedRecipes/releases)
 
-- Fix lua error  
+- Update for SOD phase 6  

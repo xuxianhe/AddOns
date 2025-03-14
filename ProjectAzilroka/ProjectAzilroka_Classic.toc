@@ -1,4 +1,4 @@
-## Interface: 11404
+## Interface: 11403
 ## Title: |cFF16C3F2Project|r|cFFFFFFFFAzilroka|r
 ## Author: Azilroka, Nihilistzsche
 ## Version: 1.88
@@ -18,4 +18,3 @@ Media\Media.lua
 
 # Modules
 Modules\Load_Classic.xml
-Templates.xml
