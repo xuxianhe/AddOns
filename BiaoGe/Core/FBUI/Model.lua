@@ -135,7 +135,7 @@ end
 local function CreateBossModel(FB, bossnum, point_x, point_y, NPCID, scale, PortraitZoom, CamDistanceScale)
     local model = CreateFrame("PlayerModel", nil, BG["Frame" .. FB], "BackdropTemplate")
     model:SetSize(500, 500)
-    model:SetPoint("CENTER", BG.Frame[FB]["boss" .. bossnum].name, "CENTER", point_x, point_y)
+    model:SetPoint("CENTER", BG.Frame[FB]["boss" .. bossnum].bossName, "CENTER", point_x, point_y)
     model:SetFrameLevel(101)
     model:SetAlpha(0.8)
     model:SetCreature(NPCID)
@@ -303,24 +303,3 @@ function BG.CreateBossModel()
     end
 end
 
---[[
--- BG.After(1, function()
---     for i = 0, 200 do
---         if model:HasAnimation(i) then
---             pt(i)
---         end
---     end
--- end)
--- model:SetAnimation(1)
--- model:FreezeAnimation(1, 0, 60000)
--- BG.model = model
-
-/run BG.model:SetAnimation(52)
-/run BG.model:RefreshCamera()
- ]]
-
-
--- local model = CreateFrame("DressUpModel", nil, UIParent, "ModelWithControlsTemplate")
--- model:SetSize(300, 300)
--- model:SetPoint("CENTER")
--- model:SetCreature(15727)

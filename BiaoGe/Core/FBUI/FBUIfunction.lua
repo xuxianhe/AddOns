@@ -361,7 +361,6 @@ function BG.FBZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
             end
         end
     end
-
     bt:SetAutoFocus(false)
     bt.FB = FB
     bt.bossnum = BossNum(FB, b, t)
@@ -1124,23 +1123,27 @@ end
 
 ------------------BOSS名字------------------
 function BG.FBBossNameUI(FB, t, b, bb, i, ii, frameName)
-    local version
     local fontsize = 14
-    if FB == "ICC" and BossNum(FB, b, t) <= 13 then
-        local f = CreateFrame("Frame", nil, BG["Frame" .. FB])
-        f:SetPoint("TOP", BG.Frame[FB]["boss" .. BossNum(FB, b, t)].zhuangbei1, "TOPLEFT", -45, -2)
-        f:SetSize(15, 40)
-        version = f:CreateFontString()
-        version:SetPoint("CENTER")
-        version:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
-        version:SetTextColor(RGB(BG.Boss[FB]["boss" .. BossNum(FB, b, t)].color))
-        version:SetText(BG.Boss[FB]["boss" .. BossNum(FB, b, t)].name)
-        f:SetSize(version:GetStringWidth() - 5, version:GetStringHeight())
+    local boss = BossNum(FB, b, t)
+    local f = CreateFrame("Frame", nil, BG["Frame" .. FB])
+    if frameName and BG[frameName .. FB]["scrollFrame" .. boss] then
+        f:SetPoint("TOP", BG[frameName .. FB]["scrollFrame" .. boss].owner, "TOPLEFT", -40, -2)
+    else
+        f:SetPoint("TOP", BG.Frame[FB]["boss" .. boss].zhuangbei1, "TOPLEFT", -45, -2)
+    end
+    f:SetSize(15, 40)
+    f.text = f:CreateFontString()
+    f.text:SetPoint("CENTER")
+    f.text:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+    f.text:SetTextColor(RGB(BG.Boss[FB]["boss" .. boss].color))
+    f.text:SetText(BG.Boss[FB]["boss" .. boss].name)
+    f:SetSize(f.text:GetStringWidth() - 5, f.text:GetStringHeight())
+    BG.Frame[FB]["boss" .. boss].bossName = f
+    if FB == "ICC" and boss <= 13 then
         f:SetScript("OnMouseUp", function(self)
             if IsShiftKeyDown() then
-                local b = BossNum(FB, b, t)
+                local b = boss
                 BG.ClickTabButton(BG.BossMainFrameTabNum)
-
                 for i, v in ipairs(BG["BossTabButtons" .. FB]) do
                     v:Enable()
                     v.spellScrollFrame:Hide()
@@ -1160,38 +1163,24 @@ function BG.FBBossNameUI(FB, t, b, bb, i, ii, frameName)
         f:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
             GameTooltip:ClearLines()
-            GameTooltip:AddLine("|cff" .. BG.Boss[FB]["boss" .. BossNum(FB, b, t)].color .. BG.Boss[FB]["boss" .. BossNum(FB, b, t)].name2 .. RR)
-            GameTooltip:AddLine(L["SHIFT+点击："], 1, 1, 1)
-            GameTooltip:AddLine(L["查看该BOSS攻略"])
+            GameTooltip:AddLine("|cff" .. BG.Boss[FB]["boss" .. boss].color .. BG.Boss[FB]["boss" .. boss].name2 .. RR)
+            GameTooltip:AddLine(L["SHIFT+点击：查看该BOSS攻略"], 1, .82, 0)
             GameTooltip:Show()
-            version:SetTextColor(1, 1, 1)
+            f.text:SetTextColor(1, 1, 1)
         end)
         f:SetScript("OnLeave", function(self)
             GameTooltip:Hide()
-            version:SetTextColor(RGB(BG.Boss[FB]["boss" .. BossNum(FB, b, t)].color))
+            f.text:SetTextColor(RGB(BG.Boss[FB]["boss" .. boss].color))
         end)
-    else
-        version = BG["Frame" .. FB]:CreateFontString()
-        if frameName and BG[frameName .. FB]["scrollFrame" .. BossNum(FB, b, t)] then
-            version:SetPoint("TOP", BG[frameName .. FB]["scrollFrame" .. BossNum(FB, b, t)].owner, "TOPLEFT", -40, -2)
-        else
-            version:SetPoint("TOP", BG.Frame[FB]["boss" .. BossNum(FB, b, t)].zhuangbei1, "TOPLEFT", -45, -2)
-        end
-        version:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
-        version:SetTextColor(RGB(BG.Boss[FB]["boss" .. BossNum(FB, b, t)].color))
-        version:SetText(BG.Boss[FB]["boss" .. BossNum(FB, b, t)].name)
     end
-    BG.Frame[FB]["boss" .. BossNum(FB, b, t)]["name"] = version
 
-    if BG.Frame[FB]["boss" .. BossNum(FB, b, t)] == BG.Frame[FB]["boss" .. Maxb[FB] + 2] then
-        local version = BG["Frame" .. FB]:CreateFontString()
-        version:SetPoint("BOTTOM", BG.Frame[FB]["boss" .. Maxb[FB] + 2].zhuangbei5, "BOTTOMLEFT", -45, 7)
-        version:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
-        version:SetTextColor(RGB("00BFFF"))
-        version:SetText(L["工\n资"])
+    if BG.Frame[FB]["boss" .. boss] == BG.Frame[FB]["boss" .. Maxb[FB] + 2] then
+        local text = BG["Frame" .. FB]:CreateFontString()
+        text:SetPoint("BOTTOM", BG.Frame[FB]["boss" .. Maxb[FB] + 2].zhuangbei5, "BOTTOMLEFT", -45, 7)
+        text:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+        text:SetTextColor(RGB("00BFFF"))
+        text:SetText(L["工\n资"])
     end
-    BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["bossname"] = nil
-    BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["bossname2"] = nil
 end
 
 ------------------击杀用时------------------
@@ -1358,7 +1347,6 @@ function BG.CreateFBScrollFrame(frameName, FB, bossNum)
     scroll:SetWidth(350)
     scroll:SetHeight(BG.GetBossButtonCount(FB, bossNum) * 23)
     scroll:SetPoint("TOPLEFT", pointFrame, "BOTTOMLEFT", pointX, pointY)
-    -- scroll.ScrollBar.scrollStep = BG.scrollStep
     BG.CreateSrollBarBackdrop(scroll.ScrollBar)
     BG.HookScrollBarShowOrHide(scroll)
 

@@ -1,7 +1,8 @@
 # BigWigs
 
-## [v375.2](https://github.com/BigWigsMods/BigWigs/tree/v375.2) (2025-03-12)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v375.1...v375.2) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
+## [v376.3](https://github.com/BigWigsMods/BigWigs/tree/v376.3) (2025-03-16)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v376.2...v376.3) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
 
-- bump version  
-- LiberationOfUndermine/Gallywix: Story update  
+- Update zhCN (#1952)  
+- LiberationOfUndermine/Lockenstock: Update debug print with more information  
+- LiberationOfUndermine/Lockenstock: Fix debug print  

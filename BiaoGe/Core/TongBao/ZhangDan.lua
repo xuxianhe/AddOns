@@ -34,6 +34,11 @@ function BG.SendMsgToRaid(tbl, t)
     return t
 end
 
+-- C_Timer.After(i * 0.1,function()-- 每 0.1 秒发送一条消息
+--     C_ChatInfo.SendAddonMessage("xY_SYNC", msg, "RAID")
+--     print(i)
+-- end)
+
 -- 总览和工资
 local function ZongLan(onClick, tbl1, tbl2)
     local FB = BG.FB1

@@ -53,7 +53,7 @@ local function Default(player, time)
         msgTbl = {},
         yes = nil,
         sumjine = 0,
-        time = date("%H:%M:%S", GetServerTime()),
+        time = date("%m-%d %H:%M:%S", GetServerTime()),
         t = time,
     }
 end
@@ -82,7 +82,26 @@ local function Send(num, sumMoney, FB)
     local link = "|cffFFFF00|Hgarrmission:" .. "BiaoGeDuiZhang:" .. num ..
         "|h[" .. L["点击：对账"] .. "] " .. L["（"] .. "|cff00ff00" .. L["装备总收入"] .. sumMoney .. RR .. FBtext .. L["）"] .. "|h|r"
     SendSystemMessage(link)
+    BG.After(0.1, function()
+        local link = "|cffFFFF00|Hgarrmission:" .. format("BiaoGeDuiZhangCopy:%s:%s", num, FB) ..
+            "|h[" .. L["ALT+点击：复制账单|cff00FF00（仅对装备收入有效）|r"] .. "]|h|r"
+        SendSystemMessage(link)
+    end)
 end
+
+local function SaveRaidMember()
+    local tbl = {}
+    local point = BG.GetRaidPoint()
+    for _, v in ipairs(BG.raidRosterInfo) do
+        local name = v.name
+        tbl[name] = BG.Copy(v)
+        tbl[name].point = point[name]
+    end
+    if next(tbl) then
+        return tbl
+    end
+end
+
 
 -- 自动记录别人账单
 local f = CreateFrame("Frame")
@@ -217,11 +236,12 @@ f:SetScript("OnEvent", function(self, event, msg, playerName, ...)
     if yes then
         linshi_duizhang.yes = nil
         local sumMoney = 0
-        for key, value in pairs(linshi_duizhang.zhangdan) do
-            local jine = tonumber(value.jine) or 0
+        for _, v in pairs(linshi_duizhang.zhangdan) do
+            local jine = tonumber(v.jine) or 0
             sumMoney = sumMoney + jine
         end
         linshi_duizhang.sumjine = sumMoney
+        linshi_duizhang.member = SaveRaidMember()
         local FB = linshi_duizhang.FB
         tinsert(BiaoGe.duizhang, linshi_duizhang)
         linshi_duizhang = nil
@@ -260,17 +280,16 @@ end)
 function BG.DuiZhangUI()
     BG.DuiZhangDropDown = {}
     local dropDown = LibBG:Create_UIDropDownMenu(nil, BG.DuiZhangMainFrame)
-    dropDown:SetPoint("BOTTOM", BG.MainFrame, "BOTTOM", 0, 30)
+    dropDown:SetPoint("BOTTOM", BG.MainFrame, "BOTTOM", -40, 30)
     LibBG:UIDropDownMenu_SetWidth(dropDown, 450)
     LibBG:UIDropDownMenu_SetText(dropDown, L["无"])
     LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "BOTTOM", dropDown, "TOP")
     BG.dropDownToggle(dropDown)
     BG.DuiZhangDropDown.DropDown = dropDown
-
     local text = dropDown:CreateFontString()
     text:SetPoint("RIGHT", dropDown, "LEFT", 10, 3)
     text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
-    text:SetTextColor(RGB(BG.y2))
+    text:SetTextColor(1, 1, 0)
     text:SetText(BG.STC_g1(L["对比的账单："]))
     BG.DuiZhangDropDown.BiaoTi = text
 
@@ -343,88 +362,217 @@ function BG.DuiZhangUI()
     end
 
     -- 复制对方金额
-    local bt = BG.CreateButton(BG.DuiZhangMainFrame)
-    bt:SetSize(120, 25)
-    bt:SetPoint("LEFT", dropDown, "RIGHT", 20, 3)
-    bt:SetText(L["复制对方账单"])
-    bt:Disable()
-    BG.DuiZhangMainFrame.ButtonCopy = bt
-    bt:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
-        GameTooltip:ClearLines()
-        GameTooltip:AddLine(L["复制对方账单"], 1, 1, 1, true)
-        GameTooltip:AddLine(L["把对方账单的金额覆盖我当前表格的金额。如果对方是BiaoGe插件的账单，则也会复制其买家。"], 1, 0.82, 0, true)
-        GameTooltip:AddLine(" ", 1, 0.82, 0, true)
-        GameTooltip:AddLine(L["不会对漏记的装备和金额生效。"], 1, 0.82, 0, true)
-        GameTooltip:Show()
-    end)
-    BG.GameTooltip_Hide(bt)
-    bt:SetScript("OnClick", function(self)
-        local addons = BiaoGe.duizhang[BG.lastduizhangNum].addons
-        local FB = BG.FB1
-        local tradeInfo = {}
-        BiaoGe[FB].tradeTbl = {}
-        for b = 1, Maxb[FB] - 1 do
-            for i = 1, Maxi[FB] do
-                local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
-                local myjine = BG.DuiZhangFrame[FB]["boss" .. b]["myjine" .. i]
-                local zhuangbei = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
-                local maijia = BG.Frame[FB]["boss" .. b]["maijia" .. i]
-                local jine = BG.Frame[FB]["boss" .. b]["jine" .. i]
-                if zhuangbei then
-                    myjine:SetText(otherjine:GetText())
-                    jine:SetText(otherjine:GetText())
-                    if otherjine:GetText() == "" then
-                        BiaoGe[FB]["boss" .. b]["jine" .. i] = nil
-                    else
-                        BiaoGe[FB]["boss" .. b]["jine" .. i] = otherjine:GetText()
-                    end
-
-                    if addons == "biaoge" then
-                        local duizhangmaijia = BG.DuiZhangFrame[FB]["boss" .. b]["maijia" .. i]
-                        local duizhangcolor = BG.DuiZhangFrame[FB]["boss" .. b]["color" .. i]
-                        maijia:SetText(duizhangmaijia or "")
-                        BiaoGe[FB]["boss" .. b]["maijia" .. i] = duizhangmaijia
-                        if duizhangcolor then
-                            maijia:SetTextColor(unpack(duizhangcolor))
+    do
+        local bt = BG.CreateButton(BG.DuiZhangMainFrame)
+        bt:SetSize(100, 25)
+        bt:SetPoint("LEFT", dropDown, "RIGHT", 0, 3)
+        bt:SetText(L["复制对方账单"])
+        bt:Disable()
+        BG.DuiZhangMainFrame.ButtonCopy = bt
+        bt:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
+            GameTooltip:ClearLines()
+            GameTooltip:AddLine(L["复制对方账单"], 1, 1, 1, true)
+            GameTooltip:AddLine(L["把对方账单的金额覆盖我当前表格的金额。如果对方是BiaoGe插件的账单，则也会复制其买家。"], 1, 0.82, 0, true)
+            GameTooltip:AddLine(" ", 1, 0.82, 0, true)
+            GameTooltip:AddLine(L["不会对漏记的装备和金额生效。"], 1, 0.82, 0, true)
+            GameTooltip:Show()
+        end)
+        bt:SetScript("OnLeave", GameTooltip_Hide)
+        bt:SetScript("OnClick", function(self)
+            bt:Copy()
+            BG.PlaySound(2)
+        end)
+        function bt:Copy()
+            local addons = BiaoGe.duizhang[BG.lastduizhangNum].addons
+            local FB = BG.FB1
+            local tradeInfo = {}
+            BiaoGe[FB].tradeTbl = {}
+            for b = 1, Maxb[FB] - 1 do
+                for i = 1, Maxi[FB] do
+                    local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
+                    local myjine = BG.DuiZhangFrame[FB]["boss" .. b]["myjine" .. i]
+                    local zhuangbei = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
+                    local maijia = BG.Frame[FB]["boss" .. b]["maijia" .. i]
+                    local jine = BG.Frame[FB]["boss" .. b]["jine" .. i]
+                    if zhuangbei then
+                        myjine:SetText(otherjine:GetText())
+                        jine:SetText(otherjine:GetText())
+                        if otherjine:GetText() == "" then
+                            BiaoGe[FB]["boss" .. b]["jine" .. i] = nil
                         else
-                            maijia:SetTextColor(1, 1, 1)
-                        end
-                        for k in pairs(BG.playerClass) do
-                            BiaoGe[FB]["boss" .. b][k .. i] = BG.DuiZhangFrame[FB]["boss" .. b][k .. i]
+                            BiaoGe[FB]["boss" .. b]["jine" .. i] = otherjine:GetText()
                         end
 
-                        -- 打包交易
-                        if otherjine.tradeTbl then
-                            local notYes
-                            for ii, vv in ipairs(tradeInfo) do
-                                for i, v in ipairs(otherjine.tradeTbl) do
-                                    if vv.b == v.b and vv.i == v.i then
-                                        notYes = true
-                                        break
-                                    end
-                                end
-                                if notYes then break end
+                        if addons == "biaoge" then
+                            local duizhangmaijia = BG.DuiZhangFrame[FB]["boss" .. b]["maijia" .. i]
+                            local duizhangcolor = BG.DuiZhangFrame[FB]["boss" .. b]["color" .. i]
+                            maijia:SetText(duizhangmaijia or "")
+                            BiaoGe[FB]["boss" .. b]["maijia" .. i] = duizhangmaijia
+                            if duizhangcolor then
+                                maijia:SetTextColor(unpack(duizhangcolor))
+                            else
+                                maijia:SetTextColor(1, 1, 1)
                             end
-                            if not notYes then
-                                local tradeTbl = BG.Copy(otherjine.tradeTbl)
-                                for i, v in ipairs(tradeTbl) do
-                                    local zb = BG.Frame[FB]["boss" .. v.b]["zhuangbei" .. v.i]
-                                    tradeTbl[i].FB = FB
-                                    tradeTbl[i].itemID = GetItemID(zb:GetText())
-                                    tradeTbl[i].link = zb:GetText()
-                                    tinsert(tradeInfo, { b = v.b, i = v.i })
+                            for k in pairs(BG.playerClass) do
+                                BiaoGe[FB]["boss" .. b][k .. i] = BG.DuiZhangFrame[FB]["boss" .. b][k .. i]
+                            end
+
+                            -- 打包交易
+                            if otherjine.tradeTbl then
+                                local notYes
+                                for ii, vv in ipairs(tradeInfo) do
+                                    for i, v in ipairs(otherjine.tradeTbl) do
+                                        if vv.b == v.b and vv.i == v.i then
+                                            notYes = true
+                                            break
+                                        end
+                                    end
+                                    if notYes then break end
                                 end
-                                tinsert(BiaoGe[FB].tradeTbl, tradeTbl)
+                                if not notYes then
+                                    local tradeTbl = BG.Copy(otherjine.tradeTbl)
+                                    for i, v in ipairs(tradeTbl) do
+                                        local zb = BG.Frame[FB]["boss" .. v.b]["zhuangbei" .. v.i]
+                                        tradeTbl[i].FB = FB
+                                        tradeTbl[i].itemID = GetItemID(zb:GetText())
+                                        tradeTbl[i].link = zb:GetText()
+                                        tinsert(tradeInfo, { b = v.b, i = v.i })
+                                    end
+                                    tinsert(BiaoGe[FB].tradeTbl, tradeTbl)
+                                end
                             end
                         end
                     end
                 end
             end
+            BG.DuiZhangSet(BG.lastduizhangNum)
         end
-        BG.DuiZhangSet(BG.lastduizhangNum)
-        BG.PlaySound(2)
-    end)
+    end
+
+    -- 成员名单
+    do
+        local bt = BG.CreateButton(BG.DuiZhangMainFrame)
+        bt:SetSize(80, 25)
+        bt:SetPoint("LEFT", BG.DuiZhangMainFrame.ButtonCopy, "RIGHT", 10, 0)
+        bt:SetText(L["团员名单"])
+        bt:Disable()
+        BG.DuiZhangMainFrame.ButtonRaidMember = bt
+        bt:SetScript("OnEnter", function(self)
+            self:ShowRaidMember()
+        end)
+        bt:SetScript("OnLeave", function(self)
+            BG.DuiZhangMainFrame.raidMemberFrame:Hide()
+            GameTooltip:Hide()
+        end)
+        bt:SetScript("OnClick", function(self)
+        end)
+        function bt:ShowRaidMember()
+            if not BG.DuiZhangMainFrame.raidMemberFrame then
+                local mainFrame = CreateFrame("Frame", nil, BG.DuiZhangMainFrame, "BackdropTemplate")
+                mainFrame:SetBackdrop({
+                    bgFile = "Interface/ChatFrame/ChatFrameBackground",
+                    edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+                    edgeSize = 1,
+                })
+                mainFrame:SetBackdropColor(0, 0, 0, .9)
+                mainFrame:SetBackdropBorderColor(1, 1, 1, .8)
+                mainFrame:SetSize(405, 275)
+                mainFrame:SetPoint("BOTTOM", self, "TOP", 0, 5)
+                mainFrame:SetFrameLevel(200)
+                mainFrame:Hide()
+                mainFrame.buttons = {}
+                BG.DuiZhangMainFrame.raidMemberFrame = mainFrame
+
+                local function CreateRaidButton(i)
+                    local f = CreateFrame("Frame", nil, mainFrame, "BackdropTemplate")
+                    f:SetBackdrop({
+                        bgFile = "Interface/ChatFrame/ChatFrameBackground",
+                        edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+                        edgeSize = 1,
+                    })
+                    f:SetBackdropColor(0, 0, 0, .2)
+                    f:SetBackdropBorderColor(1, 1, 1, .2)
+                    f:SetSize(90, 20)
+                    if i == 1 then
+                        f:SetPoint("TOPLEFT", 15, -25)
+
+                        local text = f:CreateFontString()
+                        text:SetFont(STANDARD_TEXT_FONT, 13, "OUTLINE")
+                        text:SetPoint("BOTTOM", f, "TOP", 0, 2)
+                        text:SetText(1)
+                        text:SetTextColor(.5, .5, .5)
+                    elseif i == 21 then
+                        f:SetPoint("TOPLEFT", mainFrame.buttons[5], "BOTTOMLEFT", 0, -30)
+
+                        local text = f:CreateFontString()
+                        text:SetFont(STANDARD_TEXT_FONT, 13, "OUTLINE")
+                        text:SetPoint("BOTTOM", f, "TOP", 0, 2)
+                        text:SetText((i - 1) / 5 + 1)
+                        text:SetTextColor(.5, .5, .5)
+                    elseif (i - 1) % 5 == 0 then
+                        f:SetPoint("TOPLEFT", mainFrame.buttons[i - 5], "TOPRIGHT", 5, 0)
+
+                        local text = f:CreateFontString()
+                        text:SetFont(STANDARD_TEXT_FONT, 13, "OUTLINE")
+                        text:SetPoint("BOTTOM", f, "TOP", 0, 2)
+                        text:SetText((i - 1) / 5 + 1)
+                        text:SetTextColor(.5, .5, .5)
+                    else
+                        f:SetPoint("TOPLEFT", mainFrame.buttons[i - 1], "BOTTOMLEFT", 0, -1)
+                        local num = floor((i - 1) / 5) * 5 + 1
+                    end
+                    tinsert(mainFrame.buttons, f)
+
+                    local text = f:CreateFontString()
+                    text:SetFont(STANDARD_TEXT_FONT, 13, "OUTLINE")
+                    text:SetPoint("LEFT", 2, 0)
+                    text:SetWidth(f:GetWidth() - 5)
+                    text:SetJustifyH("LEFT")
+                    text:SetWordWrap(false)
+                    f.nameText = text
+
+                    local tex = f:CreateTexture()
+                    tex:SetPoint("CENTER", f, "TOPLEFT", 0, 0)
+                    tex:SetSize(10, 10)
+                    f.icon = tex
+                end
+
+                for i = 1, 40 do
+                    CreateRaidButton(i)
+                end
+            end
+            local mainFrame = BG.DuiZhangMainFrame.raidMemberFrame
+            mainFrame:Show()
+            for i = 1, 40 do
+                local bt = mainFrame.buttons[i]
+                bt.nameText:SetText("")
+                bt.icon:SetTexture(nil)
+            end
+            local num = BG.lastduizhangNum
+            for name, v in pairs(BiaoGe.duizhang[num].member) do
+                local team, n = strsplit("-", v.point)
+                team = tonumber(team)
+                n = tonumber(n)
+                local id = (team - 1) * 5 + n
+                local bt = mainFrame.buttons[id]
+                local color = "ffFFFFFF"
+                if v.class then
+                    color = select(4, GetClassColor(v.class))
+                end
+                bt.nameText:SetText("|c" .. color .. name)
+                if v.rank == 2 then
+                    bt.icon:SetTexture("interface/groupframe/ui-group-leadericon")
+                elseif v.role == "MAINTANK" then
+                    bt.icon:SetTexture(132064)
+                elseif v.role == "MAINASSIST" then
+                    bt.icon:SetTexture(132063)
+                elseif v.rank == 1 then
+                    bt.icon:SetTexture("interface/groupframe/ui-group-assistanticon")
+                end
+            end
+        end
+    end
 
     -- 聊天记录
     do
@@ -453,7 +601,7 @@ function BG.DuiZhangUI()
         child:SetWidth(scroll:GetWidth())
         child:SetAutoFocus(false)
         child:EnableMouse(false)
-        child:SetTextInsets(0, 0, 0, 0)
+        child:SetTextInsets(3, 3, 3, 3)
         child:SetMultiLine(true)
         child:SetHyperlinksEnabled(true)
         child:SetTextColor(RGB("FF7F50"))
@@ -528,6 +676,7 @@ local function CreateZhangDanTitle(num)
         .. L["，"] .. L["装备总收入"] .. BG.STC_g1(zhangdan.sumjine) .. FBtext
     return title
 end
+
 local function CreateZhangDanMsg(num)
     BG.DuiZhangMainFrame.msgFrame.scroll.ScrollBar:Hide()
     local zhangdan = BiaoGe.duizhang[num]
@@ -537,12 +686,10 @@ local function CreateZhangDanMsg(num)
             classtext = select(4, GetClassColor(zhangdan.class))
         end
         local nameLink = "|Hplayer:" .. zhangdan.player .. "|h[" .. "|c" .. classtext .. zhangdan.player .. RR .. "]|h"
-        local timeText = "|cff" .. "808080" .. zhangdan.time .. "|r"
-
         BG.DuiZhangMainFrame.msgFrame:SetText("")
         for i, msg in ipairs(zhangdan.msgTbl) do
             msg = BG.GsubRaidTargetingIcons(msg)
-            local text = timeText .. " " .. nameLink .. L["："] .. msg .. NN
+            local text = nameLink .. L["："] .. msg .. NN
             BG.DuiZhangMainFrame.msgFrame:Insert(text)
         end
     end
@@ -579,6 +726,7 @@ function BG.DuiZhangList()
             BG.DuiZhang0()
             LibBG:UIDropDownMenu_SetText(BG.DuiZhangDropDown.DropDown, L["无"])
             BG.DuiZhangMainFrame.ButtonCopy:Disable()
+            BG.DuiZhangMainFrame.ButtonRaidMember:Disable()
         end
         if not BG.lastduizhangNum then
             info.checked = true
@@ -593,6 +741,11 @@ function BG.DuiZhangSet(num)
     local FB = BG.FB1
     BG.lastduizhangNum = num
     BG.DuiZhangMainFrame.ButtonCopy:Enable()
+    if BiaoGe.duizhang[num].member then
+        BG.DuiZhangMainFrame.ButtonRaidMember:Enable()
+    else
+        BG.DuiZhangMainFrame.ButtonRaidMember:Disable()
+    end
 
     BG.DuiZhang0()
     CreateZhangDanMsg(num)
@@ -772,16 +925,31 @@ function BG.DuiZhang0()
     BG.DuiZhangMainFrame.msgFrame:SetText("")
 end
 
--- 点击[详细]后打开UI
-hooksecurefunc("SetItemRef", function(link)
-    local _, BiaoGeDuiZhang, num = strsplit(":", link, 3)
-    if not (BiaoGeDuiZhang == "BiaoGeDuiZhang" and num) then return end
-    num = tonumber(num)
-
+local function CopyBill(num, FB)
+    FB = FB or BG.FB1
+    if FB ~= BG.FB1 then
+        BG.ClickFBbutton(FB)
+    end
     BG.MainFrame:Show()
     BG.ClickTabButton(BG.DuiZhangMainFrameTabNum)
     BG.DuiZhangSet(num)
-    CreateZhangDanMsg(num)
     LibBG:UIDropDownMenu_SetText(BG.DuiZhangDropDown.DropDown, CreateZhangDanTitle(num))
-    BG.PlaySound(1)
+    BG.DuiZhangMainFrame.ButtonCopy:Copy()
+    BG.ClickTabButton(BG.FBMainFrameTabNum)
+end
+
+hooksecurefunc("SetItemRef", function(link)
+    local _, BiaoGeDuiZhang, num, FB = strsplit(":", link)
+    if BiaoGeDuiZhang == "BiaoGeDuiZhang" and num then
+        num = tonumber(num)
+        BG.MainFrame:Show()
+        BG.ClickTabButton(BG.DuiZhangMainFrameTabNum)
+        BG.DuiZhangSet(num)
+        LibBG:UIDropDownMenu_SetText(BG.DuiZhangDropDown.DropDown, CreateZhangDanTitle(num))
+        BG.PlaySound(1)
+    elseif BiaoGeDuiZhang == "BiaoGeDuiZhangCopy" and num and IsAltKeyDown() then
+        num = tonumber(num)
+        CopyBill(num, FB)
+        BG.PlaySound(2)
+    end
 end)

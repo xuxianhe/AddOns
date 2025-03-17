@@ -409,7 +409,7 @@ f:SetScript("OnEvent", function(self, event)
         BG.Frame[FB]["boss" .. boss]["name"]:SetTextColor(r, g, b, a)
         edit:SetText(RGB_16(r, g, b))
         edit:HighlightText()
-        pt(r, g, b)
+        print(r, g, b)
     end
 
     BG.MainFrame:HookScript("OnShow", function(self)

@@ -44,11 +44,13 @@ end
 L = BigWigs:NewBossLocale("Sprocketmonger Lockenstock", "ruRU")
 if L then
 	L.foot_blasters = "Мины"
+	--L.unstable_shrapnel = "Mine Soaked"
 	L.screw_up = "Буры"
 	L.sonic_ba_boom = "Рейд урон"
-	L.polarization_generator = "Смена цвета"
+	--L.polarization_generator = "Colors"
 
-	L.polarization_soon = "Смена цвета скоро: %s"
+	--L.polarization_soon = "Color Soon: %s"
+	--L.polarization_soon_change = "Color SWITCH Soon: %s"
 
 	L.activate_inventions = "Активированы: %s"
 	L.blazing_beam = "Лучи"
@@ -56,6 +58,7 @@ if L then
 	L.mega_magnetize = "Магниты"
 	L.jumbo_void_beam = "Большие лучи"
 	L.void_barrage = "Шарики"
+	--L.everything = "Everything"
 end
 
 L = BigWigs:NewBossLocale("The One-Armed Bandit", "ruRU")
@@ -85,6 +88,8 @@ end
 
 L = BigWigs:NewBossLocale("Chrome King Gallywix", "ruRU")
 if L then
+	--L.story_phase_trigger = "What, you think you won?" -- What, you think you won? Nah, I got somethin' else for ya.
+
 	L.scatterblast_canisters = "Конус делёжка"
 	L.fused_canisters = "Групповая делёжка"
 	L.tick_tock_canisters = "Делёжка"

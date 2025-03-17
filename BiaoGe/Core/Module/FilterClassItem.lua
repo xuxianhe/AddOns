@@ -180,7 +180,7 @@ function BG.FilterClassItemUI()
                     },
                     {
                         isTitle = true,
-                        text = "",
+                        text = "   ",
                         notCheckable = true,
                     },
                     {
@@ -204,7 +204,7 @@ function BG.FilterClassItemUI()
                     },
                     {
                         isTitle = true,
-                        text = "",
+                        text = "   ",
                         notCheckable = true,
                     },
                     {
@@ -862,7 +862,7 @@ function BG.FilterClassItemUI()
 
                 local a = {
                     isTitle = true,
-                    text = "",
+                    text = "   ",
                     notCheckable = true,
                 }
                 tinsert(channelTypeMenu, a)

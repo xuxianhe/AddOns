@@ -364,6 +364,28 @@ function BG.PaiXuRaidRosterInfo(filter)
     return newTbl
 end
 
+------------------获取玩家所在的团队框体位置（例如5-2）------------------
+function BG.GetRaidPoint()
+    local team = {}
+    for _, v in pairs(BG.raidRosterInfo) do
+        if v.name then
+            local name = strsplit("-", v.name)
+            if not team[v.subgroup] then
+                team[v.subgroup] = {}
+            end
+            table.insert(team[v.subgroup], name)
+        end
+    end
+
+    local point = {}
+    for subgroup in pairs(team) do
+        for i, name in ipairs(team[subgroup]) do
+            point[name] = subgroup .. "-" .. i
+        end
+    end
+    return point
+end
+
 ------------------函数：装备缓存本地化------------------
 function BG.EditItemCache(self, func)
     local _itemID = GetItemID(self:GetText())
@@ -2244,6 +2266,7 @@ function BG.SkinDropDown(dropDown)
     f:SetPoint("TOPLEFT", 15, 0)
     f:SetPoint("BOTTOMRIGHT", -15, 7)
     f:SetFrameLevel(dropDown:GetFrameLevel())
+    dropDown.bg=f
 
     local tex = dropDown:CreateTexture("OVERLAY")
     tex:SetPoint("TOPLEFT", bt, "TOPLEFT", 2, -2)
@@ -2251,10 +2274,12 @@ function BG.SkinDropDown(dropDown)
     tex:SetTexture("Interface/AddOns/BiaoGe/Media/textures/arrow.tga")
     tex:SetRotation(math.pi)
     dropDown:HookScript("OnEnter", function(self)
+        if dropDown.isDisabled then return end
         f:SetBackdropColor(r, g, b, 0.3)
         f:SetBackdropBorderColor(r, g, b, borderAlpha)
     end)
     dropDown:HookScript("OnLeave", function(self)
+        if dropDown.isDisabled then return end
         f:SetBackdropColor(0, 0, 0, 0.5)
         f:SetBackdropBorderColor(.3, .3, .3, borderAlpha)
     end)
@@ -2292,4 +2317,15 @@ function BG.CreateHighLightAnim(self, w, h)
     f.flashGroup:Play()
     f.flashGroup:SetLooping("REPEAT")
     return f
+end
+
+function BG.GetAllFB(firstFB)
+    local firstFB = firstFB or BG.FB1
+    local FBtable = { firstFB }
+    for i, FB in ipairs(BG.FBtable) do
+        if FB ~= firstFB then
+            tinsert(FBtable, FB)
+        end
+    end
+    return FBtable
 end

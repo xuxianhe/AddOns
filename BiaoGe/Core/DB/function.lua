@@ -12,6 +12,7 @@ local RN = "|r\n"
 ns.RN = RN
 
 BG = {}
+BG.ns = ns
 
 ----------tbl元素个数----------
 local function Size(t)

@@ -51,6 +51,7 @@ BG.instructionsText = ns.instructionsText
 BG.updateText = ns.updateText
 BG.BG = "|cff00BFFF<BiaoGe>|r "
 BG.rareIcon = "|A:nameplates-icon-elite-silver:0:0|a"
+BG.iconTexCoord={.03, .97, .03, .97}
 
 BG.blackListPlayer = {}
 if BG.IsWLK then
@@ -709,10 +710,6 @@ local function DataBase()
         end
     end
 
---[[ 
-/run BiaoGe.HistoryList=nil BiaoGe.History=nil ReloadUI()
-]]
-
     if not BiaoGe.History then
         BiaoGe.History = {}
     end
@@ -799,12 +796,13 @@ local function DataBase()
         BiaoGe.realmName = BiaoGe.realmName or {}
         BiaoGe.realmName[realmID] = realmName
     end
-    -- 记录每个角色的职业和等级
+    -- 记录每个角色的职业等级
     do
         BiaoGe.playerInfo = BiaoGe.playerInfo or {}
         BiaoGe.playerInfo[realmID] = BiaoGe.playerInfo[realmID] or {}
         BiaoGe.playerInfo[realmID][player] = BiaoGe.playerInfo[realmID][player] or {}
         BiaoGe.playerInfo[realmID][player].class = select(2, UnitClass("player"))
+        BiaoGe.playerInfo[realmID][player].raceID = select(3, UnitRace("player"))
         BiaoGe.playerInfo[realmID][player].level = UnitLevel("player")
         BiaoGe.playerInfo[realmID][player].iLevel = select(2, GetAverageItemLevel()) or 0
 

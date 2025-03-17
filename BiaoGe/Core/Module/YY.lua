@@ -834,12 +834,12 @@ BG.Init(function()
                                     tremove(BiaoGe.YYdb.history, i)
                                 end
                             end
+                            tinsert(BiaoGe.YYdb.history, 1, BG.YYMainFrame.searchText)
                             for i = #BiaoGe.YYdb.historyEmpty, 1, -1 do
-                                if tonumber(BiaoGe.YYdb.historyEmpty[i]) == tonumber(BG.YYMainFrame.searchText.yy) then
+                                if tonumber(BiaoGe.YYdb.historyEmpty[i].yy) == tonumber(BG.YYMainFrame.searchText.yy) then
                                     tremove(BiaoGe.YYdb.historyEmpty, i)
                                 end
                             end
-                            tinsert(BiaoGe.YYdb.history, 1, BG.YYMainFrame.searchText)
                             BG.YYMainFrame.historyNum = 1
                             Y.SetResult(BG.YYMainFrame.historyNum)
                             -- 检查数据库是否已经超过上限
@@ -880,12 +880,11 @@ BG.Init(function()
                                 end
                             end
                             for i = #BiaoGe.YYdb.historyEmpty, 1, -1 do
-                                if tonumber(BiaoGe.YYdb.historyEmpty[i]) == tonumber(BG.YYMainFrame.searchText.yy) then
+                                if tonumber(BiaoGe.YYdb.historyEmpty[i].yy) == tonumber(BG.YYMainFrame.searchText.yy) then
                                     tremove(BiaoGe.YYdb.historyEmpty, i)
                                 end
                             end
-                            local a = { yy = BG.YYMainFrame.searchText.yy, date = BG.YYMainFrame.searchText.date }
-                            tinsert(BiaoGe.YYdb.historyEmpty, a)
+                            tinsert(BiaoGe.YYdb.historyEmpty, { yy = BG.YYMainFrame.searchText.yy, date = BG.YYMainFrame.searchText.date })
                             Y.DefaultResult()
                             LibBG:UIDropDownMenu_SetText(BG.YYMainFrame.DropDown, L["无"])
                             local msg = BG.STC_r1(format(L["查询失败：没有找到YY%s的评价。"], yy))
@@ -903,6 +902,8 @@ BG.Init(function()
                                 end
                             end)
                         end
+
+
                         BG.YYMainFrame.searchText = nil
 
                         edit:SetEnabled(true)
@@ -976,7 +977,11 @@ BG.Init(function()
             function Y.DropDownList()
                 LibBG:UIDropDownMenu_Initialize(BG.YYMainFrame.DropDown, function(self, level, menuList)
                     local info = LibBG:UIDropDownMenu_CreateInfo()
-                    info.text, info.func = L["无"], function()
+                    info.text= L["无"]
+                    if LibBG:UIDropDownMenu_GetText(BG.YYMainFrame.DropDown)==info.text then
+                        info.checked = true
+                    end
+                    info.func = function()
                         Y.DefaultResult()
                         LibBG:UIDropDownMenu_SetText(BG.YYMainFrame.DropDown, L["无"])
                         BG.ClearFocus()
@@ -985,7 +990,11 @@ BG.Init(function()
 
                     for i, v in ipairs(BiaoGe.YYdb.history) do
                         local info = LibBG:UIDropDownMenu_CreateInfo()
-                        info.text, info.func = Y.DropDownColor(v), function()
+                        info.text= Y.DropDownColor(v)
+                        if v.yy == LibBG:UIDropDownMenu_GetText(BG.YYMainFrame.DropDown):match("|c........(%d+)|r") then
+                            info.checked = true
+                        end
+                        info.func = function()
                             BG.YYMainFrame.historyNum = i
                             Y.SetResult(i)
                             LibBG:UIDropDownMenu_SetText(BG.YYMainFrame.DropDown, Y.DropDownColor(v, "yy"))
@@ -1000,6 +1009,7 @@ BG.Init(function()
             dropDown:SetPoint("TOPRIGHT", 2, -10)
             LibBG:UIDropDownMenu_SetWidth(dropDown, 150)
             LibBG:UIDropDownMenu_SetText(dropDown, L["无"])
+            LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "TOP", dropDown, "BOTTOM")
             BG.dropDownToggle(dropDown)
             BG.YYMainFrame.DropDown = dropDown
 
@@ -1287,8 +1297,16 @@ BG.Init(function()
         end
 
         local function CreateLink(cleanedYY)
-            return "|cff00BFFF|Hgarrmission:BiaoGeYY:YY:" .. cleanedYY ..
-                "|h[YY:" .. cleanedYY .. PingJia(cleanedYY) .. "]|h|r"
+            local color="00BFFF"
+            for _, v in ipairs(BiaoGe.YYdb.all) do
+                if tonumber(cleanedYY) == tonumber(v.yy) then
+                    local tbl={L["00FF00"],L["FFFF00"],L["DC143C"]}
+                    color=tbl[v.pingjia]
+                    break
+                end
+            end
+            return "|cff"..color.."|Hgarrmission:BiaoGeYY:YY:" .. cleanedYY ..
+                "|h[YY:" .. cleanedYY .. PingJia(cleanedYY) .. "]".."|h|r"
         end
         local function CreateLinkForGsub(yy)
             return CreateLink(yy:gsub("%s", ""))
@@ -1342,7 +1360,7 @@ BG.Init(function()
             end
         end
 
-        hooksecurefunc("SetItemRef", function(link)
+        hooksecurefunc("SetItemRef", function(link, _, button)
             local arg1, arg2, arg3, arg4 = strsplit(":", link)
             local yy = arg4
             if arg2 == "BiaoGeYY" and arg3 == L["详细"] and arg4 then
@@ -1350,7 +1368,7 @@ BG.Init(function()
                 BG.OnClickYYXiangXi(yy)
             elseif arg2 == "BiaoGeYY" and arg3 == "YY" and arg4 then
                 -- 点击YY链接后
-                if IsShiftKeyDown() then
+                if IsShiftKeyDown() or button == "RightButton" then
                     ChatEdit_ActivateChat(ChatEdit_ChooseBoxForSend())
                     ChatEdit_ChooseBoxForSend():SetText(yy)
                     ChatEdit_ChooseBoxForSend():HighlightText()
@@ -1381,6 +1399,7 @@ BG.Init(function()
                         GameTooltip:AddLine(ii .. ". " .. date .. " " .. Y.Pingjia(vv.pingjia)
                             .. edit .. vv.edit, r, g, b, true)
                     end
+                    break
                 end
             end
             GameTooltip:Show()
@@ -1398,7 +1417,7 @@ BG.Init(function()
                 GameTooltip:AddLine("|cff00BFFFYY:" .. yy .. RR)
                 GameTooltip:AddLine(" ")
                 GameTooltip:AddLine(L["|cffFFFFFF左键：|r查询大众评价"])
-                GameTooltip:AddLine(L["|cffFFFFFFSHIFT+左键：|r复制该号码"])
+                GameTooltip:AddLine(L["|cffFFFFFF右键：|r复制该号码"])
 
                 -- 以往查询结果
                 local yes
@@ -1447,6 +1466,7 @@ BG.Init(function()
                         tinsert(mypingjia, { name = L["频道名称："], name2 = v.name })
                         tinsert(mypingjia, { name = L["评价："], name2 = Y.Pingjia(v.pingjia) })
                         tinsert(mypingjia, { name = L["理由："], name2 = v.edit })
+                        break
                     end
                 end
                 if #mypingjia ~= 0 then
@@ -2251,13 +2271,13 @@ f:SetScript("OnEvent", function(self, event, ...)
         local prefix, msg, distType, senderFullName = ...
         local sender = strsplit("-", senderFullName)
         if prefix ~= YY then return end
-        if BG.blackListPlayer[RealmName] and BG.blackListPlayer[RealmName][sender] then
-            return
-        end
-        local date, pingjia, edit = strmatch(msg, "(%d+),(%d+),(.-),")
+        if BG.blackListPlayer[RealmName] and BG.blackListPlayer[RealmName][sender] then return end
+        if #BG.YYMainFrame.searchText.all >= Y.maxSearchText then return end -- 最多收集300个评价详细
+
+        local date, pingjia, edit = strsplit(",",msg,3)
+        edit=edit:gsub(",$","")
         pingjia = tonumber(pingjia)
         BG.YYMainFrame.searchText.sumpingjia[pingjia] = BG.YYMainFrame.searchText.sumpingjia[pingjia] + 1
-        if #BG.YYMainFrame.searchText.all >= Y.maxSearchText then return end -- 最多收集300个评价详细
         if BG.DeBug and BG.YYMainFrame.search.edit:GetText() == "34229022" and pingjia == 3 then
             print(senderFullName, date, edit)
         end

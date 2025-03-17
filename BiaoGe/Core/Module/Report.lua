@@ -1390,10 +1390,9 @@ BG.Init(function()
                     end
                 end
 
-                local bt = CreateFrame("Button", nil, WhoFrame, "UIPanelButtonTemplate")
-                -- local bt = BG.CreateButton(WhoFrame)
-                bt:SetSize(100, 25)
-                bt:SetPoint("TOPLEFT", 60, -25)
+                local bt = BG.CreateButton(WhoFrame)
+                bt:SetSize(100, 22)
+                bt:SetPoint("TOPLEFT", 60, -28)
                 bt.text = L["全部举报"]
                 bt:SetText(bt.text)
                 bt:Hide()

@@ -109,7 +109,7 @@ BG.Init(function()
     do
         local last
 
-        local function CreateTab(name, text) -- "Options_biaoge",L["表格"],biaoge
+        function BG.OptionsCreateTab(name, text) -- "Options_biaoge",L["表格"]
             local bt = CreateFrame("Button", "BG.Button" .. name, main)
             bt:SetHeight(25)
             bt:SetNormalFontObject(BG.FontBlue15)
@@ -152,14 +152,14 @@ BG.Init(function()
             return frame
         end
 
-        biaoge = CreateTab("Options_biaoge", L["表格"])
-        autoAuction = CreateTab("Options_autoAuction", L["自动拍卖"])
-        roleOverview = CreateTab("Options_roleOverview", L["角色总览"])
+        biaoge = BG.OptionsCreateTab("Options_biaoge", L["表格"])
+        autoAuction = BG.OptionsCreateTab("Options_autoAuction", L["自动拍卖"])
+        roleOverview = BG.OptionsCreateTab("Options_roleOverview", L["角色总览"])
         if BG.IsWLK then
-            boss = CreateTab("Options_boss", L["团本攻略"])
+            boss = BG.OptionsCreateTab("Options_boss", L["团本攻略"])
         end
-        others = CreateTab("Options_others", L["其他功能"])
-        config = CreateTab("Options_config", L["角色配置文件"])
+        others = BG.OptionsCreateTab("Options_others", L["其他功能"])
+        config = BG.OptionsCreateTab("Options_config", L["角色配置"])
 
         if BiaoGe.options.lastFrame and BG[BiaoGe.options.lastFrame] then
             BG[BiaoGe.options.lastFrame]:Show()
@@ -566,14 +566,17 @@ BG.Init(function()
                 local name1 = "lootTime"
                 local name2 = "lootFontSize"
                 local name3 = "autolootNotice"
+                local name4 = "autolootRemind"
                 if f:GetChecked() then
                     BG.options["button" .. name1]:Show()
                     BG.options["button" .. name2]:Show()
                     BG.options["button" .. name3]:Show()
+                    BG.options["button" .. name4]:Show()
                 else
                     BG.options["button" .. name1]:Hide()
                     BG.options["button" .. name2]:Hide()
                     BG.options["button" .. name3]:Hide()
+                    BG.options["button" .. name4]:Hide()
                 end
             end)
         end
@@ -634,7 +637,26 @@ BG.Init(function()
                 f:Hide()
             end
         end
-        h = h + 80
+        h = h + 30
+        -- 未拾取提醒
+        do
+            local name = "autolootRemind"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["装备未拾取提醒"],
+                L["击杀BOSS超过30秒装备还没拾取，且你是物品分配者时，屏幕中间红字提醒。"],
+                -- " ",
+                -- L[""],
+            }
+            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["装备未拾取提醒"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+            local name = "autoLoot"
+            if BiaoGe.options[name] ~= 1 then
+                f:Hide()
+            end
+        end
+        h = h + 40
 
         O.CreateLine(biaoge, height - h)
         h = h + 15
@@ -665,6 +687,7 @@ BG.Init(function()
                 local name5 = "tradeMoneyTop"
                 local name6 = "lastTrade"
                 local name7 = "qiankuanTrade"
+                local name8 = "tradeSameMoney"
                 if f:GetChecked() then
                     BG.options["button" .. name1]:Show()
                     BG.options["button" .. name2]:Show()
@@ -673,6 +696,7 @@ BG.Init(function()
                     BG.options["button" .. name5]:Show()
                     BG.options["button" .. name6]:Show()
                     BG.options["button" .. name7]:Show()
+                    BG.options["button" .. name8]:Show()
                 else
                     BG.options["button" .. name1]:Hide()
                     BG.options["button" .. name2]:Hide()
@@ -681,6 +705,7 @@ BG.Init(function()
                     BG.options["button" .. name5]:Hide()
                     BG.options["button" .. name6]:Hide()
                     BG.options["button" .. name7]:Hide()
+                    BG.options["button" .. name8]:Hide()
                 end
             end)
         end
@@ -778,23 +803,6 @@ BG.Init(function()
             end
         end
         h = h + 30
-        -- 交易金额超上限提醒
-        do
-            local name = "tradeMoneyTop"
-            BG.options[name .. "reset"] = 1
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
-            local ontext = {
-                L["交易金额超上限提醒"],
-                format(L["交易时，如果交易金额超过游戏上限（%s万），则会红字提醒。"], "99.9999"),
-            }
-            local f = O.CreateCheckButton(name, L["交易金额超上限提醒"] .. "*", biaoge, 15, height - h, ontext)
-            BG.options["button" .. name] = f
-            local name = "autoTrade"
-            if BiaoGe.options[name] ~= 1 then
-                f:Hide()
-            end
-        end
-        h = h + 30
         -- 最近拍卖
         do
             local name = "lastTrade"
@@ -822,6 +830,40 @@ BG.Init(function()
                 L["交易时，如果对方曾有欠款，则会在交易框下方显示其欠款记录，点击可以清除欠款。"],
             }
             local f = O.CreateCheckButton(name, L["对方欠款记录"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+            local name = "autoTrade"
+            if BiaoGe.options[name] ~= 1 then
+                f:Hide()
+            end
+        end
+        h = h + 30
+        -- 交易金额超上限提醒
+        do
+            local name = "tradeMoneyTop"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["交易金额超上限提醒"],
+                format(L["交易时，如果交易金额超过游戏上限（%s金），则会红字提醒。"], BG.tradeGoldTop.num),
+            }
+            local f = O.CreateCheckButton(name, L["交易金额超上限提醒"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+            local name = "autoTrade"
+            if BiaoGe.options[name] ~= 1 then
+                f:Hide()
+            end
+        end
+        h = h + 30
+        -- 重复交易工资提醒
+        do
+            local name = "tradeSameMoney"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["重复交易工资提醒"],
+                L["如果2分钟内你曾与同一个人交易过相同的金币，会有红字提醒。"],
+            }
+            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["重复交易工资提醒"] .. "*", biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
             local name = "autoTrade"
             if BiaoGe.options[name] ~= 1 then
@@ -1220,7 +1262,7 @@ BG.Init(function()
                 " ",
                 L["如果你们团每次支出的金额都是固定的，可以勾选此项。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["清空表格时保留支出金额"] .. "*", biaoge, 40, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["清空表格时保留支出金额"] .. "*", biaoge, 40, height - h, ontext)
             BG.options["button" .. name] = f
             if BiaoGe.options["retainExpenses"] ~= 1 then
                 f:Hide()
@@ -1508,7 +1550,7 @@ BG.Init(function()
                 L["数字小键盘"],
                 L["在可以输入数字的地方，自动显示一个数字小键盘。用鼠标就能完成数字的输入。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["数字小键盘"] .. "*", biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["数字小键盘"] .. "*", biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
         end
         h = h + 30
@@ -1628,7 +1670,7 @@ BG.Init(function()
                 L["一键开拍"],
                 L["在团长拍卖面板里，增加多个价格按钮，点击后直接按该价格开始拍卖。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["一键开拍"] .. "*", autoAuction, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["一键开拍"] .. "*", autoAuction, 15, height - h, ontext)
             BG.options["button" .. name] = f
             f:HookScript("OnClick", function(self)
                 if self:GetChecked() then
@@ -1869,7 +1911,7 @@ BG.Init(function()
         end
 
         -- 删除按钮
---[[         local bt = CreateFrame("Button", nil, roleOverview)
+        --[[         local bt = CreateFrame("Button", nil, roleOverview)
         bt:SetHeight(22)
         bt:SetPoint("TOPRIGHT", BG.optionsBackground:GetWidth() - 45, -5)
         bt:SetNormalFontObject(BG.FontRed15)
@@ -1954,7 +1996,7 @@ BG.Init(function()
 
         -- 创建多选按钮
         local width = 15
-        local height = -15
+        local height = -10
         local height_jiange = 22
         local line_height = 4
         do
@@ -2143,7 +2185,7 @@ BG.Init(function()
             t:SetPoint("TOPLEFT", 15, height)
             t:SetTextColor(1, 1, 1)
             t:SetText(AddTexture("QUEST") .. L["角色总览的排序方式："])
-            BG.options["Text"..name] = t
+            BG.options["Text" .. name] = t
 
             -- 选项
             do
@@ -2156,7 +2198,7 @@ BG.Init(function()
                 end
 
                 local dropDown = LibBG:Create_UIDropDownMenu(nil, roleOverview)
-                dropDown:SetPoint("LEFT", BG.options["Text"..name], "RIGHT", -10, -2)
+                dropDown:SetPoint("LEFT", BG.options["Text" .. name], "RIGHT", -10, -2)
                 LibBG:UIDropDownMenu_SetWidth(dropDown, 150)
                 LibBG:UIDropDownMenu_SetText(dropDown, SetText(BiaoGe.options[name]))
                 LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "TOP", dropDown, "BOTTOM")
@@ -2197,7 +2239,7 @@ BG.Init(function()
             t:SetPoint("TOPLEFT", 15, height)
             t:SetTextColor(1, 1, 1)
             t:SetText(AddTexture("QUEST") .. L["角色总览的默认显示："])
-            BG.options["Text"..name] = t
+            BG.options["Text" .. name] = t
             -- 选项
             do
                 local function SetText(key)
@@ -2209,7 +2251,7 @@ BG.Init(function()
                 end
 
                 local dropDown = LibBG:Create_UIDropDownMenu(nil, roleOverview)
-                dropDown:SetPoint("LEFT", BG.options["Text"..name], "RIGHT", -10, -2)
+                dropDown:SetPoint("LEFT", BG.options["Text" .. name], "RIGHT", -10, -2)
                 LibBG:UIDropDownMenu_SetWidth(dropDown, 150)
                 LibBG:UIDropDownMenu_SetText(dropDown, SetText(BiaoGe.options[name]))
                 LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "TOP", dropDown, "BOTTOM")
@@ -2250,7 +2292,7 @@ BG.Init(function()
             t:SetPoint("TOPLEFT", 15, height)
             t:SetTextColor(1, 1, 1)
             t:SetText(AddTexture("QUEST") .. L["角色总览的布局方式："])
-            BG.options["Text"..name] = t
+            BG.options["Text" .. name] = t
             -- 选项
             do
                 local function SetText(key)
@@ -2262,7 +2304,7 @@ BG.Init(function()
                 end
 
                 local dropDown = LibBG:Create_UIDropDownMenu(nil, roleOverview)
-                dropDown:SetPoint("LEFT", BG.options["Text"..name], "RIGHT", -10, -2)
+                dropDown:SetPoint("LEFT", BG.options["Text" .. name], "RIGHT", -10, -2)
                 LibBG:UIDropDownMenu_SetWidth(dropDown, 150)
                 LibBG:UIDropDownMenu_SetText(dropDown, SetText(BiaoGe.options[name]))
                 LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "TOP", dropDown, "BOTTOM")
@@ -2363,7 +2405,7 @@ BG.Init(function()
     -- 其他功能设置
     do
         local width = 15
-        local height = -15
+        local height = -10
         local height_jiange = 22
         local line_height = 4
         local h = 0
@@ -2452,8 +2494,9 @@ BG.Init(function()
                 ontext = {
                     L["自动点击一键分配"],
                     L["当你打开战利品界面时，自动点击一键分配按钮（等于自动把符合条件的装备全部分配给你，省去你每次点击按钮的动作）。"],
+                    " ",
+                    L["按下ALT/SHIFT/CTRL时不会自动一键分配。"],
                 }
-
                 local f = O.CreateCheckButton(name, L["自动点击一键分配"] .. "*", others, 40, height - h, ontext)
                 BG.options["button" .. name] = f
                 if BiaoGe.options["allLootToMe"] ~= 1 then
@@ -2583,6 +2626,22 @@ BG.Init(function()
                     L["点击专业制造-铭文时，会自动显示你对应的铭文；"],
                 }
                 local f = O.CreateCheckButton(name, L["更好的选择"] .. "*", others, 15, height - h, ontext)
+                BG.options["button" .. name] = f
+            end
+            h = h + 30
+
+            -- 一键显示
+            do
+                local name = "AtlasLoot_fastChoose"
+                BG.options[name .. "reset"] = 0
+                BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+                local ontext = {
+                    L["一键显示"],
+                    L["在AtlasLoot主界面的右边，增加多个快捷按钮，点击后直接显示相应页面。"],
+                    " ",
+                    L["比如珠宝按钮，点击后直接显示珠宝页面。"],
+                }
+                local f = O.CreateCheckButton(name, L["一键显示"] .. "*", others, 15, height - h, ontext)
                 BG.options["button" .. name] = f
             end
 
@@ -2812,7 +2871,7 @@ BG.Init(function()
         end)
     end
 
-    -- 角色配置文件
+    -- 角色配置
     do
         BiaoGe.options.configChooseHope = BiaoGe.options.configChooseHope or 1
         BiaoGe.options.configChooseFilter = BiaoGe.options.configChooseFilter or 1
@@ -3170,7 +3229,7 @@ BG.Init(function()
             OnAccept = function()
                 local realmID = GetRealmID()
                 local player = UnitName("player")
-                BG.DeletePlayerData(choose.realmID,choose.player)
+                BG.DeletePlayerData(choose.realmID, choose.player)
                 if realmID == choose.realmID and player == choose.player then
                     ReloadUI()
                 else

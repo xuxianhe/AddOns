@@ -465,6 +465,30 @@ function BG.RoleOverviewUI()
             end
         end
 
+        local function SetEquipFrameFuc(bt, isAccounts, realmID, player, colorplayer, level, class, iLevel)
+            if BGV and BGV.ShowEquipFrame then
+                local r, g, b = GetClassColor(class)
+                local tex = bt:CreateTexture()
+                tex:SetPoint("CENTER")
+                tex:SetSize(bt.width + 20, bt:GetHeight() - 5)
+                tex:SetTexture("Interface\\QuestFrame\\UI-QuestLogTitleHighlight")
+                tex:SetVertexColor(r, g, b)
+                bt:SetHighlightTexture(tex)
+                bt:SetScript("OnEnter", function(self)
+                    BGV.ShowEquipFrame(nil, bt, isAccounts, realmID, player, colorplayer, level, class, iLevel)
+                end)
+                bt:SetScript("OnLeave", function(self)
+                    if BGV.equipFrame and not BGV.equipFrame.click then
+                        BGV.equipFrame:Hide()
+                    end
+                    GameTooltip:Hide()
+                end)
+                bt:SetScript("OnClick", function(self)
+                    BGV.ShowEquipFrame(true, bt, isAccounts, realmID, player, colorplayer, level, class, iLevel)
+                end)
+            end
+        end
+
         --------- 角色团本完成总览 ---------
         -- 大标题
         local FBCDTitle
@@ -560,9 +584,9 @@ function BG.RoleOverviewUI()
             FBCDLineWidth = totalwidth - 5
             if BiaoGe.options.roleOverviewLayout == "left_right" then
                 FBCDLineWidth = FBCDwidth - 10
-                FBCDTitle:SetWidth(FBCDwidth - 20)      -- 标题设置宽度
+                FBCDTitle:SetWidth(FBCDwidth - 20)  -- 标题设置宽度
             else
-                FBCDTitle:SetWidth(totalwidth - 20)     -- 标题设置宽度
+                FBCDTitle:SetWidth(totalwidth - 20) -- 标题设置宽度
             end
 
             local l = f:CreateLine()
@@ -591,8 +615,10 @@ function BG.RoleOverviewUI()
                                                 colorplayer = colorplayer,
                                                 class = class,
                                                 iLevel = iLevel,
+                                                level = level,
                                                 realmID = realmID,
-                                                realmName = BiaoGe.realmName[realmID] or realmID,
+                                                realmName = (db.realmName and db.realmName[realmID]) or BiaoGe.realmName[realmID] or realmID,
+                                                isAccounts = isAccounts,
                                                 tbl = BG.Copy(v)
                                             })
                                         end
@@ -625,18 +651,25 @@ function BG.RoleOverviewUI()
                 local player = v.player
                 local iLevel = v.iLevel
                 local realmID = v.realmID
+                local r, g, b, color = GetClassColor(v.class)
                 -- 玩家名字
                 local realmName
                 if ShowAllServer() then
-                    realmName = "|c" .. select(4, GetClassColor(v.class)) .. v.realmName .. "-|r"
+                    realmName = "|c" .. color .. v.realmName .. "-|r"
                 else
                     realmName = ""
                 end
-                local t = BG.FBCDFrame:CreateFontString()
+                local bt = CreateFrame("Button", nil, BG.FBCDFrame)
+                bt:SetPoint("TOPLEFT", BG.FBCDFrame, "TOPLEFT", FBCDchoice_table[1].width, -7 - height * n)
+                local t = bt:CreateFontString()
                 t:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
-                t:SetPoint("TOPLEFT", BG.FBCDFrame, "TOPLEFT",
-                    FBCDchoice_table[1].width, -10 - height * n)
+                t:SetPoint("LEFT")
                 t:SetText(realmName .. colorplayer .. " |cff808080(" .. Round(iLevel, 0) .. ")|r")
+                bt.width = t:GetWidth()
+                bt.isFBCD = true
+                bt:SetFontString(t)
+                bt:SetSize(bt.width, 20)
+                SetEquipFrameFuc(bt, v.isAccounts, realmID, player, colorplayer, v.level, v.class, v.iLevel)
 
                 -- 副本CD
                 for _, cd in pairs(v.tbl) do
@@ -772,9 +805,9 @@ function BG.RoleOverviewUI()
             t:SetJustifyH("LEFT")
             t:SetWordWrap(false)
             if BiaoGe.options.roleOverviewLayout == "left_right" then
-                t:SetWidth(Moneywidth - 20)      -- 标题设置宽度
+                t:SetWidth(Moneywidth - 20) -- 标题设置宽度
             else
-                t:SetWidth(totalwidth - 20)     -- 标题设置宽度
+                t:SetWidth(totalwidth - 20) -- 标题设置宽度
             end
 
             if not click then
@@ -911,7 +944,8 @@ function BG.RoleOverviewUI()
                                         iLevel = iLevel,
                                         level = level,
                                         realmID = realmID,
-                                        realmName = BiaoGe.realmName[realmID] or realmID,
+                                        realmName = (db.realmName and db.realmName[realmID]) or BiaoGe.realmName[realmID] or realmID,
+                                        isAccounts = isAccounts,
                                         tbl = v
                                     })
                                 end
@@ -939,22 +973,31 @@ function BG.RoleOverviewUI()
                 local player = v.player
                 local level = v.level
                 local realmID = v.realmID
+                local r, g, b, color = GetClassColor(v.class)
                 local right
                 -- 名字
                 local realmName
                 if ShowAllServer() then
-                    realmName = "|c" .. select(4, GetClassColor(v.class)) .. v.realmName .. "-|r"
+                    realmName = "|c" .. color .. v.realmName .. "-|r"
                 else
                     realmName = ""
                 end
 
                 local levelText = ""
                 if level then levelText = BG.STC_dis(" (" .. level .. ")") end
-                local t_name = f:CreateFontString()
-                t_name:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
-                t_name:SetPoint("TOPLEFT", BG.FBCDFrame, "TOPLEFT", left, -10 - height * n)
-                t_name:SetText(realmName .. colorplayer .. levelText)
-                right = t_name
+
+                local bt = CreateFrame("Button", nil, BG.FBCDFrame)
+                bt:SetPoint("TOPLEFT", BG.FBCDFrame, "TOPLEFT", left, -7 - height * n)
+                local t = bt:CreateFontString()
+                t:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+                t:SetPoint("LEFT")
+                t:SetText(realmName .. colorplayer .. levelText)
+                bt.width = t:GetWidth()
+                bt.isMoney = true
+                bt:SetFontString(t)
+                bt:SetSize(bt.width, 20)
+                right = bt
+                SetEquipFrameFuc(bt, v.isAccounts, realmID, player, colorplayer, v.level, v.class, v.iLevel)
 
                 -- 牌子
                 local pz = v.tbl
@@ -968,7 +1011,7 @@ function BG.RoleOverviewUI()
                     local width
                     if ii == 2 then
                         width = MONEYchoice_table[ii - 1].width + MONEYchoice_table[ii].width
-                        t_paizi:SetPoint("TOPRIGHT", right, "TOPLEFT", width, 0)
+                        t_paizi:SetPoint("RIGHT", right, "LEFT", width, 0)
                     else
                         width = MONEYchoice_table[ii].width
                         t_paizi:SetPoint("TOPRIGHT", right, "TOPRIGHT", width, 0)
@@ -1109,47 +1152,45 @@ function BG.RoleOverviewUI()
 
             -- 检查其他角色cd是否到期
             local function Update(db)
-                if db and db.FBCD then
-                    local function _Update(realmID)
-                        for _player in pairs(db.FBCD[realmID]) do
-                            if _player ~= player then
-                                local yes
-                                local player0, colorplayer0
-                                for i = #db.FBCD[realmID][_player], 1, -1 do
-                                    local cd = db.FBCD[realmID][_player][i]
-                                    if cd and not player0 and not colorplayer0 then
-                                        player0 = cd.player
-                                        colorplayer0 = cd.colorplayer
-                                    end
-                                    if cd and cd.endtime then
-                                        if time >= cd.endtime then
-                                            tremove(db.FBCD[realmID][_player], i)
-                                        elseif time < cd.endtime then
-                                            cd.resettime = cd.endtime - time
-                                            yes = true
-                                        end
+                if not (db and db.FBCD) then return end
+                local function _Update(realmID)
+                    if not (type(realmID) == "number" and type(db.FBCD[realmID]) == "table") then return end
+                    for _player in pairs(db.FBCD[realmID]) do
+                        if _player ~= player then
+                            local yes
+                            local player0, colorplayer0
+                            for i = #db.FBCD[realmID][_player], 1, -1 do
+                                local cd = db.FBCD[realmID][_player][i]
+                                if cd and not player0 and not colorplayer0 then
+                                    player0 = cd.player
+                                    colorplayer0 = cd.colorplayer
+                                end
+                                if cd and cd.endtime then
+                                    if time >= cd.endtime then
+                                        tremove(db.FBCD[realmID][_player], i)
+                                    elseif time < cd.endtime then
+                                        cd.resettime = cd.endtime - time
+                                        yes = true
                                     end
                                 end
-                                if not yes then
-                                    db.FBCD[realmID][_player] = {
-                                        {
-                                            player = player0,
-                                            colorplayer = colorplayer0,
-                                        }
+                            end
+                            if not yes then
+                                db.FBCD[realmID][_player] = {
+                                    {
+                                        player = player0,
+                                        colorplayer = colorplayer0,
                                     }
-                                end
+                                }
                             end
                         end
                     end
-                    if ShowAllServer() then
-                        for realmID, v in pairs(db.FBCD) do
-                            if type(realmID) == "number" and type(v) == "table" then
-                                _Update(realmID)
-                            end
-                        end
-                    else
+                end
+                if ShowAllServer() then
+                    for realmID, v in pairs(db.FBCD) do
                         _Update(realmID)
                     end
+                else
+                    _Update(realmID)
                 end
             end
             Update(BiaoGe)
@@ -1551,23 +1592,21 @@ function BG.RoleOverviewUI()
         local function UpdateQuestEndTime()
             local time = GetServerTime()
             local function Update(db)
-                if db and db.QuestCD then
-                    local function _Update(realmID)
-                        for player in pairs(db.QuestCD[realmID]) do
-                            for questName, v in pairs(db.QuestCD[realmID][player]) do
-                                if time < v.endtime then
-                                    v.resettime = v.endtime - time
-                                else
-                                    db.QuestCD[realmID][player][questName] = nil
-                                end
+                if not (db and db.QuestCD) then return end
+                local function _Update(realmID)
+                    if not (type(realmID) == "number" and type(db.QuestCD[realmID]) == "table") then return end
+                    for player in pairs(db.QuestCD[realmID]) do
+                        for questName, v in pairs(db.QuestCD[realmID][player]) do
+                            if time < v.endtime then
+                                v.resettime = v.endtime - time
+                            else
+                                db.QuestCD[realmID][player][questName] = nil
                             end
                         end
                     end
-                    for realmID, v in pairs(db.QuestCD) do
-                        if type(realmID) == "number" and type(v) == "table" then
-                            _Update(realmID)
-                        end
-                    end
+                end
+                for realmID, v in pairs(db.QuestCD) do
+                    _Update(realmID)
                 end
             end
             Update(BiaoGe)
@@ -1710,51 +1749,49 @@ function BG.RoleOverviewUI()
             end
         end
         -- 检查其他角色cd是否到期
-        local function UpdateProfessionCD() 
+        local function UpdateProfessionCD()
             local time = GetServerTime()
             local i = 3
             local function Update(db)
-                if db and db.tradeSkillCooldown then
-                    local function _Update(realmID)
-                        for player in pairs(db.tradeSkillCooldown[realmID]) do
-                            for profession, v in pairs(db.tradeSkillCooldown[realmID][player]) do
-                                if v.endtime then
-                                    if time >= v.endtime then
-                                        v.resettime = nil
-                                        v.endtime = nil
-                                        v.ready = true
-                                        if db == BiaoGe and BiaoGe.FBCDchoice[profession] and BiaoGe.FBCDchoice[profession]==1 then
-                                            local color
-                                            if v.class then
-                                                color = select(4, GetClassColor(v.class))
-                                            end
-                                            local name = color and "|c" .. color .. player .. "|r: " or player .. ": "
-                                            if player == UnitName("player") then
-                                                name = color and "|c" .. color .. L["我"] .. "|r: " or L["我"] .. ": "
-                                            end
-                                            local msg = BG.BG .. BG.STC_g1(format(L["%s%s已就绪！"], name, tbl[profession].name))
-                                            BG.After(i, function()
-                                                SendSystemMessage(msg)
-                                                if BG["sound_" .. profession .. "Ready" .. BiaoGe.options.Sound] then
-                                                    PlaySoundFile(BG["sound_" .. profession .. "Ready" .. BiaoGe.options.Sound], "Master")
-                                                else
-                                                    PlaySoundFile("Interface\\AddOns\\BiaoGe\\Media\\sound\\other\\done.mp3", "Master")
-                                                end
-                                            end)
-                                            i = i + 3
+                if not (db and db.tradeSkillCooldown) then return end
+                local function _Update(realmID)
+                    if not (type(realmID) == "number" and type(db.tradeSkillCooldown[realmID]) == "table") then return end
+                    for player in pairs(db.tradeSkillCooldown[realmID]) do
+                        for profession, v in pairs(db.tradeSkillCooldown[realmID][player]) do
+                            if v.endtime then
+                                if time >= v.endtime then
+                                    v.resettime = nil
+                                    v.endtime = nil
+                                    v.ready = true
+                                    if db == BiaoGe and BiaoGe.FBCDchoice[profession] and BiaoGe.FBCDchoice[profession] == 1 then
+                                        local color
+                                        if v.class then
+                                            color = select(4, GetClassColor(v.class))
                                         end
-                                    elseif time < v.endtime then
-                                        v.resettime = v.endtime - time
+                                        local name = color and "|c" .. color .. player .. "|r: " or player .. ": "
+                                        if player == UnitName("player") then
+                                            name = color and "|c" .. color .. L["我"] .. "|r: " or L["我"] .. ": "
+                                        end
+                                        local msg = BG.BG .. BG.STC_g1(format(L["%s%s已就绪！"], name, tbl[profession].name))
+                                        BG.After(i, function()
+                                            SendSystemMessage(msg)
+                                            if BG["sound_" .. profession .. "Ready" .. BiaoGe.options.Sound] then
+                                                PlaySoundFile(BG["sound_" .. profession .. "Ready" .. BiaoGe.options.Sound], "Master")
+                                            else
+                                                PlaySoundFile("Interface\\AddOns\\BiaoGe\\Media\\sound\\other\\done.mp3", "Master")
+                                            end
+                                        end)
+                                        i = i + 3
                                     end
+                                elseif time < v.endtime then
+                                    v.resettime = v.endtime - time
                                 end
                             end
                         end
                     end
-                    for realmID, v in pairs(db.tradeSkillCooldown) do
-                        if type(realmID) == "number" and type(v) == "table" then
-                            _Update(realmID)
-                        end
-                    end
+                end
+                for realmID, v in pairs(db.tradeSkillCooldown) do
+                    _Update(realmID)
                 end
             end
             Update(BiaoGe)
@@ -1840,8 +1877,32 @@ function BG.RoleOverviewUI()
         end
     end
 
-    ------------------角色装等------------------
+    ------------------角色装备和装等------------------
     do
+        BiaoGe.equip = BiaoGe.equip or {}
+        BiaoGe.equip[realmID] = BiaoGe.equip[realmID] or {}
+        BiaoGe.equip[realmID][player] = BiaoGe.equip[realmID][player] or {}
+
+        function BG.GetPlayerEquip()
+            local tbl = BiaoGe.equip[realmID][player]
+            wipe(tbl)
+            for slot = 1, 19 do
+                local link = GetInventoryItemLink("player", slot)
+                if link then
+                    local itemID = GetInventoryItemID("player", slot)
+                    local quality = GetInventoryItemQuality("player", slot)
+                    local level = select(4, GetItemInfo(itemID))
+                    slot = tostring(slot)
+                    tbl[slot] = {
+                        link = link,
+                        itemID = itemID,
+                        quality = quality,
+                        level = level,
+                    }
+                end
+            end
+        end
+
         local function GetPlayerItemsLevel()
             local _, avgLevel = GetAverageItemLevel()
             BiaoGe.playerInfo[realmID][player].iLevel = avgLevel or 0
@@ -1853,13 +1914,15 @@ function BG.RoleOverviewUI()
         end
 
         BG.Init2(function()
-            C_Timer.After(1, function()
+            BG.After(1, function()
+                BG.GetPlayerEquip()
                 GetPlayerItemsLevel()
             end)
         end)
 
         BG.RegisterEvent("UNIT_INVENTORY_CHANGED", function(self, event, ...)
-            C_Timer.After(0.5, function()
+            BG.After(0.5, function()
+                BG.GetPlayerEquip()
                 GetPlayerItemsLevel()
             end)
         end)

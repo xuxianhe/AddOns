@@ -682,7 +682,6 @@ BG.Init(function()
         if achievementFunctions then achievementFunctions.selectedCategory = -1 end
         if not IsInRaid(1) then return end
         local name = BG.raidRosterGUID[guid]
-        -- pt(name)
         if not name then return end
         local GetAchievementComparisonInfo = GetAchievementComparisonInfo
         local GetComparisonStatistic = GetComparisonStatistic

@@ -158,12 +158,12 @@ end
 -- print(GetItemInfo(220939))
 -- print(GetItemInfo(15092))
 
--- pt("|cffffffff|Hitem:211827::::::::::::::::::|h[测试物品]|h|r")
--- pt("|cffffffff|Hitem:211828::::::::::::::::::|h[测试物品]|h|r")
--- pt("|cffffffff|Hitem:211829::::::::::::::::::|h[测试物品]|h|r")
--- pt("|cffffffff|Hitem:211830::::::::::::::::::|h[测试物品]|h|r")
--- pt("|cffffffff|Hitem:211831::::::::::::::::::|h[测试物品]|h|r")
--- pt("|cffffffff|Hitem:2319::::::::::::::::::|h[测试物品]|h|r")
+-- print("|cffffffff|Hitem:211827::::::::::::::::::|h[测试物品]|h|r")
+-- print("|cffffffff|Hitem:211828::::::::::::::::::|h[测试物品]|h|r")
+-- print("|cffffffff|Hitem:211829::::::::::::::::::|h[测试物品]|h|r")
+-- print("|cffffffff|Hitem:211830::::::::::::::::::|h[测试物品]|h|r")
+-- print("|cffffffff|Hitem:211831::::::::::::::::::|h[测试物品]|h|r")
+-- print("|cffffffff|Hitem:2319::::::::::::::::::|h[测试物品]|h|r")
 
 --[[
 5 - Friendly

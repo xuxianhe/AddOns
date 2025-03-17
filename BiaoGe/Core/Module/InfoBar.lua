@@ -34,16 +34,23 @@ local AFDtbl = {
     "露露缇娅",
     "陈",
     -- 360
+    -- "",
+    "依然不低调",
+    "匕首岭-麻生成实",
+    "Funny",
     "全能小霸王",
     "龙之召唤<破冰>粥糟-粥枣",
-    -- 300
-    "永恒",
     -- 180
+    -- "",
+    "铁血II-书香",
+    "铁血II-书香秘密",
+    "寒脊山小径-起点-花舞",
     "霜语-丑死我了", -- 满心欢喜
     "伊梅尔达",
     "超级小奶爸",
     "水晶之牙-Rich Only",
     -- 90
+    "超能力领域-展开",
     "小戆戆",
     -- 30
     -- "",
@@ -51,6 +58,42 @@ local AFDtbl = {
     -- "",
     -- "",
     -- "",
+    -- "",
+    -- "",
+    -- "",
+    "范克瑞斯-狮王之傲-丿路西法",
+    "邵拉达",
+    "大白",
+    "yyf",
+    "辛迪加<辛艾萨莉>小家猫卡琳娜",
+    "xxx794665",
+    "沙滩",
+    "范克瑞斯-逝去的青春-丶黑炭",
+    "那個尐仙",
+    "不懂英语小明",
+    "叶凡 - 龙牙",
+    "Sr",
+    "碧玉矿洞-八汤",
+    "憋大招",
+    "龙之召唤-天府一街",
+    "灰烬使者部落-Revenger公会",
+    "清华大学校草-无畏",
+    "风涧",
+    "大大大怪兽",
+    "霜语-旺仔尛馒头（部落）",
+    "严羽幻",
+    "吉安娜-吕小骑",
+    "橙贰胖-巴罗夫",
+    "長門有希",
+    "大鸟甩甩",
+    "爱萝莉的格雷福斯",
+    "<狮心>圣火喵喵教---阿壶金团",
+    "我是读书人",
+    "比格沃斯-面包",
+    "咖啡",
+    "欧黄",
+    "DemonClin",
+    "龙之召唤-不是芋圆",
     "Endearment",
     "糖果与火焰山-死亡猎手",
     "收藏家",
@@ -91,7 +134,7 @@ local AFDtbl = {
     "死亡猎手-memory",
     "makabakas",
     "斯内克",
-    "abbiy921",
+    "灰烬使者-小手勾勾",
     "布朗熊",
     "老周不想取名",
     "埃提耶什-<夜宴>-正夏",
@@ -100,35 +143,21 @@ local AFDtbl = {
     "铁血-诺诺吖",
     "法尔班克斯-<骚年远征军>-雪见月十九",
     "水晶之牙-Equipo Octavo",
-    "碧玉矿洞-八汤",
     "维系度斯-你看我牛牛吗",
     "关青龙",
     "灰灰丶",
     "好好学习",
     "吉安娜小蜡烛",
-    "严羽幻",
-    "龙之召唤-天府一街",
-    "灰烬使者-部落-Revenger公会",
     "大栓",
     "兜兜里好多糖",
     "伽蓝",
     "龙之召唤-承筱诺",
     "龙之召唤-鼓励团结有爱",
     "龙之召唤-阿多尼斯冰雪",
-    -- 20
-    "ronaldozhou",
-    -- 5
-
     -- 没有名字
     L["以及多个没有留名的爱发电用户"],
-
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    --最后更新时间：25/2/22 16:30
 }
+    --最后更新时间：25/3/5 11:00
 
 
 BG.Init(function()
@@ -199,11 +228,16 @@ BG.Init(function()
 
             if self.hasError then
                 local e = self.errors
+                local gameVer = GetBuildInfo()
+                if BG.IsVanilla_Sod then
+                    gameVer=gameVer.." sod"
+                end
                 BiaoGeTooltip2:SetOwner(GameTooltip, "ANCHOR_TOPLEFT", 0, 0)
                 BiaoGeTooltip2:ClearLines()
                 BiaoGeTooltip2:AddLine(L["报错"], 1, 0, 0, true)
                 BiaoGeTooltip2:AddLine(L["请你把该报错截图发给作者"], 1, 0.82, 0, true)
                 BiaoGeTooltip2:AddLine(L["版本："] .. ns.ver, 1, 0.82, 0, true)
+                BiaoGeTooltip2:AddLine(L["游戏："] .. gameVer, 1, 0.82, 0, true)
                 BiaoGeTooltip2:AddLine(L["时间："] .. e.time, 1, 0.82, 0, true)
                 BiaoGeTooltip2:AddLine(L["错误："] .. e.counter .. "x " .. e.message, .5, .5, .5, true)
                 if e.stack then
@@ -247,39 +281,39 @@ BG.Init(function()
         end)
     end
 
-        -- 更新计划
-        do
-            local bt = CreateFrame("Button", nil, BG.MainFrame)
-            bt:SetSize(20, hight)
-            if lastBt then
-                bt:SetPoint("RIGHT", lastBt, "LEFT", -10, 0)
-            else
-                bt:SetPoint("BOTTOMRIGHT", -10, 1)
-            end
-            bt:SetNormalFontObject(BG.FontYellow13)
-            bt:SetHighlightFontObject(BG.FontWhite13)
-            bt:SetText("|A:Class:15:15|a" .. L["更新计划"])
-            bt:SetWidth(bt:GetFontString():GetStringWidth())
-            BG.ButtonUpdateLate = bt
-            lastBt = bt
-    
-            bt:SetScript("OnEnter", function(self)
-                GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
-                GameTooltip:ClearLines()
-                GameTooltip:AddLine(self:GetText(), 1, 1, 1, true)
-                GameTooltip:AddLine(L["BiaoGe插件未来的更新计划共享在在线文档。"], 1, 0.82, 0, true)
-                GameTooltip:AddLine(L["你可以浏览该内容，留下你的建议。"], 1, 0.82, 0, true)
-                GameTooltip:AddLine(L["（点击复制文档地址）"], 1, 0.82, 0, true)
-                GameTooltip:Show()
-            end)
-            bt:SetScript("OnLeave", GameTooltip_Hide)
-            bt:SetScript("OnClick", function(self)
-                BG.PlaySound(1)
-                ChatEdit_ActivateChat(ChatEdit_ChooseBoxForSend())
-                ChatEdit_ChooseBoxForSend():SetText("https://docs.qq.com/doc/DYVFDaU5uR21sanJm")
-                ChatEdit_ChooseBoxForSend():HighlightText()
-            end)
+    -- 更新计划
+--[[     do
+        local bt = CreateFrame("Button", nil, BG.MainFrame)
+        bt:SetSize(20, hight)
+        if lastBt then
+            bt:SetPoint("RIGHT", lastBt, "LEFT", -10, 0)
+        else
+            bt:SetPoint("BOTTOMRIGHT", -10, 1)
         end
+        bt:SetNormalFontObject(BG.FontYellow13)
+        bt:SetHighlightFontObject(BG.FontWhite13)
+        bt:SetText("|A:Class:15:15|a" .. L["更新计划"])
+        bt:SetWidth(bt:GetFontString():GetStringWidth())
+        BG.ButtonUpdateLate = bt
+        lastBt = bt
+
+        bt:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
+            GameTooltip:ClearLines()
+            GameTooltip:AddLine(self:GetText(), 1, 1, 1, true)
+            GameTooltip:AddLine(L["BiaoGe插件未来的更新计划共享在在线文档。"], 1, 0.82, 0, true)
+            GameTooltip:AddLine(L["你可以浏览该内容，留下你的建议。"], 1, 0.82, 0, true)
+            GameTooltip:AddLine(L["（点击复制文档地址）"], 1, 0.82, 0, true)
+            GameTooltip:Show()
+        end)
+        bt:SetScript("OnLeave", GameTooltip_Hide)
+        bt:SetScript("OnClick", function(self)
+            BG.PlaySound(1)
+            ChatEdit_ActivateChat(ChatEdit_ChooseBoxForSend())
+            ChatEdit_ChooseBoxForSend():SetText("https://docs.qq.com/doc/DYVFDaU5uR21sanJm")
+            ChatEdit_ChooseBoxForSend():HighlightText()
+        end)
+    end ]]
 
     -- 爱发电
     do
@@ -332,7 +366,7 @@ BG.Init(function()
     end
 
     -- 网易DD
-    do
+    --[[     do
         local bt = CreateFrame("Button", nil, BG.MainFrame)
         bt:SetSize(20, hight)
         if lastBt then
@@ -364,7 +398,7 @@ BG.Init(function()
             ChatEdit_ChooseBoxForSend():SetText("https://dd.163.com/?utm_source=112231")
             ChatEdit_ChooseBoxForSend():HighlightText()
         end)
-    end
+    end ]]
 
     -- 新手盒子
     do

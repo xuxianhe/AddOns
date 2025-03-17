@@ -188,20 +188,13 @@ BG.Init(function()
     local lasttime = 0
     local _time
     local start
-
-    local function PrintLootBoss(FB, event, numb, text)
-        if BiaoGe.options["autoLoot"] ~= 1 then return end
-        SendSystemMessage(BG.BG .. text .. "，" .. L["当前装备自动记录位置："] ..
-            "|cff" .. BG.Boss[FB]["boss" .. numb].color .. BG.Boss[FB]["boss" .. numb].name2 .. RR)
-    end
-
     local function IsBWLsod_boss5orboss6(bossID)
         if BG.IsVanilla_Sod and (bossID == 614 or bossID == 615) then
             return 5
         end
     end
-
     -- 获取BOSS战ID
+    local remindUpdateFrame = CreateFrame("Frame")
     local f = CreateFrame("Frame")
     f:RegisterEvent("ENCOUNTER_START")
     f:RegisterEvent("ENCOUNTER_END")
@@ -218,8 +211,6 @@ BG.Init(function()
                     if bossID and (bossID == _bossID) then
                         numb = _numb
                         lasttime = GetTime()
-                        -- local text = BG.STC_g1(L["BOSS战开始"])
-                        -- PrintLootBoss(FB, event, numb, text)
                         return
                     end
                 end
@@ -235,11 +226,22 @@ BG.Init(function()
                             numb = _numb
                             lasttime = GetTime()
                             start = nil
-                            -- local text = BG.STC_g1(L["BOSS击杀成功"])
-                            -- PrintLootBoss(FB, event, numb, text)
                             BiaoGe[FB].raidRoster = { time = GetServerTime(), realm = GetRealmName(), roster = {} }
                             for i, v in ipairs(BG.raidRosterInfo) do
                                 tinsert(BiaoGe[FB].raidRoster.roster, v.name)
+                            end
+                            if BiaoGe.options.autoLoot == 1 and BiaoGe.options.autolootRemind == 1 and BG.ImML() and GetLootMethod() == "master" then
+                                remindUpdateFrame.elapsed = 0
+                                remindUpdateFrame:SetScript("OnUpdate", function(self, elapsed)
+                                    self.elapsed = self.elapsed + elapsed
+                                    if self.elapsed >= 30 then
+                                        if BG.ImML() then
+                                            BG.FrameLootMsg:AddMessage(BG.STC_r1(L["提醒：你可能还没拾取刚击杀BOSS的掉落哦！"]))
+                                            PlaySoundFile("Interface\\AddOns\\BiaoGe\\Media\\sound\\other\\remind.mp3", "Master")
+                                        end
+                                        self:SetScript("OnUpdate", nil)
+                                    end
+                                end)
                             end
                             return
                         end
@@ -248,8 +250,6 @@ BG.Init(function()
             else
                 numb = Maxb[FB] - 1
                 start = nil
-                -- local text = BG.STC_r1(L["BOSS击杀失败"])
-                -- PrintLootBoss(FB, event, numb, text)
             end
         end
     end)
@@ -282,7 +282,7 @@ BG.Init(function()
 
     -- 记录物品进表格
     local biaogefull
-    local function _AddLootItem(itemID, FB, numb, link, Texture, level, Hope, count, typeID, lootplayer)
+    local function _AddLootItem(itemID, FB, numb, link, Texture, level, Hope, count, typeID, lootplayer, fromLast)
         local icon
         if BG.GetItemCount(itemID) ~= 0 then
             icon = AddTexture("interface/raidframe/readycheck-ready")
@@ -293,9 +293,13 @@ BG.Init(function()
         if typeID == 2 or typeID == 4 then
             levelText = "(" .. level .. ")"
         end
-        for i = 1, Maxi[FB] do
+        local startI, endI, addI = 1, Maxi[FB], 1
+        if fromLast then
+            startI, endI, addI = Maxi[FB], 1, -1
+        end
+        for i = startI, endI, addI do
             local zb = BG.Frame[FB]["boss" .. numb]["zhuangbei" .. i]
-            local zb1 = BG.Frame[FB]["boss" .. numb]["zhuangbei" .. (i + 1)]
+            local zbNext = BG.Frame[FB]["boss" .. numb]["zhuangbei" ..  (i + addI)]
             local duizhangzb = BG.DuiZhangFrame[FB]["boss" .. numb]["zhuangbei" .. i]
             if zb and zb:GetText() == "" then
                 if Hope then
@@ -327,7 +331,7 @@ BG.Init(function()
                 end
                 AddLootLog(FB, numb, i, lootplayer, count)
                 return
-            elseif zb and not zb1 then
+            elseif zb and not zbNext then
                 if Hope then
                     BG.FrameLootMsg:AddMessage(format("|cffDC143C" .. L["自动关注心愿装备失败：%s%s"],
                         RR, ((AddTexture(Texture) .. link))))
@@ -365,14 +369,14 @@ BG.Init(function()
             end
         end
     end
-    local function AddLootItem(FB, numb, link, Texture, level, Hope, count, typeID, lootplayer, notlater)
+    local function AddLootItem(FB, numb, link, Texture, level, Hope, count, typeID, lootplayer, notlater,fromLast)
         local itemID = GetItemInfoInstant(link)
         BG.Tooltip_SetItemByID(itemID)
         if notlater then
-            _AddLootItem(itemID, FB, numb, link, Texture, level, Hope, count, typeID, lootplayer)
+            _AddLootItem(itemID, FB, numb, link, Texture, level, Hope, count, typeID, lootplayer,fromLast)
         else
             BG.After(0.1, function()
-                _AddLootItem(itemID, FB, numb, link, Texture, level, Hope, count, typeID, lootplayer)
+                _AddLootItem(itemID, FB, numb, link, Texture, level, Hope, count, typeID, lootplayer,fromLast)
             end)
         end
     end
@@ -493,7 +497,7 @@ BG.Init(function()
             -- link = GetItemInfo(testItemID) and select(2, GetItemInfo(testItemID))
             stackCount = 1
             count = 1
-            numb = 1
+            -- numb = 1
         end
 
         local Iswhitelist
@@ -532,6 +536,7 @@ BG.Init(function()
                 end
             end
         end
+        remindUpdateFrame:SetScript("OnUpdate", nil)
 
         -- 更新装备库已掉落显示
         if BG.ItemLibMainFrame:IsVisible() then
@@ -586,7 +591,7 @@ BG.Init(function()
         for _, _itemID in ipairs(BG.Loot.zaXiangItems) do
             if _itemID == itemID then
                 local numb = Maxb[FB] - 1
-                AddLootItem(FB, numb, link, Texture, level, Hope, count, typeID, lootplayer)
+                AddLootItem(FB, numb, link, Texture, level, Hope, count, typeID, lootplayer,nil)
                 return
             end
         end
@@ -594,14 +599,14 @@ BG.Init(function()
         if BG.IsVanilla then
             if typeID == 9 or typeID == 10 or typeID == 3 then
                 local numb = Maxb[FB] - 1
-                AddLootItem(FB, numb, link, Texture, level, Hope, count, typeID, lootplayer)
+                AddLootItem(FB, numb, link, Texture, level, Hope, count, typeID, lootplayer,nil, typeID == 9)
                 return
             end
-        else 
-            -- WLK的图纸记到杂项
+        else
+            -- TOC的图纸记到杂项
             if typeID == 9 then
                 local numb = Maxb[FB] - 1
-                AddLootItem(FB, numb, link, Texture, level, Hope, count, typeID, lootplayer)
+                AddLootItem(FB, numb, link, Texture, level, Hope, count, typeID, lootplayer,nil,typeID == 9)
                 return
             end
         end

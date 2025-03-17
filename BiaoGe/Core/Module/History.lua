@@ -147,11 +147,6 @@ function BG.HistoryUI()
                         if qiankuan then
                             BiaoGe.History[FB][DT]["boss" .. b]["qiankuan" .. i] = qiankuan
                         end
-
-                        local loot = BG.Copy(BiaoGe[FB]["boss" .. b]["loot" .. i])
-                        if loot then
-                            BiaoGe.History[FB][DT]["boss" .. b]["loot" .. i] = loot
-                        end
                     end
                 end
                 BiaoGe.History[FB][DT]["boss" .. b]["time"] = BiaoGe[FB]["boss" .. b]["time"]
@@ -429,11 +424,7 @@ function BG.HistoryUI()
                                     BG.Frame[FB]["boss" .. b]["qiankuan" .. i]:Hide()
                                 end
 
-                                if BiaoGe.History[FB][DT]["boss" .. b]["loot" .. i] then
-                                    BiaoGe[FB]["boss" .. b]["loot" .. i] = BG.Copy(BiaoGe.History[FB][DT]["boss" .. b]["loot" .. i])
-                                else
-                                    BiaoGe[FB]["boss" .. b]["loot" .. i] = nil
-                                end
+                                BiaoGe[FB]["boss" .. b]["loot" .. i] = nil
                             end
                         end
                         if BG.Frame[FB]["boss" .. b]["time"] then
@@ -629,6 +620,23 @@ function BG.HistoryUI()
         bt:SetScript("OnClick", function(self)
             BG.History.GaiMingFrame:Hide()
             BG.PlaySound(1)
+        end)
+    end
+
+    -- 删除历史表格里的loot记录
+    do
+        BG.Once("history", 250312, function()
+            for _, FB in ipairs(BG.FBtable) do
+                for DT, v in pairs(BiaoGe.History[FB]) do
+                    local b = 1
+                    while BiaoGe.History[FB][DT]["boss" .. b] do
+                        for i = 1, BG.Maxi do
+                            BiaoGe.History[FB][DT]["boss" .. b]["loot" .. i] = nil
+                        end
+                        b = b + 1
+                    end
+                end
+            end
         end)
     end
 end
@@ -891,7 +899,7 @@ do
             end
         end
         updateFrame:SetScript("OnUpdate", function(self, elapsed)
-            if allEnd  then
+            if allEnd then
                 self:SetScript("OnUpdate", nil)
                 if #tbl == 0 then
                     return
@@ -901,10 +909,10 @@ do
                     return a.DT > b.DT
                 end)
 
-                local _tbl={}
-                for i,v in ipairs(tbl) do
-                    if i>maxCount then break end
-                    tinsert(_tbl,v)
+                local _tbl = {}
+                for i, v in ipairs(tbl) do
+                    if i > maxCount then break end
+                    tinsert(_tbl, v)
                 end
 
                 if nowMoney then
@@ -982,13 +990,13 @@ do
                     t:SetPoint("RIGHT", f, "LEFT", -3, 0)
                     t:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
                     t:SetTextColor(RGB(color[i]))
-                    t:SetText(v.money.. (v.isAccounts and "*" or ""))
+                    t:SetText(v.money .. (v.isAccounts and "*" or ""))
 
                     local t = f:CreateFontString(nil, "OVERLAY") -- 买家
                     t:SetPoint("RIGHT")
                     t:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE")
                     t:SetTextColor(unpack(v.color))
-                    t:SetText(v.player )
+                    t:SetText(v.player)
                 end
 
                 local height = #_tbl * (HEIGHT + HEIGHT2) + 65
@@ -1000,7 +1008,7 @@ do
 
             if not biaogeEnd then
                 for ii = startI, startI + oneTime - 1 do
-                    if not db.HistoryList[FB][ii]  then
+                    if not db.HistoryList[FB][ii] then
                         if hasAccounts then
                             biaogeEnd = true
                             db = BiaoGeAccounts
@@ -1014,7 +1022,7 @@ do
                 startI = startI + oneTime
             else
                 for ii = _startI, _startI + oneTime - 1 do
-                    if not db.HistoryList[FB][ii]  then
+                    if not db.HistoryList[FB][ii] then
                         allEnd = true
                         break
                     end
