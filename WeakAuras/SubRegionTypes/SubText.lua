@@ -25,7 +25,7 @@ local default = function(parentType)
       text_justify = "CENTER",
 
       text_selfPoint = "AUTO",
-      anchor_point = "CENTER",
+      text_anchorPoint = "CENTER",
       anchorXOffset = 0,
       anchorYOffset = 0,
 
@@ -50,7 +50,7 @@ local default = function(parentType)
       text_justify = "CENTER",
 
       text_selfPoint = "AUTO",
-      anchor_point = parentType == "aurabar" and "INNER_RIGHT" or "BOTTOMLEFT",
+      text_anchorPoint = parentType == "aurabar" and "INNER_RIGHT" or "BOTTOMLEFT",
       anchorXOffset = 0,
       anchorYOffset = 0,
 
@@ -432,7 +432,7 @@ local function modify(parent, region, parentData, data, first)
   local selfPoint = data.text_selfPoint
   if selfPoint == "AUTO" then
     if parentData.regionType == "icon" then
-      local anchorPoint = data.anchor_point or "CENTER"
+      local anchorPoint = data.text_anchorPoint or "CENTER"
       if anchorPoint:sub(1, 6) == "INNER_" then
         selfPoint = anchorPoint:sub(7)
       elseif anchorPoint:sub(1, 6) == "OUTER_" then
@@ -442,7 +442,7 @@ local function modify(parent, region, parentData, data, first)
         selfPoint = "CENTER"
       end
     elseif parentData.regionType == "aurabar" then
-      selfPoint = data.anchor_point or "CENTER"
+      selfPoint = data.text_anchorPoint or "CENTER"
       if selfPoint:sub(1, 5) == "ICON_" then
         selfPoint = selfPoint:sub(6)
       elseif selfPoint:sub(1, 6) == "INNER_" then
@@ -450,7 +450,7 @@ local function modify(parent, region, parentData, data, first)
       end
       selfPoint = Private.point_types[selfPoint] and selfPoint or "CENTER"
     else
-      selfPoint = Private.inverse_point_types[data.anchor_point or "CENTER"] or "CENTER"
+      selfPoint = Private.inverse_point_types[data.text_anchorPoint or "CENTER"] or "CENTER"
     end
   end
 
@@ -459,16 +459,16 @@ local function modify(parent, region, parentData, data, first)
 
   local textDegrees = data.rotateText == "LEFT" and 90 or data.rotateText == "RIGHT" and -90 or 0;
 
-  region.Anchor = function(self)
+  region.UpdateAnchor = function(self)
     local xo, yo = getRotateOffset(text, textDegrees, selfPoint)
-    parent:AnchorSubRegion(text, "point", data.anchor_point, selfPoint,
+    parent:AnchorSubRegion(text, "point", selfPoint, data.text_anchorPoint,
                            (self.text_anchorXOffset or 0) + xo, (self.text_anchorYOffset or 0) + yo)
   end
 
   if textDegrees == 0 then
     region.UpdateAnchorOnTextChange = function() end
   else
-    region.UpdateAnchorOnTextChange = region.Anchor
+    region.UpdateAnchorOnTextChange = region.UpdateAnchor
   end
 
   region.SetXOffset = function(self, xOffset)
@@ -476,7 +476,7 @@ local function modify(parent, region, parentData, data, first)
       return
     end
     self.text_anchorXOffset = xOffset
-    self:Anchor()
+    self:UpdateAnchor()
   end
 
   region.SetYOffset = function(self, yOffset)
@@ -484,11 +484,12 @@ local function modify(parent, region, parentData, data, first)
       return
     end
     self.text_anchorYOffset = yOffset
-    self:Anchor()
+    self:UpdateAnchor()
   end
 
   region:Color(data.text_color[1], data.text_color[2], data.text_color[3], data.text_color[4]);
   region:SetVisible(data.text_visible)
+  region:UpdateAnchor()
   animRotate(text, textDegrees, selfPoint)
 end
 
@@ -505,7 +506,7 @@ local function addDefaultsForNewAura(data)
       text_visible = true,
 
       text_selfPoint = "AUTO",
-      anchor_point = "INNER_LEFT",
+      text_anchorPoint = "INNER_LEFT",
       anchorXOffset = 0,
       anchorYOffset = 0,
 
@@ -527,7 +528,7 @@ local function addDefaultsForNewAura(data)
       text_visible = true,
 
       text_selfPoint = "AUTO",
-      anchor_point = "INNER_RIGHT",
+      text_anchorPoint = "INNER_RIGHT",
       anchorXOffset = 0,
       anchorYOffset = 0,
 
@@ -549,7 +550,7 @@ local function addDefaultsForNewAura(data)
       text_visible = true,
 
       text_selfPoint = "AUTO",
-      anchor_point = "INNER_BOTTOMRIGHT",
+      text_anchorPoint = "INNER_BOTTOMRIGHT",
       anchorXOffset = 0,
       anchorYOffset = 0,
 
@@ -567,7 +568,6 @@ local function supports(regionType)
          or regionType == "progresstexture"
          or regionType == "icon"
          or regionType == "aurabar"
-         or regionType == "empty"
 end
 
 WeakAuras.RegisterSubRegionType("subtext", L["Text"], supports, create, modify, onAcquire, onRelease,

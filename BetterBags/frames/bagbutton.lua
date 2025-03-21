@@ -13,9 +13,6 @@ local events = addon:GetModule('Events')
 ---@class Localization: AceModule
 local L = addon:GetModule('Localization')
 
----@class Pool: AceModule
-local pool = addon:GetModule('Pool')
-
 ---@class BagButtonFrame: AceModule
 local BagButtonFrame = addon:NewModule('BagButton')
 
@@ -30,15 +27,13 @@ local buttonCount = 0
 ---@field canBuy boolean
 BagButtonFrame.bagButtonProto = {}
 
----@param ctx Context
-function BagButtonFrame.bagButtonProto:Draw(ctx)
+function BagButtonFrame.bagButtonProto:Draw()
   if not self.bag then return end
-  self:SetBag(ctx, self.bag)
+  self:SetBag(self.bag)
 end
 
----@param ctx Context
-function BagButtonFrame.bagButtonProto:Release(ctx)
-  BagButtonFrame._pool:Release(ctx, self)
+function BagButtonFrame.bagButtonProto:Release()
+  BagButtonFrame._pool:Release(self)
 end
 
 function BagButtonFrame.bagButtonProto:CheckForPurchase()
@@ -51,9 +46,8 @@ function BagButtonFrame.bagButtonProto:CheckForPurchase()
   StaticPopup_Show("CONFIRM_BUY_BANK_SLOT")
 end
 
----@param ctx Context
 ---@param bag Enum.BagIndex
-function BagButtonFrame.bagButtonProto:SetBag(ctx, bag)
+function BagButtonFrame.bagButtonProto:SetBag(bag)
   self.bag = bag
   if const.BANK_ONLY_BAGS[bag] then
     self.kind = const.BAG_KIND.BANK
@@ -90,12 +84,11 @@ function BagButtonFrame.bagButtonProto:SetBag(ctx, bag)
   SetItemButtonTexture(self.frame, icon)
   SetItemButtonQuality(self.frame, GetInventoryItemQuality("player", self.invID))
   SetItemButtonCount(self.frame, 1)
-  events:SendMessage(ctx, 'bagbutton/Updated', self)
+  events:SendMessage('bagbutton/Updated', self)
 end
 
----@param ctx Context
-function BagButtonFrame.bagButtonProto:ClearBag(ctx)
-  events:SendMessage(ctx, 'bagbutton/Clearing', self)
+function BagButtonFrame.bagButtonProto:ClearBag()
+  events:SendMessage('bagbutton/Clearing', self)
   self.masqueGroup = nil
   self.invID = nil
   self.bag = nil
@@ -113,7 +106,7 @@ function BagButtonFrame.bagButtonProto:OnEnter()
     GameTooltip:SetOwner(self.frame, "ANCHOR_LEFT")
     GameTooltip:SetText(BANK_BAG_PURCHASE, 1, 1, 1)
     local cost = GetBankSlotCost(self.bag)
-    local costInfo = strjoin("", COSTS_LABEL, " ", C_CurrencyInfo.GetCoinTextureString(cost))
+    local costInfo = strjoin("", COSTS_LABEL, " ", GetCoinTextureString(cost))
     GameTooltip:AddLine(costInfo, 1, 1, 1, true)
     GameTooltip:Show()
     CursorUpdate(self.frame)
@@ -168,19 +161,17 @@ function BagButtonFrame.bagButtonProto:OnReceiveDrag()
 end
 
 function BagButtonFrame:OnInitialize()
-  self._pool = pool:Create(self._DoCreate, self._DoReset)
+  self._pool = CreateObjectPool(self._DoCreate, self._DoReset)
 end
 
----@param ctx Context
 ---@return BagButton
-function BagButtonFrame:Create(ctx)
-  return self._pool:Acquire(ctx)
+function BagButtonFrame:Create()
+  return self._pool:Acquire()
 end
 
----@param ctx Context
 ---@param b BagButton
-function BagButtonFrame._DoReset(ctx, b)
-  b:ClearBag(ctx)
+function BagButtonFrame:_DoReset(b)
+  b:ClearBag()
 end
 
 ---@return BagButton

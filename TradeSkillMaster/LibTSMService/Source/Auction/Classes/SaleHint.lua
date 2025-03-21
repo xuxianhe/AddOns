@@ -10,9 +10,13 @@ local Scanner = LibTSMService:Include("Auction.Scanner")
 local ItemInfo = LibTSMService:Include("Item.ItemInfo")
 local ItemString = LibTSMService:From("LibTSMTypes"):Include("Item.ItemString")
 local AuctionHouse = LibTSMService:From("LibTSMWoW"):Include("API.AuctionHouse")
+local Event = LibTSMService:From("LibTSMWoW"):Include("Service.Event")
 local ClientInfo = LibTSMService:From("LibTSMWoW"):Include("Util.ClientInfo")
 local private = {
 	storage = nil,
+	pendingItemLink = nil,
+	pendingQuantity = nil,
+	pendingUnitPrice = nil,
 }
 local SALE_HINT_SEP = "\001"
 local SALE_HINT_EXPIRE_TIME = 33 * 24 * 60 * 60
@@ -37,8 +41,11 @@ end
 
 ---Starts auction sale hint tracking.
 function SaleHint.Start()
+	if ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
+		Event.Register("AUCTION_HOUSE_AUCTION_CREATED", private.AuctionCreatedHandler)
+	end
 	Scanner.RegisterThrottledIndexCallback(private.HandleThrottledAuctionsUpdate)
-	AuctionHouse.RegisterItemPostedCallback(private.ItemPosted)
+	AuctionHouse.SecureHookPost(private.PostAuctionHookHandler)
 end
 
 ---Gets the item string for a given auction sale.
@@ -64,8 +71,22 @@ end
 -- Private Helper Functions
 -- ============================================================================
 
-function private.ItemPosted(itemLink, quantity, unitPrice)
-	private.StoreHint(itemLink, ItemString.Get(itemLink), quantity, unitPrice)
+function private.AuctionCreatedHandler()
+	if not private.pendingItemLink then
+		return
+	end
+	private.StoreHint(private.pendingItemLink, ItemString.Get(private.pendingItemLink), private.pendingQuantity, private.pendingUnitPrice)
+	private.pendingItemLink = nil
+end
+
+function private.PostAuctionHookHandler(_, itemLink, quantity, unitPrice)
+	if not itemLink then
+		private.pendingItemLink = nil
+		return
+	end
+	private.pendingItemLink = itemLink
+	private.pendingQuantity = quantity
+	private.pendingUnitPrice = unitPrice
 end
 
 function private.HandleThrottledAuctionsUpdate()

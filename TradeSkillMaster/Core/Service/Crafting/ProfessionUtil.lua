@@ -256,9 +256,7 @@ function ProfessionUtil.Craft(recipeString, quantity, useVellum, salvageSlotId, 
 	private.craftCallback = callback
 	if ClientInfo.HasFeature(ClientInfo.FEATURES.C_TRADE_SKILL_UI) then
 		local optionalMats = TempTable.Acquire()
-		local applyConcentration = false
 		if type(recipeString) == "string" then
-			applyConcentration = RecipeString.GetConcentration(recipeString) and true or false
 			for _, slotId, itemId in RecipeString.OptionalMatIterator(recipeString) do
 				local info = TempTable.Acquire()
 				info.itemID = itemId
@@ -267,7 +265,7 @@ function ProfessionUtil.Craft(recipeString, quantity, useVellum, salvageSlotId, 
 				tinsert(optionalMats, info)
 			end
 		end
-		TradeSkill.Craft(spellId, quantity, optionalMats, level, enchantItemSlotId, salvageSlotId, applyConcentration)
+		TradeSkill.Craft(spellId, quantity, optionalMats, level, enchantItemSlotId, salvageSlotId)
 		for _, info in pairs(optionalMats) do
 			TempTable.Release(info)
 		end

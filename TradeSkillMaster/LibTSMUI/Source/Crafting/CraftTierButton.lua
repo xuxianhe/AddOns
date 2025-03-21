@@ -7,6 +7,7 @@
 local LibTSMUI = select(2, ...).LibTSMUI
 local L = LibTSMUI.Locale.GetTable()
 local UIElements = LibTSMUI:Include("Util.UIElements")
+local Math = LibTSMUI:From("LibTSMUtil"):Include("Lua.Math")
 local Money = LibTSMUI:From("LibTSMUtil"):Include("UI.Money")
 local CraftString = LibTSMUI:From("LibTSMTypes"):Include("Crafting.CraftString")
 local TradeSkill = LibTSMUI:From("LibTSMWoW"):Include("API.TradeSkill")
@@ -27,7 +28,7 @@ CraftTierButton:_ExtendStateSchema()
 	:AddOptionalStringField("craftString")
 	:AddOptionalNumberField("cost")
 	:AddOptionalNumberField("profit")
-	:AddNumberField("concentration", 0)
+	:AddNumberField("percent", 100)
 	:Commit()
 
 
@@ -125,9 +126,9 @@ function CraftTierButton:Acquire()
 		:MapWithFunction(private.ProfitToString)
 		:CallMethod(self:GetElement("profit.value"), "SetText")
 
-	-- Set the concentration text
-	self._state:PublisherForKeyChange("concentration")
-		:MapWithFunction(private.ConcentrationToString)
+	-- Set the percent text
+	self._state:PublisherForKeyChange("percent")
+		:MapWithFunction(private.PercentToString)
 		:CallMethod(self:GetElement("header.text"), "SetText")
 end
 
@@ -138,11 +139,11 @@ end
 
 ---Sets the craft string.
 ---@param craftString string The craft string
----@param concentration number The required concentration amount
+---@param chance number The chance of crafting this craft string as a value from 0 to 1
 ---@return CraftTierButton
-function CraftTierButton:SetCraftString(craftString, concentration)
+function CraftTierButton:SetCraftString(craftString, chance)
 	self._state.craftString = craftString
-	self._state.concentration = concentration
+	self._state.percent = Math.Round(chance * 100)
 	return self
 end
 
@@ -190,7 +191,7 @@ end
 
 function CraftTierButton.__private:_HandleClick()
 	if self._onClickHandler then
-		self:_onClickHandler(self._state.craftString, self._state.concentration)
+		self:_onClickHandler(self._state.craftString)
 	end
 end
 
@@ -223,11 +224,6 @@ function private.ProfitToString(profit)
 	return profit and Money.ToStringForUI(profit, Theme.GetColor(profit >= 0 and "FEEDBACK_GREEN" or "FEEDBACK_RED"):GetTextColorPrefix()) or "---"
 end
 
-function private.ConcentrationToString(concentration)
-	if concentration == 0 then
-		return ""
-	else
-		-- TODO: display how much concentration is needed
-		return "|TInterface\\ICONS\\UI_Concentration:0|t"
-	end
+function private.PercentToString(chance)
+	return format("%d%%", chance)
 end

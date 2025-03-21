@@ -431,7 +431,7 @@ function private.FSMCreate()
 			:Draw()
 
 		-- Update the action button state
-		context.frame:SetTitle(context.isWarBank and L["Warbank"] or BANK)
+		context.frame:SetTitle(context.isWarBank and L["Warbound Banking"] or L["Banking"])
 		local footerButtonsFrame = context.frame:GetElement("content.footer.buttons")
 		if private.settings.tab == "Warehousing" then
 			footerButtonsFrame:GetElement("row1.moveBankBtn")
@@ -481,7 +481,6 @@ function private.FSMCreate()
 					context.frame:Hide()
 					context.frame:Release()
 					context.frame = nil
-					context.isWarBank = false
 				end
 				context.activeButton = nil
 			end)
@@ -503,7 +502,7 @@ function private.FSMCreate()
 					context.frame:Hide()
 					context.frame:Release()
 					context.frame = nil
-					context.isWarBank = false
+					context.isWarBank = nil
 				end
 				context.activeButton = nil
 			end)

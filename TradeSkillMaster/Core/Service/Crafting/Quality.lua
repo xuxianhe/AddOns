@@ -46,14 +46,18 @@ function Quality.GetOptionalMats(craftString, mats, optionalMats)
 	local targetQuality = CraftString.GetQuality(craftString)
 	local rootCategoryId = TSM.Crafting.GetRootCategoryId(craftString)
 	local maxMatContribution = ProfessionQuality.GetMaxMatContribution(rootCategoryId)
-	local neededSkill, maxAddedSkill, maxQualityMatSkill, concentration = Profession.GetNeededSkill(targetQuality, recipeDifficulty, recipeQuality, recipeMaxQuality, hasQualityMats, maxMatContribution)
+	local neededSkill, maxAddedSkill, maxQualityMatSkill = Profession.GetNeededSkill(targetQuality, recipeDifficulty, recipeQuality, recipeMaxQuality, hasQualityMats, maxMatContribution)
 	if not neededSkill then
 		return false
 	end
 
 	-- Handle crafts with no quality mats
 	if not hasQualityMats then
-		return neededSkill == 0 and concentration == 0
+		if neededSkill == 0 then
+			return true
+		else
+			return false
+		end
 	end
 
 	-- Cache the cost of each quality mat and calculate the total weight
@@ -112,7 +116,7 @@ function Quality.GetOptionalMats(craftString, mats, optionalMats)
 		return false
 	end
 	Table.SortWithValueLookup(optionalMats, optionalMats)
-	return true, concentration
+	return true
 end
 
 function Quality.GetExpectedSalvageResult(method, sourceQuality)
@@ -129,9 +133,8 @@ function Quality.GetExpectedSalvageResult(method, sourceQuality)
 	local matContribution = ProfessionQuality.GetMatContributionForQuality(rootCategoryId, sourceQuality)
 	local sourceMatSkill = baseRecipeDifficulty * matContribution
 	for i = 2, 3 do
-		local neededSkill, _, _, concentration = Profession.GetNeededSkill(i, baseRecipeDifficulty, baseRecipeQuality, 3, true, 0, matContribution)
-		-- TODO: Handle concentration
-		if concentration == 0 and neededSkill and neededSkill >= sourceMatSkill then
+		local neededSkill = Profession.GetNeededSkill(i, baseRecipeDifficulty, baseRecipeQuality, 3, true, 0, matContribution)
+		if neededSkill and neededSkill >= sourceMatSkill then
 			quality = i
 		end
 	end

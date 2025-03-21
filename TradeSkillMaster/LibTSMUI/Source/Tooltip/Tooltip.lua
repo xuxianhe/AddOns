@@ -58,6 +58,8 @@ function Tooltip.Show(parent, data, noWrapping, xOffset)
 	elseif type(data) == "string" and strfind(data, "^craft:") then
 		data = strmatch(data, "craft:(%d+)")
 		GameTooltip:SetCraftSpell(tonumber(data))
+	elseif type(data) == "string" and strfind(data, "^enchant:") then
+		GameTooltip:SetHyperlink(data)
 	elseif type(data) == "string" and data == "arena" then
 		GameTooltip:SetText(ARENA_POINTS, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b)
 		GameTooltip:AddLine(TOOLTIP_ARENA_POINTS, nil, nil, nil, 1)
@@ -95,8 +97,7 @@ function Tooltip.Show(parent, data, noWrapping, xOffset)
 				info.quantity = 1
 				tinsert(private.optionalMatTable, info)
 			end
-			local quality = RecipeString.GetQuality(data)
-			GameTooltip:SetRecipeResultItem(spellId, private.optionalMatTable, nil, level, quality)
+			GameTooltip:SetRecipeResultItem(spellId, private.optionalMatTable, nil, level)
 		else
 			local index = Profession.GetIndexByCraftString(CraftString.Get(spellId))
 			if index then

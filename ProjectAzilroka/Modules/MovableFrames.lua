@@ -12,15 +12,11 @@ local IsShiftKeyDown = IsShiftKeyDown
 
 local Frames = {
 	'AddonList', 'BankFrame', 'CharacterFrame', 'DressUpFrame', 'FriendsFrame', 'FriendsFriendsFrame', 'GameMenuFrame', 'GhostFrame', 'GossipFrame', 'GuildInviteFrame',
-	'GuildRegistrarFrame', 'HelpFrame', 'InterfaceOptionsFrame', 'ItemTextFrame', 'LFGDungeonReadyDialog', 'LootFrame', 'MailFrame', 'MerchantFrame',
+	'GuildRegistrarFrame', 'HelpFrame', 'InterfaceOptionsFrame', 'ItemTextFrame', 'LFGDungeonReadyDialog', 'LootFrame', 'LossOfControlFrame', 'MailFrame', 'MerchantFrame',
 	'PetitionFrame', 'PetStableFrame', 'PVEFrame', 'QuestFrame', 'QuestLogFrame', 'QuestLogPopupDetailFrame', 'RaidBrowserFrame', 'RaidParentFrame', 'ReadyCheckFrame',
 	'ScrollOfResurrectionSelectionFrame', 'SpellBookFrame', 'SplashFrame', 'StaticPopup1', 'StaticPopup2', 'StaticPopup3', 'StaticPopup4', 'TabardFrame', 'TaxiFrame',
 	'TimeManagerFrame', 'TradeFrame', 'VideoOptionsFrame', 'WorldMapFrame', 'WorldStateScoreFrame'
 }
-
-if not PA.ElvUI then
-	tinsert(Frames, 'LossOfControlFrame')
-end
 
 local AddOnFrames = {
 	Blizzard_AchievementUI = { 'AchievementFrame' },
@@ -120,7 +116,6 @@ function MF:ADDON_LOADED(_, addon)
 end
 
 function MF:Update()
-	if MF.db.Enable ~= true then return end
 	for frame in next, MF.alteredFrames do
 		frame:SetClampedToScreen(MF.db.ClampedToScreen)
 	end
@@ -171,6 +166,7 @@ function MF:Initialize()
 	end
 
 	if PA.ElvUI then
+		AddOnFrames.LossOfControlFrame = nil
 		AddOnFrames.Blizzard_TalkingHeadUI = nil
 	end
 

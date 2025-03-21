@@ -562,13 +562,8 @@ do
 		S:Point(frame.leftGrad, 'LEFT', frame, 'CENTER')
 		S:Point(frame.rightGrad, 'RIGHT', frame, 'CENTER')
 
-		if S.Retail or S.Wrath then
-			frame.leftGrad:SetGradient("Horizontal", { r, g, b, 0.35 }, { r, g, b, 0 })
-			frame.rightGrad:SetGradient("Horizontal", { r, g, b, 0 }, { r, g, b, 0.35 })
-		else
-			frame.leftGrad:SetGradientAlpha("Horizontal", r, g, b, 0.35, r, g, b, 0)
-			frame.rightGrad:SetGradientAlpha("Horizontal", r, g, b, 0, r, g, b, 0.35)
-		end
+		frame.leftGrad:SetGradient("Horizontal", { r, g, b, 0.35 }, { r, g, b, 0 })
+		frame.rightGrad:SetGradient("Horizontal", { r, g, b, 0 }, { r, g, b, 0.35 })
 	end
 end
 

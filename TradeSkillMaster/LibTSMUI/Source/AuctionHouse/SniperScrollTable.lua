@@ -36,17 +36,17 @@ local COL_INFO = {
 		justifyH = "RIGHT",
 		font = "TABLE_TABLE1",
 	},
-	qty = not LibTSMUI.IsVanillaClassic() and {
+	qty = LibTSMUI.IsRetail() and {
 		title = L["Qty"],
 		justifyH = "RIGHT",
 		font = "TABLE_TABLE1",
 	} or nil,
-	posts = LibTSMUI.IsVanillaClassic() and {
+	posts = not LibTSMUI.IsRetail() and {
 		title = L["Posts"],
 		justifyH = "RIGHT",
 		font = "TABLE_TABLE1",
 	} or nil,
-	stack = LibTSMUI.IsVanillaClassic() and {
+	stack = not LibTSMUI.IsRetail() and {
 		title = L["Stack"],
 		justifyH = "RIGHT",
 		font = "TABLE_TABLE1",
@@ -62,7 +62,7 @@ local COL_INFO = {
 		font = "TABLE_TABLE1",
 	},
 	bid = {
-		title = LibTSMUI.IsVanillaClassic() and L["Bid (total)"] or L["Bid (stack)"],
+		title = LibTSMUI.IsRetail() and L["Bid (stack)"] or L["Bid (total)"],
 		justifyH = "RIGHT",
 		font = "TABLE_TABLE1",
 	},
@@ -72,7 +72,7 @@ local COL_INFO = {
 		font = "TABLE_TABLE1",
 	},
 	buyout = {
-		title = LibTSMUI.IsVanillaClassic() and L["Buyout (total)"] or L["Buyout (stack)"],
+		title = LibTSMUI.IsRetail() and L["Buyout (stack)"] or L["Buyout (total)"],
 		justifyH = "RIGHT",
 		font = "TABLE_TABLE1",
 	},
@@ -112,7 +112,7 @@ end
 
 function SniperScrollTable:Acquire()
 	self.__super:Acquire()
-	if LibTSMUI.IsVanillaClassic() then
+	if not LibTSMUI.IsRetail() then
 		self._sortCol = "icon"
 		self._sortAscending = true
 	end

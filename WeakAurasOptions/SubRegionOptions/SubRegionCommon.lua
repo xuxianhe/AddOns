@@ -26,37 +26,6 @@ local function AdjustConditions(data, replacements)
   end
 end
 
-local function ReplacePrefix(hay, replacements)
-  for old, new in pairs(replacements) do
-    if hay:sub(1, #old) == old then
-      return new .. hay:sub(#old + 1)
-    end
-  end
-end
-
-local function AdjustAnchors(data, replacements)
-  if not data.subRegions then
-    return
-  end
-
-  for _, subRegionData in ipairs(data.subRegions) do
-    local anchor_area = subRegionData.anchor_area
-    if anchor_area then
-      local replaced = ReplacePrefix(anchor_area, replacements)
-      if replaced then
-        subRegionData.anchor_area = replaced
-      end
-    end
-    local anchor_point = subRegionData.anchor_point
-    if anchor_point then
-      local replaced = ReplacePrefix(anchor_point, replacements)
-      if replaced then
-        subRegionData.anchor_point = replaced
-      end
-    end
-  end
-end
-
 function OptionsPrivate.DeleteSubRegion(data, index, regionType)
   if not data.subRegions then
     return
@@ -73,7 +42,6 @@ function OptionsPrivate.DeleteSubRegion(data, index, regionType)
     end
 
     AdjustConditions(data, replacements);
-    AdjustAnchors(data, replacements)
 
     WeakAuras.Add(data)
     OptionsPrivate.ClearOptions(data.id)
@@ -93,7 +61,6 @@ function OptionsPrivate.MoveSubRegionUp(data, index, regionType)
     }
 
     AdjustConditions(data, replacements);
-    AdjustAnchors(data, replacements)
 
     WeakAuras.Add(data)
     OptionsPrivate.ClearOptions(data.id)
@@ -113,7 +80,6 @@ function OptionsPrivate.MoveSubRegionDown(data, index, regionType)
     }
 
     AdjustConditions(data, replacements);
-    AdjustAnchors(data, replacements)
 
     WeakAuras.Add(data)
     OptionsPrivate.ClearOptions(data.id)
@@ -132,8 +98,7 @@ function OptionsPrivate.DuplicateSubRegion(data, index, regionType)
     for i = index + 1, #data.subRegions do
       replacements["sub." .. i .. "."] = "sub." .. (i + 1) .. "."
     end
-    AdjustConditions(data, replacements)
-    AdjustAnchors(data, replacements)
+    AdjustConditions(data, replacements);
 
     WeakAuras.Add(data)
     OptionsPrivate.ClearOptions(data.id)

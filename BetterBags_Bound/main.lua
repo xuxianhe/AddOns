@@ -1,114 +1,131 @@
----@type string
-local addonName = ...
----@class ns
-local addon = select(2, ...)
-
---[==[@debug@
-_G["BBBound"] = addon
---@end-debug@]==]
-
 -- BetterBags namespace
 -----------------------------------------------------------
 ---@class BetterBags: AceAddon
 local BetterBags = LibStub('AceAddon-3.0'):GetAddon("BetterBags")
-assert(BetterBags, addonName .. " requires BetterBags")
 
 ---@class Categories: AceModule
-local Categories = BetterBags:GetModule('Categories')
-
----@class Events: AceModule
-local Events = BetterBags:GetModule('Events')
+local categories = BetterBags:GetModule('Categories')
 
 -- Use the L:G() function to get the localized string.
 ---@class Localization: AceModule
----@field G fun(self: AceModule, key: string): string
 local L = BetterBags:GetModule('Localization')
-
----@class Context: AceModule
----@field New fun(self: AceModule, key: string): Context
----@field Copy fun(self: AceModule): Context
-local context = BetterBags:GetModule('Context')
-
----@class Config: AceModule
----@field AddPluginConfig fun(self: Config, name: string, options: AceConfig.OptionsTable): nil
-local Config = BetterBags:GetModule('Config')
-
-addon.ctx = context:New('Bound_Event')
-addon.context = context
 
 -- Lua API
 -----------------------------------------------------------
 local _G = _G
+local string_find = string.find
 
 -- WoW API
 -----------------------------------------------------------
 local CreateFrame = _G.CreateFrame
-
--- Default settings.
------------------------------------------------------------
-addon.db = {
-	enableBop = false,
-	enableWue = true,
-	enableBoe = true,
-	enableBoa = true,
-	onlyEquippable = true,
-	wipeOnLoad = true,
-}
+local C_TooltipInfo_GetBagItem = C_TooltipInfo and C_TooltipInfo.GetBagItem
 
 -- Addon Constants
 -----------------------------------------------------------
-addon.S_BOA = "BoA"
-addon.S_BOE = "BoE"
-addon.S_WUE = "WuE"
-addon.S_BOP = "Soulbound"
-addon.IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+local S_BOA = "BoA"
+local S_BOE = "BoE"
+--- Whether we have C_TooltipInfo APIs available
+local IsRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 
--- Addon Core
-addon.eventFrame = CreateFrame("Frame", addonName .. "EventFrame", UIParent)
-addon.eventFrame:RegisterEvent("ADDON_LOADED")
-addon.eventFrame:RegisterEvent("EQUIP_BIND_CONFIRM")
-addon.eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-addon.eventFrame:SetScript("OnEvent", function(_, event, ...)
-	if event == "ADDON_LOADED" then
-		local name = ...
-		if name == addonName then
-			addon.eventFrame:UnregisterEvent("ADDON_LOADED")
-			if (type(BetterBags_Bound_SavedVars) ~= "table") then BetterBags_Bound_SavedVars = {} end
-			local db = BetterBags_Bound_SavedVars
-			for key in pairs(addon.db) do
-				--  If our option is not present, set default value
-				if (db[key] == nil) then db[key] = addon.db[key] end
-				-- Migrate DB for backwards compatibility
-				if (db.enableWoe ~= nil) then
-					db.enableWue = db.enableWoe
-					db.enableWoe = nil
-				end
-			end
-			-- Update our reference so that changed options are saved on logout
-			addon.db = db
-			-- Wipe categories on load.
-			if (addon.db.wipeOnLoad) then
-				Categories:WipeCategory(context:New('Bound_OnLoadWipe_' .. addon.S_BOA), L:G(addon.S_BOA))
-				Categories:WipeCategory(context:New('Bound_OnLoadWipe_' .. addon.S_BOE), L:G(addon.S_BOE))
-				Categories:WipeCategory(context:New('Bound_OnLoadWipe_' .. addon.S_WUE), L:G(addon.S_WUE))
-			end
+-----------------------------------------------------------
+-- Filter Setup
+-----------------------------------------------------------
 
-			-- Load config only after populating the DB, since BetterBags will cache the get function
-			Config:AddPluginConfig(L:G("Bound"), addon.options)
-		end
-	elseif event == "EQUIP_BIND_CONFIRM" then
-		if not addon.IsRetail then return end -- event is scuffed in Classic
-		local _, itemLocation = ...
-		local bag, slot = itemLocation:GetBagAndSlot()
-		local id = C_Item.GetItemID(itemLocation)
-		local category = addon:GetItemCategory(bag, slot, nil)
-		addon.bindConfirm = { id = id, category = category }
-	elseif event == "PLAYER_EQUIPMENT_CHANGED" then
-		if not addon.IsRetail then return end -- event is scuffed in Classic
-		local slot, hasCurrent = ...
-		-- hasCurrent is false if the slot was just equipped
-		if (slot ~= nil and not hasCurrent) then
-			addon:RemoveBindConfirmFromCategory(slot)
+-- Tooltip used for scanning.
+-- Let's keep this name for all scanner addons.
+local _SCANNER = "AVY_ScannerTooltip"
+
+-- Use this API to register a function that will be called for every item in the player's bags.
+-- The function you provide will be given an ItemData table, which contains all properties of an item
+-- loaded from the Blizzard API. From here, you can call any custom code you want to analyze the item.
+-- Your function must return a string, which is the category name that the item should be placed in.
+-- If your function returns nil, the item will not be placed in any category.
+-- Results of this function, including nil, are cached, so you do not need to worry about performance
+-- after the first scan.
+---@param data ItemData
+categories:RegisterCategoryFunction("BoEBoAItemsCategoryFilter", function(data)
+	local quality = data.itemInfo.itemQuality
+	local bindType = data.itemInfo.bindType
+
+	-- Only parse items that are Common (1) and above, and are of type BoP, BoE, and BoU
+	local junk = quality ~= nil and quality == 0
+	if (not junk or (bindType ~= nil and bindType > 0 and bindType < 4)) then
+		local category = GetItemCategory(data.bagid, data.slotid, data.itemInfo)
+		if (category == S_BOE or category == S_BOA) then
+			return L:G(category)
 		end
 	end
+
+	return nil
 end)
+
+--- Get the category of an item.
+---@param bagIndex number
+---@param slotIndex number
+---@param itemInfo ExpandedItemInfo
+---@return string|nil
+function GetItemCategory(bagIndex, slotIndex, itemInfo)
+	local category = nil
+
+	if (IsRetail) then
+		local tooltipInfo = C_TooltipInfo_GetBagItem(bagIndex, slotIndex)
+		if not tooltipInfo then return end
+		for i = 2, 4 do
+			local line = tooltipInfo.lines[i]
+			if (not line) then
+				break
+			end
+			local bind = GetBindString(line.leftText)
+			if (bind) then
+				category = bind
+				break
+			end
+		end
+	else
+		if (itemInfo.bindType == 2 or itemInfo.bindType == 3) then
+			local Scanner = CreateFrame("GameTooltip", _SCANNER .. itemInfo.itemGUID, nil, "GameTooltipTemplate")
+			Scanner:SetOwner(WorldFrame, "ANCHOR_NONE")
+			Scanner:ClearLines()
+			if bagIndex == BANK_CONTAINER then
+				Scanner:SetInventoryItem("player", BankButtonIDToInvSlotID(slotIndex, nil))
+			else
+				Scanner:SetBagItem(bagIndex, slotIndex)
+			end
+			local lines = GetTooltipLines(Scanner)
+			for _, line in ipairs(lines) do
+				if (line == '') then
+					break
+				end
+				local bind = GetBindString(line)
+				if (bind) then
+					category = bind
+					break
+				end
+			end
+			Scanner:Hide()
+		end
+	end
+	return category
+end
+
+function GetBindString(msg)
+	if (msg) then
+		if (string_find(msg, ITEM_ACCOUNTBOUND) or string_find(msg, ITEM_BNETACCOUNTBOUND) or string_find(msg, ITEM_BIND_TO_BNETACCOUNT)) then
+			return S_BOA
+		elseif (string_find(msg, ITEM_BIND_ON_EQUIP)) then
+			return S_BOE
+		end
+	end
+end
+
+---@param tooltip GameTooltip
+function GetTooltipLines(tooltip)
+	local textLines = {}
+	local regions = { tooltip:GetRegions() }
+	for _, r in ipairs(regions) do
+		if r:IsObjectType("FontString") then
+			table.insert(textLines, r:GetText())
+		end
+	end
+	return textLines
+end

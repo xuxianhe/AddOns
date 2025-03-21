@@ -716,22 +716,21 @@ end
 ---@param level? number The recipe level
 ---@param enchantSlotId? number The slotId of the item to enchant
 ---@param salvageSlotId? number The slotId of the item to salvage
----@param applyConcentration? boolean Whether or not to apply concentration
 ---@return string?
-function TradeSkill.Craft(spellId, quantity, optionalMats, level, enchantSlotId, salvageSlotId, applyConcentration)
+function TradeSkill.Craft(spellId, quantity, optionalMats, level, enchantSlotId, salvageSlotId)
 	if ClientInfo.HasFeature(ClientInfo.FEATURES.C_TRADE_SKILL_UI) then
 		if enchantSlotId then
 			assert(not level and not salvageSlotId)
 			private.itemLocation:SetBagAndSlot(SlotId.Split(enchantSlotId))
-			C_TradeSkillUI.CraftEnchant(spellId, quantity, optionalMats, private.itemLocation, applyConcentration)
+			C_TradeSkillUI.CraftEnchant(spellId, quantity, optionalMats, private.itemLocation)
 		elseif salvageSlotId then
-			assert(not level)
+			assert(not level and not next(optionalMats))
 			if TradeSkill.IsValiMatSlotId(salvageSlotId) then
 				private.itemLocation:SetBagAndSlot(SlotId.Split(salvageSlotId))
-				C_TradeSkillUI.CraftSalvage(spellId, quantity, private.itemLocation, optionalMats, applyConcentration)
+				C_TradeSkillUI.CraftSalvage(spellId, quantity, private.itemLocation)
 			end
 		else
-			C_TradeSkillUI.CraftRecipe(spellId, quantity, optionalMats, level, nil, applyConcentration)
+			C_TradeSkillUI.CraftRecipe(spellId, quantity, optionalMats, level)
 		end
 		return nil
 	else

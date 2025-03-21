@@ -1,28 +1,16 @@
-## Interface: 110100
+## Interface: 100206
 
-## Title: BetterBags - BoE, WuE & BoA
-## Notes: Adds BoE, WuE & BoA filters to BetterBags.
+## Title: BetterBags - BoE & BoA
+## Notes: Adds BoE & BoA filters to BetterBags.
 ## Author: Avyiel
-## Version: v1.10.2
+## Version: v1.0.1
+## X-Date: 2024-04-13T06:27:37Z
 ## IconTexture: Interface\Icons\inv_misc_bag_15
-## SavedVariables: BetterBags_Bound_SavedVars
-## Category-enUS: Action Bars
-## Category-deDE: Aktionsleisten
-## Category-esES: Barras de acción
-## Category-esMX: Barras de acción
-## Category-frFR: Barres d’action
-## Category-itIT: Barre delle azioni
-## Category-koKR: 행동 단축바
-## Category-ptBR: Barras de ação
-## Category-ruRU: Панели команд
-## Category-zhCN: 动作条
-## Category-zhTW: 快捷列
 
 ## DefaultState: Enabled
 ## Dependencies: BetterBags
-## OptionalDeps: BetterBags_Priority
 
-## X-Date: 2025-03-05T07:41:17Z
+## X-Date: 2024-04-13T06:27:37Z
 ## X-Category: Bags & Inventory
 ## X-License: MIT
 
@@ -30,6 +18,4 @@
 ## X-Wago-ID: ANz0qMK4
 
 main.lua
-filter.lua
-config.lua
 

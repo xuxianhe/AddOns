@@ -16,18 +16,17 @@ local ItemInfo = LibTSMService:Include("Item.ItemInfo")
 
 ---Returns whether or not sufficient item info is available for an item.
 ---@param itemString string The item string
----@return boolean hasInfo
----@return boolean fetchedInfo
+---@return boolean
 function Util.HasItemInfo(itemString)
 	local itemName = ItemInfo.GetName(itemString)
 	local itemLevel = ItemInfo.GetItemLevel(itemString)
 	local quality = ItemInfo.GetQuality(itemString)
 	local minLevel = ItemInfo.GetMinLevel(itemString)
-	local hasIsCommodity = LibTSMService.IsVanillaClassic() or ItemInfo.IsCommodity(itemString) ~= nil
+	local hasIsCommodity = not LibTSMService.IsRetail() or ItemInfo.IsCommodity(itemString) ~= nil
 	local hasCanHaveVariations = ItemInfo.CanHaveVariations(itemString) ~= nil
-	if itemName and itemLevel and quality and minLevel and hasIsCommodity and hasCanHaveVariations then
-		return true, false
-	else
-		return false, ItemInfo.FetchInfo(itemString)
+	local result = itemName and itemLevel and quality and minLevel and hasIsCommodity and hasCanHaveVariations
+	if not result then
+		ItemInfo.FetchInfo(itemString)
 	end
+	return result
 end

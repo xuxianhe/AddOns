@@ -483,10 +483,10 @@ local function createOptions(id, data)
     for id, display in ipairs(overlayInfo) do
       options["overlaytexture" .. id] = {
         type = "select",
-        dialogControl = "WA_LSM30_StatusbarAtlas",
+        dialogControl = "LSM30_Statusbar",
         width = WeakAuras.doubleWidth,
         name = string.format(L["%s Texture"], display),
-        values = statusbarList,
+        values = AceGUIWidgetLSMlists.statusbar,
         order = 58.1 + index,
         set = function(info, texture)
           if (not data.overlaysTexture) then
@@ -874,26 +874,10 @@ local anchorPoints = {
     display = L["Spark"],
     type = "point"
   },
-
-  bar = {
-    display = L["Full Bar"],
+  ALL = {
+    display = L["Whole Area"],
     type = "area"
   },
-
-  icon = {
-    display = L["Icon"],
-    type = "area"
-  },
-
-  fg = {
-    display = L["Foreground"],
-    type = "area"
-  },
-
-  bg = {
-    display = L["Background"],
-    type = "area"
-  }
 }
 
 local function GetAnchors(data)

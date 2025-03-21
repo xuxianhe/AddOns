@@ -404,7 +404,7 @@ end
 
 local lastGUID
 function TT:AddInspectInfo(tt, unit, numTries, r, g, b)
-	if tt.ItemLevelShown or (not unit) or (numTries > 3) or not UnitIsPlayer(unit) or not CanInspect(unit) or (E.Cata and not CheckInteractDistance(unit, 4)) then return end
+	if tt.ItemLevelShown or (not unit) or (numTries > 3) or not UnitIsPlayer(unit) or not CanInspect(unit) or ((E.Cata or E.Wrath) and not CheckInteractDistance(unit, 4)) then return end
 
 	local unitGUID = UnitGUID(unit)
 	if not unitGUID then return end
@@ -587,7 +587,7 @@ function TT:GameTooltip_OnTooltipSetUnit(data)
 		end
 	end
 
-	if (E.Retail or E.Cata) and isShiftKeyDown and isPlayerUnit and not InCombatLockdown() and TT.db.inspectDataEnable and not self.ItemLevelShown then
+	if (E.Retail or E.Cata or E.Wrath) and isShiftKeyDown and isPlayerUnit and not InCombatLockdown() and TT.db.inspectDataEnable and not self.ItemLevelShown then
 		if color then
 			TT:AddInspectInfo(self, unit, 0, color.r, color.g, color.b)
 		else
@@ -1086,7 +1086,7 @@ function TT:Initialize()
 	TT:SecureHookScript(GameTooltip, 'OnTooltipCleared', 'GameTooltip_OnTooltipCleared')
 	TT:SecureHookScript(GameTooltip.StatusBar, 'OnValueChanged', 'GameTooltipStatusBar_OnValueChanged')
 
-	if AddTooltipPostCall and not E.Cata then -- exists but doesn't work atm on Cata
+	if AddTooltipPostCall and not (E.Cata or E.Wrath) then -- exists but doesn't work atm on Cata
 		AddTooltipPostCall(TooltipDataType.Spell, TT.GameTooltip_OnTooltipSetSpell)
 		AddTooltipPostCall(TooltipDataType.Macro, TT.GameTooltip_OnTooltipSetSpell)
 		AddTooltipPostCall(TooltipDataType.Item, TT.GameTooltip_OnTooltipSetItem)

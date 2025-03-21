@@ -1194,6 +1194,15 @@ typeControlAdders = {
         return not option.useName
       end
     }
+    args[prefix .. "noMerge"] = {
+      type = "toggle",
+      name = name(option, "noMerge", L["Prevent Merging"]),
+      desc = desc(option, "noMerge", L["If checked, then this separator will not merge with other separators when selecting multiple auras."]),
+      order = order(),
+      width = WeakAuras.doubleWidth,
+      get = get(option, "noMerge"),
+      set = set(data, option, "noMerge"),
+    }
   end,
   group = function(options, args, data, order, prefix, i)
     local option = options[i]
@@ -1467,8 +1476,6 @@ local function up(data, options, index)
         local dereferencedParent = parent.references[id].options[parent.references[id].index]
         if dereferencedParent.nameSource == optionID then
           dereferencedParent.nameSource = optionID - 1
-        elseif dereferencedParent.nameSource == optionID - 1 then
-          dereferencedParent.nameSource = optionID
         end
       end
       OptionsPrivate.MoveCollapseDataUp(id, "author", path)
@@ -1498,8 +1505,6 @@ local function down(data, options, index)
         local dereferencedParent = parent.references[id].options[parent.references[id].index]
         if dereferencedParent.nameSource == optionID then
           dereferencedParent.nameSource = optionID + 1
-        elseif dereferencedParent.nameSource == optionID + 1 then
-          dereferencedParent.nameSource = optionID
         end
       end
       local childOptions = optionData.options

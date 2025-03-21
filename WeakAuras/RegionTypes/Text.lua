@@ -57,30 +57,6 @@ local properties = {
 
 Private.regionPrototype.AddProperties(properties, default);
 
---- @class TextRegion : Region
---- @field displayText string
---- @field text FontString
---- @field width number
---- @field height number
---- @field color_r number
---- @field color_g number
---- @field color_b number
---- @field color_a number
---- @field color_anim_r number
---- @field color_anim_g number
---- @field color_anim_b number
---- @field color_anim_a number
---- @field tooltipFrame Frame
---- @field ConfigureTextUpdate fun(self: TextRegion)
---- @field Update fun(self: TextRegion)
---- @field FrameTick fun(self: TextRegion)
---- @field ConfigureSubscribers fun(self: TextRegion)
---- @field Color fun(self: TextRegion, r : number, g: number, a : number)
---- @field ColorAnim fun(self: TextRegion, r : number, g: number, a : number)
---- @field GetColor fun(self: TextRegion): number, number, number, number
---- @field SetTextHeight fun(self: TextRegion, size: number)
---- @field ChangeText fun(self: TextRegion, msg: string)
-
 local function create(parent)
   local region = CreateFrame("Frame", nil, parent);
   region.regionType = "text"
@@ -96,7 +72,6 @@ local function create(parent)
   return region;
 end
 
---- @type fun(parent: Frame, region: TextRegion, data: AuraData)
 local function modify(parent, region, data)
   Private.regionPrototype.modify(parent, region, data);
   local text = region.text;
@@ -112,9 +87,7 @@ local function modify(parent, region, data)
   if not text:GetFont() then -- Font invalid, set the font but keep the setting
     text:SetFont(STANDARD_TEXT_FONT, data.fontSize, data.outline);
   end
-
   text:SetJustifyH(data.justify);
-  text:SetText("")
 
   text:ClearAllPoints();
   text:SetPoint("CENTER", UIParent, "CENTER");
@@ -188,22 +161,17 @@ local function modify(parent, region, data)
         if text:GetFont() then
           text:SetText(WeakAuras.ReplaceRaidMarkerSymbols(textStr));
         end
-        -- If the text changes we need to figure out the text size
-        -- To unset scaling we need to temporarily detach the text from
-        -- the region
-        text:SetParent(UIParent)
-        local width = text:GetWidth();
-        local height = text:GetStringHeight();
-        if(width ~= region.width or height ~= region.height ) then
-          region.width = width
-          region.height = height
-          region:SetWidth(region.width);
-          region:SetHeight(region.height);
-          if(data.parent and Private.regions[data.parent].region.PositionChildren) then
-            Private.regions[data.parent].region:PositionChildren();
-          end
+      end
+      local width = text:GetWidth();
+      local height = text:GetStringHeight();
+      if(width ~= region.width or height ~= region.height ) then
+        region.width = width;
+        region.height = height;
+        region:SetWidth(region.width);
+        region:SetHeight(region.height);
+        if(data.parent and Private.regions[data.parent].region.PositionChildren) then
+          Private.regions[data.parent].region:PositionChildren();
         end
-        text:SetParent(region)
       end
     end
   end
@@ -257,9 +225,10 @@ local function modify(parent, region, data)
     local UpdateText
     if self.displayText and Private.ContainsAnyPlaceHolders(self.displayText) then
       UpdateText = function()
-        local textStr = Private.ReplacePlaceHolders(self.displayText, self, nil, false, formatters);
-        if textStr == "" then
-          textStr = " "
+        local textStr = self.displayText;
+        textStr = Private.ReplacePlaceHolders(textStr, self, nil, false, formatters);
+        if (textStr == nil or textStr == "") then
+          textStr = " ";
         end
 
         SetText(textStr)

@@ -35,7 +35,7 @@ local SECONDS_PER_DAY = 24 * 60 * 60
 
 function Mail.OnInitialize()
 	-- If the mail should container the seller, setup a timer to query the seller names
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.AH_SELLERS) then
+	if not ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
 		private.sellersTimer = DelayTimer.New("ACCOUNTING_MAIL_SELLERS", private.RequestSellerInfo)
 		DefaultUI.RegisterMailVisibleCallback(function(visible)
 			if visible then
@@ -195,7 +195,7 @@ function private.RecordMail(index, subIndex, resolveNames)
 			return false
 		end
 		local copper = floor(bid / quantity + 0.5)
-		if not ClientInfo.IsVanillaClassic() then
+		if ClientInfo.IsRetail() then
 			quantity = itemQuantity
 		end
 		local buyTime = (time() + (daysLeft - 30) * SECONDS_PER_DAY)
@@ -406,7 +406,7 @@ function private.GetItemLink(index, attachIndex)
 end
 
 function private.GetQuantity(index, attachIndex)
-	if attachIndex or ClientInfo.IsVanillaClassic() then
+	if attachIndex or not ClientInfo.IsRetail() then
 		local _, quantity = Inbox.GetAttachment(index, attachIndex or 1)
 		return quantity or 0
 	else

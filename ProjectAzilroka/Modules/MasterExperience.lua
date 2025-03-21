@@ -5,7 +5,10 @@ _G.MasterExperience, PA.MasterExperience = MXP, MXP
 MXP.Title, MXP.Description, MXP.Authors, MXP.isEnabled = 'Master Experience', ACL['Shows Experience Bars for Party / Battle.net Friends'], 'Azilroka', false
 
 local _G = _G
-local min, max, format, tostring, tonumber, strsplit, wipe = min, max, format, tostring, tonumber, strsplit, wipe
+local min, max, format = min, max, format
+local tostring, tonumber = tostring, tonumber
+local wipe = wipe
+local strsplit = strsplit
 
 local CreateFrame = CreateFrame
 local GetXPExhaustion = GetXPExhaustion
@@ -520,7 +523,7 @@ function MXP:UpdateSettings()
 end
 
 function MXP:Initialize()
-	if true then -- MXP.db.Enable ~=
+	if MXP.db.Enable ~= true then
 		return
 	end
 

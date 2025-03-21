@@ -13,7 +13,6 @@ local ItemInfo = LibTSMService:Include("Item.ItemInfo")
 local AuctionHouse = LibTSMService:From("LibTSMWoW"):Include("API.AuctionHouse")
 local Currency = LibTSMService:From("LibTSMWoW"):Include("API.Currency")
 local AuctionHouseWrapper = LibTSMService:From("LibTSMWoW"):Include("API.AuctionHouseWrapper")
-local ClientInfo = LibTSMService:From("LibTSMWoW"):Include("Util.ClientInfo")
 local ItemString = LibTSMService:From("LibTSMTypes"):Include("Item.ItemString")
 local Threading = LibTSMService:From("LibTSMTypes"):Include("Threading")
 local TempTable = LibTSMService:From("LibTSMUtil"):Include("BaseType.TempTable")
@@ -294,7 +293,7 @@ function AuctionScanManager:CanBid(subRow)
 		return false
 	elseif displayedBid == buyout then
 		return false
-	elseif ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) and subRow:IsCommodity() then
+	elseif LibTSMService.IsRetail() and subRow:IsCommodity() then
 		return false
 	elseif Currency.GetMoney() < subRow:GetRequiredBid() then
 		return false
@@ -310,13 +309,13 @@ function AuctionScanManager:CanBuy(subRow)
 		return false
 	end
 	local buyout, itemBuyout = subRow:GetBuyouts()
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
+	if LibTSMService.IsRetail() then
 		buyout = itemBuyout
 	end
 	local itemString = subRow:GetItemString()
 	if buyout == 0 or Currency.GetMoney() < buyout then
 		return false
-	elseif ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) and subRow:IsCommodity() then
+	elseif LibTSMService.IsRetail() and subRow:IsCommodity() then
 		-- Make sure it's the cheapest
 		local isCheapest = false
 		for _, query in self:QueryIterator() do
@@ -338,7 +337,7 @@ end
 ---@return boolean
 ---@return Future?
 function AuctionScanManager:PrepareForBidOrBuyout(index, subRow, noSeller, quantity, itemBuyout)
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
+	if LibTSMService.IsRetail() then
 		local itemString = subRow:GetItemString()
 		if ItemInfo.IsCommodity(itemString) then
 			local future = AuctionHouseWrapper.StartCommoditiesPurchase(ItemString.ToId(itemString), quantity, itemBuyout)
@@ -361,7 +360,7 @@ end
 ---@param quantity number The quantity to bid or buy
 ---@return Future?
 function AuctionScanManager:PlaceBidOrBuyout(index, bidBuyout, subRow, quantity)
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
+	if LibTSMService.IsRetail() then
 		local itemString = subRow:GetItemString()
 		local future = nil
 		if ItemInfo.IsCommodity(itemString) then
@@ -388,7 +387,7 @@ function AuctionScanManager:GetProgress()
 	end
 	local currentQuery = self._queries[self._queriesScanned + 1]
 	local searchProgress = nil
-	if self._queryDidBrowse and ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
+	if self._queryDidBrowse and LibTSMService.IsRetail() then
 		searchProgress = currentQuery:GetSearchProgress() * (1 - BROWSE_PROGRESS) + BROWSE_PROGRESS
 	else
 		searchProgress = 0
@@ -433,7 +432,7 @@ end
 function AuctionScanManager:_FindAuctionThreaded(findSubRow, noSeller)
 	assert(Threading.IsThreadContext())
 	wipe(self._findResult)
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
+	if LibTSMService.IsRetail() then
 		return self:_FindAuctionThreadedRetail(findSubRow)
 	else
 		return self:_FindAuctionThreadedClassic(findSubRow, noSeller)
@@ -485,7 +484,7 @@ end
 
 function AuctionScanManager.__private:_ProcessQuery(query)
 	local prevMaxBrowseId = 0
-	if not ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
+	if not LibTSMService.IsRetail() then
 		for _, row in query:BrowseResultsIterator() do
 			prevMaxBrowseId = max(prevMaxBrowseId, row:GetMinBrowseId())
 		end
@@ -507,7 +506,7 @@ function AuctionScanManager.__private:_ProcessQuery(query)
 	self:_NotifyProgressUpdate()
 
 	local numNewResults = 0
-	if not ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
+	if not LibTSMService.IsRetail() then
 		for _, row in query:BrowseResultsIterator() do
 			if row:GetMinBrowseId() > prevMaxBrowseId then
 				numNewResults = numNewResults + row:GetNumSubRows()

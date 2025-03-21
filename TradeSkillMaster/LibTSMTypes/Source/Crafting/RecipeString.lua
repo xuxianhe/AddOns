@@ -26,9 +26,8 @@ local private = {
 ---@param rank? number The rank of the recipe
 ---@param level? number The level of the recipe
 ---@param quality? number The quality of the recipe
----@param concentration? number The amount of concentration to use
 ---@return string
-function RecipeString.Get(spellId, optionalMats, rank, level, quality, concentration)
+function RecipeString.Get(spellId, optionalMats, rank, level, quality)
 	local recipeString = "r:"..spellId
 	local suffix = ""
 	if rank then
@@ -44,9 +43,6 @@ function RecipeString.Get(spellId, optionalMats, rank, level, quality, concentra
 		suffix = ":q"..quality
 	end
 	if optionalMats and next(optionalMats) then
-		if (concentration or 0) > 0 then
-			suffix = ":c"..concentration..suffix
-		end
 		wipe(private.partsTemp)
 		wipe(private.partsOrderTemp)
 		for slotId, itemId in pairs(optionalMats) do
@@ -63,14 +59,13 @@ end
 ---Creates a recipe string from a craft string.
 ---@param craftString string The recipe string
 ---@param optionalMats table<number,number> The optional materials (slotId -> itemId table)
----@param concentration? number The amount of concentration to use
 ---@return string
-function RecipeString.FromCraftString(craftString, optionalMats, concentration)
+function RecipeString.FromCraftString(craftString, optionalMats)
 	local spellId = strmatch(craftString, "^c:(%d+)")
 	local rank = strmatch(craftString, ":r(%d)$")
 	local level = strmatch(craftString, ":l(%d)$")
 	local quality = strmatch(craftString, ":q(%d)$")
-	return RecipeString.Get(spellId, optionalMats, rank, level, quality, concentration)
+	return RecipeString.Get(spellId, optionalMats, rank, level, quality)
 end
 
 ---Gets the spell ID from the recipe string.
@@ -105,19 +100,11 @@ function RecipeString.GetQuality(recipeString)
 	return tonumber(quality)
 end
 
----Gets the quality from the recipe string.
----@param recipeString string The recipe string
----@return number|nil
-function RecipeString.GetConcentration(recipeString)
-	local _, concentration = private.ParseOptionalMats(recipeString)
-	return concentration
-end
-
 ---Iterates over the optional mats within the recipe string.
 ---@param recipeString string The recipe string
 ---@return fun():number, string, number @An iterator with fields: `index`, `slotId`, `itemId`
 function RecipeString.OptionalMatIterator(recipeString)
-	local optionalMatsStr = private.ParseOptionalMats(recipeString)
+	local optionalMatsStr = private.GetOptionalMatStr(recipeString)
 	wipe(private.iterTemp)
 	for part in String.SplitIterator(optionalMatsStr, ":") do
 		part = tonumber(part)
@@ -132,7 +119,7 @@ end
 ---@param recipeString string The recipe string
 ---@return boolean
 function RecipeString.HasOptionalMats(recipeString)
-	return private.ParseOptionalMats(recipeString) ~= ""
+	return private.GetOptionalMatStr(recipeString) ~= ""
 end
 
 ---Gets all the optional mats from a recipe string.
@@ -149,7 +136,7 @@ end
 ---@param slotId number The slotId
 ---@return number?
 function RecipeString.GetOptionalMat(recipeString, slotId)
-	local optionalMatsStr = private.ParseOptionalMats(recipeString)
+	local optionalMatsStr = private.GetOptionalMatStr(recipeString)
 	local prevSlotId = nil
 	for part in String.SplitIterator(optionalMatsStr, ":") do
 		part = tonumber(part)
@@ -174,8 +161,7 @@ function RecipeString.SetOptionalMats(recipeString, optionalMats)
 	local level = RecipeString.GetLevel(recipeString)
 	local rank = RecipeString.GetRank(recipeString)
 	local quality = RecipeString.GetQuality(recipeString)
-	local concentration = RecipeString.GetConcentration(recipeString)
-	return RecipeString.Get(spellId, optionalMats, rank, level, quality, concentration)
+	return RecipeString.Get(spellId, optionalMats, rank, level, quality)
 end
 
 
@@ -193,15 +179,9 @@ function private.OptionalMatIteratorHelper(tbl, index)
 	return index + 1, tbl[index], tbl[index + 1]
 end
 
-function private.ParseOptionalMats(recipeString)
-	local concentration = nil
-	if strfind(recipeString, ":c%d+$") or strfind(recipeString, ":c%d+:") then
-		recipeString, concentration = strmatch(recipeString, "^(.+):c(%d+)")
-		concentration = tonumber(concentration)
-		assert(concentration and concentration > 0)
-	end
+function private.GetOptionalMatStr(recipeString)
 	recipeString = gsub(recipeString, ":[lrq]%d$", "")
 	local optionalMatsStr = strmatch(recipeString, "^r:%d+:?(.*)")
 	assert(optionalMatsStr)
-	return optionalMatsStr, concentration
+	return optionalMatsStr
 end

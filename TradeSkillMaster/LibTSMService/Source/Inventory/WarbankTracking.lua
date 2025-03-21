@@ -101,7 +101,6 @@ function WarbankTracking.Start()
 	Event.Register("BAG_UPDATE", private.BagUpdateHandler)
 	Event.Register("BAG_UPDATE_DELAYED", private.UpdateDelayedHandler)
 	DefaultUI.RegisterBankVisibleCallback(private.BankVisible, true)
-	DefaultUI.RegisterAccountBankVisibleCallback(private.BankVisible, true)
 end
 
 ---Registers a callback for when the bag quantities change.
@@ -156,7 +155,7 @@ end
 ---@param itemString string The item string
 ---@param quantity number The amount to deduct
 function WarbankTracking.ForceQuantityDeduction(itemString, quantity)
-	if DefaultUI.IsBankVisible() or DefaultUI.IsAccountBankVisible() then
+	if DefaultUI.IsBankVisible() then
 		return
 	end
 	local levelItemString = ItemString.ToLevel(itemString)
@@ -222,7 +221,7 @@ function private.BagUpdateHandler(_, bag)
 end
 
 function private.UpdateDelayedHandler()
-	if (not DefaultUI.IsBankVisible() and not DefaultUI.IsAccountBankVisible()) or not Container.CanAccessWarbank() then
+	if not DefaultUI.IsBankVisible() or not Container.CanAccessWarbank() then
 		return
 	end
 	private.slotDB:SetQueryUpdatesPaused(true)

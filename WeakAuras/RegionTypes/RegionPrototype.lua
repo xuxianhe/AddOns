@@ -25,44 +25,25 @@ end
 
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
 
-function Private.GetAnchorsForData(data, filter)
-  local result = {}
-  if not data.controlledChildren then
-    if not Private.regionOptions[data.regionType] then
+function Private.GetAnchorsForData(parentData, type)
+  local result
+  if not parentData.controlledChildren then
+    if not Private.regionOptions[parentData.regionType] then
       return
     end
 
     local anchors
-    if Private.regionOptions[data.regionType].getAnchors then
-      anchors = Private.regionOptions[data.regionType].getAnchors(data)
+    if Private.regionOptions[parentData.regionType].getAnchors then
+      anchors = Private.regionOptions[parentData.regionType].getAnchors(parentData)
     else
       anchors = Private.default_types_for_anchor
     end
-
     for anchorId, anchorData in pairs(anchors) do
-      if anchorData.type == filter then
+      if anchorData.type == type then
+        result = result or {}
         result[anchorId] = anchorData.display
       end
     end
-
-    local subElementTypeCounter = {}
-    for i, subRegion in ipairs(data.subRegions) do
-      subElementTypeCounter[subRegion.type] = (subElementTypeCounter[subRegion.type] or 0) + 1
-      local getAnchors = Private.subRegionOptions[subRegion.type].getAnchors
-      if getAnchors then
-        local subRegionTypeData = Private.subRegionTypes[subRegion.type]
-
-        local anchors = getAnchors(subRegion)
-        for key, anchorData in pairs(anchors) do
-          if anchorData.type == filter then
-            local subElementName = subRegionTypeData.displayName .. " " .. subElementTypeCounter[subRegion.type]
-            local anchorId = "sub." .. i .. "." ..  key
-            result[anchorId] = {subElementName, anchorData.display}
-          end
-        end
-      end
-    end
-
   end
   return result
 end
@@ -367,9 +348,8 @@ local function SetProgressSource(self, progressSource)
 end
 
 local function SetAdjustedMin(self, adjustedMin)
-  local index = adjustedMin:find("%% *$")
-  if index then
-    local percent = adjustedMin:sub(1, index-1)
+  local percent = string.match(adjustedMin, "(%d+)%%")
+  if percent then
     self.adjustedMinRelPercent = tonumber(percent) / 100
     self.adjustedMin = nil
   else
@@ -380,9 +360,8 @@ local function SetAdjustedMin(self, adjustedMin)
 end
 
 local function SetAdjustedMax(self, adjustedMax)
-  local index = adjustedMax:find("%% *$")
-  if index then
-    local percent = adjustedMax:sub(1, index-1)
+  local percent = string.match(adjustedMax, "(%d+)%%")
+  if percent then
     self.adjustedMaxRelPercent = tonumber(percent) / 100
   else
     self.adjustedMax = tonumber(adjustedMax)
@@ -406,7 +385,6 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
   local inverseProperty = progressSource[6]
   local pausedProperty = progressSource[7]
   local remainingProperty = progressSource[8]
-  local useAdditionalProgress = progressSource[9]
 
   if progressType == "number" then
     local value = state[property]
@@ -441,11 +419,7 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
       self:UpdateValue()
     end
     if self.SetAdditionalProgress then
-      if useAdditionalProgress then
-        self:SetAdditionalProgress(state.additionalProgress, adjustMin, max, false)
-      else
-        self:SetAdditionalProgress(nil)
-      end
+      self:SetAdditionalProgress(state.additionalProgress, adjustMin, max, false)
     end
   elseif progressType == "timer" then
     local expirationTime
@@ -463,9 +437,6 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
     end
 
     local duration = totalProperty and state[totalProperty] or 0
-    if type(duration) ~= "number" then
-      duration = 0
-    end
     local modRate = modRateProperty and state[modRateProperty] or nil
     local adjustMin
     if minMaxConfig.adjustedMin then
@@ -498,11 +469,7 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
       self:UpdateTime()
     end
     if self.SetAdditionalProgress then
-      if useAdditionalProgress then
-        self:SetAdditionalProgress(state.additionalProgress, adjustMin, max, inverse)
-      else
-        self:SetAdditionalProgress(nil)
-      end
+      self:SetAdditionalProgress(state.additionalProgress, adjustMin, max, inverse)
     end
   elseif progressType == "elapsedTimer" then
     local startTime = state[property] or math.huge
@@ -524,7 +491,6 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
     else
       max = duration
     end
-
     self.minProgress, self.maxProgress = adjustMin, max
     self.progressType = "timed"
     self.duration = max - adjustMin
@@ -537,17 +503,13 @@ local function UpdateProgressFromState(self, minMaxConfig, state, progressSource
       self:UpdateTime()
     end
     if self.SetAdditionalProgress then
-      if useAdditionalProgress then
-        self:SetAdditionalProgress(state.additionalProgress, adjustMin, max, false)
-      else
-        self:SetAdditionalProgress(nil)
-      end
+      self:SetAdditionalProgress(state.additionalProgress, adjustMin, max, false)
     end
   end
 end
 
-local autoTimedProgressSource = {-1, "timer", "expirationTime", "duration", "modRate", "inverse", "paused", "remaining", true}
-local autoStaticProgressSource = {-1, "number", "value", "total", nil, nil, nil, nil, true}
+local autoTimedProgressSource = {-1, "timer", "expirationTime", "duration", "modRate", "inverse", "paused", "remaining"}
+local autoStaticProgressSource = {-1, "number", "value", "total", nil, nil, nil, nil}
 local function UpdateProgressFromAuto(self, minMaxConfig, state)
   if state.progressType == "timed"  then
     UpdateProgressFromState(self, minMaxConfig, state, autoTimedProgressSource)
@@ -598,7 +560,7 @@ local function UpdateProgressFromManual(self, minMaxConfig, state, value, total)
     self:UpdateValue()
   end
   if self.SetAdditionalProgress then
-    self:SetAdditionalProgress(nil)
+    self:SetAdditionalProgress(state.additionalProgress, adjustMin, max)
   end
 end
 
@@ -661,32 +623,16 @@ local function Tick(self)
   Private.StopProfileAura(self.id)
 end
 
-local function ForwardAnchorToSubRegion(self, subRegion, anchorType, anchorPoint, selfPoint, anchorXOffset, anchorYOffset)
-  local nextdot = anchorPoint:find(".", 5, true)
-  local index = tonumber(anchorPoint:sub(5, nextdot - 1))
-  local subElement = index and self.subRegions[index] or nil
-  if subElement then
-    local key = anchorPoint:sub(nextdot + 1)
-    if subElement.AnchorSubRegion then
-      subElement:AnchorSubRegion(subRegion, anchorType, key, selfPoint, anchorXOffset, anchorYOffset)
-    end
-  end
-end
+local function AnchorSubRegion(self, subRegion, anchorType, selfPoint, anchorPoint, anchorXOffset, anchorYOffset)
+  subRegion:ClearAllPoints()
 
-local function AnchorSubRegion(self, subRegion, anchorType, anchorPoint, selfPoint, anchorXOffset, anchorYOffset)
-  if anchorPoint and anchorPoint:sub(1, 4) == "sub." then
-    self:ForwardAnchorToSubRegion(subRegion, anchorType, anchorPoint, selfPoint, anchorXOffset, anchorYOffset)
-    return
-  end
   if anchorType == "point" then
-    subRegion:ClearAllPoints()
     local xOffset = anchorXOffset or 0
     local yOffset = anchorYOffset or 0
     subRegion:SetPoint(Private.point_types[selfPoint] and selfPoint or "CENTER",
                        self, Private.point_types[anchorPoint] and anchorPoint or "CENTER",
                        xOffset, yOffset)
   else
-    subRegion:ClearAllPoints()
     anchorXOffset = anchorXOffset or 0
     anchorYOffset = anchorYOffset or 0
     subRegion:SetPoint("bottomleft", self, "bottomleft", -anchorXOffset, -anchorYOffset)
@@ -741,16 +687,27 @@ function Private.regionPrototype.create(region)
   region.UpdateTick = UpdateTick
   region.Tick = Tick
 
-
   region.subRegionEvents = Private.CreateSubscribableObject()
   region.AnchorSubRegion = AnchorSubRegion
-  region.ForwardAnchorToSubRegion = ForwardAnchorToSubRegion
   region.values = {} -- For SubText
 
   region:SetPoint("CENTER", UIParent, "CENTER")
 end
 
-function Private.regionPrototype.AddMinMaxProgressSource(hasProgressSource, region, parentData, data)
+function Private.regionPrototype.modify(parent, region, data)
+  region.state = nil
+  region.states = nil
+  region.subRegionEvents:ClearSubscribers()
+  region.subRegionEvents:ClearCallbacks()
+  Private.FrameTick:RemoveSubscriber("Tick", region)
+
+  local defaultsForRegion = Private.regionTypes[data.regionType] and Private.regionTypes[data.regionType].default;
+
+  if region.SetRegionAlpha then
+    region:SetRegionAlpha(data.alpha)
+  end
+
+  local hasProgressSource = defaultsForRegion and defaultsForRegion.progressSource
   local hasAdjustedMin = hasProgressSource and data.useAdjustededMin and data.adjustedMin
   local hasAdjustedMax = hasProgressSource and data.useAdjustededMax and data.adjustedMax
 
@@ -761,7 +718,7 @@ function Private.regionPrototype.AddMinMaxProgressSource(hasProgressSource, regi
   region.adjustedMaxRelPercent = nil
 
   if hasProgressSource then
-    region.progressSource = Private.AddProgressSourceMetaData(parentData, data.progressSource)
+    region.progressSource = Private.AddProgressSourceMetaData(data, data.progressSource)
   end
 
   if (hasAdjustedMin) then
@@ -780,24 +737,6 @@ function Private.regionPrototype.AddMinMaxProgressSource(hasProgressSource, regi
       region.adjustedMax = tonumber(data.adjustedMax)
     end
   end
-end
-
-function Private.regionPrototype.modify(parent, region, data)
-  region.state = nil
-  region.states = nil
-  region.subRegionEvents:ClearSubscribers()
-  region.subRegionEvents:ClearCallbacks()
-  Private.FrameTick:RemoveSubscriber("Tick", region)
-
-  local defaultsForRegion = Private.regionTypes[data.regionType] and Private.regionTypes[data.regionType].default;
-
-  if region.SetRegionAlpha then
-    region:SetRegionAlpha(data.alpha)
-  end
-
-  local hasProgressSource = defaultsForRegion and defaultsForRegion.progressSource
-
-  Private.regionPrototype.AddMinMaxProgressSource(hasProgressSource, region, data, data)
 
   region:SetOffset(data.xOffset or 0, data.yOffset or 0);
   region:SetOffsetRelative(0, 0)
@@ -870,13 +809,6 @@ function Private.regionPrototype.modifyFinish(parent, region, data)
         tinsert(region.subRegions, subRegion)
       end
     end
-
-    for index, subRegion in pairs(region.subRegions) do
-      if subRegion.Anchor then
-        subRegion:Anchor()
-      end
-    end
-
   end
 
   region.subRegionEvents:SetOnSubscriptionStatusChanged("FrameTick", function()

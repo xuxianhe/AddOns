@@ -16,7 +16,7 @@ local function createOptions(parentData, data, index, subIndex)
       name = L["Show Model"],
       order = 9,
     },
-    model_fileId = {
+    model_path = {
       type = "input",
       width = WeakAuras.doubleWidth - 0.15,
       name = L["Model"],
@@ -38,7 +38,7 @@ local function createOptions(parentData, data, index, subIndex)
     bar_model_clip = {
       type = "toggle",
       width = WeakAuras.doubleWidth,
-      name = L["Attach to Foreground"],
+      name = L["Clipped by Progress"],
       order = 12,
       hidden = function() return parentData.regionType ~= "aurabar" end
     },

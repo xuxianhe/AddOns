@@ -73,10 +73,10 @@ end
 function GroupImport:Process(str)
 	local success, numInvalidItems, numChangedOperations = self:_DecodeNewImport(str, true)
 	if not success then
-		success, numInvalidItems, numChangedOperations = self:_DecodeOldImport(str, true)
+		success, numInvalidItems, numChangedOperations = self:_DecodeOldImport(str)
 	end
 	if not success then
-		success, numInvalidItems, numChangedOperations = self:_DecodeOldGroupOrItemListImport(str, true)
+		success, numInvalidItems, numChangedOperations = self:_DecodeOldGroupOrItemListImport(str)
 	end
 	assert(not success or (numInvalidItems and numChangedOperations))
 	return success, numInvalidItems, numChangedOperations
@@ -89,17 +89,11 @@ end
 ---@return table? groups
 ---@return table? groupOperations
 ---@return table? customSources
----@return boolean? isNew
-function GroupImport:RawDecode(str)
-	local success = self:_DecodeNewImport(str, false)
-	local isNew = success
-	if not success then
-		success = self:_DecodeOldImport(str, false)
+function GroupImport:RawDecodeNewImport(str)
+	if not self:_DecodeNewImport(str, false) then
+		return nil, nil, nil, nil, nil, nil
 	end
-	if not success then
-		success = self:_DecodeOldGroupOrItemListImport(str, false)
-	end
-	return self._groupName, self._items, self._groups, self._groupOperations, self._operations, self._customSources, isNew
+	return self._groupName, self._items, self._groups, self._groupOperations, self._customSources
 end
 
 ---Gets the totals for the current import string.
@@ -434,7 +428,7 @@ function GroupImport.__private:_DecodeNewImport(str, dedupGroup)
 	return true, numInvalidItems, numChangedOperations
 end
 
-function GroupImport.__private:_DecodeOldImport(str, dedupGroup)
+function GroupImport.__private:_DecodeOldImport(str)
 	if strsub(str, 1, 1) ~= "^" then
 		Log.Info("Not an old import string")
 		return false
@@ -518,11 +512,7 @@ function GroupImport.__private:_DecodeOldImport(str, dedupGroup)
 	end
 
 	Log.Info("Decoded old import string")
-	if dedupGroup then
-		self._groupName = self:_DedupImportGroupName(commonTopLevelGroup or self._defaultGroupName)
-	else
-		self._groupName = commonTopLevelGroup or self._defaultGroupName
-	end
+	self._groupName = self:_DedupImportGroupName(commonTopLevelGroup or self._defaultGroupName)
 	self._items = items
 	self._groups = groups
 	self._groupOperations = groupOperations
@@ -531,7 +521,7 @@ function GroupImport.__private:_DecodeOldImport(str, dedupGroup)
 	return true, numInvalidItems, numChangedOperations
 end
 
-function GroupImport.__private:_DecodeOldGroupOrItemListImport(str, dedupGroup)
+function GroupImport.__private:_DecodeOldGroupOrItemListImport(str)
 	local items, groups, numInvalidItems = self:_DecodeGroupExportHelper(str)
 	if not items then
 		Log.Err("No items found")
@@ -546,11 +536,7 @@ function GroupImport.__private:_DecodeOldGroupOrItemListImport(str, dedupGroup)
 	end
 
 	Log.Info("Decoded old group or item list")
-	if dedupGroup then
-		self._groupName = self:_DedupImportGroupName(commonTopLevelGroup or self._defaultGroupName)
-	else
-		self._groupName = commonTopLevelGroup or self._defaultGroupName
-	end
+	self._groupName = self:_DedupImportGroupName(commonTopLevelGroup or self._defaultGroupName)
 	self._items = items
 	self._groups = groups
 	self._groupOperations = groupOperations

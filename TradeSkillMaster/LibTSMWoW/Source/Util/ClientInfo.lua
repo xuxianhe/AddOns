@@ -32,6 +32,7 @@ ClientInfo.FEATURES = EnumType.New("FEATURES", {
 	CRAFTING_ORDERS = EnumType.NewValue(),
 	CHARACTER_SPECIALIZATION = EnumType.NewValue(),
 	C_ITEM = EnumType.NewValue(),
+	C_SPELL = EnumType.NewValue(),
 	WARBAND_BANK = EnumType.NewValue(),
 })
 local private = {
@@ -51,16 +52,16 @@ ClientInfo:OnModuleLoad(function()
 		[ClientInfo.FEATURES.HONOR_POINTS] = LibTSMWoW.IsCataClassic(),
 		[ClientInfo.FEATURES.SUB_PROFESSION_NAMES] = not LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.AH_COPPER] = not LibTSMWoW.IsRetail(),
-		[ClientInfo.FEATURES.AH_STACKS] = LibTSMWoW.IsVanillaClassic(),
-		[ClientInfo.FEATURES.AH_UNCOLLECTED_FILTER] = not LibTSMWoW.IsVanillaClassic(),
+		[ClientInfo.FEATURES.AH_STACKS] = not LibTSMWoW.IsRetail(),
+		[ClientInfo.FEATURES.AH_UNCOLLECTED_FILTER] = LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.AH_UPGRADES_FILTER] = LibTSMWoW.IsRetail(),
-		[ClientInfo.FEATURES.AH_LIFO] = not LibTSMWoW.IsVanillaClassic(),
-		[ClientInfo.FEATURES.AH_SELLERS] = LibTSMWoW.IsVanillaClassic(),
+		[ClientInfo.FEATURES.AH_LIFO] = LibTSMWoW.IsRetail(),
+		[ClientInfo.FEATURES.AH_SELLERS] = not LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.BATTLE_PETS] = LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.GARRISON] = LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.GUILD_BANK] = not LibTSMWoW.IsVanillaClassic(),
-		[ClientInfo.FEATURES.C_AUCTION_HOUSE] = not LibTSMWoW.IsVanillaClassic(),
-		[ClientInfo.FEATURES.COMMODITY_ITEMS] = not LibTSMWoW.IsVanillaClassic(),
+		[ClientInfo.FEATURES.C_AUCTION_HOUSE] = LibTSMWoW.IsRetail(),
+		[ClientInfo.FEATURES.COMMODITY_ITEMS] = LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.CRAFTING_QUALITY] = LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.C_TRADE_SKILL_UI] = LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.C_TOOLTIP_INFO] = LibTSMWoW.IsRetail(),
@@ -70,6 +71,7 @@ ClientInfo:OnModuleLoad(function()
 		[ClientInfo.FEATURES.CRAFTING_ORDERS] = LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.CHARACTER_SPECIALIZATION] = LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.C_ITEM] = LibTSMWoW.IsRetail(),
+		[ClientInfo.FEATURES.C_SPELL] = LibTSMWoW.IsRetail(),
 		[ClientInfo.FEATURES.WARBAND_BANK] = LibTSMWoW.IsRetail(),
 	}
 end)

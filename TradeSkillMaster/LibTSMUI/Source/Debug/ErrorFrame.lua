@@ -275,6 +275,7 @@ function ErrorFrame.__private:_HandleEditUpdate(editBox)
 	editBox:SetHitRectInsets(0, 0, offset, editBox:GetHeight() - offset - self._frame.scrollFrame:GetHeight())
 end
 
+
 function ErrorFrame.__private:_HandleEditFocusGained(editBox)
 	editBox:HighlightText()
 end

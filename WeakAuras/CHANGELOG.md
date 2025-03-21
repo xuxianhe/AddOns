@@ -1,38 +1,41 @@
-# [5.19.5](https://github.com/WeakAuras/WeakAuras2/tree/5.19.5) (2025-03-10)
+# [5.12.9-22-g6d1761bd](https://github.com/WeakAuras/WeakAuras2/tree/6d1761bd7e3279debbd69d46aaa9e08109b1a827) (2024-05-07)
 
-[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.19.4...5.19.5)
+[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.12.9...6d1761bd7e3279debbd69d46aaa9e08109b1a827)
 
-## Highlights
+Boneshock (5):
 
-No new features this release, just fixes to some minor bugs
+- add options for sound fadeout
+- Fix instance type options are empty on cata classic
+- Enable clickthrough with 'tooltip on mouseover'
+- Rename cleu message prefix and suffix
+- Add headers to categorize filters in large triggers (#5027)
 
-## Commits
+InfusOnWoW (1):
 
-InfusOnWoW (9):
+- Update Atlas File List from wago.tools
 
-- Update Discord List
-- Update Discord List
-- Stop Motion Sub Element: Fix setting of custom row/colum etc settings
-- Partially revert 4e628f546befa7
-- Being in Excavation Site 9 IsInInstance() returns false
-- Texture Sub Element: Don't resize main aura on atlas selection
-- Workaround boss unit stupidity by Blizzard
-- Workaround INSTANCE_ENGAGE_UNIT with incosistent UnitGUID/UnitExists
-- Remove Stop Motion texture data
+Stanzilla (5):
 
-Stanzilla (2):
-
+- Update TOC for Retail Patch 10.2.7
+- Few more spelling and type fixes
+- Fix typo
 - Update WeakAurasModelPaths from wago.tools
-- Update WeakAurasModelPaths from wago.tools
+- Update bug_report.yml
 
-dependabot[bot] (4):
+emptyrivers (3):
 
-- Bump cbrgm/mastodon-github-action from 2.1.12 to 2.1.13
-- Bump tsickert/discord-webhook from 6.0.0 to 7.0.0
-- Bump leafo/gh-actions-luarocks from 4 to 5
-- Bump leafo/gh-actions-lua from 10 to 11
+- ensure we always compute the correct rect for a dynamic group (#5034)
+- only upload & advertise build artifact if triggering actor has a write bit
+- advertise a link to an experimental build, if one exists (#5037)
 
-emptyrivers (1):
+mrbuds (8):
 
-- remove spurious enUS translations
+- Cataclysm Templates
+- Fix Premade Auras option not shown
+- For spell input fields with noValidation (used for "Name(s)" fields) show name from GetSpellInfo when value is a number, fixes #5058
+- Add missing global in luacheckrc
+- AuraBar: add some alias textures, and option to use texture picker
+- Weapon Enchant trigger: fetch data for ranged slot only on Cataclysm
+- Weapon Enchant trigger: support ranged weapon on Cataclysm, fixes #5043
+- Prepare for the removal of deprecated functions
 

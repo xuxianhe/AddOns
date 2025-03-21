@@ -31,8 +31,8 @@ local sectionFrame = addon:GetModule('SectionFrame')
 ---@class Database: AceModule
 local database = addon:GetModule('Database')
 
----@class ContextMenu: AceModule
-local contextMenu = addon:GetModule('ContextMenu')
+---@class Context: AceModule
+local context = addon:GetModule('Context')
 
 ---@class MoneyFrame: AceModule
 local money = addon:GetModule('MoneyFrame')
@@ -55,36 +55,25 @@ local Window = LibStub('LibWindow-1.1')
 ---@class Currency: AceModule
 local currency = addon:GetModule('Currency')
 
----@class SearchBox: AceModule
-local searchBox = addon:GetModule('SearchBox')
+---@class Search: AceModule
+local search = addon:GetModule('Search')
 
----@class Themes: AceModule
-local themes = addon:GetModule('Themes')
-
----@class ThemeConfig: AceModule
-local themeConfig = addon:GetModule('ThemeConfig')
-
----@class WindowGroup: AceModule
-local windowGroup = addon:GetModule('WindowGroup')
-
----@class SectionConfig: AceModule
-local sectionConfig = addon:GetModule('SectionConfig')
-
----@class Context: AceModule
-local context = addon:GetModule('Context')
-
----@class Anchor: AceModule
-local anchor = addon:GetModule('Anchor')
-
----@param ctx Context
-function bagFrame.bagProto:SwitchToBankAndWipe(ctx)
+function bagFrame.bagProto:SwitchToBank()
   if self.kind == const.BAG_KIND.BACKPACK then return end
-  self.bankTab = const.BANK_TAB.BANK
+  self.isReagentBank = false
   BankFrame.selectedTab = 1
-  ctx:Set('wipe', true)
   --self.frame:SetTitle(L:G("Bank"))
-  items:ClearBankCache(ctx)
-  self:Wipe(ctx)
+  self:Wipe()
+end
+
+function bagFrame.bagProto:Sort()
+  PlaySound(SOUNDKIT.UI_BAG_SORTING_01)
+  if _G.SortBags ~= nil then
+    events:SendMessage('bags/SortBackpackClassic')
+  else
+    items:RemoveNewItemFromAllItems()
+    self:Refresh()
+  end
 end
 
 -------
@@ -92,34 +81,26 @@ end
 -------
 
 --- Create creates a new bag view.
----@param ctx Context
 ---@param kind BagKind
 ---@return Bag
-function bagFrame:Create(ctx, kind)
+function bagFrame:Create(kind)
   ---@class Bag
   local b = {}
   setmetatable(b, { __index = bagFrame.bagProto })
   b.currentItemCount = 0
   b.drawOnClose = false
-  b.bankTab = const.BANK_TAB.BANK
+  b.isReagentBank = false
   b.sections = {}
   b.toRelease = {}
   b.toReleaseSections = {}
   b.kind = kind
-  b.windowGrouping = windowGroup:Create()
   local name = kind == const.BAG_KIND.BACKPACK and "Backpack" or "Bank"
   -- The main display frame for the bag.
   ---@class Frame: BetterBagsClassicBagPortrait
-  local f = CreateFrame("Frame", "BetterBagsBag"..name, nil)
+  local f = CreateFrame("Frame", "BetterBagsBag"..name, nil, "BetterBagsClassicBagPortraitTemplate")
+  --Mixin(f, PortraitFrameMixin)
   -- Setup the main frame defaults.
   b.frame = f
-  b.sideAnchor = CreateFrame("Frame", f:GetName().."LeftAnchor", b.frame)
-  b.sideAnchor:SetWidth(1)
-  b.sideAnchor:SetPoint("TOPRIGHT", b.frame, "TOPLEFT")
-  b.sideAnchor:SetPoint("BOTTOMRIGHT", b.frame, "BOTTOMLEFT")
-  b.frame.Owner = b
-  themes:RegisterPortraitWindow(f, name)
-
   b.frame:SetParent(UIParent)
   b.frame:SetToplevel(true)
   if b.kind == const.BAG_KIND.BACKPACK then
@@ -129,12 +110,32 @@ function bagFrame:Create(ctx, kind)
     b.frame:SetFrameStrata("HIGH")
   end
 
+  -- Create a custom portrait texture.
+  local portraitSize = 48
+  local portrait = b.frame:CreateTexture(nil, "ARTWORK")
+  portrait:SetTexture([[Interface\Containerframe\Bagslots2x]])
+  portrait:SetTexCoord(0, 0.2, 0, 1)
+  portrait:SetDrawLayer("OVERLAY", 7)
+  portrait:SetSize(portraitSize, portraitSize * 1.25)
+  portrait:ClearAllPoints()
+  portrait:SetPoint("TOPLEFT", b.frame, "TOPLEFT", -10, 10)
+
   b.frame:Hide()
   b.frame:SetSize(200, 200)
+  ButtonFrameTemplate_HidePortrait(b.frame)
+  ButtonFrameTemplate_HideButtonBar(b.frame)
+  b.frame.Inset:Hide()
+  b.frame:SetTitle(L:G(kind == const.BAG_KIND.BACKPACK and "Backpack" or "Bank"))
+  b.frame.CloseButton:SetScript("OnClick", function()
+    b:Hide()
+    if b.kind == const.BAG_KIND.BANK then CloseBankFrame() end
+  end)
 
   b.views = {
-    [const.BAG_VIEW.SECTION_GRID] = views:NewGrid(f, b.kind),
-    [const.BAG_VIEW.SECTION_ALL_BAGS] = views:NewBagView(f, b.kind),
+    [const.BAG_VIEW.ONE_BAG] = views:NewOneBag(f),
+    [const.BAG_VIEW.SECTION_GRID] = views:NewGrid(f),
+    [const.BAG_VIEW.LIST] = views:NewList(f),
+    [const.BAG_VIEW.SECTION_ALL_BAGS] = views:NewBagView(f),
   }
 
   -- Register the bag frame so that window positions are saved.
@@ -157,33 +158,108 @@ function bagFrame:Create(ctx, kind)
   end
 
   -- Setup the context menu.
-  b.menuList = contextMenu:CreateContextMenu(b)
+  b.menuList = context:CreateContextMenu(b)
 
-  local slots = bagSlots:CreatePanel(ctx, kind)
+  -- Create the invisible menu button.
+  local bagButton = CreateFrame("Button")
+  bagButton:EnableMouse(true)
+  bagButton:SetParent(b.frame)
+  bagButton:SetSize(portraitSize - 5, portraitSize - 5)
+  bagButton:SetPoint("CENTER", portrait, "CENTER", -2, 8)
+  local highlightTex = b.frame:CreateTexture("BetterBagsBagButtonTextureHighlight", "BACKGROUND")
+  highlightTex:SetTexture([[Interface\Containerframe\Bagslots2x]])
+  highlightTex:SetSize(portraitSize, portraitSize * 1.25)
+  highlightTex:SetTexCoord(0.2, 0.4, 0, 1)
+  highlightTex:SetPoint("CENTER", portrait, "CENTER", 2, 0)
+  highlightTex:SetAlpha(0)
+  highlightTex:SetDrawLayer("OVERLAY", 7)
+  local anig = highlightTex:CreateAnimationGroup("BetterBagsBagButtonTextureHighlightAnim")
+  local ani = anig:CreateAnimation("Alpha")
+  ani:SetFromAlpha(0)
+  ani:SetToAlpha(1)
+  ani:SetDuration(0.2)
+  ani:SetSmoothing("IN")
+  if database:GetFirstTimeMenu() then
+    ani:SetDuration(0.4)
+    anig:SetLooping("BOUNCE")
+    anig:Play()
+  end
+  bagButton:SetScript("OnEnter", function()
+    if not database:GetFirstTimeMenu() then
+      anig:Stop()
+      highlightTex:SetAlpha(1)
+      anig:Play()
+    end
+    GameTooltip:SetOwner(bagButton, "ANCHOR_LEFT")
+    if kind == const.BAG_KIND.BACKPACK then
+      GameTooltip:AddDoubleLine(L:G("Left Click"), L:G("Open Menu"), 1, 0.81, 0, 1, 1, 1)
+      GameTooltip:AddDoubleLine(L:G("Shift Left Click"), L:G("Search Bags"), 1, 0.81, 0, 1, 1, 1)
+      if _G.SortBags ~= nil then
+        GameTooltip:AddDoubleLine(L:G("Right Click"), L:G("Sort Bags"), 1, 0.81, 0, 1, 1, 1)
+      else
+        GameTooltip:AddDoubleLine(L:G("Right Click"), L:G("Refresh Bags"), 1, 0.81, 0, 1, 1, 1)
+      end
+    else
+      GameTooltip:AddDoubleLine(L:G("Left Click"), L:G("Open Menu"), 1, 0.81, 0, 1, 1, 1)
+      GameTooltip:AddDoubleLine(L:G("Shift Left Click"), L:G("Search Bags"), 1, 0.81, 0, 1, 1, 1)
+    end
+    if CursorHasItem() then
+      local cursorType, _, itemLink = GetCursorInfo()
+      if cursorType == "item" then
+        GameTooltip:AddLine(" ", 1, 1, 1)
+        GameTooltip:AddLine(format(L:G("Drop %s here to create a new category for it."), itemLink), 1, 1, 1)
+      end
+    end
+    GameTooltip:Show()
+  end)
+  bagButton:SetScript("OnLeave", function()
+    GameTooltip:Hide()
+    if not database:GetFirstTimeMenu() then
+      anig:Stop()
+      highlightTex:SetAlpha(0)
+      anig:Restart(true)
+    end
+  end)
+  bagButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  bagButton:SetScript("OnReceiveDrag", b.CreateCategoryForItemInCursor)
+  bagButton:SetScript("OnClick", function(_, e)
+    if e == "LeftButton" then
+      if database:GetFirstTimeMenu() then
+        database:SetFirstTimeMenu(false)
+        highlightTex:SetAlpha(1)
+        anig:SetLooping("NONE")
+        anig:Restart()
+      end
+      if IsShiftKeyDown() then
+        BetterBags_ToggleSearch()
+      elseif CursorHasItem() and GetCursorInfo() == "item" then
+        b:CreateCategoryForItemInCursor()
+      else
+        context:Show(b.menuList)
+      end
+    elseif e == "RightButton" and kind == const.BAG_KIND.BACKPACK then
+      b:Sort()
+    end
+  end)
+
+  local slots = bagSlots:CreatePanel(kind)
   slots.frame:SetPoint("BOTTOMLEFT", b.frame, "TOPLEFT", 0, 8)
   slots.frame:SetParent(b.frame)
   slots.frame:Hide()
   b.slots = slots
 
   if kind == const.BAG_KIND.BACKPACK then
-    b.searchFrame = searchBox:Create(ctx, b.frame)
+    search:Create(b.frame)
   end
 
-  if kind == const.BAG_KIND.BACKPACK then
-    local currencyFrame = currency:Create(b.frame)
-    currencyFrame:Hide()
-    b.currencyFrame = currencyFrame
-
-    b.themeConfigFrame = themeConfig:Create(b.sideAnchor)
-    b.windowGrouping:AddWindow('themeConfig', b.themeConfigFrame)
-    b.windowGrouping:AddWindow('currencyConfig', b.currencyFrame)
+  local searchBox = search:CreateBox(kind, b.frame)
+  searchBox.frame:SetPoint("TOP", b.frame, "TOP", 0, -2)
+  searchBox.frame:SetSize(150, 20)
+  if database:GetInBagSearch() then
+    searchBox.frame:Show()
+    b.frame:SetTitle("")
   end
-
-  if kind == const.BAG_KIND.BANK then
-    b.bankTab = const.BANK_TAB.BANK
-  end
-  b.sectionConfigFrame = sectionConfig:Create(kind, b.frame)
-  b.windowGrouping:AddWindow('sectionConfig', b.sectionConfigFrame)
+  b.searchBox = searchBox
 
   -- Enable dragging of the bag frame.
   b.frame:SetMovable(true)
@@ -197,15 +273,11 @@ function bagFrame:Create(ctx, kind)
   b.frame:SetScript("OnDragStop", function(drag)
     drag:StopMovingOrSizing()
     Window.SavePosition(b.frame)
-    b.previousSize = b.frame:GetBottom()
-    b:OnResize()
   end)
 
   b.frame:SetScript("OnSizeChanged", function()
     b:OnResize()
   end)
-
-  b.anchor = anchor:New(kind, b.frame, name)
   -- Load the bag position from settings.
   Window.RestorePosition(b.frame)
 
@@ -213,29 +285,19 @@ function bagFrame:Create(ctx, kind)
     local fw, fh = b.frame:GetSize()
     database:SetBagViewFrameSize(b.kind, database:GetBagView(b.kind), fw, fh)
   end)
-  b.resizeHandle:Hide()
   b:KeepBagInBounds()
 
   if b.kind == const.BAG_KIND.BACKPACK then
-    events:BucketEvent('BAG_UPDATE_COOLDOWN',function(ectx) b:OnCooldown(ectx) end)
+    events:BucketEvent('BAG_UPDATE_COOLDOWN',function(_) b:OnCooldown() end)
   end
 
-  events:RegisterEvent('ITEM_LOCKED', function(ectx, _, bagid, slotid)
-    b:OnLock(ectx, bagid, slotid)
-  end)
-
-  events:RegisterEvent('ITEM_UNLOCKED', function(ectx, _, bagid, slotid)
-    b:OnUnlock(ectx, bagid, slotid)
-  end)
-
-  events:RegisterMessage('search/SetInFrame', function (ectx, shown)
-    themes:SetSearchState(ectx, b.frame, shown)
-  end)
-
-  events:RegisterMessage('bag/RedrawIcons', function(ectx)
-    if not b.currentView then return end
-    for _, item in pairs(b.currentView:GetItemsByBagAndSlot()) do
-      item:UpdateUpgrade(ectx)
+  events:RegisterMessage('search/SetInFrame', function (_, shown)
+    if shown then
+      b.searchBox.frame:Show()
+      b.frame:SetTitle("")
+    else
+      b.searchBox.frame:Hide()
+      b.frame:SetTitle(L:G(kind == const.BAG_KIND.BACKPACK and "Backpack" or "Bank"))
     end
   end)
 

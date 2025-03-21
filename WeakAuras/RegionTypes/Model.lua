@@ -9,7 +9,8 @@ local L = WeakAuras.L;
 
 -- Default settings
 local default = {
-  model_fileId = WeakAuras.IsClassic() and "165589" or "122968", -- spells/arcanepower_state_chest.m2 & Creature/Arthaslichking/arthaslichking.m2
+  model_path = "spells/arcanepower_state_chest.m2", -- arthas is not a thing on classic
+  model_fileId = "122968", -- Creature/Arthaslichking/arthaslichking.m2
   modelIsUnit = false,
   api = false, -- false ==> SetPosition + SetFacing; true ==> SetTransform
   model_x = 0,
@@ -45,8 +46,6 @@ local default = {
   borderBackdrop = "Blizzard Tooltip"
 };
 
-Private.regionPrototype.AddAlphaToDefault(default)
-
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
 
 local properties = {
@@ -77,13 +76,7 @@ local function GetProperties(data)
 end
 
 local regionFunctions = {
-  Update = function() end,
-  SetAlpha = function(self, alpha)
-    self.alpha = alpha
-    if self.model then
-      self.model:SetAlpha(alpha)
-    end
-  end
+  Update = function() end
 }
 
 -- Called when first creating a new region/display
@@ -104,6 +97,8 @@ local function create(parent)
   for k, v in pairs (regionFunctions) do
     region[k] = v
   end
+
+  region.AnchorSubRegion = Private.regionPrototype.AnchorSubRegion
 
   -- Return complete region
   return region;
@@ -134,7 +129,7 @@ local function ConfigureModel(region, model, data)
   model:Show()
 
   -- Adjust model
-  WeakAuras.SetModel(model, nil, data.model_fileId, data.modelIsUnit, data.modelDisplayInfo)
+  WeakAuras.SetModel(model, data.model_path, data.model_fileId, data.modelIsUnit, data.modelDisplayInfo)
   model:SetPortraitZoom(data.portraitZoom and 1 or 0);
   model:ClearTransform()
   if data.api then
@@ -159,7 +154,7 @@ local function ConfigureModel(region, model, data)
     model:SetScript("OnEvent", function(self, event, unitId)
       Private.StartProfileSystem("model");
       if (event ~= "UNIT_MODEL_CHANGED" or UnitIsUnit(unitId, unit)) then
-        WeakAuras.SetModel(model, nil, data.model_fileId, data.modelIsUnit, data.modelDisplayInfo)
+        WeakAuras.SetModel(model, data.model_path, data.model_fileId, data.modelIsUnit, data.modelDisplayInfo)
         if data.advance then
           model:SetAnimation(data.sequence)
         else
@@ -194,7 +189,6 @@ local function AcquireModel(region, data)
 end
 
 local function ReleaseModel(model)
-  model:SetAlpha(1)
   model:SetKeepModelOnHide(false)
   model:Hide()
   model:UnregisterEvent("UNIT_MODEL_CHANGED");
@@ -316,9 +310,6 @@ local function modify(parent, region, data)
       region.model = AcquireModel(self, data)
     else
       ConfigureModel(region, region.model, data)
-    end
-    if type(data.alpha) == "number" then
-      region:SetAlpha(data.alpha)
     end
   end
 

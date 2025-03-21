@@ -68,7 +68,7 @@ end
 -- Wrapping a unit's name in its class colour is very common in custom Auras
 local WA_ClassColorName = function(unit)
   if unit and UnitExists(unit) then
-    local name = WeakAuras.UnitName(unit)
+    local name = UnitName(unit)
     local _, class = UnitClass(unit)
     if not class then
       return name
@@ -523,20 +523,8 @@ local overridden = {
   WeakAuras = FakeWeakAuras
 }
 
--- WORKAROUND API which return Mixin'd values need those mixin "rawgettable" in caller's fenv #5071
-local mixins = {
-  ColorMixin = ColorMixin,
-  Vector2DMixin = Vector2DMixin,
-  Vector3DMixin = Vector3DMixin,
-  ItemLocationMixin = ItemLocationMixin,
-  ItemTransmogInfoMixin = ItemTransmogInfoMixin,
-  TransmogPendingInfoMixin = TransmogPendingInfoMixin,
-  TransmogLocationMixin = TransmogLocationMixin,
-  PlayerLocationMixin = PlayerLocationMixin,
-}
-
 local env_getglobal_custom
-local exec_env_custom = setmetatable(CopyTable(mixins),
+local exec_env_custom = setmetatable({},
 {
   __index = function(t, k)
     if k == "_G" then
@@ -559,20 +547,8 @@ local exec_env_custom = setmetatable(CopyTable(mixins),
       return {}
     elseif overridden[k] then
       return overridden[k]
-    elseif _G[k] then
+    else
       return _G[k]
-    elseif k:find(".", 1, true) then
-      local f
-      for i, n in ipairs{strsplit(".", k)} do
-        if i == 1 then
-          f = _G[n]
-        elseif f then
-          f = f[n]
-        else
-          return
-        end
-      end
-      return f
     end
   end,
   __newindex = function(table, key, value)
@@ -594,7 +570,7 @@ local PrivateForBuiltIn = {
 }
 
 local env_getglobal_builtin
-local exec_env_builtin = setmetatable(CopyTable(mixins),
+local exec_env_builtin = setmetatable({},
 {
   __index = function(t, k)
     if k == "_G" then
@@ -644,25 +620,20 @@ local function firstLine(string)
 end
 
 local function CreateFunctionCache(exec_env)
-  local cache = {
-    funcs = setmetatable({}, {__mode = "v"})
-  }
-  cache.Load = function(self, string, silent)
-    if self.funcs[string] then
-      return self.funcs[string]
+  local cache = {}
+  cache.Load = function(self, string)
+    if self[string] then
+      return self[string]
     else
       local loadedFunction, errorString = loadstring(string, firstLine(string))
       if errorString then
-        if not silent then
-          print(errorString)
-        end
-        return nil, errorString
-      elseif loadedFunction then
+        print(errorString)
+      else
         --- @cast loadedFunction -nil
         setfenv(loadedFunction, exec_env)
         local success, func = pcall(assert(loadedFunction))
         if success then
-          self.funcs[string] = func
+          self[string] = func
           return func
         end
       end
@@ -678,8 +649,8 @@ function WeakAuras.LoadFunction(string)
   return function_cache_custom:Load(string)
 end
 
-function Private.LoadFunction(string, silent)
-  return function_cache_builtin:Load(string, silent)
+function Private.LoadFunction(string)
+  return function_cache_builtin:Load(string)
 end
 
 function Private.GetSanitizedGlobal(key)

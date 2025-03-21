@@ -1,18 +1,16 @@
-## Interface: 11506
+## Interface: 11501
 
 ## Title: BetterBags - BoE & BoA
 ## Notes: Adds BoE & BoA filters to BetterBags.
 ## Author: Avyiel
-## Version: v1.10.2
-## X-Date: 2025-03-05T07:41:17Z
+## Version: v1.0.1
+## X-Date: 2024-04-13T06:27:37Z
 ## IconTexture: Interface\Icons\inv_misc_bag_15
-## SavedVariables: BetterBags_Bound_SavedVars
 
 ## DefaultState: Enabled
 ## Dependencies: BetterBags
-## OptionalDeps: BetterBags_Priority
 
-## X-Date: 2025-03-05T07:41:17Z
+## X-Date: 2024-04-13T06:27:37Z
 ## X-Category: Bags & Inventory
 ## X-License: MIT
 
@@ -20,6 +18,4 @@
 ## X-Wago-ID: ANz0qMK4
 
 main.lua
-filter.lua
-config.lua
 

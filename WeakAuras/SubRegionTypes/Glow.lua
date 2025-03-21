@@ -27,7 +27,7 @@ local default = function(parentType)
   }
   if parentType == "aurabar" then
     options["glowType"] = "Pixel"
-    options["anchor_area"] = "bar"
+    options["glow_anchor"] = "bar"
   end
   return options
 end
@@ -373,6 +373,12 @@ end
 local function modify(parent, region, parentData, data, first)
   region:SetParent(parent)
   region.parentRegionType = parentData.regionType
+  if parentData.regionType == "aurabar" then
+    parent:AnchorSubRegion(region, "area", data.glow_anchor)
+  else
+    parent:AnchorSubRegion(region, "area", (data.glowType == "buttonOverlay" or data.glowType == "Proc") and "region")
+  end
+
   region.parent = parent
 
   region.parentType = parentData.regionType
@@ -393,14 +399,6 @@ local function modify(parent, region, parentData, data, first)
   region:SetVisible(data.glow)
 
   region:SetScript("OnSizeChanged", region.UpdateSize)
-
-  region.Anchor = function()
-    if parentData.regionType == "aurabar" then
-      parent:AnchorSubRegion(region, "area", data.anchor_area)
-    else
-      parent:AnchorSubRegion(region, "area", (data.glowType == "buttonOverlay" or data.glowType == "Proc") and "region")
-    end
-  end
 end
 
 -- This is used by the templates to add glow
@@ -421,9 +419,9 @@ function Private.getDefaultGlow(regionType)
       glowBorder = false,
       glowXOffset = 0,
       glowYOffset = 0,
-      anchor_area = "bar"
+      glow_anchor = "bar"
     }
-  else
+  elseif regionType == "icon" then
     return {
       ["type"] = "subglow",
       glow = false,
@@ -443,15 +441,9 @@ function Private.getDefaultGlow(regionType)
   end
 end
 
-local supportedRegion = {
-  icon = true,
-  aurabar = true,
-  texture = true,
-  progresstexture = true,
-  empty = true,
-}
 local function supports(regionType)
-  return supportedRegion[regionType]
+  return regionType == "icon"
+         or regionType == "aurabar"
 end
 
 local function addDefaultsForNewAura(data)

@@ -22,15 +22,6 @@ local debug = addon:GetModule('Debug')
 ---@class ItemFrame: AceModule
 local itemFrame = addon:GetModule('ItemFrame')
 
----@class Items: AceModule
-local items = addon:GetModule('Items')
-
----@class Themes: AceModule
-local themes = addon:GetModule('Themes')
-
----@class Pool: AceModule
-local pool = addon:GetModule('Pool')
-
 ---@class ItemRowFrame: AceModule
 local item = addon:NewModule('ItemRowFrame')
 
@@ -40,7 +31,7 @@ local item = addon:NewModule('ItemRowFrame')
 ---@field button Item
 ---@field rowButton ItemButton|Button
 ---@field text FontString
----@field slotkey string
+---@field data ItemData
 item.itemRowProto = {}
 
 function item.itemRowProto:Unlock()
@@ -49,34 +40,11 @@ end
 function item.itemRowProto:Lock()
 end
 
-function item.itemRowProto:GetItemData()
-  return self.button:GetItemData()
-end
-
----@param ctx Context
 ---@param data ItemData
-function item.itemRowProto:SetStaticItemFromData(ctx, data)
-  self:SetItemFromData(ctx, data, true)
-end
-
----@param ctx Context
----@param slotkey string
-function item.itemRowProto:SetItem(ctx, slotkey)
-  local data = items:GetItemDataFromSlotKey(slotkey)
-  self:SetItemFromData(ctx, data)
-end
-
----@param ctx Context
----@param data ItemData
----@param static? boolean
-function item.itemRowProto:SetItemFromData(ctx, data, static)
-  self.slotkey = data.slotkey
-  self.button:SetSize(ctx, 20, 20)
-  if static then
-    self.button:SetStaticItemFromData(ctx, data)
-  else
-    self.button:SetItemFromData(ctx, data)
-  end
+function item.itemRowProto:SetItem(data)
+  self.data = data
+  self.button:SetSize(20, 20)
+  self.button:SetItem(data)
   self.button.frame:SetParent(self.frame)
   self.button.frame:SetPoint("LEFT", self.frame, "LEFT", 4, 0)
 
@@ -99,9 +67,9 @@ function item.itemRowProto:SetItemFromData(ctx, data, static)
   self.rowButton.HighlightTexture:SetGradient("HORIZONTAL", CreateColor(unpack(const.ITEM_QUALITY_COLOR_HIGH[quality])), CreateColor(unpack(const.ITEM_QUALITY_COLOR_LOW[quality])))
 
   --self.button:SetSize(20, 20)
-  --self.button.Count:Hide()
-  --self.button.ilvlText:Hide()
-  --self.button.LockTexture:Hide()
+  self.button.Count:Hide()
+  self.button.ilvlText:Hide()
+  self.button.LockTexture:Hide()
 
   if bagid then
     self.frame:SetID(bagid)
@@ -118,9 +86,7 @@ function item.itemRowProto:SetItemFromData(ctx, data, static)
     GameTooltip:Show()
   end)
 
-  if self.slotkey ~= nil then
-    events:SendMessage(ctx, 'item/UpdatedRow', self)
-  end
+  events:SendMessage('item/UpdatedRow', self)
   self.frame:Show()
   self.rowButton:Show()
 end
@@ -131,10 +97,9 @@ function item.itemRowProto:Wipe()
   self.frame:ClearAllPoints()
 end
 
----@param ctx Context
-function item.itemRowProto:ClearItem(ctx)
-  events:SendMessage(ctx, 'item/ClearingRow', self)
-  self.button:ClearItem(ctx)
+function item.itemRowProto:ClearItem()
+  events:SendMessage('item/ClearingRow', self)
+  self.button:ClearItem()
 
   self.rowButton:SetID(0)
   self.frame:SetID(0)
@@ -145,63 +110,51 @@ function item.itemRowProto:ClearItem(ctx)
     ---@cast s ItemButton
     s.HighlightTexture:Show()
   end)
-  self.slotkey = ""
+  self.data = nil
 end
 
 ---@return string
 function item.itemRowProto:GetCategory()
-  return self.button:GetItemData().itemInfo.category
+  return self.button.data.itemInfo.category
 end
 
----@param ctx Context
 ---@return boolean
-function item.itemRowProto:IsNewItem(ctx)
-  return self.button:IsNewItem(ctx)
+function item.itemRowProto:IsNewItem()
+  return self.button:IsNewItem()
 end
 
 ---@return string
 function item.itemRowProto:GetGUID()
-  return self.button:GetItemData().itemInfo.itemGUID
+  return self.data.itemInfo.itemGUID
 end
 
----@param ctx Context
-function item.itemRowProto:Release(ctx)
-  item._pool:Release(ctx, self)
+function item.itemRowProto:Release()
+  item._pool:Release(self)
 end
 
 function item.itemRowProto:UpdateSearch(text)
   self.button:UpdateSearch(text)
 end
 
----@param ctx Context
-function item.itemRowProto:UpdateCooldown(ctx)
-  self.button:UpdateCooldown(ctx)
+function item.itemRowProto:UpdateCooldown()
+  self.button:UpdateCooldown()
 end
 
 local buttonCount = 0
 
 function item:OnInitialize()
-  self._pool = pool:Create(self._DoCreate, self._DoReset)
+  self._pool = CreateObjectPool(self._DoCreate, self._DoReset)
+  self._pool:SetResetDisallowedIfNew()
 end
 
----@param ctx Context
 ---@param i ItemRow
-function item._DoReset(ctx, i)
-  i:ClearItem(ctx)
+function item:_DoReset(i)
+  i:ClearItem()
 end
 
----@param ctx Context
 ---@return ItemRow
-function item:_DoCreate(ctx)
+function item:_DoCreate()
   local i = setmetatable({}, { __index = item.itemRowProto })
-
-  -- Backwards compatibility for item data.
-  i.data = setmetatable({}, { __index = function(_, key)
-    local d = i.button:GetItemData()
-    if d == nil then return nil end
-    return i.button:GetItemData()[key]
-  end})
-
   -- Generate the item button name. This is needed because item
   -- button textures are named after the button itself.
   local name = format("BetterBagsRowItemButton%d", buttonCount)
@@ -219,13 +172,12 @@ function item:_DoCreate(ctx)
 
   -- Button properties are set when setting the item,
   -- and setting them here will have no effect.
-  local button = itemFrame:Create(ctx)
+  local button = itemFrame:Create()
   i.button = button
 
   local text = i.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
   text:SetParent(i.frame)
   text:SetPoint("LEFT", i.button.frame, "RIGHT", 5, 0)
-  text:SetPoint("RIGHT", i.frame, "RIGHT")
   text:SetHeight(16)
   text:SetWidth(310)
   text:SetTextHeight(28)
@@ -273,8 +225,7 @@ function item:_DoCreate(ctx)
   return i
 end
 
----@param ctx Context
 ---@return ItemRow
-function item:Create(ctx)
-  return self._pool:Acquire(ctx)
+function item:Create()
+  return self._pool:Acquire()
 end

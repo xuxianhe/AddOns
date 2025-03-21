@@ -8,10 +8,6 @@ local L = WeakAuras.L;
 local indentWidth = 0.15
 
 local function createOptions(parentData, data, index, subIndex)
-  local areaAnchors = {}
-  for child in OptionsPrivate.Private.TraverseLeafsOrAura(parentData) do
-    Mixin(areaAnchors, OptionsPrivate.Private.GetAnchorsForData(child, "area"))
-  end
 
   local hiddenGlowExtra = function()
     return OptionsPrivate.IsCollapsed("glow", "glow", "glowextra" .. index, true);
@@ -33,13 +29,12 @@ local function createOptions(parentData, data, index, subIndex)
       order = 2,
       values = OptionsPrivate.Private.glow_types,
     },
-    anchor_area = {
+    glow_anchor = {
       type = "select",
       width = WeakAuras.normalWidth,
-      control = "WeakAurasTwoColumnDropdown",
       name = L["Glow Anchor"],
       order = 3,
-      values = areaAnchors,
+      values = OptionsPrivate.Private.aurabar_anchor_areas,
       hidden = function() return parentData.regionType ~= "aurabar" end
     },
     glowExtraDescription = {

@@ -9,7 +9,6 @@ local QueryUtil = LibTSMService:Init("AuctionScan.QueryUtil")
 local Query = LibTSMService:IncludeClassType("AuctionQuery")
 local ItemInfo = LibTSMService:Include("Item.ItemInfo")
 local Item = LibTSMService:From("LibTSMWoW"):Include("API.Item")
-local ClientInfo = LibTSMService:From("LibTSMWoW"):Include("Util.ClientInfo")
 local ItemString = LibTSMService:From("LibTSMTypes"):Include("Item.ItemString")
 local Threading = LibTSMService:From("LibTSMTypes"):Include("Threading")
 local TempTable = LibTSMService:From("LibTSMUtil"):Include("BaseType.TempTable")
@@ -57,7 +56,7 @@ function QueryUtil.GenerateThreaded(itemList, callback)
 	end
 
 	-- Add all the items
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) then
+	if LibTSMService.IsRetail() then
 		-- Sort the item list so all base items are grouped together but keep relative ordering between base items the same
 		wipe(private.itemListSortValue)
 		for i, itemString in ipairs(itemList) do

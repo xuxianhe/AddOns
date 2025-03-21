@@ -31,8 +31,8 @@ local sectionFrame = addon:GetModule('SectionFrame')
 ---@class Database: AceModule
 local database = addon:GetModule('Database')
 
----@class ContextMenu: AceModule
-local contextMenu = addon:GetModule('ContextMenu')
+---@class Context: AceModule
+local context = addon:GetModule('Context')
 
 ---@class MoneyFrame: AceModule
 local money = addon:GetModule('MoneyFrame')
@@ -61,32 +61,8 @@ local Window = LibStub('LibWindow-1.1')
 ---@class Currency: AceModule
 local currency = addon:GetModule('Currency')
 
----@class Context: AceModule
-local context = addon:GetModule('Context')
-
----@class SearchBox: AceModule
-local searchBox = addon:GetModule('SearchBox')
-
 ---@class Search: AceModule
 local search = addon:GetModule('Search')
-
----@class SectionConfig: AceModule
-local sectionConfig = addon:GetModule('SectionConfig')
-
----@class ThemeConfig: AceModule
-local themeConfig = addon:GetModule('ThemeConfig')
-
----@class Themes: AceModule
-local themes = addon:GetModule('Themes')
-
----@class WindowGroup: AceModule
-local windowGroup = addon:GetModule('WindowGroup')
-
----@class Anchor: AceModule
-local anchor = addon:GetModule('Anchor')
-
----@class Tabs: AceModule
-local tabs = addon:GetModule('Tabs')
 
 -------
 --- Bag Prototype
@@ -97,17 +73,15 @@ local tabs = addon:GetModule('Tabs')
 --- kind (i.e. bank, backpack).
 ---@class (exact) Bag
 ---@field kind BagKind
----@field currentView View
+---@field currentView view
 ---@field frame Frame The fancy frame of the bag.
----@field anchor AnchorFrame The anchor frame for the bag.
 ---@field bottomBar Frame The bottom bar of the bag.
 ---@field recentItems Section The recent items section.
 ---@field currencyFrame CurrencyFrame The currency frame.
----@field sectionConfigFrame SectionConfigFrame The section config frame.
----@field themeConfigFrame ThemeConfigFrame The theme config frame.
 ---@field currentItemCount number
 ---@field private sections table<string, Section>
 ---@field slots bagSlots
+---@field isReagentBank boolean
 ---@field decorator Texture
 ---@field bg Texture
 ---@field moneyFrame Money
@@ -117,121 +91,38 @@ local tabs = addon:GetModule('Tabs')
 ---@field menuList MenuList[]
 ---@field toRelease Item[]
 ---@field toReleaseSections Section[]
----@field views table<BagView, View>
----@field loaded boolean
----@field windowGrouping WindowGrouping
----@field sideAnchor Frame
----@field previousSize number
----@field searchFrame SearchFrame
----@field tabs Tab
----@field bankTab BankTab
+---@field views table<BagView, view>
+---@field searchBox SearchFrame
 bagFrame.bagProto = {}
 
----@param ctx Context
-function bagFrame.bagProto:GenerateWarbankTabs(ctx)
-  local tabData = C_Bank.FetchPurchasedBankTabData(Enum.BankType.Account)
-  for _, data in pairs(tabData) do
-    if self.tabs:TabExistsByID(data.ID) and self.tabs:GetTabNameByID(data.ID) ~= data.name then
-      self.tabs:RenameTabByID(ctx, data.ID, data.name)
-    elseif not self.tabs:TabExistsByID(data.ID) then
-      self.tabs:AddTab(ctx, data.name, data.ID)
-    end
-  end
-
-  if not self.tabs:TabExists("Purchase Warbank Tab") then
-    self.tabs:AddTab(ctx, "Purchase Warbank Tab", nil, nil, AccountBankPanel.PurchasePrompt.TabCostFrame.PurchaseButton)
-  end
-
-  if C_Bank.HasMaxBankTabs(Enum.BankType.Account) then
-    self.tabs:HideTabByName("Purchase Warbank Tab")
-  else
-    self.tabs:MoveToEnd("Purchase Warbank Tab")
-    self.tabs:ShowTabByName("Purchase Warbank Tab")
-  end
-  -- TODO(lobato): this
-  --self.currentView:UpdateWidth()
-  local w = self.tabs.width
-  if self.frame:GetWidth() + const.OFFSETS.BAG_LEFT_INSET + -const.OFFSETS.BAG_RIGHT_INSET < w + const.OFFSETS.BAG_LEFT_INSET + -const.OFFSETS.BAG_RIGHT_INSET then
-    self.frame:SetWidth(w + const.OFFSETS.BAG_LEFT_INSET + -const.OFFSETS.BAG_RIGHT_INSET)
-  end
-end
-
----@param id number
----@return BankTabData
-function bagFrame.bagProto:GetWarbankTabDataByID(id)
-  local tabData = C_Bank.FetchPurchasedBankTabData(Enum.BankType.Account)
-  for _, data in pairs(tabData) do
-    if data.ID == id then
-      return data
-    end
-  end
-  return {}
-end
-
-function bagFrame.bagProto:HideBankAndReagentTabs()
-  self.tabs:HideTabByIndex(1)
-  self.tabs:HideTabByIndex(2)
-end
-
-function bagFrame.bagProto:ShowBankAndReagentTabs()
-  self.tabs:ShowTabByIndex(1)
-  self.tabs:ShowTabByIndex(2)
-end
-
----@param ctx Context
-function bagFrame.bagProto:Show(ctx)
+function bagFrame.bagProto:Show()
   if self.frame:IsShown() then
     return
   end
-  --addon.ForceShowBlizzardBags()
+  addon.ForceShowBlizzardBags()
   PlaySound(self.kind == const.BAG_KIND.BANK and SOUNDKIT.IG_MAINMENU_OPEN or SOUNDKIT.IG_BACKPACK_OPEN)
-
-  if self.kind == const.BAG_KIND.BANK and addon.isRetail then
-    self:GenerateWarbankTabs(ctx)
-    if addon.atWarbank then
-      self:HideBankAndReagentTabs()
-      self.tabs:SetTabByID(ctx, 13)
-    else
-      self:ShowBankAndReagentTabs()
-    end
-   self.moneyFrame:Update()
-  end
-
   self.frame:Show()
-  ItemButtonUtil.TriggerEvent( ItemButtonUtil.Event.ItemContextChanged )
 end
 
----@param ctx Context
-function bagFrame.bagProto:Hide(ctx)
+function bagFrame.bagProto:Hide()
   if not self.frame:IsShown() then
     return
   end
   addon.ForceHideBlizzardBags()
   PlaySound(self.kind == const.BAG_KIND.BANK and SOUNDKIT.IG_MAINMENU_CLOSE or SOUNDKIT.IG_BACKPACK_CLOSE)
   self.frame:Hide()
-  if self.kind == const.BAG_KIND.BANK then
-    if C_Bank then
-      C_Bank.CloseBankFrame()
-    else
-      CloseBankFrame()
-    end
-  elseif self.kind == const.BAG_KIND.BACKPACK then
-    self.searchFrame:Hide()
-  end
   if self.drawOnClose and self.kind == const.BAG_KIND.BACKPACK then
     debug:Log("draw", "Drawing bag on close")
     self.drawOnClose = false
-    self:Refresh(ctx)
+    self:Refresh()
   end
-  ItemButtonUtil.TriggerEvent( ItemButtonUtil.Event.ItemContextChanged )
 end
 
----@param ctx Context
-function bagFrame.bagProto:Toggle(ctx)
+function bagFrame.bagProto:Toggle()
   if self.frame:IsShown() then
-    self:Hide(ctx)
+    self:Hide()
   else
-    self:Show(ctx)
+    self:Show()
   end
 end
 
@@ -247,59 +138,69 @@ function bagFrame.bagProto:GetPosition()
   return x * scale, y * scale
 end
 
----@param ctx Context
-function bagFrame.bagProto:Sort(ctx)
+function bagFrame.bagProto:Sort()
   if self.kind ~= const.BAG_KIND.BACKPACK then return end
+  --[[
+  -- Unlock all locked items so they can be sorted.
+  ---@type Item[]
+  local lockList = {}
+  for _, item in pairs(self.currentView:GetItemsByBagAndSlot()) do
+    if item.data and not item.data.isItemEmpty and item.data.itemInfo.isLocked then
+      table.insert(lockList, item)
+      item:Unlock()
+    end
+  end
+  --]]
   PlaySound(SOUNDKIT.UI_BAG_SORTING_01)
-  events:SendMessage(ctx, 'bags/SortBackpack')
+  events:SendMessage('bags/SortBackpack')
+--[[
+  for _, item in pairs(lockList) do
+    item:Lock()
+  end
+--]]
 end
 
 -- Wipe will wipe the contents of the bag and release all cells.
----@param ctx Context
-function bagFrame.bagProto:Wipe(ctx)
+function bagFrame.bagProto:Wipe()
   if self.currentView then
-    self.currentView:Wipe(ctx)
+    self.currentView:Wipe()
   end
-end
-
----@return string
-function bagFrame.bagProto:GetName()
-  return self.frame:GetName()
 end
 
 -- Refresh will refresh this bag's item database, and then redraw the bag.
 -- This is what would be considered a "full refresh".
----@param ctx Context
-function bagFrame.bagProto:Refresh(ctx)
+function bagFrame.bagProto:Refresh()
   if self.kind == const.BAG_KIND.BACKPACK then
-    events:SendMessage(ctx, 'bags/RefreshBackpack')
+    events:SendMessage('bags/RefreshBackpack')
   else
-    events:SendMessage(ctx, 'bags/RefreshBank')
+    events:SendMessage('bags/RefreshBank')
   end
 end
 
----@param ctx Context
----@param results table<string, boolean>
-function bagFrame.bagProto:Search(ctx, results)
-  if not self.currentView then return end
-  for _, item in pairs(self.currentView:GetItemsByBagAndSlot()) do
-    item:UpdateSearch(ctx, results[item.slotkey])
+function bagFrame.bagProto:DoRefresh()
+  if self.kind == const.BAG_KIND.BACKPACK then
+    items:RefreshBackpack()
+  elseif self.kind == const.BAG_KIND.BANK and not self.isReagentBank then
+    items:RefreshBank()
+  else
+    items:RefreshReagentBank()
   end
 end
 
----@param ctx Context
-function bagFrame.bagProto:ResetSearch(ctx)
+-- Search will search all items in the bag for the given text.
+-- If a match is found for an item, it will be highlighted, while
+-- items that don't match will dim.
+---@param text? string
+function bagFrame.bagProto:Search(text)
   if not self.currentView then return end
   for _, item in pairs(self.currentView:GetItemsByBagAndSlot()) do
-    item:UpdateSearch(ctx, true)
+    item:UpdateSearch(text)
   end
 end
 
 -- Draw will draw the correct bag view based on the bag view configuration.
----@param ctx Context
----@param slotInfo SlotInfo
----@param callback fun()
-function bagFrame.bagProto:Draw(ctx, slotInfo, callback)
+---@param slotInfo ExtraSlotInfo
+function bagFrame.bagProto:Draw(slotInfo)
   local view = self.views[database:GetBagView(self.kind)]
 
   if view == nil then
@@ -307,30 +208,25 @@ function bagFrame.bagProto:Draw(ctx, slotInfo, callback)
     return
   end
 
-  if self.currentView and self.currentView:GetBagView() ~=  view:GetBagView() then
-    self.currentView:Wipe(ctx)
+  if self.currentView and self.currentView:GetKind() ~=  view:GetKind() then
+    self.currentView:Wipe()
     self.currentView:GetContent():Hide()
   end
 
-  debug:StartProfile('Bag Render %d', self.kind)
-  view:Render(ctx, self, slotInfo, function()
-    debug:EndProfile('Bag Render %d', self.kind)
-    view:GetContent():Show()
-    self.currentView = view
-    self.frame:SetScale(database:GetBagSizeInfo(self.kind, database:GetBagView(self.kind)).scale / 100)
-    local text = searchBox:GetText()
-    if text ~= "" and text ~= nil then
-      self:Search(ctx, search:Search(text))
-    end
-    self:OnResize()
-    if database:GetBagView(self.kind) == const.BAG_VIEW.SECTION_ALL_BAGS and not self.slots:IsShown() then
-      self.slots:Draw(ctx)
-      self.slots:Show()
-    end
-    events:SendMessage(ctx, 'bag/RedrawIcons', self)
-    events:SendMessage(ctx, 'bag/Rendered', self, slotInfo)
-    callback()
-  end)
+  debug:StartProfile('Bag Render')
+  view:Render(self, slotInfo)
+  debug:EndProfile('Bag Render')
+  view:GetContent():Show()
+  self.currentView = view
+  self.frame:SetScale(database:GetBagSizeInfo(self.kind, database:GetBagView(self.kind)).scale / 100)
+  local text = search:GetText()
+  self:Search(text)
+  self:OnResize()
+  if database:GetBagView(self.kind) == const.BAG_VIEW.SECTION_ALL_BAGS and not self.slots:IsShown() then
+    self.slots:Draw()
+    self.slots:Show()
+  end
+  events:SendMessage('bag/Rendered', self)
 end
 
 function bagFrame.bagProto:KeepBagInBounds()
@@ -346,152 +242,71 @@ function bagFrame.bagProto:OnResize()
   if database:GetBagView(self.kind) == const.BAG_VIEW.LIST and self.currentView ~= nil then
     self.currentView:UpdateListSize(self)
   end
-  if self.anchor:IsActive() then
-    self.frame:ClearAllPoints()
-    self.frame:SetPoint(self.anchor.anchorPoint, self.anchor.frame, self.anchor.anchorPoint)
-    --- HACKFIX(lobato): This fixes a bug in the WoW rendering engine.
-    -- The frame needs to be polled in some way for it to render correctly in the pipeline,
-    -- otherwise relative frames will not always render correctly across the bottom edge.
-    self.frame:GetBottom()
-    return
-  end
-  --Window.RestorePosition(self.frame)
-  if self.previousSize and database:GetBagView(self.kind) ~= const.BAG_VIEW.LIST and self.loaded then
-    local left = self.frame:GetLeft()
-    self.frame:ClearAllPoints()
-    self.frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", left, self.previousSize)--, left, self.previousSize * self.frame:GetScale())
-  end
   self:KeepBagInBounds()
-  self.previousSize = self.frame:GetBottom()
 end
 
-function bagFrame.bagProto:SetTitle(text)
-  themes:SetTitle(self.frame, text)
-end
-
----@param ctx Context
-function bagFrame.bagProto:SwitchToBank(ctx)
-  self.bankTab = const.BANK_TAB.BANK
-  BankFrame.selectedTab = 1
-  self:SetTitle(L:G("Bank"))
-  self.currentItemCount = -1
-  BankFrame.activeTabIndex = 1
-  AccountBankPanel.selectedTabID = nil
-  self:Wipe(ctx)
-  ctx:Set('wipe', true)
-  items:RefreshBank(ctx)
-  ItemButtonUtil.TriggerEvent( ItemButtonUtil.Event.ItemContextChanged )
-end
-
----@param ctx Context
----@return boolean
-function bagFrame.bagProto:SwitchToReagentBank(ctx)
-  if not IsReagentBankUnlocked() then
-    StaticPopup_Show("CONFIRM_BUY_REAGENTBANK_TAB")
-    return false
-  end
-  self.bankTab = const.BANK_TAB.REAGENT
-  BankFrame.selectedTab = 2
-  self:SetTitle(L:G("Reagent Bank"))
-  self.currentItemCount = -1
-  BankFrame.activeTabIndex = 1
-  AccountBankPanel.selectedTabID = nil
-  self:Wipe(ctx)
-  ctx:Set('wipe', true)
-  items:RefreshBank(ctx)
-  ItemButtonUtil.TriggerEvent( ItemButtonUtil.Event.ItemContextChanged )
-  return true
-end
-
----@param ctx Context
----@param tabIndex number
----@return boolean
-function bagFrame.bagProto:SwitchToAccountBank(ctx, tabIndex)
-  self.bankTab = tabIndex
-  BankFrame.selectedTab = 1
-  BankFrame.activeTabIndex = 3
-  local tabData = C_Bank.FetchPurchasedBankTabData(Enum.BankType.Account)
-  for _, data in pairs(tabData) do
-    if data.ID == tabIndex then
-      AccountBankPanel.selectedTabID = data.ID
-      break
-    end
-  end
-  self:SetTitle(ACCOUNT_BANK_PANEL_TITLE)
-  self.currentItemCount = -1
-  self:Wipe(ctx)
-  ctx:Set('wipe', true)
-  items:RefreshBank(ctx)
-  ItemButtonUtil.TriggerEvent( ItemButtonUtil.Event.ItemContextChanged )
-  return true
-end
-
----@param ctx Context
-function bagFrame.bagProto:SwitchToBankAndWipe(ctx)
+function bagFrame.bagProto:ToggleReagentBank()
+  -- This should never happen, but just in case!
   if self.kind == const.BAG_KIND.BACKPACK then return end
-  ctx:Set('wipe', true)
-  self.tabs:SetTabByIndex(ctx, 1)
-  self.bankTab = const.BANK_TAB.BANK
-  BankFrame.selectedTab = 1
-  BankFrame.activeTabIndex = 1
-  self:SetTitle(L:G("Bank"))
-  items:ClearBankCache(ctx)
-  self:Wipe(ctx)
+  self.isReagentBank = not self.isReagentBank
+  if self.isReagentBank then
+    BankFrame.selectedTab = 2
+    if self.searchBox.frame:IsShown() then
+      self.frame:SetTitle("")
+      self.searchBox.helpText:SetText(L:G("Search Reagent Bank"))
+    else
+      self.frame:SetTitle(L:G("Reagent Bank"))
+    end
+    self.currentItemCount = -1
+    --self:ClearRecentItems()
+    self:Wipe()
+    items:RefreshReagentBank()
+  else
+    BankFrame.selectedTab = 1
+    if self.searchBox.frame:IsShown() then
+      self.frame:SetTitle("")
+      self.searchBox.helpText:SetText(L:G("Search Bank"))
+    else
+      self.frame:SetTitle(L:G("Bank"))
+    end
+    self.currentItemCount = -1
+    --self:ClearRecentItems()
+    self:Wipe()
+    items:RefreshBank()
+  end
 end
 
----@param ctx Context
-function bagFrame.bagProto:OnCooldown(ctx)
+function bagFrame.bagProto:SwitchToBank()
+  if self.kind == const.BAG_KIND.BACKPACK then return end
+  self.isReagentBank = false
+  BankFrame.selectedTab = 1
+  if self.searchBox.frame:IsShown() then
+    self.frame:SetTitle("")
+    self.searchBox.helpText:SetText(L:G("Search Bank"))
+  else
+    self.frame:SetTitle(L:G("Bank"))
+  end
+  self:Wipe()
+end
+
+function bagFrame.bagProto:OnCooldown()
   if not self.currentView then return end
   for _, item in pairs(self.currentView:GetItemsByBagAndSlot()) do
-    item:UpdateCooldown(ctx)
-  end
-end
-
----@param ctx Context
----@param bagid number
----@param slotid number
-function bagFrame.bagProto:OnLock(ctx, bagid, slotid)
-  if not self.currentView then return end
-  if slotid == nil then return end
-  local slotkey = items:GetSlotKeyFromBagAndSlot(bagid, slotid)
-  local button = self.currentView.itemsByBagAndSlot[slotkey]
-  if button then
-    button:Lock(ctx)
-  end
-end
-
----@param ctx Context
----@param bagid number
----@param slotid number
-function bagFrame.bagProto:OnUnlock(ctx, bagid, slotid)
-  if not self.currentView then return end
-  if slotid == nil then return end
-  local slotkey = items:GetSlotKeyFromBagAndSlot(bagid, slotid)
-  local button = self.currentView.itemsByBagAndSlot[slotkey]
-  if button then
-    button:Unlock(ctx)
+    item:UpdateCooldown()
   end
 end
 
 function bagFrame.bagProto:UpdateContextMenu()
-  self.menuList = contextMenu:CreateContextMenu(self)
+  self.menuList = context:CreateContextMenu(self)
 end
 
----@param ctx Context
-function bagFrame.bagProto:CreateCategoryForItemInCursor(ctx)
-  local kind, itemID, itemLink = GetCursorInfo()
-  if not itemLink or kind ~= "item" then return end
+function bagFrame.bagProto:CreateCategoryForItemInCursor()
+  local _, itemID, itemLink = GetCursorInfo()
   ---@cast itemID number
   question:AskForInput("Create Category", format(L:G("What would you like to name the new category for %s?"), itemLink),
   function(input)
-    if input == nil then return end
-    if input == "" then return end
-    categories:CreateCategory(ctx, {
-      name = input,
-      itemList = {[itemID] = true},
-      save = true,
-    })
-    events:SendMessage(ctx, 'bags/FullRefreshAll')
+    categories:AddItemToPersistentCategory(itemID, input)
+    events:SendMessage('bags/FullRefreshAll')
   end)
   GameTooltip:Hide()
   ClearCursor()
@@ -502,37 +317,28 @@ end
 -------
 
 --- Create creates a new bag view.
----@param ctx Context
 ---@param kind BagKind
 ---@return Bag
-function bagFrame:Create(ctx, kind)
+function bagFrame:Create(kind)
   ---@class Bag
   local b = {}
   setmetatable(b, { __index = bagFrame.bagProto })
   b.currentItemCount = 0
   b.drawOnClose = false
   b.drawAfterCombat = false
-  b.bankTab = const.BANK_TAB.BANK
+  b.isReagentBank = false
   b.sections = {}
   b.toRelease = {}
   b.toReleaseSections = {}
   b.kind = kind
-  b.windowGrouping = windowGroup:Create()
+  local sizeInfo = database:GetBagSizeInfo(b.kind, database:GetBagView(b.kind))
   local name = kind == const.BAG_KIND.BACKPACK and "Backpack" or "Bank"
   -- The main display frame for the bag.
   ---@class Frame: BetterBagsBagPortraitTemplate
-  local f = CreateFrame("Frame", "BetterBagsBag"..name, nil)
-
-  -- Register this window with the theme system.
-  themes:RegisterPortraitWindow(f, name)
+  local f = CreateFrame("Frame", "BetterBagsBag"..name, nil, "BetterBagsBagPortraitTemplate")
 
   -- Setup the main frame defaults.
   b.frame = f
-  b.sideAnchor = CreateFrame("Frame", f:GetName().."LeftAnchor", b.frame)
-  b.sideAnchor:SetWidth(1)
-  b.sideAnchor:SetPoint("TOPRIGHT", b.frame, "TOPLEFT")
-  b.sideAnchor:SetPoint("BOTTOMRIGHT", b.frame, "BOTTOMLEFT")
-  f.Owner = b
   b.frame:SetParent(UIParent)
   b.frame:SetToplevel(true)
   if b.kind == const.BAG_KIND.BACKPACK then
@@ -543,16 +349,20 @@ function bagFrame:Create(ctx, kind)
   end
   b.frame:Hide()
   b.frame:SetSize(200, 200)
-
-  --b.frame.Bg:SetAlpha(sizeInfo.opacity / 100)
-  --b.frame.CloseButton:SetScript("OnClick", function()
-  --  b:Hide()
-  --  if b.kind == const.BAG_KIND.BANK then CloseBankFrame() end
-  --end)
+  b.frame.Bg:SetAlpha(sizeInfo.opacity / 100)
+  b.frame:SetTitle(L:G(kind == const.BAG_KIND.BACKPACK and "Backpack" or "Bank"))
+  b.frame.CloseButton:SetScript("OnClick", function()
+    b:Hide()
+    if b.kind == const.BAG_KIND.BANK then CloseBankFrame() end
+  end)
+  b.frame:SetPortraitToAsset([[Interface\Icons\INV_Misc_Bag_07]])
+  b.frame:SetPortraitTextureSizeAndOffset(38, -5, 0)
 
   b.views = {
-    [const.BAG_VIEW.SECTION_GRID] = views:NewGrid(f, b.kind),
-    [const.BAG_VIEW.SECTION_ALL_BAGS] = views:NewBagView(f, b.kind),
+    [const.BAG_VIEW.ONE_BAG] = views:NewOneBag(f),
+    [const.BAG_VIEW.SECTION_GRID] = views:NewGrid(f),
+    [const.BAG_VIEW.LIST] = views:NewList(f),
+    [const.BAG_VIEW.SECTION_ALL_BAGS] = views:NewBagView(f),
   }
 
   -- Register the bag frame so that window positions are saved.
@@ -574,94 +384,115 @@ function bagFrame:Create(ctx, kind)
     b.moneyFrame = moneyFrame
   end
 
-    -- ...except for warbank!
-  if kind == const.BAG_KIND.BANK then
-    local moneyFrame = money:Create(true)
-    moneyFrame.frame:SetPoint("BOTTOMRIGHT", bottomBar, "BOTTOMRIGHT", -4, 0)
-    moneyFrame.frame:SetParent(b.frame)
-    b.moneyFrame = moneyFrame
-  end
   -- Setup the context menu.
-  b.menuList = contextMenu:CreateContextMenu(b)
+  b.menuList = context:CreateContextMenu(b)
 
-  local slots = bagSlots:CreatePanel(ctx, kind)
+  -- Create the invisible menu button.
+  local bagButton = CreateFrame("Button")
+  bagButton:EnableMouse(true)
+  bagButton:SetParent(b.frame.PortraitContainer)
+  --bagButton:SetHighlightTexture([[Interface\AddOns\BetterBags\Textures\glow.png]])
+  bagButton:SetWidth(40)
+  bagButton:SetHeight(40)
+  bagButton:SetPoint("TOPLEFT", b.frame.PortraitContainer, "TOPLEFT", -6, 2)
+  local highlightTex = bagButton:CreateTexture("BetterBagsBagButtonTextureHighlight", "BACKGROUND")
+  highlightTex:SetTexture([[Interface\AddOns\BetterBags\Textures\glow.png]])
+  highlightTex:SetAllPoints()
+  highlightTex:SetAlpha(0)
+  local anig = highlightTex:CreateAnimationGroup("BetterBagsBagButtonTextureHighlightAnim")
+  local ani = anig:CreateAnimation("Alpha")
+  ani:SetFromAlpha(0)
+  ani:SetToAlpha(1)
+  ani:SetDuration(0.2)
+  ani:SetSmoothing("IN")
+  if database:GetFirstTimeMenu() then
+    ani:SetDuration(0.4)
+    anig:SetLooping("BOUNCE")
+    anig:Play()
+  end
+  bagButton:SetScript("OnEnter", function()
+    if not database:GetFirstTimeMenu() then
+      anig:Stop()
+      highlightTex:SetAlpha(1)
+      anig:Play()
+    end
+    GameTooltip:SetOwner(bagButton, "ANCHOR_LEFT")
+    if kind == const.BAG_KIND.BACKPACK then
+      GameTooltip:AddDoubleLine(L:G("Left Click"), L:G("Open Menu"), 1, 0.81, 0, 1, 1, 1)
+      GameTooltip:AddDoubleLine(L:G("Shift Left Click"), L:G("Search Bags"), 1, 0.81, 0, 1, 1, 1)
+      GameTooltip:AddDoubleLine(L:G("Right Click"), L:G("Sort Bags"), 1, 0.81, 0, 1, 1, 1)
+    else
+      GameTooltip:AddDoubleLine(L:G("Left Click"), L:G("Open Menu"), 1, 0.81, 0, 1, 1, 1)
+      GameTooltip:AddDoubleLine(L:G("Shift Left Click"), L:G("Search Bags"), 1, 0.81, 0, 1, 1, 1)
+      GameTooltip:AddDoubleLine(L:G("Right Click"), L:G("Swap Between Bank/Reagent Bank"), 1, 0.81, 0, 1, 1, 1)
+    end
+
+    if CursorHasItem() then
+      local cursorType, _, itemLink = GetCursorInfo()
+      if cursorType == "item" then
+        GameTooltip:AddLine(" ", 1, 1, 1)
+        GameTooltip:AddLine(format(L:G("Drop %s here to create a new category for it."), itemLink), 1, 1, 1)
+      end
+    end
+    GameTooltip:Show()
+  end)
+  bagButton:SetScript("OnLeave", function()
+    GameTooltip:Hide()
+    if not database:GetFirstTimeMenu() then
+      anig:Stop()
+      highlightTex:SetAlpha(0)
+      anig:Restart(true)
+    end
+  end)
+  bagButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  bagButton:SetScript("OnReceiveDrag", b.CreateCategoryForItemInCursor)
+  bagButton:SetScript("OnClick", function(_, e)
+    if e == "LeftButton" then
+      if database:GetFirstTimeMenu() then
+        database:SetFirstTimeMenu(false)
+        highlightTex:SetAlpha(1)
+        anig:SetLooping("NONE")
+        anig:Restart()
+      end
+      if IsShiftKeyDown() then
+        BetterBags_ToggleSearch()
+      elseif CursorHasItem() and GetCursorInfo() == "item" then
+        b:CreateCategoryForItemInCursor()
+      else
+        context:Show(b.menuList)
+      end
+
+    elseif e == "RightButton" and kind == const.BAG_KIND.BANK then
+      b:ToggleReagentBank()
+    elseif e == "RightButton" and kind == const.BAG_KIND.BACKPACK then
+      b:Sort()
+    end
+  end)
+
+  local slots = bagSlots:CreatePanel(kind)
   slots.frame:SetPoint("BOTTOMLEFT", b.frame, "TOPLEFT", 0, 8)
   slots.frame:SetParent(b.frame)
   slots.frame:Hide()
   b.slots = slots
 
   if kind == const.BAG_KIND.BACKPACK then
-    b.searchFrame = searchBox:Create(ctx, b.frame)
+    search:Create(b.frame)
   end
+
+  local searchBox = search:CreateBox(kind, b.frame)
+  searchBox.frame:SetPoint("TOP", b.frame, "TOP", 0, -2)
+  searchBox.frame:SetSize(150, 20)
+  if database:GetInBagSearch() then
+    searchBox.frame:Show()
+    b.frame:SetTitle("")
+  end
+  b.searchBox = searchBox
 
   if kind == const.BAG_KIND.BACKPACK then
-    local currencyFrame = currency:Create(b.sideAnchor, b.frame)
+    local currencyFrame = currency:Create(b.frame)
     currencyFrame:Hide()
     b.currencyFrame = currencyFrame
-
-    b.themeConfigFrame = themeConfig:Create(b.sideAnchor)
-    b.windowGrouping:AddWindow('themeConfig', b.themeConfigFrame)
-    b.windowGrouping:AddWindow('currencyConfig', b.currencyFrame)
   end
-
-  if kind == const.BAG_KIND.BANK then
-    -- Move the settings menu to the bag frame.
-    AccountBankPanel.TabSettingsMenu:SetParent(b.frame)
-    AccountBankPanel.TabSettingsMenu:ClearAllPoints()
-    AccountBankPanel.TabSettingsMenu:SetPoint("BOTTOMLEFT", b.frame, "BOTTOMRIGHT", 10, 0)
-
-    -- Adjust the settings function so the tab settings menu is populated correctly.
-    AccountBankPanel.TabSettingsMenu.GetBankFrame = function()
-      return {
-        GetTabData = function(_, id)
-          local bankTabData = b:GetWarbankTabDataByID(id)
-          return {
-            ID = id,
-            icon = bankTabData.icon,
-            name = b.tabs:GetTabNameByID(id),
-            depositFlags = bankTabData.depositFlags,
-            bankType = Enum.BankType.Account,
-          }
-        end
-      }
-    end
-
-    b.tabs = tabs:Create(b.frame)
-    b.tabs:AddTab(ctx, "Bank")
-    b.tabs:AddTab(ctx, "Reagent Bank")
-
-    b.tabs:SetTabByIndex(ctx, 1)
-
-    b.tabs:SetClickHandler(function(ectx, tabIndex, button)
-      if tabIndex == 1 then
-        AccountBankPanel.TabSettingsMenu:Hide()
-        b:SwitchToBank(ectx)
-      elseif tabIndex == 2 then
-        AccountBankPanel.TabSettingsMenu:Hide()
-        return b:SwitchToReagentBank(ectx)
-      else
-        if button == "RightButton" or AccountBankPanel.TabSettingsMenu:IsShown() then
-          AccountBankPanel.TabSettingsMenu:SetSelectedTab(tabIndex)
-          AccountBankPanel.TabSettingsMenu:Show()
-          AccountBankPanel.TabSettingsMenu:Update()
-        end
-        b:SwitchToAccountBank(ectx, tabIndex)
-      end
-      return true
-    end)
-    -- BANK_TAB_SETTINGS_UPDATED
-    -- BANK_TABS_CHANGED
-    events:RegisterEvent('PLAYER_ACCOUNT_BANK_TAB_SLOTS_CHANGED', function(ectx)
-      b:GenerateWarbankTabs(ectx)
-    end)
-    events:RegisterEvent('BANK_TAB_SETTINGS_UPDATED', function(ectx)
-      b:GenerateWarbankTabs(ectx)
-    end)
-  end
-
-  b.sectionConfigFrame = sectionConfig:Create(kind, b.sideAnchor)
-  b.windowGrouping:AddWindow('sectionConfig', b.sectionConfigFrame)
-
   -- Enable dragging of the bag frame.
   b.frame:SetMovable(true)
   b.frame:EnableMouse(true)
@@ -674,39 +505,33 @@ function bagFrame:Create(ctx, kind)
   b.frame:SetScript("OnDragStop", function(drag)
     drag:StopMovingOrSizing()
     Window.SavePosition(b.frame)
-    b.previousSize = b.frame:GetBottom()
-    b:OnResize()
   end)
-
-  b.anchor = anchor:New(kind, b.frame, name)
-  -- Load the bag position from settings.
-  Window.RestorePosition(b.frame)
-  b.previousSize = b.frame:GetBottom()
 
   b.frame:SetScript("OnSizeChanged", function()
     b:OnResize()
   end)
+  -- Load the bag position from settings.
+  Window.RestorePosition(b.frame)
 
   b.resizeHandle = resize:MakeResizable(b.frame, function()
     local fw, fh = b.frame:GetSize()
     database:SetBagViewFrameSize(b.kind, database:GetBagView(b.kind), fw, fh)
   end)
-  b.resizeHandle:Hide()
   b:KeepBagInBounds()
 
   if b.kind == const.BAG_KIND.BACKPACK then
-    events:BucketEvent('BAG_UPDATE_COOLDOWN',function(ectx) b:OnCooldown(ectx) end)
+    events:BucketEvent('BAG_UPDATE_COOLDOWN',function(_) b:OnCooldown() end)
   end
 
-  events:RegisterMessage('search/SetInFrame', function (ectx, shown)
-    themes:SetSearchState(ectx, b.frame, shown)
-  end)
-
-  events:RegisterMessage('bag/RedrawIcons', function(ectx)
-    if not b.currentView then return end
-    for _, item in pairs(b.currentView:GetItemsByBagAndSlot()) do
-      item:UpdateUpgrade(ectx)
+  events:RegisterMessage('search/SetInFrame', function (_, shown)
+    if shown then
+      b.searchBox.frame:Show()
+      b.frame:SetTitle("")
+    else
+      b.searchBox.frame:Hide()
+      b.frame:SetTitle(L:G(kind == const.BAG_KIND.BACKPACK and "Backpack" or "Bank"))
     end
   end)
+
   return b
 end

@@ -30,7 +30,6 @@ local private = {
 		baseRecipeDifficulties = {},
 		baseRecipeQualities = {},
 		maxRecipeQualities = {},
-		rootCategoryId = {},
 	},
 	accountLookup = {},
 	accountStatus = {},
@@ -203,7 +202,6 @@ function private.RPCGetCraftInfo(profession, craftStrings)
 		private.craftInfoTemp.names[i] = craftInfo.name
 		private.craftInfoTemp.numResults[i] = craftInfo.numResult
 		private.craftInfoTemp.hasCDs[i] = craftInfo.hasCD
-		private.craftInfoTemp.rootCategoryId[i] = craftInfo.rootCategoryId
 		if ClientInfo.HasFeature(ClientInfo.FEATURES.CRAFTING_QUALITY) and type(craftInfo.players[player]) == "table" then
 			private.craftInfoTemp.baseRecipeDifficulties[i] = craftInfo.players[player].baseRecipeDifficulty
 			private.craftInfoTemp.baseRecipeQualities[i] = craftInfo.players[player].baseRecipeQuality
@@ -279,7 +277,7 @@ function private.GetCraftHash(craftString, player, itemString)
 	hash = Hash.Calculate(itemString, hash)
 	local baseRecipeDifficulty, baseRecipeQuality, maxRecipeQuality = TSM.Crafting.GetQualityInfo(craftString, player)
 	if baseRecipeQuality then
-		hash = Hash.Calculate(floor(baseRecipeDifficulty * 1000000 + 0.5), hash)
+		hash = Hash.Calculate(floor(baseRecipeDifficulty + 0.5), hash)
 		hash = Hash.Calculate(floor(baseRecipeQuality * 1000 + 0.5), hash)
 		hash = Hash.Calculate(floor(maxRecipeQuality + 0.5), hash)
 	end
