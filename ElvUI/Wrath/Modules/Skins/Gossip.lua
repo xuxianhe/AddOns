@@ -96,7 +96,7 @@ function S:GossipFrame()
 	GreetingPanel:StripTextures()
 	GreetingPanel:CreateBackdrop('Transparent')
 	GreetingPanel.backdrop:Point('TOPLEFT', GreetingPanel.ScrollBox, 0, 0)
-	GreetingPanel.backdrop:Point('BOTTOMRIGHT', GreetingPanel.ScrollBox, 0, 80)
+	GreetingPanel.backdrop:Point('BOTTOMRIGHT', GreetingPanel.ScrollBox, 0, 4)
 
 	local ItemTextFrame = _G.ItemTextFrame
 	ItemTextFrame:StripTextures()
@@ -110,8 +110,8 @@ function S:GossipFrame()
 	ItemTextScrollFrame:DisableDrawLayer('BACKGROUND')
 
 	GossipFrame.backdrop:ClearAllPoints()
-	GossipFrame.backdrop:Point('TOPLEFT', GreetingPanel.ScrollBox, -10, 70)
-	GossipFrame.backdrop:Point('BOTTOMRIGHT', GreetingPanel.ScrollBox, 40, 40)
+	GossipFrame.backdrop:Point('TOPLEFT', GreetingPanel.ScrollBox, -8, 69)
+	GossipFrame.backdrop:Point('BOTTOMRIGHT', GreetingPanel.ScrollBox, 32, -30)
 
 	S:HandleNextPrevButton(_G.ItemTextNextPageButton)
 	S:HandleNextPrevButton(_G.ItemTextPrevPageButton)
@@ -120,6 +120,11 @@ function S:GossipFrame()
 		_G.QuestFont:SetTextColor(1, 1, 1)
 		_G.ItemTextPageText:SetTextColor('P', 1, 1, 1)
 
+		_G.ItemTextMaterialBotLeft:SetAlpha(0)
+		_G.ItemTextMaterialBotRight:SetAlpha(0)
+		_G.ItemTextMaterialTopLeft:SetAlpha(0)
+		_G.ItemTextMaterialTopRight:SetAlpha(0)
+
 		hooksecurefunc(_G.ItemTextPageText, 'SetTextColor', ItemTextPage_SetTextColor)
 		hooksecurefunc(GreetingPanel.ScrollBox, 'Update', GreetingPanel_Update)
 
@@ -127,6 +132,11 @@ function S:GossipFrame()
 			GossipFrame.Background:Hide()
 		end
 	else
+		_G.ItemTextMaterialBotLeft:SetDrawLayer('ARTWORK', 1)
+		_G.ItemTextMaterialBotRight:SetDrawLayer('ARTWORK', 1)
+		_G.ItemTextMaterialTopLeft:SetDrawLayer('ARTWORK', 1)
+		_G.ItemTextMaterialTopRight:SetDrawLayer('ARTWORK', 1)
+
 		local spellTex = createParchment(GreetingPanel)
 		spellTex:SetInside(GreetingPanel.backdrop)
 		GreetingPanel.spellTex = spellTex

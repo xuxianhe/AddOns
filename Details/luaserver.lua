@@ -13,7 +13,7 @@
 
 ---This table contains documentation for functions inside C_ChallengeMode.
 ---@class blizzard_documentation : table
----@field Name string the name of the field, can be 
+---@field Name string the name of the field, can be
 ---@field Type string most of the time the type is "Function"
 ---@field Arguments blizzard_documentation_arguments[]? a table containing the arguments of the function
 ---@field Returns blizzard_documentation_returns[]? a table containing the returns of the function, the the type is table, it may have "InnerType" which is the type of the elements inside the table
@@ -23,6 +23,8 @@ LibStub = {}
 function LibStub:NewLibrary(major, minor)end
 function LibStub:GetLibrary(major, silent)end
 function LibStub:IterateLibraries()end
+
+CLASS_ICON_TCOORDS = {}
 
 --uiobject: is an object that represents a UI element, such as a frame, a texture, or a button. UIObjects are the base class for all UI elements in the WoW API.
 --3D World: is an object which is placed behind|below all UI elements, cannot be parent of any object, in the 3D World object is where the game world is rendered
@@ -259,6 +261,69 @@ function LibStub:IterateLibraries()end
 ---| "IN_OUT"
 ---| "NONE"
 
+---@alias aurafilter : table
+---| "HELPFUL"
+---| "HARMFUL"
+---| "PLAYER"
+---| "RAID"
+---| "CANCELABLE"
+---| "NOT_CANCELABLE"
+---| "INCLUDE_NAME_PLATE_ONLY"
+---| "MAW"
+
+---@class backdrop : table
+---@field bgFile string?
+---@field edgeFile string?
+---@field tile boolean?
+---@field edgeSize number?
+---@field insets table?
+
+---@class spellinfo : table
+---@field name string
+---@field iconID number
+---@field castTime number
+---@field mimRange number
+---@field maxRange number
+---@field spellID number
+---@field originalIconID number
+
+---@class spellchargeinfo
+---@field currentCharges number
+---@field maxCharges number
+---@field cooldownStartTime number
+---@field cooldownDuration number
+---@field chargeModRate number
+
+---@class privateaura_anchor : table
+---@field unitToken unit
+---@field auraIndex number
+---@field parent frame
+---@field showCountdownFrame boolean
+---@field showCountdownNumbers boolean
+---@field iconInfo privateaura_iconinfo?
+---@field durationAnchor privateaura_anchorbinding?
+
+---@class privateaura_iconinfo : table
+---@field iconAnchor privateaura_anchorbinding
+---@field iconWidth number
+---@field iconHeight number
+
+---@class privateaura_anchorbinding : table
+---@field point anchorpoint
+---@field relativeTo uiobject
+---@field relativePoint anchorpoint
+---@field offsetX number
+---@field offsetY number
+
+---@class privateaura_appliedsoundinfo : table
+---@field unitToken unit
+---@field spellID spellid
+---@field soundFileName string? 	
+---@field soundFileID number? 	
+---@field outputChannel audiochannels?
+
+---@class privateaura_soundid : number
+
 ---@class aurainfo : table
 ---@field applications number
 ---@field auraInstanceID number
@@ -294,6 +359,28 @@ function LibStub:IterateLibraries()end
 ---@field tilesHorizontally boolean?
 ---@field tilesVertically boolean?
 
+---@class challengecompletioninfo : table
+---@field mapChallengeModeID number
+---@field level number
+---@field time number
+---@field onTime boolean
+---@field keystoneUpgradeLevels number
+---@field practiceRun boolean
+---@field oldOverallDungeonScore number?
+---@field newOverallDungeonScore number?
+---@field isMapRecord boolean
+---@field isAffixRecord boolean
+---@field isEligibleForScore boolean
+---@field members table
+
+---@class challengemodecompletionmemberinfo : table
+---@field memberGUID guid
+---@field name string
+
+
+---@alias spellid number integer each spell in the game has a unique spell id, this id can be used to identify a spell.
+---@alias unitname string name of a unit
+---@alias unitguid string unique id of a unit (GUID)
 
 ---@alias width number property that represents the horizontal size of a UI element, such as a frame or a texture. Gotten from the first result of GetWidth() or from the first result of GetSize(). It is expected a GetWidth() or GetSize() when the type 'height' is used.
 ---@alias height number property that represents the vertical size of a UI element, such as a frame or a texture. Gotten from the first result of GetHeight() or from the second result of GetSize(). It is expected a GetHeight() or GetSize() when the type 'height' is used.
@@ -308,18 +395,19 @@ function LibStub:IterateLibraries()end
 ---@alias encounterid number encounter ID number received by the event ENCOUNTER_START and ENCOUNTER_END
 ---@alias encounterejid number encounter ID number used by the encounter journal
 ---@alias encountername string encounter name received by the event ENCOUNTER_START and ENCOUNTER_END also used by the encounter journal
+---@alias encounterdifficulty number difficulty of the encounter received by the event ENCOUNTER_START and ENCOUNTER_END
 ---@alias instancename string localized name of an instance (e.g. "The Nighthold")
----@alias spellid number each spell in the game has a unique spell id, this id can be used to identify a spell.
----@alias unitname string name of a unit
----@alias unitguid string unique id of a unit (GUID)
 ---@alias actorname string name of a unit
 ---@alias petname string refers to a pet's name
 ---@alias ownername string refers to the pet's owner name
 ---@alias spellname string name of a spell
+---@alias classid number the ID of a class
 ---@alias spellschool number each spell in the game has a school, such as fire, frost, shadow and many others. This value can be used to identify the school of a spell.
 ---@alias actorid string unique id of a unit (GUID)
 ---@alias serial string unique id of a unit (GUID)
 ---@alias guid string unique id of a unit (GUID)
+---@alias guildname string name of the guild
+---@alias date string date in the format "YYYY-MM-DD"
 ---@alias keylevel number the level of a mythic dungeon key
 ---@alias mapid number each map in the game has a unique map id, this id can be used to identify a map.
 ---@alias challengemapid number each challenge mode map in the game has a unique map id, this id can be used to identify a challenge mode map.
@@ -338,6 +426,7 @@ function LibStub:IterateLibraries()end
 ---@alias unixtime number a number that represents the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970, not counting leap seconds.
 ---@alias timestring string refers to a string showing a time value, such as "1:23" or "1:23:45".
 ---@alias combattime number elapsed time of a combat or time in seconds that a unit has been in combat.
+---@alias servertime number unixtime on the server
 ---@alias auraduration number
 ---@alias gametime number number of seconds that have elapsed since the start of the game session.
 ---@alias milliseconds number a number in milliseconds, usually need to divide by 1000 to get the seconds.
@@ -357,6 +446,9 @@ function LibStub:IterateLibraries()end
 ---@field UnitName fun(unit: string): string
 ---@field GetCursorPosition fun(): number, number return the position of the cursor on the screen, in pixels, relative to the bottom left corner of the screen.
 ---@field C_Timer C_Timer
+
+---table containing backdrop functions
+BackdropTemplateMixin = {}
 
 ---@class timer : table
 ---@field Cancel fun(self: timer)
@@ -396,7 +488,11 @@ function LibStub:IterateLibraries()end
 ---@field GetParent fun(self: uiobject) : any
 ---@field GetPoint fun(self: uiobject, index: number): string, frame, string, number, number
 ---@field GetCenter fun(self: uiobject): number, number
----@field SetPoint fun(self: uiobject, point: anchorpoint, relativeFrame: uiobject, relativePoint: anchorpoint, xOffset: number, yOffset: number)
+---@field GetLeft fun(self: uiobject): number
+---@field GetRight fun(self: uiobject): number
+---@field GetTop fun(self: uiobject): number
+---@field GetBottom fun(self: uiobject): number
+---@field SetPoint fun(self: uiobject, point: anchorpoint, relativeFrame: uiobject?, relativePoint: anchorpoint?, xOffset: number?, yOffset: number?)
 ---@field ClearAllPoints fun(self: uiobject)
 ---@field CreateAnimationGroup fun(self: uiobject, name: string|nil, templateName: string|nil) : animationgroup
 ---@field SetIgnoreParentAlpha fun(self: region, ignore: boolean)
@@ -503,8 +599,10 @@ function LibStub:IterateLibraries()end
 ---@field SetToplevel fun(self: frame, toplevel: boolean)
 ---@field SetPropagateKeyboardInput fun(self: frame, propagate: boolean)
 ---@field SetPropagateGamepadInput fun(self: frame, propagate: boolean)
+---@field SetMouseClickEnabled fun(self: frame, enabled: boolean)
 ---@field StartMoving fun(self: frame)
 ---@field IsMovable fun(self: frame) : boolean
+---@field IsMouseEnabled fun(self: frame) : boolean
 ---@field StartSizing fun(self: frame, sizingpoint: sizingpoint?)
 ---@field StopMovingOrSizing fun(self: frame)
 ---@field GetAttribute fun(self: frame, name: string) : any
@@ -517,17 +615,66 @@ function LibStub:IterateLibraries()end
 ---@field GetChildren fun(self: frame) : frame[]
 ---@field GetRegions fun(self: frame) : region[]
 ---@field CreateTexture fun(self: frame, name: string?, layer: drawlayer, inherits: string?, subLayer: number?) : texture
----@field CreateMaskTexture fun(self: frame, name: string?, layer: drawlayer, inherits: string?, subLayer: number?) : texture
+---@field CreateMaskTexture fun(self: frame, name: string?, layer: drawlayer?, inherits: string?, subLayer: number?) : texture
 ---@field CreateFontString fun(self: frame, name: string?, layer: drawlayer, inherits: string?, subLayer: number?) : fontstring
 ---@field EnableMouse fun(self: frame, enable: boolean) enable mouse interaction
 ---@field SetResizable fun(self: frame, enable: boolean) enable resizing of the frame
 ---@field EnableMouseWheel fun(self: frame, enable: boolean) enable mouse wheel scrolling
 ---@field RegisterForDrag fun(self: frame, button: string) register the frame for drag events, allowing it to be dragged by the mouse
+---@field Raise fun() raise the frame to the top of its strata
 ---@field SetResizeBounds fun(self: frame, minWidth: number, minHeight: number, maxWidth: number, maxHeight: number) set the minimum and maximum size of the frame
 ---@field RegisterEvent fun(self: frame, event: string) register for an event, trigers "OnEvent" script when the event is fired
 ---@field RegisterUnitEvent fun(self: frame, event: string, unitId: unit) register for an event, trigers "OnEvent" only if the event occurred for the registered unit
 ---@field UnregisterEvent fun(self: frame, event: string) unregister for an event
 ---@field HookScript fun(self: frame, event: string, handler: function) run a function after the frame's script has been executed, carrying the same arguments
+---@field CanChangeProtectedState fun(self: frame) : boolean
+---@field CollapsesLayout fun(self: frame) : boolean
+---@field EnableMouseMotion fun(self: frame, enable: boolean)
+---@field GetBottom fun(self: frame) : number
+---@field GetCenter fun(self: frame) : number, number
+---@field GetHeight fun(self: frame, ignoreRect: boolean?) : number
+---@field GetLeft fun(self: frame) : number
+---@field GetRect fun(self: frame) : number, number, number, number
+---@field GetRight fun(self: frame) : number
+---@field GetScaledRect fun(self: frame) : number, number, number, number
+---@field GetSize fun(self: frame, ignoreRect: boolean?) : number, number
+---@field GetSourceLocation fun(self: frame) : string
+---@field GetTop fun(self: frame) : number
+---@field GetWidth fun(self: frame, ignoreRect: boolean?) : number
+---@field Hide fun(self: frame)
+---@field IsCollapsed fun(self: frame) : boolean
+---@field SetCollapsesLayout fun(self: frame, collapsesLayout: boolean)
+---@field IsAnchoringRestricted fun(self: frame) : boolean
+---@field IsDragging fun(self: frame) : boolean
+---@field IsMouseClickEnabled fun(self: frame) : boolean
+---@field IsMouseMotionEnabled fun(self: frame) : boolean
+---@field IsMouseMotionFocus fun(self: frame) : boolean
+---@field IsMouseOver fun(self: frame, offsetTop: number?, offsetBottom: number?, offsetLeft: number?, offsetRight: number?) : boolean
+---@field IsMouseWheelEnabled fun(self: frame) : boolean
+---@field IsProtected fun(self: frame) : boolean, boolean
+---@field IsRectValid fun(self: frame) : boolean
+---@field IsShown fun(self: frame) : boolean
+---@field IsVisible fun(self: frame) : boolean
+---@field SetMouseMotionEnabled fun(self: frame, enabled: boolean)
+---@field SetParent fun(self: frame, parent: frame?)
+---@field SetPassThroughButtons fun(self: frame, button1: string?, ...)
+---@field SetPropagateMouseClicks fun(self: frame, propagate: boolean)
+---@field SetPropagateMouseMotion fun(self: frame, propagate: boolean)
+---@field SetShown fun(self: frame, show: boolean)
+---@field Show fun(self: frame)
+---@field AdjustPointsOffset fun(self: frame, x: number, y: number)
+---@field ClearAllPoints fun(self: frame)
+---@field ClearPoint fun(self: frame, point: string)
+---@field ClearPointsOffset fun(self: frame)
+---@field GetPoint fun(self: frame, anchorIndex: number?, resolveCollapsed: boolean?) : string, frame, string, number, number
+---@field GetPointByName fun(self: frame, point: string, resolveCollapsed: boolean?) : string, frame, string, number, number
+---@field SetAllPoints fun(self: frame, relativeTo: uiobject?, doResize: boolean?)
+---@field SetHeight fun(self: frame, height: number)
+---@field SetSize fun(self: frame, x: number, y: number)
+---@field SetWidth fun(self: frame, width: number)
+---@field CreateAnimationGroup fun(self: frame, name: string?, templateName: string?) : animationgroup
+---@field GetAnimationGroups fun(self: frame) : animationgroup[]
+---@field StopAnimating fun(self: frame)
 
 ---@class cooldown : frame
 ---@field Clear fun(self: cooldown)
@@ -666,7 +813,7 @@ function LibStub:IterateLibraries()end
 ---@field AddMaskTexture fun(self: texture, maskTexture: texture)
 ---@field SetDrawLayer fun(self: texture, layer: drawlayer, subLayer: number?)
 ---@field GetTexture fun(self: texture) : any
----@field SetTexture fun(self: texture, path: textureid|texturepath, horizontalWrap: texturewrap?, verticalWrap: texturewrap?, filter: texturefilter?)
+---@field SetTexture fun(self: texture, path: textureid|texturepath?, horizontalWrap: texturewrap?, verticalWrap: texturewrap?, filter: texturefilter?)
 ---@field SetAtlas fun(self: texture, atlas: string, useAtlasSize: boolean?, filterMode: texturefilter?, resetTexCoords: boolean?)
 ---@field SetColorTexture fun(self: texture, r: red|number, g: green|number, b: blue|number, a: alpha|number?)
 ---@field SetDesaturated fun(self: texture, desaturate: boolean)
@@ -723,6 +870,7 @@ function LibStub:IterateLibraries()end
 ---@field SetFont fun(self: editbox, font: string, size: number, flags: string)
 ---@field SetFontObject fun(self: editbox, fontString: fontstring)
 ---@field GetFont fun(self: editbox) : string, number, string
+---@field ClearFocus fun(self:editbox) clear the editing focus
 ---@field SetTextColor fun(self: editbox, r: red|number, g: green|number, b: blue|number, a: alpha|number?)
 ---@field SetJustifyH fun(self:editbox, alignment:string)
 ---@field SetTextInsets fun(self:editbox, left:number, right:number, top:number, bottom:number)
@@ -743,12 +891,310 @@ function LibStub:IterateLibraries()end
 ---@field SetThumbTexture fun(self: slider, texture: textureid|texturepath)
 ---@field SetStepsPerPage fun(self: slider, steps: number)
 
+---get all frames under the cursor that has mouse focus
+---@return uiobject[]
+function GetMouseFoci()
+    return {}
+end
+
+---@return number
+function debugprofilestop() return 0 end
+
 INVSLOT_FIRST_EQUIPPED = true
 INVSLOT_LAST_EQUIPPED = true
 LE_PARTY_CATEGORY_INSTANCE = true
 
 --functions
 C_ChatInfo = true
+
+---@class classinfo : table
+---@field classID number
+---@field className string
+---@field classFile string
+
+C_CreatureInfo = {}
+---@param classId number
+---@return classinfo
+function C_CreatureInfo.GetClassInfo(classId) return {} end
+
+C_Item = {}
+function C_Item.PickupItem() end
+function C_Item.IsBoundToAccountUntilEquip() end
+function C_Item.LockItem() end
+function C_Item.DoesItemMatchTargetEnchantingSpell() end
+function C_Item.IsItemCorruptionRelated() end
+
+---return the item's icon texture
+---@param itemInfo number|string
+---@return number
+function C_Item.GetItemIconByID(itemInfo) return 0 end
+
+---return the item's icon texture
+---@param itemLocation table
+---@return number
+function C_Item.GetItemIcon(itemLocation) return 0 end
+
+function C_Item.ConfirmOnUse() end
+function C_Item.GetItemIDForItemInfo() end
+function C_Item.IsCorruptedItem() end
+function C_Item.GetBaseItemTransmogInfo() end
+function C_Item.GetItemMaxStackSize() end
+function C_Item.ConfirmNoRefundOnUse() end
+function C_Item.GetFirstTriggeredSpellForItem() end
+function C_Item.GetItemInventorySlotInfo() end
+function C_Item.GetItemNameByID() end
+function C_Item.IsItemCorrupted() end
+function C_Item.ActionBindsItem() end
+function C_Item.GetCurrentItemTransmogInfo() end
+function C_Item.RequestLoadItemDataByID() end
+function C_Item.GetItemSetInfo() end
+function C_Item.GetItemCreationContext() end
+function C_Item.IsEquippedItem() end
+function C_Item.IsItemDataCachedByID() end
+function C_Item.ItemHasRange() end
+function C_Item.ConfirmBindOnUse() end
+function C_Item.GetItemSpecInfo() end
+function C_Item.EndBoundTradeable() end
+function C_Item.EndRefund() end
+function C_Item.UseItemByName() end
+function C_Item.IsDressableItemByID() end
+function C_Item.GetItemGUID() end
+function C_Item.GetItemInventoryTypeByID() end
+function C_Item.UnlockItem() end
+function C_Item.RequestLoadItemData() end
+function C_Item.IsItemInRange() end
+function C_Item.IsItemConvertibleAndValidForPlayer() end
+function C_Item.DoesItemExist() end
+function C_Item.EquipItemByName() end
+function C_Item.ReplaceTradeEnchant() end
+function C_Item.UnlockItemByGUID() end
+function C_Item.DoesItemExistByID() end
+function C_Item.LockItemByGUID() end
+function C_Item.GetItemQualityColor() end
+function C_Item.GetItemIDByGUID() end
+function C_Item.IsLocked() end
+function C_Item.GetItemLocation() end
+function C_Item.IsItemSpecificToPlayerClass() end
+function C_Item.GetItemNumAddedSockets() end
+function C_Item.IsItemKeystoneByID() end
+function C_Item.IsConsumableItem() end
+function C_Item.GetItemStats() end
+function C_Item.IsCurioItem() end
+function C_Item.GetItemStatDelta() end
+function C_Item.IsItemDataCached() end
+function C_Item.IsItemConduit() end
+function C_Item.GetItemNumSockets() end
+function C_Item.GetAppliedItemTransmogInfo() end
+function C_Item.IsHelpfulItem() end
+function C_Item.GetItemClassInfo() end
+function C_Item.GetItemUniquenessByID() end
+function C_Item.GetItemGemID() end
+function C_Item.IsHarmfulItem() end
+function C_Item.DropItemOnUnit() end
+
+---@param itemInfo number|string
+---@return number actualItemLevel
+---@return number previewLevel
+---@return number sparseItemLevel
+function C_Item.GetDetailedItemLevelInfo(itemInfo) return 0, 0, 0 end
+
+function C_Item.IsEquippedItemType() end
+function C_Item.GetItemFamily() end
+function C_Item.GetLimitedCurrencyItemInfo() end
+function C_Item.GetItemInventorySlotKey() end
+function C_Item.IsEquippableItem() end
+function C_Item.GetItemConversionOutputIcon() end
+function C_Item.ReplaceEnchant() end
+function C_Item.GetItemLearnTransmogSet() end
+function C_Item.IsCurrentItem() end
+function C_Item.IsItemGUIDInInventory() end
+function C_Item.GetItemGem() end
+function C_Item.IsBound() end
+function C_Item.IsCosmeticItem() end
+function C_Item.IsArtifactPowerItem() end
+function C_Item.IsAnimaItemByID() end
+function C_Item.ReplaceTradeskillEnchant() end
+function C_Item.GetItemUniqueness() end
+function C_Item.GetSetBonusesForSpecializationByItemID() end
+function C_Item.GetItemCooldown() end
+function C_Item.GetItemSpell() end
+function C_Item.GetItemID() end
+function C_Item.DoesItemMatchBonusTreeReplacement() end
+function C_Item.IsUsableItem() end
+function C_Item.GetCurrentItemLevel() end
+function C_Item.DoesItemContainSpec() end
+function C_Item.CanItemTransmogAppearance() end
+function C_Item.GetItemQualityByID() end
+function C_Item.GetItemLinkByGUID() end
+function C_Item.BindEnchant() end
+function C_Item.GetItemQuality() end
+function C_Item.IsItemCorruptionResistant() end
+function C_Item.CanViewItemPowers() end
+function C_Item.GetItemChildInfo() end
+function C_Item.GetItemLink() end
+function C_Item.CanScrapItem() end
+
+---@return string itemName
+---@return string itemLink
+---@return number itemQuality
+---@return number itemLevel
+---@return number itemMinLevel
+---@return string itemType
+---@return string itemSubType
+---@return number itemStackCount
+---@return string itemEquipLoc
+---@return number itemTexture
+---@return number sellPrice
+---@return number classID
+---@return number subclassID
+---@return number bindType
+---@return number expansionID
+---@return number setID
+---@return boolean isCraftingReagent
+function C_Item.GetItemInfo() return "", "", 0, 0, 0, "", "", 0, "", 0, 0, 0, 0, 0, 0, 0, true end
+
+function C_Item.GetItemName() end
+function C_Item.GetItemSubClassInfo() end
+function C_Item.GetItemInventoryType() end
+function C_Item.GetItemMaxStackSizeByID() end
+function C_Item.DoesItemMatchTrackJump() end
+function C_Item.GetItemCount() end
+function C_Item.GetItemInfoInstant() end
+function C_Item.GetStackCount() end
+
+--quests
+---@class questrewardcurrencyinfo
+---@field texture number
+---@field name string
+---@field currencyID number
+---@field quality number
+---@field baseRewardAmount number
+---@field bonusRewardAmount number
+---@field totalRewardAmount number
+---@field questRewardContextFlags table?
+
+--faction
+---@class factioninfo
+---@field hasBonusRepGain boolean
+---@field description string
+---@field isHeaderWithRep boolean
+---@field isHeader boolean
+---@field currentReactionThreshold number
+---@field canSetInactive boolean
+---@field atWarWith boolean
+---@field isWatched boolean
+---@field isCollapsed boolean
+---@field canToggleAtWar boolean
+---@field nextReactionThreshold number
+---@field factionID number
+---@field name string
+---@field currentStanding number
+---@field isAccountWide boolean
+---@field isChild boolean
+---@field reaction number
+
+C_Reputation = {}
+---return a table of class 'factioninfo' containing the faction data
+---@param id number
+---@return factioninfo
+function C_Reputation.GetFactionDataByID(id) return {} end
+
+---return a table of class 'factioninfo' containing the player guild rep information
+---@return factioninfo
+function C_Reputation.GetGuildFactionData() return {} end
+
+C_UnitAuras = {}
+
+---@param privateAuraAnchor privateaura_anchor
+function C_UnitAuras.AddPrivateAuraAnchor(privateAuraAnchor)end
+
+---@param privateAuraAnchor privateaura_anchor
+---@return number
+function C_UnitAuras.AddPrivateAuraAppliedSound(privateAuraAnchor) return 0 end
+
+---@param spellID spellid
+---@return boolean
+function C_UnitAuras.AuraIsPrivate(spellID) return true end
+
+---@param parent uiobject
+---@param anchor privateaura_anchorbinding
+function C_UnitAuras.SetPrivateWarningTextAnchor(parent, anchor) end
+
+---@param anchorID number
+function C_UnitAuras.RemovePrivateAuraAnchor(anchorID) end
+
+---@param privateAuraSoundID number
+function C_UnitAuras.RemovePrivateAuraAppliedSound(privateAuraSoundID) end
+
+---@param unitToken unit
+---@param auraInstanceID number
+---@return aurainfo
+function C_UnitAuras.GetAuraDataByAuraInstanceID(unitToken, auraInstanceID) return {} end
+
+---@param unitToken unit
+---@param auraIndex number
+---@param filter aurafilter?
+---@return aurainfo
+function C_UnitAuras.GetAuraDataByIndex(unitToken, auraIndex, filter) return {} end
+
+---@param unitToken unit
+---@param auraSlot number
+---@return aurainfo
+function C_UnitAuras.GetAuraDataBySlot(unitToken, auraSlot) return {} end
+
+---@param unitToken unit
+---@param spellName spellname
+---@param filter aurafilter?
+---@return aurainfo
+function C_UnitAuras.GetAuraDataBySpellName(unitToken, spellName, filter) return {} end
+
+---@param unitToken unit
+---@param filter aurafilter
+---@param maxSlots number
+---@param continuationToken number
+---@return number outContinuationToken
+---@return ...
+function C_UnitAuras.GetAuraSlots(unitToken, filter, maxSlots, continuationToken) return 0, 0 end
+
+---@param unitToken unit
+---@param index number
+---@param filter aurafilter?
+---@return aurainfo
+function C_UnitAuras.GetBuffDataByIndex(unitToken, index, filter) return {} end
+
+---@param unitToken unit
+---@param index number
+---@param filter aurafilter?
+---@return aurainfo
+function C_UnitAuras.GetDebuffDataByIndex(unitToken, index, filter) return {} end
+
+---@param spellID spellid
+---@return spellid
+function C_UnitAuras.GetCooldownAuraBySpellID(spellID) return 0 end
+
+---@param spellID spellid
+---@return aurainfo
+function C_UnitAuras.GetPlayerAuraBySpellID(spellID) return {} end
+
+---@param unitToken unit
+---@param auraInstanceID number
+---@param filterString aurafilter
+---@return boolean
+function C_UnitAuras.IsAuraFilteredOutByInstanceID(unitToken, auraInstanceID, filterString) return true end
+
+---@param unitToken unit
+---@return boolean
+function C_UnitAuras.WantsAlteredForm(unitToken) return true end
+
+---return true if the unit has assistant privileges in the raid group
+---@param unitToken unit
+---@return boolean
+UnitIsGroupAssistant = function(unitToken) return true end
+
+---return true if the unit is the leader of the group
+---@param unitToken unit
+---@return boolean
+UnitIsGroupLeader = function(unitToken) return true end
 
 
 ---linearly interpolates between two values. Example: Lerp(1, 2, 0.5) return 1.5
@@ -1054,21 +1500,8 @@ function C_ChallengeMode.GetActiveChallengeMapID() return 0 end
 ---@return boolean wasActive Whether the keystone was active.
 function C_ChallengeMode.GetActiveKeystoneInfo() return 0, {}, true end
 
----return the completion information for the current challenge mode.
----@return number mapChallengeModeID The map id of the challenge mode.
----@return number level The keystone level of the challenge mode.
----@return number time The time taken to complete the challenge mode.
----@return boolean onTime Whether the challenge mode was completed within the time limit.
----@return number keystoneUpgradeLevels The number of keystone upgrade levels.
----@return boolean practiceRun Whether the challenge mode was a practice run.
----@return number oldOverallDungeonScore The old overall dungeon score.
----@return number newOverallDungeonScore The new overall dungeon score.
----@return boolean isMapRecord Whether the completion is a map record.
----@return boolean isAffixRecord Whether the completion is an affix record.
----@return number primaryAffix The primary affix id.
----@return boolean isEligibleForScore Whether the completion is eligible for a score.
----@return ChallengeModeCompletionMemberInfo[] members The members of the group.
-function C_ChallengeMode.GetCompletionInfo() return 0, 0, 0, true, 0, true, 0, 0, true, true, 0, true, {} end
+---@return challengecompletioninfo
+function C_ChallengeMode.GetChallengeCompletionInfo() return {} end
 
 ---return the death count for the current challenge mode.
 ---@return number numDeaths The number of deaths.
@@ -1395,7 +1828,19 @@ function bit.rol(x, y) return 0 end
 ---@return number The bitwise rotate right of the number.
 function bit.ror(x, y) return 0 end
 
+---return the epoch time in seconds from the server.
+---@return number
+function GetServerTime() return 0 end
 
+C_Spell = {}
+
+---@param spellID number|string
+---@return spellinfo
+function C_Spell.GetSpellInfo(spellID) return {} end
+
+---@param spellID number
+---@return spellchargeinfo
+function C_Spell.GetSpellCharges(spellID) return {} end
 
 C_Timer = {}
 ---@param delay number
@@ -1457,9 +1902,9 @@ function strsplit(str, separator, limit) return "" end
 function floor(x) return 0 end
 
 ---@param table table
----@param index number
+---@param index number?
 ---@return any
-function tremove(table, index) return nil end
+function table.remove(table, index) return nil end
 
 --loads a string and output a function in lua.
 ---@param code string The Lua code string to be executed.
@@ -1536,7 +1981,7 @@ GetSpecializationInfo = function(specIndex, isInspect, isPet, sex, level) return
 ---@return string name
 ---@return string description
 ---@return string icon
----@return number role
+---@return string role
 ---@return ...
 GetSpecializationInfoByID = function(specID, isInspect, isPet, inspectTarget) return 0, "", "", "", 0, "" end
 
@@ -1547,7 +1992,7 @@ GetSpecializationInfoByID = function(specID, isInspect, isPet, inspectTarget) re
 ---@return string specName The name of the specialization.
 ---@return string specDescription The description of the specialization.
 ---@return string icon The icon of the specialization.
----@return number role The role of the specialization.
+---@return string role The role of the specialization.
 ---@return boolean recommended Whether the specialization is recommended.
 ---@return boolean allowedForBoost Whether the specialization is allowed for boost.
 ---@return number masterySpell1 The ID of the first mastery spell.
@@ -3254,8 +3699,9 @@ GetGuildCharterCost = function() return 0 end
 ---@return string, string, number, number, number, boolean, boolean, string, string
 GetGuildEventInfo = function(index) return "", "", 0, 0, 0, true, true, "", "" end
 
+---@param unit string
 ---@return string, string, number, number, number, number, string, string, number, string
-GetGuildInfo = function() return "", "", 0, 0, 0, 0, "", "", 0, "" end
+GetGuildInfo = function(unit) return "", "", 0, 0, 0, 0, "", "", 0, "" end
 
 ---@return string
 GetGuildInfoText = function() return "" end
@@ -3367,9 +3813,9 @@ GuildUninvite = function(unit) end
 ---@return boolean
 IsGuildLeader = function(unit) return true end
 
----@param unit string
+---return true if the player is in a guild
 ---@return boolean
-IsInGuild = function(unit) return true end
+IsInGuild = function() return true end
 
 ---@param eventIndex number
 QueryGuildEventLog = function(eventIndex) end
@@ -3784,8 +4230,8 @@ GetItemFamily = function(itemID) return 0 end
 GetItemIcon = function(itemID) return "" end
 
 ---@param itemID number
----@return string, string, string, number
-GetItemInfo = function(itemID) return "", "", "", 0 end
+---@return string, string, number, number
+GetItemInfo = function(itemID) return "", "", 0, 0 end
 
 ---@param quality number
 ---@return table
@@ -4647,9 +5093,10 @@ GetRealNumRaidMembers = function() return 0 end
 ---@return string, string
 GetPartyAssignment = function(unit) return "", "" end
 
+---return name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML, combatRole
 ---@param raidID number
----@return string, string
-GetRaidRosterInfo = function(raidID) return "", "" end
+---@return string, string, number, number, string, string, string, boolean, boolean, string, boolean, string
+GetRaidRosterInfo = function(raidID) return "", "", 0, 0, "", "", "", true, true, "", true, "" end
 
 ---@param unit string
 ---@return number
@@ -4685,13 +5132,13 @@ SetAllowLowLevelRaid = function(enabled) end
 ---@param index number
 SetRaidRosterSelection = function(index) end
 
----@param unit string
----@param subgroup number
-SetRaidSubgroup = function(unit, subgroup) end
+---@param unitNumber number
+---@param subGroup number
+SetRaidSubgroup = function(unitNumber, subGroup) end
 
----@param unit1 string
----@param unit2 string
-SwapRaidSubgroup = function(unit1, unit2) end
+---@param unitNumber1 number
+---@param unitNumber2 number
+SwapRaidSubgroup = function(unitNumber1, unitNumber2) end
 
 ---@param unit string
 ---@param raidTargetIndex number
@@ -4879,7 +5326,7 @@ ShowingCloak = function() return true end
 ShowingHelm = function() return true end
 
 ---@param settings table
-UploadSettings = function(settings) 
+UploadSettings = function(settings)
     return true
 end
 
@@ -4949,11 +5396,11 @@ GetSpellInfo = function(spellNameOrID) return "", 0, 0, 0, 0, 0, 0, 0 end
 GetSpellLink = function(spellID) return "" end
 
 ---@param tabIndex number
----@param isFlyout boolean
+---@param isFlyout boolean?
 ---@return string, string, number, number
 GetSpellTabInfo = function(tabIndex, isFlyout) return "", "", 0, 0 end
 
----@param spellName string
+---@param spellName string|number
 ---@return string
 GetSpellTexture = function(spellName) return "" end
 
@@ -4970,8 +5417,9 @@ IsAttackSpell = function(spellId) return true end
 IsAutoRepeatSpell = function(spellId) return true end
 
 ---@param spellId number
+---@param spellBank string
 ---@return boolean
-IsPassiveSpell = function(spellId) return true end
+IsPassiveSpell = function(spellId, spellBank) return true end
 
 ---@param spellName string
 ---@param target string
@@ -5019,14 +5467,18 @@ ToggleSpellAutocast = function() end
 ---@return string, string, number, number, boolean, string
 UnitCastingInfo = function() return "", "", 0, 0, false, "" end
 
+---@param unit string
 ---@return string, string, number, number, boolean, string
-UnitChannelInfo = function() return "", "", 0, 0, false, "" end
+UnitChannelInfo = function(unit) return "", "", 0, 0, false, "" end
 
 ---@param command string
 ConsoleExec = function(command) end
 
----@return string, string, string, string
-GetBuildInfo = function() return "", "", "", "" end
+---@return string game version
+---@return string buildId
+---@return string compileDate
+---@return number buildNumber
+GetBuildInfo = function() return "", "", "", 0 end
 
 ---@return number
 GetFramerate = function() return 0 end
@@ -5279,8 +5731,8 @@ function GetTalentLink(tabIndex, talentIndex, isInspect) return "" end
 function GetTalentPrereqs(tabIndex, talentIndex, isInspect) return 0 end
 
 ---@param tabIndex number
----@return string, string, number, number, number, number
-function GetTalentTabInfo(tabIndex) return "", "", 0, 0, 0, 0 end
+---@return number, string, string, number, number, string, number, boolean
+function GetTalentTabInfo(tabIndex) return 0, "", "", 0, 0, "", 0, false end
 
 ---@param tabIndex number
 ---@param talentIndex number
@@ -5392,9 +5844,11 @@ function FocusUnit(unit) end
 
 function ClearFocus() end
 
----@param unit string
+---if bFullName is true, return the full name of the unit if the unit is from another realm, otherwise return the short name
+---@param unit unit
+---@param bFullName boolean
 ---@return string
-function GetUnitName(unit) return "" end
+function GetUnitName(unit, bFullName) return "" end
 
 ---@param unit string
 ---@return number
@@ -5468,8 +5922,8 @@ function UnitCanAttack(unit) return true end
 function UnitCanCooperate(unit) return true end
 
 ---@param unit string
----@return string, string
-function UnitClass(unit) return "", "" end
+---@return string, string, number
+function UnitClass(unit) return "", "", 0 end
 
 ---@param unit string
 ---@return string

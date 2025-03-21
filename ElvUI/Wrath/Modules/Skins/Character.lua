@@ -174,11 +174,11 @@ function S:CharacterFrame()
 	local CharacterFrame = _G.CharacterFrame
 	S:HandleFrame(CharacterFrame, true, nil, 11, -12, -32, 76)
 
-	S:HandleDropDownBox(_G.PlayerStatFrameRightDropdown, 145)
-	S:HandleDropDownBox(_G.PlayerStatFrameLeftDropdown, 147)
+	S:HandleDropDownBox(_G.PlayerStatFrameRightDropdown, 120)
+	S:HandleDropDownBox(_G.PlayerStatFrameLeftDropdown, 120)
 	S:HandleDropDownBox(_G.PlayerTitleDropdown, 200)
 	_G.PlayerStatFrameRightDropdown:Point('TOP', -2, 24)
-	_G.PlayerStatFrameLeftDropdown:Point('LEFT', -25, 24)
+	_G.PlayerStatFrameLeftDropdown:Point('LEFT', -6, 24)
 	_G.PlayerTitleDropdown:Point('TOP', -7, -51)
 
 	for i = 1, #CHARACTERFRAME_SUBFRAMES do

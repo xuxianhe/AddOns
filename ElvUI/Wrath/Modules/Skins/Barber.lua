@@ -9,7 +9,9 @@ function S:Blizzard_BarbershopUI()
 
 	S:HandleFrame(_G.BarberShopFrame)
 
-	_G.BarberShopFrameMoneyFrame:StripTextures()
+	if _G.BarberShopFrameMoneyFrame then
+		_G.BarberShopFrameMoneyFrame:StripTextures()
+	end
 
 	local nextPrev = {
 		_G.BarberShopFrame.FaceSelector.Prev,

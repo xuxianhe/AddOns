@@ -1319,7 +1319,7 @@ E:AddTag('loyalty', 'UNIT_HAPPINESS PET_UI_UPDATE', function(unit)
 	end
 end, not E.Classic)
 
-if E.Classic then
+if E.Classic or E.Wrath then
 	local GetPetHappiness = GetPetHappiness
 	local GetPetFoodTypes = GetPetFoodTypes
 

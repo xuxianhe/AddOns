@@ -113,7 +113,7 @@ P.general = {
 	backdropfadecolor = { r = .06, g = .06, b = .06, a = 0.8 },
 	valuecolor = { r = 0.09, g = 0.52, b = 0.82 },
 	itemLevel = {
-		displayCharacterInfo = true,
+		displayCharacterInfo = false,
 		displayInspectInfo = true,
 		enchantAbbrev = true,
 		showItemLevel = true,

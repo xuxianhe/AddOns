@@ -12,13 +12,13 @@ local GetMerchantNumItems = GetMerchantNumItems
 local hooksecurefunc = hooksecurefunc
 
 local function merchantItemPoint()
-	S:HandlePointXY(_G.MerchantItem1, 6, -40)
+	_G.MerchantItem1:PointXY(6, -40)
 
 	for i = 2, _G.BUYBACK_ITEMS_PER_PAGE do
 		if E:IsEvenNumber(i) then
-			S:HandlePointXY(_G['MerchantItem'..i], 12, 0)
+			_G['MerchantItem'..i]:PointXY(12, 0)
 		else
-			S:HandlePointXY(_G['MerchantItem'..i], 0, -16)
+			_G['MerchantItem'..i]:PointXY(0, -16)
 		end
 	end
 end
