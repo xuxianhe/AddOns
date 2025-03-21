@@ -3,12 +3,10 @@ local S = E:GetModule('Skins')
 
 local _G = _G
 local unpack, gsub = unpack, gsub
-local pairs, next = pairs, next
-local strmatch = strmatch
+local pairs, next, strmatch = pairs, next, strmatch
+local hooksecurefunc = hooksecurefunc
 
 local GetMoney = GetMoney
-local GetItemInfo = GetItemInfo
-local GetItemQualityColor = GetItemQualityColor
 local GetNumQuestLeaderBoards = GetNumQuestLeaderBoards
 local GetNumQuestLogEntries = GetNumQuestLogEntries
 local GetQuestItemLink = GetQuestItemLink
@@ -18,7 +16,9 @@ local GetQuestLogRequiredMoney = GetQuestLogRequiredMoney
 local GetQuestLogTitle = GetQuestLogTitle
 local GetQuestMoneyToGet = GetQuestMoneyToGet
 local IsQuestComplete = IsQuestComplete
-local hooksecurefunc = hooksecurefunc
+
+local GetItemQualityByID = C_Item.GetItemQualityByID
+local GetItemQualityColor = C_Item.GetItemQualityColor
 
 local MAX_NUM_ITEMS = MAX_NUM_ITEMS
 local MAX_NUM_QUESTS = MAX_NUM_QUESTS
@@ -80,7 +80,7 @@ local function questQualityColors(frame, text, link)
 		handleItemButton(frame)
 	end
 
-	local _, _, quality = GetItemInfo(link or 0)
+	local quality = GetItemQualityByID(link or 0)
 	if quality and quality > 1 then
 		local r, g, b = GetItemQualityColor(quality)
 		text:SetTextColor(r, g, b)
@@ -389,17 +389,17 @@ function S:BlizzardQuestFrames()
 	S:HandleFrame(_G.QuestProgressScrollFrame, true, nil, -6, 2)
 	S:HandleFrame(_G.QuestGreetingScrollFrame, true, nil, -6, 2)
 
-	S:HandlePointXY(_G.QuestLogFrameAbandonButton, 15, 49)
-	S:HandlePointXY(_G.QuestFramePushQuestButton, -2)
-	S:HandlePointXY(_G.QuestFrameExitButton, -36, 49)
-	S:HandlePointXY(_G.QuestFrameAcceptButton, 15, 70)
-	S:HandlePointXY(_G.QuestFrameDeclineButton, -36, 70)
-	S:HandlePointXY(_G.QuestFrameCompleteQuestButton, 15, 70)
-	S:HandlePointXY(_G.QuestFrameCompleteButton, 15, 70)
-	S:HandlePointXY(_G.QuestFrameCancelButton, -36, 70)
-	S:HandlePointXY(_G.QuestFrameGoodbyeButton, -36, 70)
-	S:HandlePointXY(_G.QuestFrameGreetingGoodbyeButton, -36, 70)
-	S:HandlePointXY(_G.QuestFrameNpcNameText, -1, 0)
+	_G.QuestLogFrameAbandonButton:PointXY(15, 49)
+	_G.QuestFramePushQuestButton:PointXY(-2)
+	_G.QuestFrameExitButton:PointXY(-36, 49)
+	_G.QuestFrameAcceptButton:PointXY(15, 70)
+	_G.QuestFrameDeclineButton:PointXY(-36, 70)
+	_G.QuestFrameCompleteQuestButton:PointXY(15, 70)
+	_G.QuestFrameCompleteButton:PointXY(15, 70)
+	_G.QuestFrameCancelButton:PointXY(-36, 70)
+	_G.QuestFrameGoodbyeButton:PointXY(-36, 70)
+	_G.QuestFrameGreetingGoodbyeButton:PointXY(-36, 70)
+	_G.QuestFrameNpcNameText:PointXY(-1, 0)
 
 	_G.QuestGreetingFrameHorizontalBreak:Kill()
 

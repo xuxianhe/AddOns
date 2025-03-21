@@ -4,10 +4,10 @@ local TT = E:GetModule('Tooltip')
 
 local _G = _G
 local ipairs, pairs, unpack, next = ipairs, pairs, unpack, next
-
-local GetItemInfo = GetItemInfo
-local GetItemQualityColor = GetItemQualityColor
 local hooksecurefunc = hooksecurefunc
+
+local GetItemInfo = C_Item.GetItemInfo
+local GetItemQualityColor = C_Item.GetItemQualityColor
 
 local ITEMQUALITY_ARTIFACT = Enum.ItemQuality.Artifact
 local CurrencyContainerUtil_GetCurrencyContainerInfo = CurrencyContainerUtil.GetCurrencyContainerInfo
@@ -34,26 +34,41 @@ function S:Blizzard_PVPUI()
 		S:HandleTab(_G['PVPUIFrameTab'..i])
 	end
 
-	for i = 1, 3 do
+	for i = 1, 4 do
 		local bu = _G['PVPQueueFrameCategoryButton'..i]
-		bu.Ring:Kill()
-		bu.Background:Kill()
-		S:HandleButton(bu)
+		if bu then
+			bu.Ring:Kill()
+			bu.Background:Kill()
+			S:HandleButton(bu)
 
-		bu.Icon:Size(45)
-		bu.Icon:ClearAllPoints()
-		bu.Icon:Point('LEFT', 10, 0)
-		S:HandleIcon(bu.Icon, true)
+			bu.Icon:Size(45)
+			bu.Icon:ClearAllPoints()
+			bu.Icon:Point('LEFT', 10, 0)
+			S:HandleIcon(bu.Icon, true)
+		end
 	end
 
 	local PVPQueueFrame = _G.PVPQueueFrame
-	PVPQueueFrame.HonorInset:StripTextures()
+	local HonorInset = PVPQueueFrame.HonorInset
+	HonorInset.NineSlice:Hide()
+
+	-- Plunderstorm
+	local PlunderstormFrame = _G.PlunderstormFrame
+	if PlunderstormFrame then
+		PlunderstormFrame.Inset:StripTextures()
+		S:HandleButton(PlunderstormFrame.StartQueue)
+	end
+
+	local PlunderstormPanel = HonorInset.PlunderstormPanel
+	if PlunderstormPanel then
+		S:HandleButton(PlunderstormPanel.PlunderstoreButton)
+	end
 
 	PVPQueueFrame.CategoryButton1.Icon:SetTexture(236396) -- interface\icons\achievement_bg_winwsg.blp
 	PVPQueueFrame.CategoryButton2.Icon:SetTexture(236368) -- interface\icons\achievement_bg_killxenemies_generalsroom.blp
 	PVPQueueFrame.CategoryButton3.Icon:SetTexture(464820) -- interface\icons\achievement_general_stayclassy.blp
 
-	local SeasonReward = PVPQueueFrame.HonorInset.RatedPanel.SeasonRewardFrame
+	local SeasonReward = HonorInset.RatedPanel.SeasonRewardFrame
 	SeasonReward:CreateBackdrop()
 	SeasonReward.Icon:SetInside(SeasonReward.backdrop)
 	SeasonReward.Icon:SetTexCoord(unpack(E.TexCoords))
@@ -65,7 +80,7 @@ function S:Blizzard_PVPUI()
 	HonorFrame:StripTextures()
 
 	S:HandleTrimScrollBar(_G.HonorFrame.SpecificScrollBar)
-	S:HandleDropDownBox(_G.HonorFrameTypeDropDown, 230)
+	S:HandleDropDownBox(_G.HonorFrameTypeDropdown, 230)
 	S:HandleButton(_G.HonorFrameQueueButton)
 
 	local BonusFrame = HonorFrame.BonusFrame
@@ -139,7 +154,7 @@ function S:Blizzard_PVPUI()
 	HandleRoleButton(ConquestFrame.HealerIcon)
 	HandleRoleButton(ConquestFrame.DPSIcon)
 
-	for _, bu in pairs({ConquestFrame.RatedSoloShuffle, ConquestFrame.Arena2v2, ConquestFrame.Arena3v3, ConquestFrame.RatedBG}) do
+	for _, bu in pairs({ConquestFrame.RatedSoloShuffle, ConquestFrame.RatedBGBlitz, ConquestFrame.Arena2v2, ConquestFrame.Arena3v3, ConquestFrame.RatedBG}) do
 		local reward = bu.Reward
 		S:HandleButton(bu)
 		bu.SelectedTexture:SetInside()
@@ -175,7 +190,9 @@ function S:Blizzard_PVPUI()
 		if rewardTexture then
 			local r, g, b = GetItemQualityColor(rewardQuaility)
 			rewardFrame.Icon:SetTexture(rewardTexture)
-			rewardFrame.Icon.backdrop:SetBackdropBorderColor(r, g, b)
+			if rewardFrame.Icon.backdrop then
+				rewardFrame.Icon.backdrop:SetBackdropBorderColor(r, g, b)
+			end
 		end
 	end)
 

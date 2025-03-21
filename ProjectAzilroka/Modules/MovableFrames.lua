@@ -1,62 +1,26 @@
-local PA = _G.ProjectAzilroka
+local PA, ACL, ACH = unpack(_G.ProjectAzilroka)
 local MF = PA:NewModule('MovableFrames', 'AceEvent-3.0', 'AceHook-3.0')
-PA.MF, _G.MovableFrames = MF, MF
+_G.MovableFrames, PA.MovableFrames = MF, MF
 
-MF.Title = PA.ACL['|cFF16C3F2Movable|r |cFFFFFFFFFrames|r']
-MF.Description = PA.ACL['Make Blizzard Frames Movable']
-MF.Authors = 'Azilroka    Simpy'
-MF.isEnabled = false
+MF.Title, MF.Description, MF.Authors, MF.isEnabled = 'Movable Frames', ACL['Make Blizzard Frames Movable'], 'Azilroka    Simpy', false
 
 local next = next
 
 local _G = _G
-local IsAddOnLoaded = IsAddOnLoaded
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local IsShiftKeyDown = IsShiftKeyDown
 
 local Frames = {
-	'AddonList',
-	'BankFrame',
-	'CharacterFrame',
-	'DressUpFrame',
-	'FriendsFrame',
-	'FriendsFriendsFrame',
-	'GameMenuFrame',
-	'GhostFrame',
-	'GossipFrame',
-	'GuildInviteFrame',
-	'GuildRegistrarFrame',
-	'HelpFrame',
-	'InterfaceOptionsFrame',
-	'ItemTextFrame',
-	'LFGDungeonReadyDialog',
-	'LootFrame',
-	'LossOfControlFrame',
-	'MailFrame',
-	'MerchantFrame',
-	'PetitionFrame',
-	'PetStableFrame',
-	'PVEFrame',
-	'QuestFrame',
-	'QuestLogFrame',
-	'QuestLogPopupDetailFrame',
-	'RaidBrowserFrame',
-	'RaidParentFrame',
-	'ReadyCheckFrame',
-	'ScrollOfResurrectionSelectionFrame',
-	'SpellBookFrame',
-	'SplashFrame',
-	'StaticPopup1',
-	'StaticPopup2',
-	'StaticPopup3',
-	'StaticPopup4',
-	'TabardFrame',
-	'TaxiFrame',
-	'TimeManagerFrame',
-	'TradeFrame',
-	'VideoOptionsFrame',
-	'WorldMapFrame',
-	'WorldStateScoreFrame',
+	'AddonList', 'BankFrame', 'CharacterFrame', 'DressUpFrame', 'FriendsFrame', 'FriendsFriendsFrame', 'GameMenuFrame', 'GhostFrame', 'GossipFrame', 'GuildInviteFrame',
+	'GuildRegistrarFrame', 'HelpFrame', 'InterfaceOptionsFrame', 'ItemTextFrame', 'LFGDungeonReadyDialog', 'LootFrame', 'MailFrame', 'MerchantFrame',
+	'PetitionFrame', 'PetStableFrame', 'PVEFrame', 'QuestFrame', 'QuestLogFrame', 'QuestLogPopupDetailFrame', 'RaidBrowserFrame', 'RaidParentFrame', 'ReadyCheckFrame',
+	'ScrollOfResurrectionSelectionFrame', 'SpellBookFrame', 'SplashFrame', 'StaticPopup1', 'StaticPopup2', 'StaticPopup3', 'StaticPopup4', 'TabardFrame', 'TaxiFrame',
+	'TimeManagerFrame', 'TradeFrame', 'VideoOptionsFrame', 'WorldMapFrame', 'WorldStateScoreFrame'
 }
+
+if not PA.ElvUI then
+	tinsert(Frames, 'LossOfControlFrame')
+end
 
 local AddOnFrames = {
 	Blizzard_AchievementUI = { 'AchievementFrame' },
@@ -119,21 +83,13 @@ end
 
 function MF:OnMouseWheel(frame, delta)
 	if frame:IsMouseOver() and IsShiftKeyDown() then
-		local oldScale = frame:GetScale() or 1
-		local newScale = oldScale + (0.01 * delta)
-
-		if newScale > 1.5 then newScale = 1.5 end
-		if newScale < 0.75 then newScale = 0.75 end
-
-		frame:SetScale(newScale)
+		frame:SetScale(PA:Clamp((frame:GetScale() or 1) + (0.01 * delta), .75, 1.5))
 	end
 end
 
 function MF:MakeMovable(name)
 	local frame = _G[name]
-	if not frame then
-		return
-	end
+	if not frame then return end
 
 	if name == 'AchievementFrame' then
 		local header = _G.AchievementFrameHeader or _G.AchievementFrame.Header
@@ -145,11 +101,12 @@ function MF:MakeMovable(name)
 	frame:EnableMouse(true)
 	frame:SetMovable(true)
 	frame:RegisterForDrag('LeftButton')
-	frame:SetClampedToScreen(true)
+	frame:SetClampedToScreen(MF.db.ClampedToScreen)
 
 	MF:HookScript(frame, 'OnDragStart', 'OnDragStart')
 	MF:HookScript(frame, 'OnDragStop', 'OnDragStop')
 
+	MF.alteredFrames[frame] = true
 	-- frame:EnableMouseWheel(true)
 	-- MF:SecureHookScript(Frame, 'OnMouseWheel', 'OnMouseWheel')
 end
@@ -162,17 +119,25 @@ function MF:ADDON_LOADED(_, addon)
 	end
 end
 
-function MF:GetOptions()
-	PA.Options.args.MovableFrames = PA.ACH:Group(MF.Title, MF.Description, nil, nil, function(info) return MF.db[info[#info]] end, function(info, value) MF.db[info[#info]] = value MF:Update() end)
-	PA.Options.args.MovableFrames.args.Header = PA.ACH:Description(MF.Description, 0)
-	PA.Options.args.MovableFrames.args.Enable = PA.ACH:Toggle(PA.ACL['Enable'], nil, 1, nil, nil, nil, nil, function(info, value) MF.db[info[#info]] = value if (not MF.isEnabled) then MF:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
+function MF:Update()
+	if MF.db.Enable ~= true then return end
+	for frame in next, MF.alteredFrames do
+		frame:SetClampedToScreen(MF.db.ClampedToScreen)
+	end
+end
 
-	PA.Options.args.MovableFrames.args.AuthorHeader = PA.ACH:Header(PA.ACL['Authors:'], -2)
-	PA.Options.args.MovableFrames.args.Authors = PA.ACH:Description(MF.Authors, -1, 'large')
+function MF:GetOptions()
+	PA.Options.args.MovableFrames = ACH:Group(MF.Title, MF.Description, nil, nil, function(info) return MF.db[info[#info]] end, function(info, value) MF.db[info[#info]] = value MF:Update() end)
+	PA.Options.args.MovableFrames.args.Header = ACH:Description(MF.Description, 0)
+	PA.Options.args.MovableFrames.args.Enable = ACH:Toggle(ACL["Enable"], nil, 1, nil, nil, nil, nil, function(info, value) MF.db[info[#info]] = value if (not MF.isEnabled) then MF:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
+	PA.Options.args.MovableFrames.args.ClampedToScreen = ACH:Toggle(ACL["Clamp to Screen"], nil, 1)
+
+	PA.Options.args.MovableFrames.args.AuthorHeader = ACH:Header(ACL['Authors:'], -2)
+	PA.Options.args.MovableFrames.args.Authors = ACH:Description(MF.Authors, -1, 'large')
 end
 
 function MF:BuildProfile()
-	PA.Defaults.profile.MovableFrames = { Enable = true }
+	PA.Defaults.profile.MovableFrames = { Enable = true, ClampedToScreen = true }
 end
 
 function MF:UpdateSettings()
@@ -180,8 +145,6 @@ function MF:UpdateSettings()
 end
 
 function MF:Initialize()
-	MF:UpdateSettings()
-
 	if MF.db.Enable ~= true then
 		return
 	end
@@ -201,14 +164,13 @@ function MF:Initialize()
 		end
 	end
 
-	MF.isEnabled = true
+	MF.alteredFrames, MF.isEnabled = {}, true
 
 	if PA:IsAddOnEnabled('WorldQuestTracker') or PA:IsAddOnEnabled('Leatrix_Maps') then
 		Frames.WorldMapFrame = nil
 	end
 
 	if PA.ElvUI then
-		AddOnFrames.LossOfControlFrame = nil
 		AddOnFrames.Blizzard_TalkingHeadUI = nil
 	end
 

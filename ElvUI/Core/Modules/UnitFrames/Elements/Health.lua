@@ -2,18 +2,21 @@ local E, L, V, P, G = unpack(ElvUI)
 local UF = E:GetModule('UnitFrames')
 local ElvUF = E.oUF
 
+local _G = _G
 local random = random
 local strmatch = strmatch
+
 local CreateFrame = CreateFrame
-local UnitIsTapDenied = UnitIsTapDenied
-local UnitReaction = UnitReaction
-local UnitIsPlayer = UnitIsPlayer
-local UnitClass = UnitClass
-local UnitIsConnected = UnitIsConnected
-local UnitIsDeadOrGhost = UnitIsDeadOrGhost
+local UnitInPartyIsAI = UnitInPartyIsAI
 local UnitIsCharmed = UnitIsCharmed
 local UnitIsEnemy = UnitIsEnemy
-local UnitInPartyIsAI = UnitInPartyIsAI
+local UnitIsFriend = UnitIsFriend
+local UnitIsPlayer = UnitIsPlayer
+local UnitIsTapDenied = UnitIsTapDenied
+local UnitReaction = UnitReaction
+local UnitClass = UnitClass
+
+local BACKDROP_MULT = 0.35
 
 function UF.HealthClipFrame_OnUpdate(clipFrame)
 	UF.HealthClipFrame_HealComm(clipFrame.__frame)
@@ -33,7 +36,7 @@ function UF:Construct_HealthBar(frame, bg, text, textPos)
 		health.bg = health:CreateTexture(nil, 'BORDER')
 		health.bg:SetAllPoints()
 		health.bg:SetTexture(E.media.blankTex)
-		health.bg.multiplier = 0.35
+		health.bg.multiplier = BACKDROP_MULT
 	end
 
 	if text then
@@ -49,33 +52,39 @@ function UF:Construct_HealthBar(frame, bg, text, textPos)
 	return health
 end
 
-function UF:Configure_HealthBar(frame)
+function UF:Configure_HealthBar(frame, powerUpdate)
 	local db = frame.db
 	local health = frame.Health
 
 	health:SetColorTapping(true)
 	health:SetColorDisconnected(true)
-	E:SetSmoothing(health, UF.db.smoothbars)
+	E:SetSmoothing(health, db.health and db.health.smoothbars)
 
-	--Text
+	-- Text
 	if db.health and health.value then
 		local attachPoint = UF:GetObjectAnchorPoint(frame, db.health.attachTextTo)
 		health.value:ClearAllPoints()
-		health.value:Point(db.health.position, attachPoint, db.health.position, db.health.xOffset, db.health.yOffset)
-		frame:Tag(health.value, db.health.text_format)
+		health.value:Point(db.health.position or 'RIGHT', attachPoint, db.health.position or 'RIGHT', db.health.xOffset or -2, db.health.yOffset or 0)
+		frame:Tag(health.value, db.health.text_format or '')
 	end
 
-	--Colors
+	-- Backdrop Multiplier
+	if health.bg then
+		local colors = E.db.unitframe.colors
+		health.bg.multiplier = (colors.healthMultiplier > 0 and colors.healthMultiplier) or BACKDROP_MULT
+	end
+
+	-- Colors
 	local colorSelection
 	health.colorSmooth = nil
 	health.colorHealth = nil
 	health.colorClass = nil
 	health.colorReaction = nil
 
-	if db.colorOverride and db.colorOverride == 'FORCE_ON' then
+	if db.colorOverride == 'FORCE_ON' or db.colorOverride == 'ALWAYS' then
 		health.colorClass = true
 		health.colorReaction = true
-	elseif db.colorOverride and db.colorOverride == 'FORCE_OFF' then
+	elseif db.colorOverride == 'FORCE_OFF' then
 		if UF.db.colors.colorhealthbyvalue then
 			health.colorSmooth = true
 		else
@@ -91,7 +100,7 @@ function UF:Configure_HealthBar(frame)
 				health.colorHealth = true
 			end
 		else
-			health.colorClass = (not UF.db.colors.forcehealthreaction)
+			health.colorClass = not UF.db.colors.forcehealthreaction
 			health.colorReaction = true
 		end
 	end
@@ -99,95 +108,120 @@ function UF:Configure_HealthBar(frame)
 	health:SetColorSelection(colorSelection)
 
 	--Position
-	health:ClearAllPoints()
 	health.WIDTH = db.width
 	health.HEIGHT = db.height
 
+	local BORDER_SPACING = UF.BORDER + UF.SPACING
+	local LESS_SPACING = -UF.BORDER - UF.SPACING
+
+	local CLASSBAR_YOFFSET = frame.CLASSBAR_YOFFSET or 0
+	local PORTRAIT_WIDTH = frame.PORTRAIT_WIDTH or 0
+	local POWERBAR_HEIGHT = frame.POWERBAR_HEIGHT or 0
+	local POWERBAR_OFFSET = frame.POWERBAR_OFFSET or 0
+	local PVPINFO_WIDTH = frame.PVPINFO_WIDTH or 0
+
+	local BOTTOM_SPACING = BORDER_SPACING + frame.BOTTOM_OFFSET
+	local CLASSBAR_LESSSPACING = LESS_SPACING - CLASSBAR_YOFFSET
+	local CLASSBAR_YSPACING = BORDER_SPACING + CLASSBAR_YOFFSET
+	local PORTRAIT_NOSPACING = -PORTRAIT_WIDTH - BORDER_SPACING
+	local PORTRAIT_SPACING = BORDER_SPACING + PORTRAIT_WIDTH
+	local POWERBAR_HALF = UF.SPACING + (POWERBAR_HEIGHT * 0.5) -- this is meant to have UF.SPACING
+	local POWERBAR_SPACING = BORDER_SPACING + POWERBAR_OFFSET
+	local PVPINFO_LESSSPACING = LESS_SPACING - PVPINFO_WIDTH
+	local PVPINFO_SPACING = BORDER_SPACING + PVPINFO_WIDTH
+
+	local HEIGHT_YCLASSBAR = health.HEIGHT - CLASSBAR_YSPACING
+	local WIDTH_POWERBAR = health.WIDTH - POWERBAR_SPACING
+	local WIDTH_PVPINFO = health.WIDTH - PVPINFO_SPACING
+
+	health:ClearAllPoints()
 	if frame.ORIENTATION == 'LEFT' then
-		health:Point('TOPRIGHT', frame, 'TOPRIGHT', -UF.BORDER - UF.SPACING - (frame.PVPINFO_WIDTH or 0), -UF.BORDER - UF.SPACING - frame.CLASSBAR_YOFFSET)
+		health:Point('TOPRIGHT', frame, 'TOPRIGHT', PVPINFO_LESSSPACING, CLASSBAR_LESSSPACING)
 
-		if frame.USE_POWERBAR_OFFSET then
-			health:Point('TOPRIGHT', frame, 'TOPRIGHT', -UF.BORDER - UF.SPACING - frame.POWERBAR_OFFSET, -UF.BORDER - UF.SPACING - frame.CLASSBAR_YOFFSET)
-			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', frame.PORTRAIT_WIDTH + UF.BORDER + UF.SPACING, UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET)
+		if frame.USE_POWERBAR_OFFSET and frame.POWERBAR_SHOWN then
+			health:Point('TOPRIGHT', frame, 'TOPRIGHT', LESS_SPACING - POWERBAR_OFFSET, CLASSBAR_LESSSPACING)
+			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', PORTRAIT_SPACING, POWERBAR_SPACING)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET) - (UF.BORDER + UF.SPACING + frame.PORTRAIT_WIDTH)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET)
+			health.WIDTH = WIDTH_POWERBAR - PORTRAIT_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - POWERBAR_SPACING
 		elseif frame.POWERBAR_DETACHED or not frame.USE_POWERBAR or frame.USE_INSET_POWERBAR then
-			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', frame.PORTRAIT_WIDTH + UF.BORDER + UF.SPACING, UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
+			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', PORTRAIT_SPACING, BOTTOM_SPACING)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0)) - (UF.BORDER + UF.SPACING + frame.PORTRAIT_WIDTH)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
-		elseif frame.USE_MINI_POWERBAR then
-			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', frame.PORTRAIT_WIDTH + UF.BORDER + UF.SPACING, UF.SPACING + (frame.POWERBAR_HEIGHT*0.5))
+			health.WIDTH = WIDTH_PVPINFO - PORTRAIT_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - BOTTOM_SPACING
+		elseif frame.USE_MINI_POWERBAR and frame.POWERBAR_SHOWN then
+			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', PORTRAIT_SPACING, POWERBAR_HALF)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0)) - (UF.BORDER + UF.SPACING + frame.PORTRAIT_WIDTH)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.SPACING + frame.POWERBAR_HEIGHT * 0.5)
+			health.WIDTH = WIDTH_PVPINFO - PORTRAIT_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - POWERBAR_HALF
 		else
-			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', frame.PORTRAIT_WIDTH + UF.BORDER + UF.SPACING, UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
+			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', PORTRAIT_SPACING, BOTTOM_SPACING)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0)) - (UF.BORDER + UF.SPACING + frame.PORTRAIT_WIDTH)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
+			health.WIDTH = WIDTH_PVPINFO - PORTRAIT_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - BOTTOM_SPACING
 		end
 	elseif frame.ORIENTATION == 'RIGHT' then
-		health:Point('TOPLEFT', frame, 'TOPLEFT', UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0), -UF.BORDER - UF.SPACING - frame.CLASSBAR_YOFFSET)
+		health:Point('TOPLEFT', frame, 'TOPLEFT', PVPINFO_SPACING, CLASSBAR_LESSSPACING)
 
-		if frame.USE_POWERBAR_OFFSET then
-			health:Point('TOPLEFT', frame, 'TOPLEFT', UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET, -UF.BORDER - UF.SPACING - frame.CLASSBAR_YOFFSET)
-			health:Point('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -frame.PORTRAIT_WIDTH - UF.BORDER - UF.SPACING, UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET)
+		if frame.USE_POWERBAR_OFFSET and frame.POWERBAR_SHOWN then
+			health:Point('TOPLEFT', frame, 'TOPLEFT', POWERBAR_SPACING, CLASSBAR_LESSSPACING)
+			health:Point('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', PORTRAIT_NOSPACING, POWERBAR_SPACING)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET) - (UF.BORDER + UF.SPACING + frame.PORTRAIT_WIDTH)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET)
+			health.WIDTH = WIDTH_POWERBAR - PORTRAIT_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - POWERBAR_SPACING
 		elseif frame.POWERBAR_DETACHED or not frame.USE_POWERBAR or frame.USE_INSET_POWERBAR then
-			health:Point('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -frame.PORTRAIT_WIDTH - UF.BORDER - UF.SPACING, UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
+			health:Point('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', PORTRAIT_NOSPACING, BOTTOM_SPACING)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0)) - (UF.BORDER + UF.SPACING + frame.PORTRAIT_WIDTH)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
-		elseif frame.USE_MINI_POWERBAR then
-			health:Point('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -frame.PORTRAIT_WIDTH - UF.BORDER - UF.SPACING, UF.SPACING + (frame.POWERBAR_HEIGHT*0.5))
+			health.WIDTH = WIDTH_PVPINFO - PORTRAIT_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - BOTTOM_SPACING
+		elseif frame.USE_MINI_POWERBAR and frame.POWERBAR_SHOWN then
+			health:Point('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', PORTRAIT_NOSPACING, POWERBAR_HALF)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0)) - (UF.BORDER + UF.SPACING + frame.PORTRAIT_WIDTH)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.SPACING + frame.POWERBAR_HEIGHT * 0.5)
+			health.WIDTH = WIDTH_PVPINFO - PORTRAIT_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - POWERBAR_HALF
 		else
-			health:Point('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', -frame.PORTRAIT_WIDTH - UF.BORDER - UF.SPACING, UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
+			health:Point('BOTTOMRIGHT', frame, 'BOTTOMRIGHT', PORTRAIT_NOSPACING, BOTTOM_SPACING)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0)) - (UF.BORDER + UF.SPACING + frame.PORTRAIT_WIDTH)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
+			health.WIDTH = WIDTH_PVPINFO - PORTRAIT_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - BOTTOM_SPACING
 		end
 	elseif frame.ORIENTATION == 'MIDDLE' then
-		health:Point('TOPRIGHT', frame, 'TOPRIGHT', -UF.BORDER - UF.SPACING - (frame.PVPINFO_WIDTH or 0), -UF.BORDER - UF.SPACING - frame.CLASSBAR_YOFFSET)
+		health:Point('TOPRIGHT', frame, 'TOPRIGHT', PVPINFO_LESSSPACING, CLASSBAR_LESSSPACING)
 
-		if frame.USE_POWERBAR_OFFSET then
-			health:Point('TOPRIGHT', frame, 'TOPRIGHT', -UF.BORDER - UF.SPACING - frame.POWERBAR_OFFSET, -UF.BORDER - UF.SPACING - frame.CLASSBAR_YOFFSET)
-			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET, UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET)
+		if frame.USE_POWERBAR_OFFSET and frame.POWERBAR_SHOWN then
+			health:Point('TOPRIGHT', frame, 'TOPRIGHT', LESS_SPACING - POWERBAR_OFFSET, CLASSBAR_LESSSPACING)
+			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', POWERBAR_SPACING, POWERBAR_SPACING)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET) - (UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.BORDER + UF.SPACING + frame.POWERBAR_OFFSET)
+			health.WIDTH = WIDTH_POWERBAR - POWERBAR_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - POWERBAR_SPACING
 		elseif frame.POWERBAR_DETACHED or not frame.USE_POWERBAR or frame.USE_INSET_POWERBAR then
-			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', UF.BORDER + UF.SPACING, UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
+			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', BORDER_SPACING, BOTTOM_SPACING)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0)) - (UF.BORDER + UF.SPACING)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
-		elseif frame.USE_MINI_POWERBAR then
-			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', UF.BORDER + UF.SPACING, UF.SPACING + (frame.POWERBAR_HEIGHT*0.5))
+			health.WIDTH = WIDTH_PVPINFO - BORDER_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - BOTTOM_SPACING
+		elseif frame.USE_MINI_POWERBAR and frame.POWERBAR_SHOWN then
+			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', BORDER_SPACING, POWERBAR_HALF)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0)) - (UF.BORDER + UF.SPACING)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.SPACING + frame.POWERBAR_HEIGHT * 0.5)
+			health.WIDTH = WIDTH_PVPINFO - BORDER_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - POWERBAR_HALF
 		else
-			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', frame.PORTRAIT_WIDTH + UF.BORDER + UF.SPACING, UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
+			health:Point('BOTTOMLEFT', frame, 'BOTTOMLEFT', PORTRAIT_SPACING, BOTTOM_SPACING)
 
-			health.WIDTH = health.WIDTH - (UF.BORDER + UF.SPACING + (frame.PVPINFO_WIDTH or 0)) - (UF.BORDER + UF.SPACING + frame.PORTRAIT_WIDTH)
-			health.HEIGHT = health.HEIGHT - (UF.BORDER + UF.SPACING + frame.CLASSBAR_YOFFSET) - (UF.BORDER + UF.SPACING + frame.BOTTOM_OFFSET)
+			health.WIDTH = WIDTH_PVPINFO - PORTRAIT_SPACING
+			health.HEIGHT = HEIGHT_YCLASSBAR - BOTTOM_SPACING
 		end
 	end
 
 	if db.health then
 		--Party/Raid Frames allow to change statusbar orientation
 		if db.health.orientation then
-			health:SetOrientation(db.health.orientation)
+			health:SetOrientation(db.health.orientation or 'HORIZONTAL')
 		end
 
-		health:SetReverseFill(db.health.reverseFill)
+		health:SetReverseFill(not not db.health.reverseFill)
 	end
+
+	if powerUpdate then return end -- we dont need to redo this stuff, power updated it
 
 	UF:ToggleTransparentStatusBar(UF.db.colors.transparentHealth, frame.Health, frame.Health.bg, true, nil, db.health and db.health.reverseFill)
 
@@ -199,12 +233,15 @@ function UF:Configure_HealthBar(frame)
 end
 
 function UF:GetHealthBottomOffset(frame)
+	local BORDER_NOSPACING = UF.BORDER - UF.SPACING
 	local bottomOffset = 0
-	if frame.USE_POWERBAR and not frame.POWERBAR_DETACHED and not frame.USE_INSET_POWERBAR then
-		bottomOffset = bottomOffset + frame.POWERBAR_HEIGHT - (UF.BORDER-UF.SPACING)
+
+	if frame.USE_POWERBAR and not frame.POWERBAR_DETACHED and not frame.USE_INSET_POWERBAR and frame.POWERBAR_SHOWN then
+		bottomOffset = bottomOffset + frame.POWERBAR_HEIGHT - BORDER_NOSPACING
 	end
+
 	if frame.USE_INFO_PANEL then
-		bottomOffset = bottomOffset + frame.INFO_PANEL_HEIGHT - (UF.BORDER-UF.SPACING)
+		bottomOffset = bottomOffset + frame.INFO_PANEL_HEIGHT - BORDER_NOSPACING
 	end
 
 	return bottomOffset
@@ -215,65 +252,92 @@ local HOSTILE_REACTION = 2
 function UF:PostUpdateHealthColor(unit, r, g, b)
 	local parent = self:GetParent()
 	local colors = E.db.unitframe.colors
+	local env = (parent.isForced and UF.ConfigEnv) or _G
 
 	local isTapped = UnitIsTapDenied(unit)
-	local isDeadOrGhost = UnitIsDeadOrGhost(unit)
+	local isDeadOrGhost = env.UnitIsDeadOrGhost(unit)
 	local healthBreak = not isTapped and colors.healthBreak
 
-	if not b then r, g, b = colors.health.r, colors.health.g, colors.health.b end
-	local newr, newg, newb -- fallback for bg if custom settings arent used
-	if ((colors.healthclass and colors.colorhealthbyvalue) or (colors.colorhealthbyvalue and parent.isForced)) and not isTapped then
-		newr, newg, newb = ElvUF:ColorGradient(self.cur, self.max, 1, 0, 0, 1, 1, 0, r, g, b)
-		self:SetStatusBarColor(newr, newg, newb)
-	elseif healthBreak and healthBreak.enabled then
-		local breakPoint = self.max > 0 and (self.cur / self.max) or 1
-		local onlyLow, color = healthBreak.onlyLow
+	local color -- main bar
+	if not b then
+		r, g, b = colors.health.r, colors.health.g, colors.health.b
+	end
 
-		if breakPoint <= healthBreak.low then
-			color = healthBreak.bad
-		elseif breakPoint >= healthBreak.high and breakPoint ~= 1 and not onlyLow then
-			color = healthBreak.good
-		elseif breakPoint >= healthBreak.low and breakPoint < healthBreak.high and not onlyLow then
-			color = colors.healthBreak.neutral
-		end
-
-		if color then
-			self:SetStatusBarColor(color.r, color.g, color.b)
-		end
+	-- Recheck offline status when forced
+	if parent.isForced and self.colorDisconnected and not env.UnitIsConnected(unit) then
+		color = parent.colors.disconnected
 	end
 
 	-- Charmed player should have hostile color
-	if unit and (strmatch(unit, "raid%d+") or strmatch(unit, "party%d+")) then
-		if not isDeadOrGhost and UnitIsConnected(unit) and UnitIsCharmed(unit) and UnitIsEnemy("player", unit) then
-			local color = parent.colors.reaction[HOSTILE_REACTION]
-			if color then self:SetStatusBarColor(color.r, color.g, color.b) end
+	if unit and (strmatch(unit, 'raid%d+') or strmatch(unit, 'party%d+')) then
+		if not isDeadOrGhost and env.UnitIsConnected(unit) and UnitIsCharmed(unit) and UnitIsEnemy('player', unit) then
+			color = parent.colors.reaction[HOSTILE_REACTION]
 		end
 	end
 
-	if self.bg then
-		self.bg.multiplier = (colors.healthMultiplier > 0 and colors.healthMultiplier) or 0.35
+	local newr, newg, newb, healthbreakBackdrop
+	if not color then -- dont need to process this when its hostile
+		if not parent.db or parent.db.colorOverride ~= 'ALWAYS' then
+			if ((colors.healthclass and colors.colorhealthbyvalue) or (colors.colorhealthbyvalue and parent.isForced)) and not isTapped then
+				newr, newg, newb = ElvUF:ColorGradient(self.cur, self.max, 1, 0, 0, 1, 1, 0, r, g, b)
+			elseif healthBreak and healthBreak.enabled and (not healthBreak.onlyFriendly or UnitIsFriend('player', unit)) then
+				local breakPoint = self.max > 0 and (self.cur / self.max) or 1
+				local threshold = healthBreak.threshold
 
+				if threshold.bad and (breakPoint <= healthBreak.low) then
+					color = healthBreak.bad
+				elseif threshold.good and (breakPoint >= healthBreak.high and breakPoint ~= 1) then
+					color = healthBreak.good
+				elseif threshold.neutral and (breakPoint >= healthBreak.low and breakPoint < healthBreak.high) then
+					color = colors.healthBreak.neutral
+				end
+
+				healthbreakBackdrop = color and healthBreak.colorBackdrop
+			end
+		end
+	end
+
+	if color then
+		self:SetStatusBarColor(color.r, color.g, color.b)
+	elseif newb then
+		self:SetStatusBarColor(newr, newg, newb)
+	end
+
+	local bg, bgc = self.bg
+	if bg then
+		local mult = bg.multiplier or BACKDROP_MULT
 		if colors.useDeadBackdrop and isDeadOrGhost then
-			self.bg:SetVertexColor(colors.health_backdrop_dead.r, colors.health_backdrop_dead.g, colors.health_backdrop_dead.b)
+			bgc = colors.health_backdrop_dead
+			mult = 1 -- custom backdrop (dead)
+		elseif healthbreakBackdrop then
+			bgc = color
+			mult = (healthBreak.multiplier > 0 and healthBreak.multiplier) or BACKDROP_MULT
+		elseif colors.healthbackdropbyvalue then
+			if colors.customhealthbackdrop then
+				newr, newg, newb = ElvUF:ColorGradient(self.cur, self.max, 1, 0, 0, 1, 1, 0, colors.health_backdrop.r, colors.health_backdrop.g, colors.health_backdrop.b)
+				mult = 1 -- custom backdrop
+			elseif not newb and not colors.colorhealthbyvalue then
+				newr, newg, newb = ElvUF:ColorGradient(self.cur, self.max, 1, 0, 0, 1, 1, 0, r, g, b)
+			end
 		elseif colors.customhealthbackdrop then
-			self.bg:SetVertexColor(colors.health_backdrop.r, colors.health_backdrop.g, colors.health_backdrop.b)
+			bgc = colors.health_backdrop
+			mult = 1 -- custom backdrop
 		elseif colors.classbackdrop then
-			local reaction, color = (UnitReaction(unit, 'player'))
-
 			if UnitIsPlayer(unit) or (E.Retail and UnitInPartyIsAI(unit)) then
-				local _, Class = UnitClass(unit)
-				color = parent.colors.class[Class]
-			elseif reaction then
-				color = parent.colors.reaction[reaction]
+				local _, unitClass = UnitClass(unit)
+				bgc = parent.colors.class[unitClass]
 			end
 
-			if color then
-				self.bg:SetVertexColor(color.r * self.bg.multiplier, color.g * self.bg.multiplier, color.b * self.bg.multiplier)
+			local reaction = not bgc and UnitReaction(unit, 'player')
+			if reaction then
+				bgc = parent.colors.reaction[reaction]
 			end
+		end
+
+		if bgc then
+			bg:SetVertexColor(bgc.r * mult, bgc.g * mult, bgc.b * mult)
 		elseif newb then
-			self.bg:SetVertexColor(newr * self.bg.multiplier, newg * self.bg.multiplier, newb * self.bg.multiplier)
-		else
-			self.bg:SetVertexColor(r * self.bg.multiplier, g * self.bg.multiplier, b * self.bg.multiplier)
+			bg:SetVertexColor(newr * mult, newg * mult, newb * mult)
 		end
 	end
 end
@@ -283,6 +347,7 @@ function UF:PostUpdateHealth(_, cur)
 	if parent.isForced then
 		self.cur = random(1, 100)
 		self.max = 100
+
 		self:SetMinMaxValues(0, self.max)
 		self:SetValue(self.cur)
 	elseif parent.ResurrectIndicator then

@@ -1,21 +1,16 @@
-local PA = _G.ProjectAzilroka
-local BLDB = PA:NewModule('BLDB', 'AceEvent-3.0')
-PA.BLDB, _G.BLDB = BLDB, BLDB
+local PA, ACL, ACH = unpack(_G.ProjectAzilroka)
+local BLDB = PA:NewModule('BrokerLDB', 'AceEvent-3.0')
+PA.BLDB, _G.BrokerLDB = BLDB, BLDB
 
 local _G = _G
-local pairs = pairs
-local tinsert = tinsert
-local tremove = tremove
+local next, tinsert, tremove = next, tinsert, tremove
 local strfind, strlower, strlen = strfind, strlower, strlen
 
-local CreateFrame = CreateFrame
-local GameTooltip = GameTooltip
-local UIParent = UIParent
+local CreateFrame, GameTooltip, UIParent = CreateFrame, GameTooltip, UIParent
 
-BLDB.Title = PA.ACL['|cFF16C3F2Broker|r|cFFFFFFFFLDB|r']
-BLDB.Description = PA.ACL['Provides a Custom DataBroker Bar']
-BLDB.Authors = 'Azilroka'
-BLDB.isEnabled = false
+local LDB = PA.Libs.LDB
+
+BLDB.Title, BLDB.Description, BLDB.Authors, BLDB.isEnabled = 'Broker LDB', ACL['Provides a Custom DataBroker Bar'], 'Azilroka', false
 
 function BLDB:TextUpdate(_, name, _, value)
 	local naText = strfind(strlower(value or ''), 'n/a', nil, true)
@@ -27,7 +22,7 @@ function BLDB:TextUpdate(_, name, _, value)
 	end
 end
 
-function BLDB:AnimateSlide(frame, x, y, duration)
+function BLDB:AnimateSlide(frame, x, y, duration) -- Use LibAnim
 	frame.anim = frame:CreateAnimationGroup('Move_In')
 	frame.anim.in1 = frame.anim:CreateAnimation('Translation')
 	frame.anim.in1:SetDuration(0)
@@ -60,7 +55,7 @@ function BLDB:AnimSlideOut(frame)
 end
 
 function BLDB:SlideOut()
-	for _, Slides in pairs(BLDB.Whitelist) do
+	for _, Slides in next, BLDB.Whitelist do
 		BLDB:AnimSlideIn(Slides)
 	end
 	BLDB:AnimSlideIn(BLDB.Frame)
@@ -69,7 +64,7 @@ function BLDB:SlideOut()
 end
 
 function BLDB:SlideIn()
-	for _, Slides in pairs(BLDB.Buttons) do
+	for _, Slides in next, BLDB.Buttons do
 		Slides:Hide()
 	end
 	BLDB.Frame.Arrow:SetRotation(-1.57)
@@ -77,12 +72,12 @@ function BLDB:SlideIn()
 end
 
 function BLDB:Update()
-	for Name, Object in PA.LDB:DataObjectIterator() do
+	for Name, Object in LDB:DataObjectIterator() do
 		BLDB:New(nil, Name, Object)
 	end
 
-	for Key, Slide in pairs(BLDB.Buttons) do
-		Slide.Text:SetFont(PA.LSM:Fetch('font', BLDB.db['Font']), BLDB.db['FontSize'], BLDB.db['FontFlag'])
+	for Key, Slide in next, BLDB.Buttons do
+		Slide.Text:SetFont(PA.Libs.LSM:Fetch('font', BLDB.db['Font']), BLDB.db['FontSize'], BLDB.db['FontFlag'])
 		if BLDB.db['ShowIcon'] and BLDB.db['ShowText'] then
 			if BLDB.db['PanelWidth'] == 0 then BLDB.db['PanelWidth'] = 140 end
 			Slide:SetSize(BLDB.db['PanelWidth'] + BLDB.db['PanelHeight'], BLDB.db['PanelHeight'])
@@ -111,13 +106,13 @@ function BLDB:Update()
 			Slide.anim.in2:SetOffset(x, 0)
 			Slide.anim.out2:SetOffset(-x, 0)
 		end
-		for _, Blacklisted in pairs(BLDB.Blacklist) do
+		for _, Blacklisted in next, BLDB.Blacklist do
 			if Slide:GetName() == Blacklisted then tremove(BLDB.Whitelist, Key) Slide.Enabled = false return end
 		end
 	end
 
 	local yOffSet = 0
-	for _, Slide in pairs(BLDB.Whitelist) do
+	for _, Slide in next, BLDB.Whitelist do
 		Slide:SetPoint('TOPLEFT', BLDB.Frame, 'TOPRIGHT', 1, yOffSet)
 		yOffSet = yOffSet - BLDB.db['PanelHeight'] - 1
 	end
@@ -137,7 +132,7 @@ end
 function BLDB:AddBlacklistFrame(frame)
 	frame.Enabled = false
 	local index
-	for i, v in pairs(BLDB.Whitelist) do
+	for i, v in next, BLDB.Whitelist do
 		if v == frame:GetName() then
 			index = i
 			break
@@ -152,7 +147,7 @@ end
 function BLDB:RemoveBlacklistFrame(frame)
 	frame.Enabled = true
 	local index
-	for i, v in pairs(BLDB.Blacklist) do
+	for i, v in next, BLDB.Blacklist do
 		if v == frame:GetName() then
 			index = i
 			break
@@ -166,7 +161,7 @@ end
 
 function BLDB:New(_, name, object)
 	if _G['BLDB_'..name] then return end
-	for _, v in pairs(BLDB.Ignore) do
+	for _, v in next, BLDB.Ignore do
 		if name == v then return end
 	end
 
@@ -174,6 +169,7 @@ function BLDB:New(_, name, object)
 	button:Hide()
 	button.pluginName = name
 	button.pluginObject = object
+	button:RegisterForClicks('AnyDown')
 
 	button:SetFrameStrata('BACKGROUND')
 	button:SetFrameLevel(3)
@@ -186,7 +182,7 @@ function BLDB:New(_, name, object)
 	tinsert(BLDB.Whitelist, button)
 
 	button.Text = button:CreateFontString(nil, 'OVERLAY')
-	button.Text:SetFont(PA.LSM:Fetch('font', BLDB.db['Font']), BLDB.db['FontSize'], BLDB.db['FontFlag'])
+	button.Text:SetFont(PA.Libs.LSM:Fetch('font', BLDB.db['Font']), BLDB.db['FontSize'], BLDB.db['FontFlag'])
 	button.Text:SetPoint('CENTER', button)
 
 	button.Icon = button:CreateTexture(nil, 'ARTWORK')
@@ -195,7 +191,7 @@ function BLDB:New(_, name, object)
 
 	BLDB.PluginObjects[name] = button
 
-	PA.LDB.RegisterCallback(BLDB, 'LibDataBroker_AttributeChanged_'..name, 'TextUpdate')
+	LDB.RegisterCallback(BLDB, 'LibDataBroker_AttributeChanged_'..name, 'TextUpdate')
 
 	button:SetScript('OnEnter', function(s)
 		if s.anim:IsPlaying() then return end
@@ -227,29 +223,29 @@ function BLDB:New(_, name, object)
 end
 
 function BLDB:GetOptions()
-	local BrokerLDB = PA.ACH:Group(BLDB.Title, BLDB.Description, nil, nil, function(info) return BLDB.db[info[#info]] end)
+	local BrokerLDB = ACH:Group(BLDB.Title, BLDB.Description, nil, nil, function(info) return BLDB.db[info[#info]] end)
 	PA.Options.args.BrokerLDB = BrokerLDB
 
-	BrokerLDB.args.Description = PA.ACH:Description(BLDB.Description, 0)
-	BrokerLDB.args.Enable = PA.ACH:Toggle(PA.ACL['Enable'], nil, 1, nil, nil, nil, nil, function(info, value) BLDB.db[info[#info]] = value if not BLDB.isEnabled then BLDB:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
+	BrokerLDB.args.Description = ACH:Description(BLDB.Description, 0)
+	BrokerLDB.args.Enable = ACH:Toggle(ACL['Enable'], nil, 1, nil, nil, nil, nil, function(info, value) BLDB.db[info[#info]] = value if not BLDB.isEnabled then BLDB:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
 
-	BrokerLDB.args.General = PA.ACH:Group(PA.ACL['General'], nil, 2, nil, nil, function(info, value) BLDB.db[info[#info]] = value BLDB:Update() end)
+	BrokerLDB.args.General = ACH:Group(ACL['General'], nil, 2, nil, nil, function(info, value) BLDB.db[info[#info]] = value BLDB:Update() end)
 	BrokerLDB.args.General.inline = true
 
-	BrokerLDB.args.General.args.ShowIcon = PA.ACH:Toggle(PA.ACL['Show Icon'], nil, 1)
-	BrokerLDB.args.General.args.MouseOver = PA.ACH:Toggle(PA.ACL['MouseOver'], nil, 2)
-	BrokerLDB.args.General.args.ShowText = PA.ACH:Toggle(PA.ACL['Show Text'], nil, 3)
-	BrokerLDB.args.General.args.PanelHeight = PA.ACH:Range(PA.ACL['Panel Height'], nil, 4, { min = 20, max = 40, step = 1 })
-	BrokerLDB.args.General.args.PanelWidth = PA.ACH:Range(PA.ACL['Panel Width'], nil, 5, { min = 0, softMin = 140, max = 280, step = 1 })
+	BrokerLDB.args.General.args.ShowIcon = ACH:Toggle(ACL['Show Icon'], nil, 1)
+	BrokerLDB.args.General.args.MouseOver = ACH:Toggle(ACL['MouseOver'], nil, 2)
+	BrokerLDB.args.General.args.ShowText = ACH:Toggle(ACL['Show Text'], nil, 3)
+	BrokerLDB.args.General.args.PanelHeight = ACH:Range(ACL['Panel Height'], nil, 4, { min = 20, max = 40, step = 1 })
+	BrokerLDB.args.General.args.PanelWidth = ACH:Range(ACL['Panel Width'], nil, 5, { min = 0, softMin = 140, max = 280, step = 1 })
 
-	BrokerLDB.args.General.args.FontSettings = PA.ACH:Group(PA.ACL['Font Settings'], nil, -1)
+	BrokerLDB.args.General.args.FontSettings = ACH:Group(ACL['Font Settings'], nil, -1)
 	BrokerLDB.args.General.args.FontSettings.inline = true
-	BrokerLDB.args.General.args.FontSettings.args.Font = PA.ACH:SharedMediaFont(PA.ACL['Font'], nil, 1)
-	BrokerLDB.args.General.args.FontSettings.args.FontSize = PA.ACH:Range(PA.ACL['Font Size'], nil, 2, { min = 6, max = 22, step = 1 })
-	BrokerLDB.args.General.args.FontSettings.args.FontFlag = PA.ACH:FontFlags(PA.ACL['Font Outline'], nil, 3)
+	BrokerLDB.args.General.args.FontSettings.args.Font = ACH:SharedMediaFont(ACL['Font'], nil, 1)
+	BrokerLDB.args.General.args.FontSettings.args.FontSize = ACH:Range(ACL['Font Size'], nil, 2, { min = 6, max = 22, step = 1 })
+	BrokerLDB.args.General.args.FontSettings.args.FontFlag = ACH:FontFlags(ACL['Font Outline'], nil, 3)
 
-	BrokerLDB.args.AuthorHeader = PA.ACH:Header(PA.ACL['Authors:'], -2)
-	BrokerLDB.args.Authors = PA.ACH:Description(BLDB.Authors, -1, 'large')
+	BrokerLDB.args.AuthorHeader = ACH:Header(ACL['Authors:'], -2)
+	BrokerLDB.args.Authors = ACH:Description(BLDB.Authors, -1, 'large')
 end
 
 function BLDB:BuildProfile()
@@ -271,8 +267,6 @@ function BLDB:UpdateSettings()
 end
 
 function BLDB:Initialize()
-	BLDB:UpdateSettings()
-
 	if BLDB.db.Enable ~= true then
 		return
 	end
@@ -280,20 +274,15 @@ function BLDB:Initialize()
 	BLDB.isEnabled = true
 
 	BLDB.DropDown = CreateFrame('Frame', 'BLDBDropDown', UIParent, 'UIDropDownMenuTemplate')
+
 	BLDB.Slide = 'In'
-	BLDB.EasyMenu = {}
 
-	BLDB.Buttons = {}
-	BLDB.PluginObjects = {}
+	BLDB.Buttons, BLDB.PluginObjects, BLDB.EasyMenu, BLDB.Whitelist, BLDB.Blacklist, BLDB.Ignore = {}, {}, {}, {}, {}, { 'Cork' }
 
-	BLDB.Ignore = { 'Cork' }
-
-	BLDB.Whitelist = {}
-	BLDB.Blacklist = {}
-
-	PA.LDB.RegisterCallback(BLDB, 'LibDataBroker_DataObjectCreated', 'New')
+	LDB.RegisterCallback(BLDB, 'LibDataBroker_DataObjectCreated', 'New')
 
 	local Frame = CreateFrame('Button', nil, UIParent)
+	BLDB.Frame = Frame
 	Frame.Arrow = Frame:CreateTexture(nil, 'OVERLAY')
 	Frame.Arrow:SetTexture([[Interface\AddOns\ProjectAzilroka\Media\Textures\Arrow]])
 	Frame.Arrow:SetSize(12, 12)
@@ -301,7 +290,7 @@ function BLDB:Initialize()
 	Frame:SetFrameStrata('BACKGROUND')
 	Frame:SetWidth(15)
 	Frame:SetPoint('LEFT', UIParent, 'LEFT', 1, 0)
-	Frame:RegisterForClicks('LeftButtonDown', 'RightButtonDown')
+	Frame:RegisterForClicks('AnyDown')
 	PA:SetTemplate(Frame, 'Transparent')
 	BLDB:AnimateSlide(Frame, -150, 0, 1)
 
@@ -321,11 +310,9 @@ function BLDB:Initialize()
 				BLDB:SlideIn()
 			end
 		else
-			_G.EasyMenu(BLDB.EasyMenu, BLDB.DropDown, 'cursor', 0, 0, 'MENU', 2)
+			PA:EasyMenu(BLDB.EasyMenu, BLDB.DropDown, 'cursor', 0, 0, 'MENU', 2)
 		end
 	end)
-
-	BLDB.Frame = Frame
 
 	BLDB:Update()
 	BLDB:SlideIn()

@@ -20,8 +20,7 @@ DTPanelOptions.width = ACH:Range(L["Width"], nil, 4, { min = 24, max = ceil(E.sc
 DTPanelOptions.height = ACH:Range(L["Height"], nil, 5, { min = 12, max = ceil(E.screenHeight), step = 1})
 DTPanelOptions.textJustify = ACH:Select(L["Text Justify"], L["Sets the font instance's horizontal text alignment style."], 6, { CENTER = L["Center"], LEFT = L["Left"], RIGHT = L["Right"] })
 
-DTPanelOptions.templateGroup = ACH:MultiSelect(L["Template"], nil, 10, { backdrop = L["Backdrop"], panelTransparency = L["Backdrop Transparency"], mouseover = L["Mouseover"], border = L["Show Border"] })
-DTPanelOptions.templateGroup.sortByValue = true
+DTPanelOptions.templateGroup = ACH:MultiSelect(L["Template"], nil, 10, { backdrop = L["Backdrop"], panelTransparency = L["Backdrop Transparency"], mouseover = L["Mouseover"], border = L["Show Border"] }, nil, nil, nil, nil, nil, nil, true)
 
 DTPanelOptions.strataAndLevel = ACH:Group(L["Strata and Level"], nil, 15)
 DTPanelOptions.strataAndLevel.inline = true
@@ -116,7 +115,7 @@ function DT:SetupPanelOptions(name, data)
 
 		local idx = tostring(i)
 		local hasPoint = i <= (custom and custom.numPoints or db.numPoints or 3)
-		options.args.dts.args[idx] = hasPoint and ACH:Select('', nil, i, CopyList) or nil
+		options.args.dts.args[idx] = hasPoint and ACH:Select('', nil, i, CopyList, nil, 'double') or nil
 
 		if data and data.battleground ~= nil then
 			options.args.battleground = ACH:Toggle(L["Battleground Texts"], nil, 1)
@@ -126,7 +125,7 @@ function DT:SetupPanelOptions(name, data)
 				options.args.battledts.inline = true
 			end
 
-			options.args.battledts.args[idx] = hasPoint and ACH:Select('', nil, i, CopyList) or nil
+			options.args.battledts.args[idx] = hasPoint and ACH:Select('', nil, i, CopyList, nil, 'double') or nil
 		end
 	end
 end
@@ -176,6 +175,8 @@ local function CreateDTOptions(name, data)
 				optionTable.args[key] = ACH:Toggle(L["Other AddOns"], nil, 4)
 			elseif key == 'decimalLength' then
 				optionTable.args[key] = ACH:Range(L["Decimal Length"], nil, 20, { min = 0, max = 5, step = 1 })
+			elseif key == 'maxLimit' then
+				optionTable.args[key] = ACH:Range(L["Max Limit"], L["Limit the maximum, zero will disable the limit"], 20, { min = 0, max = 60, step = 1 })
 			elseif key == 'goldFormat' then
 				optionTable.args[key] = ACH:Select(L["Gold Format"], L["The display format of the money text that is shown in the gold datatext and its tooltip."], 10, { SMART = L["Smart"], FULL = L["Full"], SHORT = L["SHORT"], SHORTSPACED = L["Short (Whole Numbers Spaced)"], SHORTINT = L["Short (Whole Numbers)"], CONDENSED = L["Condensed"], CONDENSED_SPACED = L["Condensed (Spaced)"], BLIZZARD = L["Blizzard Style"], BLIZZARD2 = L["Blizzard Style"].." 2" })
 			elseif key == 'goldCoins' then
@@ -190,7 +191,7 @@ local function CreateDTOptions(name, data)
 		end
 
 		if name == 'Bags' then
-			optionTable.args.includeReagents = ACH:Toggle(E.NewSign..L["Include Reagents"], nil, 5)
+			optionTable.args.includeReagents = ACH:Toggle(L["Include Reagents"], nil, 5)
 			optionTable.args.textFormat.values = { FREE = L["Only Free Slots"], USED = L["Only Used Slots"], FREE_TOTAL = L["Free/Total"], USED_TOTAL = L["Used/Total"] }
 		elseif name == 'Combat' then
 			optionTable.args.TimeFull = ACH:Toggle(L["Full Time"], nil, 5)
@@ -201,8 +202,7 @@ local function CreateDTOptions(name, data)
 			optionTable.args.InCombat = ACH:Input(L["In Combat Label"], nil, 4, nil, nil, function(info) return escapeString(settings[info[#info]], true) end, function(info, value) settings[info[#info]] = escapeString(value) DT:ForceUpdate_DataText(name) end)
 			optionTable.args.InCombatColor = ACH:Color('', nil, 5, nil, nil, function(info) local c, d = settings[info[#info]], G.datatexts.settings[name][info[#info]] return c.r, c.g, c.b, nil, d.r, d.g, d.b end, function(info, r, g, b) local c = settings[info[#info]] c.r, c.g, c.b = r, g, b DT:ForceUpdate_DataText(name) end)
 		elseif name == 'Currencies' then
-			optionTable.args.displayedCurrency = ACH:Select(L["Displayed Currency"], nil, 10, function() local list = E:CopyTable({}, DT.CurrencyList) for _, info in pairs(E.global.datatexts.customCurrencies) do local id = tostring(info.ID) if info and not DT.CurrencyList[id] then list[id] = info.name end end return list end)
-			optionTable.args.displayedCurrency.sortByValue = true
+			optionTable.args.displayedCurrency = ACH:Select(L["Displayed Currency"], nil, 10, function() local list = E:CopyTable({}, DT.CurrencyList) for _, info in pairs(E.global.datatexts.customCurrencies) do local id = tostring(info.ID) if info and not DT.CurrencyList[id] then list[id] = info.name end end return list end, nil, nil, nil, nil, nil, nil, true)
 
 			optionTable.args.displayStyle = ACH:Select(L["Display Style"], nil, 1, { ICON = L["Icons Only"], ICON_TEXT = L["Icons and Text"], ICON_TEXT_ABBR = L["Icons and Text (Short)"] }, nil, nil, nil, nil, nil, function() return (settings.displayedCurrency == "GOLD") or (settings.displayedCurrency == "BACKPACK") end)
 			optionTable.args.headers = ACH:Toggle(L["Headers"], nil, 5)
@@ -220,13 +220,14 @@ local function CreateDTOptions(name, data)
 					optionTable.args.tooltipLines.args[tostring(info[3])].args[tostring(i)] = ACH:Toggle(info[1], nil, i, nil, nil, nil, function() return settings.idEnable[info[2]] end, function(_, value) settings.idEnable[info[2]] = value end)
 				end
 			end
+		elseif name == 'System' then
+			optionTable.args.showTooltip = ACH:Toggle(L["Tooltip"], nil, 20)
 		elseif name == 'Durability' then
 			optionTable.args.percThreshold = ACH:Range(L["Flash Threshold"], L["The durability percent that the datatext will start flashing.  Set to -1 to disable"], 5, { min = -1, max = 99, step = 1 }, nil, function(info) return settings[info[#info]] end, function(info, value) settings[info[#info]] = value; DT:ForceUpdate_DataText(name) end)
 		elseif name == 'Friends' then
 			optionTable.args.description = ACH:Description(L["Hide specific sections in the datatext tooltip."], 1)
 			optionTable.args.hideGroup1 = ACH:MultiSelect(L["Hide by Status"], nil, 5, { hideAFK = L["AFK"], hideDND = L["DND"] }, nil, nil, function(_, key) return settings[key] end, function(_, key, value) settings[key] = value; DT:ForceUpdate_DataText(name) end)
-			optionTable.args.hideGroup2 = ACH:MultiSelect(L["Hide by Application"], nil, 6, DT.clientFullName, nil, nil, function(_, key) return settings['hide'..key] end, function(_, key, value) settings['hide'..key] = value; DT:ForceUpdate_DataText(name) end)
-			optionTable.args.hideGroup2.sortByValue = true
+			optionTable.args.hideGroup2 = ACH:MultiSelect(L["Hide by Application"], nil, 6, DT.clientFullName, nil, nil, function(_, key) return settings['hide'..key] end, function(_, key, value) settings['hide'..key] = value; DT:ForceUpdate_DataText(name) end, nil, nil, true)
 		elseif name == 'Item Level' then
 			optionTable.args.rarityColor = ACH:Toggle(L["Rarity Color"], nil, 1)
 			optionTable.args.onlyEquipped = ACH:Toggle(L["Only Equipped"], nil, 2)
@@ -242,11 +243,14 @@ local function CreateDTOptions(name, data)
 		elseif name == 'Talent/Loot Specialization' then
 			optionTable.args.displayStyle = ACH:Select(L["Display Style"], nil, 1, { SPEC = L["Specializations Only"], LOADOUT = L["Loadout Only"], BOTH = L["Spec/Loadout"] })
 			optionTable.args.iconOnly = ACH:Toggle(L["Icons Only"], L["Only show icons instead of specialization names"], 2)
+			optionTable.args.showBoth = ACH:Toggle(L["Show Both"], L["Always show Loot Specialization."], 3)
+			optionTable.args.iconSize = ACH:Range(L["Icon Size"], nil, 4, { min = 10, softMax = 24, step = 1})
 		elseif name == 'Time' then
 			optionTable.args.time24 = ACH:Toggle(L["24-Hour Time"], L["Toggle 24-hour mode for the time datatext."], 5)
 			optionTable.args.seconds = ACH:Toggle(L["Seconds"], L["Show seconds on the time display."], 6)
 			optionTable.args.localTime = ACH:Toggle(L["Local Time"], L["If not set to true then the server time will be displayed instead."], 7)
 			optionTable.args.flashInvite = ACH:Toggle(L["Flash Invites"], L["This will allow you to toggle flashing of the time datatext when there are calendar invites."], 8, nil, nil, nil, nil, nil, nil, E.Classic)
+			optionTable.args.savedInstances = ACH:Toggle(L["Saved Instances"], nil, 9)
 		end
 	end
 end
@@ -303,7 +307,9 @@ DataTexts.args.panels.args.MinimapPanel.args.templateGroup = CopyTable(defaultTe
 local function addCurrency(_, value)
 	local currencyID = tonumber(value)
 	if not currencyID then return end
-	local data = DT:RegisterCustomCurrencyDT(currencyID)
+
+	local _, name = DT:CurrencyInfo(currencyID)
+	local data = name and DT:RegisterCustomCurrencyDT(currencyID)
 	if data then
 		CreateDTOptions(currencyID, data)
 		DT:LoadDataTexts()
@@ -322,7 +328,7 @@ local function getCurrencyList()
 	return list
 end
 
-DataTexts.args.customCurrency = ACH:Group(L["Custom Currency"], nil, 6, nil, nil, nil, nil, not (E.Retail or E.Wrath))
+DataTexts.args.customCurrency = ACH:Group(L["Custom Currency"], nil, 6, nil, nil, nil, nil, not (E.Retail or E.Cata))
 DataTexts.args.customCurrency.args.description = ACH:Description(L["This allows you to create a new datatext which will track the currency with the supplied currency ID. The datatext can be added to a panel immediately after creation."], 0)
 DataTexts.args.customCurrency.args.add = ACH:Select(L["Add Currency"], nil, 1, getCurrencyList, nil, 'double', nil, addCurrency)
 DataTexts.args.customCurrency.args.addID = ACH:Input(L["Add Currency by ID"], nil, 2, nil, 'double', C.Blank, addCurrency)

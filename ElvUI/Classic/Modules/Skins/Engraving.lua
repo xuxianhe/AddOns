@@ -21,9 +21,14 @@ local function UpdateRuneList()
 	local buttons = frame and frame.scrollFrame and frame.scrollFrame.buttons
 	for i = 1, (buttons and #buttons or 0) do
 		local button = _G['EngravingFrameScrollFrameButton'..i]
-		if button and not button.isSkinned then
+		if button and not button.IsSkinned then
+			local icon = _G['EngravingFrameScrollFrameButton'..i..'Icon']
+			if icon then
+				S:HandleIcon(icon, true)
+			end
+			
 			S:HandleButton(button)
-			button.isSkinned = true
+			button.IsSkinned = true
 		end
 	end
 end
@@ -36,7 +41,7 @@ function S:SkinEngravings()
 	_G.EngravingFrameSideInset:Kill()
 
 	S:HandleEditBox(_G.EngravingFrameSearchBox)
-	S:HandleDropDownBox(_G.EngravingFrameFilterDropDown, 210)
+	S:HandleDropDownBox(_G.EngravingFrame.FilterDropdown, 176)
 	S:HandleScrollBar(_G.EngravingFrameScrollFrameScrollBar)
 
 	hooksecurefunc('EngravingFrame_UpdateRuneList', UpdateRuneList)

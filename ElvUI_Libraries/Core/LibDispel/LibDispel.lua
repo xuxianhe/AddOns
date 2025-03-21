@@ -1,39 +1,57 @@
-local MAJOR, MINOR = "LibDispel-1.0", 6
+local MAJOR, MINOR = "LibDispel-1.0", 14
 assert(LibStub, MAJOR.." requires LibStub")
+
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
 local Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
-local Wrath = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
+local Classic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+local Cata = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
 
 local next = next
+local wipe = wipe
+local CopyTable = CopyTable
 local CreateFrame = CreateFrame
+local GetTalentInfo = GetTalentInfo
 local IsPlayerSpell = IsPlayerSpell
 local IsSpellKnownOrOverridesKnown = IsSpellKnownOrOverridesKnown
 
 local GetCVar = C_CVar.GetCVar
 local SetCVar = C_CVar.SetCVar
 
-local DebuffColors = CopyTable(DebuffTypeColor)
-lib.DebuffTypeColor = DebuffColors
+local function GetList(name, data)
+	local list = lib[name]
+	if list then -- clear the existing list
+		wipe(list)
+	else
+		list = {} -- create new list
+		lib[name] = list -- add new list
+	end
+
+	if data then -- import color data
+		for key, value in next, data do
+			if type(value) == 'table' then
+				list[key] = CopyTable(value)
+			else
+				list[key] = value
+			end
+		end
+	end
+
+	return list
+end
+
+local BadList = GetList('BadList') -- Spells that backfire when dispelled
+local BleedList = GetList('BleedList') -- Contains spells classified as Bleeds
+local BlockList = GetList('BlockList') -- Spells blocked from AuraHighlight
+local DispelList = GetList('DispelList') -- List of types the player can dispel
+local DebuffColors = GetList('DebuffTypeColor', _G.DebuffTypeColor)
 
 -- These dont exist in Blizzards color table
 DebuffColors.Bleed = { r = 1, g = 0.2, b = 0.6 }
 DebuffColors.EnemyNPC = { r = 0.9, g = 0.1, b = 0.1 }
 DebuffColors.BadDispel = { r = 0.05, g = 0.85, b = 0.94 }
 DebuffColors.Stealable = { r = 0.93, g = 0.91, b = 0.55 }
-
-local DispelList = {} -- List of types the player can dispel
-lib.DispelList = DispelList
-
-local BleedList = {} -- Contains spells classified as Bleeds
-lib.BleedList = BleedList
-
-local BlockList = {} -- Spells blocked from AuraHighlight
-lib.BlockList = BlockList
-
-local BadList = {} -- Spells that backfire when dispelled
-lib.BadList = BadList
 
 if Retail then
 	-- Bad to dispel spells
@@ -50,15 +68,21 @@ if Retail then
 	BlockList[108220] = "Deep Corruption"
 	BlockList[116095] = "Disable" -- slow
 
-	-- Bleed spells updated March 30th 2024 by Simpy for Patch 10.2.6
+	-- Bleed spells updated March 9th 2025 by Simpy for Patch 11.1
 	--- Combined lists (without duplicates, filter requiring either main or effect bleed):
 	----> Apply Aura
 	-----> Mechanic Bleeding: https://www.wowhead.com/spells/mechanic:15?filter=109;6;0
-	-----> Physical DoT > Damage Type
-	------> None:	https://www.wowhead.com/spells/school:0?filter=29:40;3:1;0:0
-	------> Magic:	https://www.wowhead.com/spells/school:0?filter=29:40;3:2;0:0
-	------> Melee:	https://www.wowhead.com/spells/school:0?filter=29:40;3:3;0:0
-	------> Ranged:	https://www.wowhead.com/spells/school:0?filter=29:40;3:4;0:0
+	-----> Physical DoT
+	------> Damage Type I
+	-------> None: https://www.wowhead.com/spells/school:0?filter=29:40;3:1;0:0
+	-------> Magic: https://www.wowhead.com/spells/school:0?filter=29:40;3:2;0:0
+	-------> Melee: https://www.wowhead.com/spells/school:0?filter=29:40;3:3;0:0
+	-------> Ranged: https://www.wowhead.com/spells/school:0?filter=29:40;3:4;0:0
+	------> Damage Type II
+	-------> None: https://www.wowhead.com/spells/school:0?filter=29:40;70:1;0:0
+	-------> Magic: https://www.wowhead.com/spells/school:0?filter=29:40;70:2;0:0
+	-------> Melee: https://www.wowhead.com/spells/school:0?filter=29:40;70:3;0:0
+	-------> Ranged: https://www.wowhead.com/spells/school:0?filter=29:40;70:4;0:0
 
 	BleedList[703] = "Garrote"
 	BleedList[1079] = "Rip"
@@ -120,7 +144,6 @@ if Retail then
 	BleedList[35318] = "Saw Blade"
 	BleedList[35321] = "Gushing Wound"
 	BleedList[36023] = "Deathblow"
-	BleedList[36054] = "Deathblow"
 	BleedList[36332] = "Rake"
 	BleedList[36383] = "Carnivorous Bite"
 	BleedList[36590] = "Rip"
@@ -190,6 +213,7 @@ if Retail then
 	BleedList[58830] = "Wounding Strike"
 	BleedList[58978] = "Impale"
 	BleedList[59007] = "Flesh Rot"
+	BleedList[59023] = "Puncturing Strike"
 	BleedList[59239] = "Rend"
 	BleedList[59256] = "Impale"
 	BleedList[59262] = "Grievous Wound"
@@ -344,6 +368,7 @@ if Retail then
 	BleedList[155701] = "Serrated Slash"
 	BleedList[155722] = "Rake"
 	BleedList[157344] = "Vital Strike"
+	BleedList[158020] = "Rearing Charge"
 	BleedList[158150] = "Goring Swipe"
 	BleedList[158341] = "Gushing Wounds"
 	BleedList[158453] = "Rending Swipe"
@@ -434,7 +459,6 @@ if Retail then
 	BleedList[193340] = "Fenri's Bite"
 	BleedList[193585] = "Bound"
 	BleedList[193639] = "Bone Chomp"
-	BleedList[194279] = "Caltrops"
 	BleedList[194636] = "Cursed Rend"
 	BleedList[194639] = "Rending Claws"
 	BleedList[194674] = "Barbed Spear"
@@ -442,6 +466,7 @@ if Retail then
 	BleedList[195279] = "Bind"
 	BleedList[195506] = "Razorsharp Axe"
 	BleedList[196111] = "Jagged Claws"
+	BleedList[196122] = "Severing Swipe"
 	BleedList[196189] = "Bloody Talons"
 	BleedList[196313] = "Lacerating Talons"
 	BleedList[196376] = "Grievous Tear"
@@ -449,6 +474,7 @@ if Retail then
 	BleedList[197359] = "Shred"
 	BleedList[197381] = "Exposed Wounds"
 	BleedList[197546] = "Brutal Glaive"
+	BleedList[197863] = "Gore"
 	BleedList[199108] = "Frantic Gore"
 	BleedList[199146] = "Bucking Charge"
 	BleedList[199337] = "Bear Trap"
@@ -478,7 +504,9 @@ if Retail then
 	BleedList[213824] = "Rending Pounce"
 	BleedList[213933] = "Harpoon Swipe"
 	BleedList[213990] = "Shard Bore"
+	BleedList[214424] = "Gore"
 	BleedList[214676] = "Razorsharp Teeth"
+	BleedList[214967] = "Bloody Blade"
 	BleedList[215442] = "Shred"
 	BleedList[215506] = "Jagged Quills"
 	BleedList[215537] = "Trauma"
@@ -523,10 +551,12 @@ if Retail then
 	BleedList[231003] = "Barbed Talons"
 	BleedList[231998] = "Jagged Abrasion"
 	BleedList[232135] = "Bloody Jab"
+	BleedList[234052] = "Whirlwind"
 	BleedList[235832] = "Bloodletting Strike"
 	BleedList[237346] = "Rend"
 	BleedList[238594] = "Ripper Blade"
 	BleedList[238618] = "Fel Swipe"
+	BleedList[238660] = "Wild Swipe"
 	BleedList[240449] = "Grievous Wound"
 	BleedList[240539] = "Wild Bite"
 	BleedList[240559] = "Grievous Wound"
@@ -553,17 +583,18 @@ if Retail then
 	BleedList[255299] = "Bloodletting"
 	BleedList[255434] = "Serrated Teeth"
 	BleedList[255595] = "Chomp"
+	BleedList[255627] = "Piercing Thrust"
 	BleedList[255814] = "Rending Maul"
 	BleedList[256077] = "Gore"
 	BleedList[256314] = "Barbed Strike"
 	BleedList[256363] = "Ripper Punch"
 	BleedList[256476] = "Rending Whirl"
+	BleedList[256709] = "Singing Steel"
 	BleedList[256715] = "Jagged Maw"
 	BleedList[256880] = "Bone Splinter"
 	BleedList[256914] = "Barbed Blade"
 	BleedList[256965] = "Thorned Barrage"
 	BleedList[257036] = "Feral Charge"
-	BleedList[257170] = "Savage Tempest"
 	BleedList[257250] = "Bramblepelt"
 	BleedList[257544] = "Jagged Cut"
 	BleedList[257790] = "Gutripper"
@@ -583,28 +614,34 @@ if Retail then
 	BleedList[259983] = "Pierce"
 	BleedList[260016] = "Itchy Bite"
 	BleedList[260025] = "Rending Whirl"
+	BleedList[260291] = "Rending Cut"
 	BleedList[260400] = "Rend"
 	BleedList[260455] = "Serrated Fangs"
 	BleedList[260563] = "Gnaw"
 	BleedList[260582] = "Gushing Wound"
 	BleedList[260741] = "Jagged Nettles"
 	BleedList[261882] = "Steel Jaw Trap"
+	BleedList[261910] = "Cutting Slash"
 	BleedList[262115] = "Deep Wounds"
 	BleedList[262143] = "Ravenous Claws"
 	BleedList[262557] = "Rake"
 	BleedList[262677] = "Keelhaul"
 	BleedList[262875] = "Papercut"
 	BleedList[263144] = "Talon Slash"
+	BleedList[263900] = "Rending Bite"
 	BleedList[264145] = "Shatter"
 	BleedList[264150] = "Shatter"
 	BleedList[264210] = "Jagged Mandible"
 	BleedList[264556] = "Tearing Strike"
+	BleedList[264688] = "Goring Tusk"
 	BleedList[265019] = "Savage Cleave"
 	BleedList[265074] = "Rend"
 	BleedList[265165] = "Charging Gore"
 	BleedList[265232] = "Rend"
+	BleedList[265341] = "Twin Cleave"
 	BleedList[265377] = "Hooked Snare"
 	BleedList[265533] = "Blood Maw"
+	BleedList[265536] = "Rending Bite"
 	BleedList[265948] = "Denticulated"
 	BleedList[266035] = "Bone Splinter"
 	BleedList[266191] = "Whirling Axe"
@@ -616,37 +653,54 @@ if Retail then
 	BleedList[267441] = "Serrated Axe"
 	BleedList[267523] = "Cutting Surge"
 	BleedList[269576] = "Master Marksman"
+	BleedList[269882] = "Overpowering Strike"
 	BleedList[270084] = "Axe Barrage"
 	BleedList[270139] = "Gore"
 	BleedList[270343] = "Internal Bleeding"
 	BleedList[270473] = "Serrated Arrows"
 	BleedList[270487] = "Severing Blade"
 	BleedList[270979] = "Rend and Tear"
+	BleedList[270992] = "Rend Flesh"
 	BleedList[271178] = "Ravaging Leap"
 	BleedList[271798] = "Click"
+	BleedList[272106] = "Rending Slash"
 	BleedList[272273] = "Rending Cleave"
 	BleedList[273436] = "Gore"
 	BleedList[273632] = "Gaping Maw"
 	BleedList[273794] = "Rezan's Fury"
+	BleedList[273871] = "Shredding Claws"
 	BleedList[273900] = "Bramble Swipe"
 	BleedList[273909] = "Steelclaw Trap"
 	BleedList[274089] = "Rend"
 	BleedList[274389] = "Rat Traps"
 	BleedList[274838] = "Feral Frenzy"
+	BleedList[275090] = "Severing Swipe"
+	BleedList[275570] = "Ravage"
 	BleedList[275895] = "Rend of Kimbul"
 	BleedList[276868] = "Impale"
+	BleedList[276887] = "Hacking Slash"
+	BleedList[277014] = "Bloody Maul"
+	BleedList[277073] = "Jagged Blade"
 	BleedList[277077] = "Big Sharp Nasty Teeth"
 	BleedList[277309] = "Jagged Maw"
 	BleedList[277431] = "Hunter Toxin"
+	BleedList[277491] = "Crippling Strike"
+	BleedList[277505] = "Spiked Shield"
 	BleedList[277517] = "Serrated Slash"
 	BleedList[277569] = "Bloodthirsty Rend"
 	BleedList[277592] = "Blood Frenzy"
 	BleedList[277794] = "Paw Swipe"
+	BleedList[278139] = "Sharp Beak"
 	BleedList[278175] = "Bramble Claw"
+	BleedList[278396] = "Sever Artery"
+	BleedList[278397] = "Slashing Talons"
+	BleedList[278483] = "Toll"
 	BleedList[278570] = "Boils and Sores"
 	BleedList[278733] = "Deep Wound"
 	BleedList[278866] = "Carve and Spit"
+	BleedList[278950] = "Pouncing Claws"
 	BleedList[279133] = "Rend"
+	BleedList[279272] = "Puncturing Digit"
 	BleedList[280286] = "Dagger in the Back"
 	BleedList[280321] = "Garrote"
 	BleedList[280940] = "Mangle"
@@ -663,6 +717,7 @@ if Retail then
 	BleedList[286269] = "Mangle"
 	BleedList[288091] = "Gushing Wound"
 	BleedList[288266] = "Mangle"
+	BleedList[288516] = "Lacerating Swipe"
 	BleedList[288535] = "Rip"
 	BleedList[288539] = "Mangle"
 	BleedList[289355] = "Smoldering Rend"
@@ -679,6 +734,8 @@ if Retail then
 	BleedList[295929] = "Rats!"
 	BleedList[295945] = "Rat Traps"
 	BleedList[296777] = "Bleeding Wound"
+	BleedList[297447] = "Sucking Teeth"
+	BleedList[298029] = "Pincer Snap"
 	BleedList[299474] = "Ripping Slash"
 	BleedList[299502] = "Nanoslicer"
 	BleedList[299923] = "Tear Flesh"
@@ -687,9 +744,11 @@ if Retail then
 	BleedList[301712] = "Pounce"
 	BleedList[302295] = "Slicing Claw"
 	BleedList[302474] = "Phantom Laceration"
+	BleedList[302972] = "Rearing Charge"
 	BleedList[303162] = "Carve Flesh"
 	BleedList[303215] = "Shell Slash"
 	BleedList[303501] = "Rending Strike"
+	BleedList[304453] = "Hydra Maw"
 	BleedList[308342] = "Bore"
 	BleedList[308859] = "Carnivorous Bite"
 	BleedList[308891] = "Jagged Chop"
@@ -698,6 +757,7 @@ if Retail then
 	BleedList[311122] = "Jagged Wound"
 	BleedList[311744] = "Deep Wound"
 	BleedList[311748] = "Lacerating Swipe"
+	BleedList[313469] = "Rend"
 	BleedList[313674] = "Jagged Wound"
 	BleedList[313734] = "Ravaging Leap"
 	BleedList[313747] = "Rend"
@@ -706,9 +766,9 @@ if Retail then
 	BleedList[314160] = "Penetrating Lance"
 	BleedList[314454] = "Thrashing Lunge"
 	BleedList[314531] = "Tear Flesh"
-	BleedList[314533] = "Rend"
 	BleedList[314568] = "Deep Wound"
 	BleedList[314847] = "Decapitate"
+	BleedList[314852] = "Rearing Charge"
 	BleedList[315311] = "Ravage"
 	BleedList[315711] = "Serrated Strike"
 	BleedList[315805] = "Crippler"
@@ -718,10 +778,14 @@ if Retail then
 	BleedList[317916] = "Razor Clip"
 	BleedList[318187] = "Gushing Wound"
 	BleedList[319127] = "Gore"
+	BleedList[319145] = "Rending Maul"
 	BleedList[319275] = "Razor Wing"
+	BleedList[319821] = "Regal Bite"
 	BleedList[320007] = "Gash"
 	BleedList[320147] = "Bleeding"
 	BleedList[320200] = "Stitchneedle"
+	BleedList[320617] = "Thrashing Whirl"
+	BleedList[321043] = "Vital Slice"
 	BleedList[321538] = "Bloodshed"
 	BleedList[321807] = "Boneflay"
 	BleedList[322429] = "Severing Slice"
@@ -738,7 +802,6 @@ if Retail then
 	BleedList[325037] = "Death Chakram"
 	BleedList[326298] = "Bleeding Wound"
 	BleedList[326586] = "Crimson Flurry"
-	BleedList[327258] = "Rend"
 	BleedList[327814] = "Wicked Gash"
 	BleedList[328287] = "Heart Strike"
 	BleedList[328897] = "Exsanguinated"
@@ -747,6 +810,7 @@ if Retail then
 	BleedList[329293] = "Vorpal Wound"
 	BleedList[329516] = "Swift Slash"
 	BleedList[329563] = "Goring Swipe"
+	BleedList[329609] = "Ravage"
 	BleedList[329906] = "Carnage"
 	BleedList[329986] = "Maul"
 	BleedList[329990] = "Craggy Swipe"
@@ -793,6 +857,7 @@ if Retail then
 	BleedList[341833] = "Rending Cleave"
 	BleedList[341863] = "Bleeding Out"
 	BleedList[342250] = "Jagged Swipe"
+	BleedList[342391] = "Culling Cleave"
 	BleedList[342464] = "Javelin Flurry"
 	BleedList[342675] = "Bone Spear"
 	BleedList[343159] = "Stone Claws"
@@ -803,6 +868,8 @@ if Retail then
 	BleedList[345548] = "Spare Meat Hook"
 	BleedList[346770] = "Grinding Bite"
 	BleedList[346807] = "Rending Roar"
+	BleedList[346823] = "Furious Cleave"
+	BleedList[347227] = "Weighted Blade"
 	BleedList[347716] = "Letter Opener"
 	BleedList[347807] = "Barbed Arrow"
 	BleedList[348074] = "Assailing Lance"
@@ -829,6 +896,7 @@ if Retail then
 	BleedList[357322] = "Night Glaive"
 	BleedList[357665] = "Crystalline Flesh"
 	BleedList[357827] = "Frantic Rip"
+	BleedList[357938] = "Gnashing Teeth"
 	BleedList[357953] = "Fanged Bite"
 	BleedList[358197] = "Searing Scythe"
 	BleedList[358224] = "Jagged Swipe"
@@ -839,11 +907,13 @@ if Retail then
 	BleedList[360826] = "Rupture"
 	BleedList[360830] = "Garrote"
 	BleedList[361024] = "Thief's Blade"
+	BleedList[361042] = "Hardlight Assassination"
 	BleedList[361049] = "Bleeding Gash"
 	BleedList[361756] = "Death Chakram"
 	BleedList[362149] = "Ascended Phalanx"
 	BleedList[362194] = "Suffering"
 	BleedList[362819] = "Rend"
+	BleedList[363124] = "Hardlight Assassination"
 	BleedList[363830] = "Sickle of the Lion"
 	BleedList[363831] = "Bleeding Soul"
 	BleedList[365336] = "Rending Bite"
@@ -865,17 +935,23 @@ if Retail then
 	BleedList[372224] = "Dragonbone Axe"
 	BleedList[372397] = "Vicious Bite"
 	BleedList[372404] = "Rend"
+	BleedList[372474] = "Bloodletting"
 	BleedList[372570] = "Bold Ambush"
 	BleedList[372718] = "Earthen Shards"
 	BleedList[372796] = "Blazing Rush"
 	BleedList[372860] = "Searing Wounds"
 	BleedList[373735] = "Dragon Strike"
 	BleedList[373947] = "Rending Swipe"
+	BleedList[374135] = "Gore"
+	BleedList[374865] = "Rending Claw"
+	BleedList[374892] = "Gore"
 	BleedList[375201] = "Talon Rip"
 	BleedList[375416] = "Bleeding"
+	BleedList[375420] = "Woodchipper"
 	BleedList[375475] = "Rending Bite"
 	BleedList[375803] = "Mammoth Trap"
-	BleedList[375893] = "Death Chakram"
+	BleedList[375893] = "Chakram"
+	BleedList[375919] = "Severing Slice"
 	BleedList[375937] = "Rending Strike"
 	BleedList[376997] = "Savage Peck"
 	BleedList[376999] = "Thrash"
@@ -883,23 +959,31 @@ if Retail then
 	BleedList[377344] = "Peck"
 	BleedList[377609] = "Dragon Rend"
 	BleedList[377732] = "Jagged Bite"
+	BleedList[377854] = "Throat Gash"
 	BleedList[378020] = "Gash Frenzy"
 	BleedList[378118] = "Knocked Down"
+	BleedList[378957] = "Spearhead"
+	BleedList[378995] = "Deadly Rush"
 	BleedList[381575] = "Lacerate"
 	BleedList[381628] = "Internal Bleeding"
 	BleedList[381672] = "Mutilated Flesh"
 	BleedList[381692] = "Swift Stab"
 	BleedList[384134] = "Pierce"
 	BleedList[384148] = "Ensnaring Trap"
+	BleedList[384366] = "Talon Rake"
+	BleedList[384473] = "Skewer"
 	BleedList[384575] = "Crippling Bite"
 	BleedList[385042] = "Gushing Wound"
 	BleedList[385060] = "Odyn's Fury"
+	BleedList[385145] = "Chomp"
+	BleedList[385363] = "Gore"
 	BleedList[385511] = "Messy"
 	BleedList[385638] = "Razor Fragments"
 	BleedList[385834] = "Bloodthirsty Charge"
 	BleedList[385905] = "Tailstrike"
 	BleedList[386116] = "Messy"
 	BleedList[386640] = "Tear Flesh"
+	BleedList[387049] = "Shredding Bite"
 	BleedList[387205] = "Beak Rend"
 	BleedList[387473] = "Big Sharp Teeth"
 	BleedList[387809] = "Splatter!"
@@ -907,6 +991,7 @@ if Retail then
 	BleedList[388377] = "Rending Slash"
 	BleedList[388473] = "Feeding Frenzy"
 	BleedList[388539] = "Rend"
+	BleedList[388745] = "Slicing Claw"
 	BleedList[388912] = "Severing Slash"
 	BleedList[389505] = "Rending Slice"
 	BleedList[389881] = "Spearhead"
@@ -926,6 +1011,7 @@ if Retail then
 	BleedList[392341] = "Mighty Swipe"
 	BleedList[392411] = "Beetle Thrust"
 	BleedList[392416] = "Beetle Charge"
+	BleedList[392734] = "Raking Slice"
 	BleedList[392841] = "Hungry Chomp"
 	BleedList[393426] = "Spear Swipe"
 	BleedList[393444] = "Gushing Wound"
@@ -969,6 +1055,7 @@ if Retail then
 	BleedList[404978] = "Devastating Rend"
 	BleedList[405233] = "Thrash"
 	BleedList[406183] = "Time Slash"
+	BleedList[406215] = "Vicious Bite"
 	BleedList[406365] = "Rending Charge"
 	BleedList[406499] = "Ravening Leaps"
 	BleedList[407120] = "Serrated Axe"
@@ -987,6 +1074,8 @@ if Retail then
 	BleedList[414506] = "Lacerate"
 	BleedList[414552] = "Stonecrack"
 	BleedList[416258] = "Stonebolt"
+	BleedList[417751] = "Skewer"
+	BleedList[417928] = "Burning Claws"
 	BleedList[418009] = "Serrated Arrows"
 	BleedList[418160] = "Sawblade-Storm"
 	BleedList[418624] = "Rending Slash"
@@ -994,12 +1083,143 @@ if Retail then
 	BleedList[422683] = "Thrash"
 	BleedList[423431] = "Crushing Blow"
 	BleedList[424065] = "Umbral Destruction"
+	BleedList[424414] = "Pierce Armor"
+	BleedList[424426] = "Lunging Strike"
 	BleedList[424493] = "Shadow Rupture"
+	BleedList[425555] = "Crude Weapons"
 	BleedList[426284] = "Finishing Wound"
 	BleedList[426587] = "Bramble Burst"
 	BleedList[426660] = "Razor Jaws"
 	BleedList[427182] = "Bloody Pounce"
+	BleedList[427621] = "Impale"
+	BleedList[427635] = "Grievous Rip"
 	BleedList[429233] = "Rezan's Fury"
+	BleedList[431491] = "Tainted Slash"
+	BleedList[432035] = "Slashing Menace"
+	BleedList[432416] = "Treacherous Blow"
+	BleedList[433825] = "Blood Feast"
+	BleedList[434773] = "Mean Mug"
+	BleedList[434860] = "Phase Blades"
+	BleedList[438599] = "Bleeding Jab"
+	BleedList[438975] = "Shredding Sting"
+	BleedList[439037] = "Disembowel"
+	BleedList[439468] = "Downward Trend"
+	BleedList[439531] = "Bloodseeker Vines"
+	BleedList[440107] = "Knife Throw"
+	BleedList[440143] = "Feral Swipe"
+	BleedList[440231] = "Cleaving Strikes"
+	BleedList[440912] = "Lash"
+	BleedList[441294] = "Jagged Strike"
+	BleedList[441314] = "Lacerated Wound"
+	BleedList[441413] = "Shredding Sting"
+	BleedList[441812] = "Dreadful Wound"
+	BleedList[443694] = "Crude Weapons"
+	BleedList[443926] = "Ironweave Garrote"
+	BleedList[444944] = "Talon Shred"
+	BleedList[445184] = "Ambush"
+	BleedList[445251] = "Rupturing Bite"
+	BleedList[445311] = "Pincer Slice"
+	BleedList[445497] = "Shred"
+	BleedList[446535] = "Goring Charge"
+	BleedList[447268] = "Skullsplitter"
+	BleedList[447272] = "Hurl Spear"
+	BleedList[448818] = "Scratch"
+	BleedList[449585] = "Deep Cut"
+	BleedList[449886] = "Deephunter's Bloody Hook"
+	BleedList[449960] = "Fresh Cut"
+	BleedList[450176] = "Jagged Slash"
+	BleedList[450205] = "Clawing Pounce"
+	BleedList[451177] = "Dreadful Wound"
+	BleedList[451246] = "Jagged Slash"
+	BleedList[452730] = "Domineering Gore"
+	BleedList[452830] = "Gore Charge"
+	BleedList[453031] = "Fury of the Roots"
+	BleedList[453461] = "Caltrops"
+	BleedList[453551] = "Bloodletting Rend"
+	BleedList[453792] = "Brutal Strikes"
+	BleedList[453919] = "Blood Frenzy"
+	BleedList[453947] = "Jagged Maw"
+	BleedList[454357] = "Piercing Spear"
+	BleedList[454472] = "Gash Frenzy"
+	BleedList[454539] = "Talon Swipe"
+	BleedList[454587] = "Serrated Teeth"
+	BleedList[454694] = "Headbutt"
+	BleedList[454783] = "Devouring Rift"
+	BleedList[454922] = "Slashing Claws"
+	BleedList[454951] = "Skewer Flesh"
+	BleedList[455543] = "Crushing Claws"
+	BleedList[455815] = "Harvest Cabbage"
+	BleedList[455896] = "Flurry of Steel"
+	BleedList[455901] = "Gut Stab"
+	BleedList[456145] = "Rake"
+	BleedList[456147] = "Vicious Peck"
+	BleedList[456265] = "Severing Thrash"
+	BleedList[456284] = "Heroic Slash"
+	BleedList[456516] = "Berserker Charge"
+	BleedList[456851] = "Rock Needle"
+	BleedList[457947] = "Limb-shredder Tornado"
+	BleedList[458010] = "Deep Wounds"
+	BleedList[458409] = "Goring Horn"
+	BleedList[458771] = "Ravage"
+	BleedList[459495] = "Soul Reaper"
+	BleedList[459560] = "Laceration"
+	BleedList[459753] = "Ravenous Leap"
+	BleedList[459870] = "Merciless Blow"
+	BleedList[461850] = "Piercing Fangs"
+	BleedList[462018] = "Barbed Bolt"
+	BleedList[463227] = "Splintered"
+	BleedList[464064] = "Stab of Rubenstein"
+	BleedList[464181] = "Bleeding"
+	BleedList[464358] = "Rend"
+	BleedList[464570] = "Toe-Slash"
+	BleedList[465089] = "Shrapnel Blast"
+	BleedList[465102] = "Sundering Bash"
+	BleedList[465189] = "Grievous Thrashing"
+	BleedList[465213] = "Bloody Slash"
+	BleedList[465223] = "Blood Tithe"
+	BleedList[465240] = "Blood Rush"
+	BleedList[465247] = "Leg Rip"
+	BleedList[465261] = "Perforate Flesh"
+	BleedList[465271] = "Heart Shot"
+	BleedList[465326] = "Rend Flesh"
+	BleedList[466606] = "Serrated Bite"
+	BleedList[467105] = "Ravenous Charge"
+	BleedList[468229] = "Slashing Prices"
+	BleedList[468457] = "Rend"
+	BleedList[468631] = "Harpoon"
+	BleedList[468873] = "Thrash"
+	BleedList[468885] = "Rip"
+	BleedList[468934] = "Rake"
+	BleedList[469391] = "Perforating Wound"
+	BleedList[469700] = "Stab"
+	BleedList[470005] = "Vicious Bite"
+	BleedList[470154] = "Latched On"
+	BleedList[470241] = "Shred"
+	BleedList[470383] = "Talon Shred"
+	BleedList[470632] = "Rend"
+	BleedList[470695] = "Mech-a-Zoomies"
+	BleedList[470903] = "Phantom Strikes"
+	BleedList[471076] = "Chomp"
+	BleedList[471442] = "Rabid Charge"
+	BleedList[472196] = "Rending Maul"
+	BleedList[472855] = "Shred"
+	BleedList[474201] = "Gore"
+	BleedList[474271] = "Drillstrike"
+	BleedList[1213141] = "Heavy Slash"
+	BleedList[1213803] = "Nailed"
+	BleedList[1213848] = "Wrecking Ball"
+	BleedList[1214068] = "Grievous Bite"
+	BleedList[1214653] = "Buzz-Saw"
+	BleedList[1215411] = "Puncture"
+	BleedList[1216056] = "Talon Shred"
+	BleedList[1216467] = "Lacerated"
+	BleedList[1217261] = "Screwed!"
+	BleedList[1217375] = "Merciless Blow"
+	BleedList[1217677] = "Flesh Wound"
+	BleedList[1218140] = "Junksaws"
+	BleedList[1218302] = "Punctured"
+	BleedList[1221386] = "Spearhead"
+	BleedList[1227293] = "Gushing Wound"
 end
 
 function lib:GetDebuffTypeColor()
@@ -1056,24 +1276,31 @@ do
 		end
 	end
 
+	local function CheckTalentClassic(tabIndex, talentIndex)
+		local _, _, _, _, rank = GetTalentInfo(tabIndex, talentIndex)
+		return (rank and rank > 0) or nil
+	end
+
 	local function UpdateDispels(_, event, arg1)
-		if event == 'CHARACTER_POINTS_CHANGED' and arg1 > 0 then
+		if event == 'CHARACTER_POINTS_CHANGED' and (not arg1 or arg1 > 0) then
 			return -- Not interested in gained points from leveling
 		end
 
 		-- this will fix a problem where spells dont show as existing because they are 'hidden'
-		local undoRanks = (not Retail and GetCVar('ShowAllSpellRanks') ~= '1') and SetCVar('ShowAllSpellRanks', '1')
+		local undoRanks = (Classic and GetCVar('ShowAllSpellRanks') ~= '1') and SetCVar('ShowAllSpellRanks', '1')
 
 		if event == 'UNIT_PET' then
 			DispelList.Magic = CheckPetSpells()
 		elseif myClass == 'DRUID' then
-			local cure = Retail and CheckSpell(88423) -- Nature's Cure
-			local corruption = CheckSpell(2782) -- Remove Corruption (retail), Curse (classic)
-			DispelList.Magic = cure
+			local cure = Retail and CheckSpell(88423) -- Nature's Cure Spell
+			local corruption = CheckSpell(2782) -- Remove Corruption (retail), Remove Curse (classic)
+			DispelList.Magic = cure or (Cata and corruption and CheckTalentClassic(3, 15)) -- Nature's Cure Talent
+			DispelList.Poison = cure or (not Classic and corruption) or CheckSpell(2893) or CheckSpell(8946) -- Abolish Poison / Cure Poison
 			DispelList.Curse = cure or corruption
-			DispelList.Poison = cure or (Retail and corruption) or CheckSpell(2893) or CheckSpell(8946) -- Abolish Poison / Cure Poison
 		elseif myClass == 'MAGE' then
-			DispelList.Curse = CheckSpell(475) -- Remove Curse
+			local greater = CheckSpell(412113)
+			DispelList.Curse = greater or CheckSpell(475) -- Remove Curse
+			DispelList.Magic = greater
 		elseif myClass == 'MONK' then
 			local mwDetox = CheckSpell(115450) -- Detox (Mistweaver)
 			local detox = mwDetox or CheckSpell(218164) -- Detox (Brewmaster or Windwalker)
@@ -1084,7 +1311,7 @@ do
 			local cleanse = CheckSpell(4987) -- Cleanse
 			local purify = CheckSpell(1152) -- Purify
 			local toxins = cleanse or purify or CheckSpell(213644) -- Cleanse Toxins
-			DispelList.Magic = cleanse
+			DispelList.Magic = cleanse and (not Cata or CheckTalentClassic(1, 7)) -- Sacred Cleansing
 			DispelList.Poison = toxins
 			DispelList.Disease = toxins
 		elseif myClass == 'PRIEST' then
@@ -1093,19 +1320,23 @@ do
 			DispelList.Disease = Retail and (IsPlayerSpell(390632) or CheckSpell(213634)) or not Retail and (CheckSpell(552) or CheckSpell(528)) -- Purify Disease / Abolish Disease / Cure Disease
 		elseif myClass == 'SHAMAN' then
 			local purify = Retail and CheckSpell(77130) -- Purify Spirit
-			local cleanse = purify or CheckSpell(51886) -- Cleanse Spirit
-			local toxins = Retail and CheckSpell(383013) or CheckSpell(526) -- Poison Cleansing Totem (Retail), Cure Toxins (TBC/Classic)
+			local cleanse = purify or CheckSpell(51886) -- Cleanse Spirit (Retail/Cata)
+			local improvedCleanse = Cata and cleanse and CheckTalentClassic(3, 14) -- Improved Cleanse Spirit
+			local toxins = Retail and CheckSpell(383013) or CheckSpell(526) -- Poison Cleansing Totem (Retail), Cure Toxins (Classic)
+			local cureDisease = Classic and CheckSpell(2870) -- Cure Disease
+			local diseaseTotem = Classic and CheckSpell(8170) -- Disease Cleansing Totem
 
-			DispelList.Magic = purify
+			DispelList.Magic = purify or improvedCleanse
 			DispelList.Curse = cleanse
-			DispelList.Poison = toxins or (not Retail and cleanse)
-			DispelList.Disease = not Retail and (cleanse or toxins)
+			DispelList.Poison = toxins
+			DispelList.Disease = cureDisease or diseaseTotem
 		elseif myClass == 'EVOKER' then
 			local naturalize = CheckSpell(360823) -- Naturalize (Preservation)
 			local expunge = CheckSpell(365585) -- Expunge (Devastation)
 			local cauterizing = CheckSpell(374251) -- Cauterizing Flame
+			local scouringFlame = CheckSpell(378438) -- Scouring Flame (PvP Talent)
 
-			DispelList.Magic = naturalize
+			DispelList.Magic = naturalize or scouringFlame
 			DispelList.Poison = naturalize or expunge or cauterizing
 			DispelList.Disease = cauterizing
 			DispelList.Curse = cauterizing
@@ -1127,16 +1358,14 @@ do
 	local frame = lib.frame
 	frame:SetScript('OnEvent', UpdateDispels)
 	frame:RegisterEvent('CHARACTER_POINTS_CHANGED')
-	frame:RegisterEvent('PLAYER_LOGIN')
+	frame:RegisterEvent('LEARNED_SPELL_IN_TAB')
+	frame:RegisterEvent('SPELLS_CHANGED')
+
+	if Retail or Cata then
+		frame:RegisterEvent('PLAYER_TALENT_UPDATE')
+	end
 
 	if myClass == 'WARLOCK' then
 		frame:RegisterUnitEvent('UNIT_PET', 'player')
-	end
-
-	if Wrath then
-		frame:RegisterEvent('PLAYER_TALENT_UPDATE')
-	elseif Retail then
-		frame:RegisterEvent('LEARNED_SPELL_IN_TAB')
-		frame:RegisterUnitEvent('PLAYER_SPECIALIZATION_CHANGED', 'player')
 	end
 end

@@ -49,12 +49,12 @@ function GSE.lines(tab, str)
 end
 
 --- Convert a string to an array of lines.
-function GSE.SplitMeIntolines(str)
-    --GSE.PrintDebugMessage("Entering GSTRSplitMeIntolines with : \n" .. str, GNOME)
+function GSE.SplitMeIntoLines(str)
+    --GSE.PrintDebugMessage("Entering GSTRSplitMeIntoLines with : \n" .. str, GNOME)
     local t = {}
     local function helper(line)
         table.insert(t, line)
-        GSE.PrintDebugMessage("Line : " .. line, GNOME)
+        GSE.PrintDebugMessage("Line : " .. line, Statics.GSEString)
         return ""
     end
     helper((str:gsub("(.-)\r?\n", helper)))
@@ -198,7 +198,12 @@ function GSE.Dump(node)
                         cache[node] = cur_index + 1
                         break
                     else
-                        output_str = output_str .. string.rep("\t", depth) .. key .. ' = "' .. tostring(v) .. '"'
+                        if #GSE.SplitMeIntoLines(v) > 1 then
+                            output_str =
+                                output_str .. string.rep("\t", depth) .. key .. " = [[\n" .. tostring(v) .. "\n]]"
+                        else
+                            output_str = output_str .. string.rep("\t", depth) .. key .. ' = "' .. tostring(v) .. '"'
+                        end
                     end
 
                     if (cur_index == size) then
@@ -262,11 +267,11 @@ end
 function GSE.DecodeTimeStamp(stamp)
     local tab = {}
     tab.year = stamp:sub(1, 4)
-    tab.month = stamp:sub(5, 2)
-    tab.day = stamp:sub(7, 2)
-    tab.hour = stamp:sub(9, 2)
-    tab.hour = stamp:sub(11, 2)
-    tab.sec = stamp:sub(13, 2)
+    tab.month = stamp:sub(5, 6)
+    tab.day = stamp:sub(7, 8)
+    tab.hour = stamp:sub(9, 10)
+    tab.minute = stamp:sub(11, 12)
+    tab.sec = stamp:sub(13, 14)
     return tab
 end
 
@@ -344,7 +349,7 @@ function GSE.RemoveComments(str)
     end
     local tab = str
     if type(str) ~= "table" then
-        tab = GSE.SplitMeIntolines(str)
+        tab = GSE.SplitMeIntoLines(str)
     end
 
     for i = #tab, 1, -1 do
@@ -396,8 +401,41 @@ function GSE.SafeConcat(tab, delimiter)
     return output
 end
 
-GSE.DebugProfile("StringFunctions")
-
 function GSE.NewTable()
     return {}
 end
+
+function GSE.FlattenTable(v)
+    local res = {}
+    local function flatten(v)
+        if v.type then
+            table.insert(res, v)
+            return
+        end
+        if v.Interval then
+            table.insert(res, v)
+            return
+        end
+        for _, v2 in ipairs(v) do
+            flatten(v2)
+        end
+    end
+    flatten(v)
+    return res
+end
+
+function GSE.AlphabeticalTableSortAlgorithm(a, b)
+    local function padnum(d)
+        local dec, n = string.match(d, "(%.?)0*(.+)")
+        return #dec > 0 and ("%.12f"):format(d) or ("%s%03d%s"):format(dec, #n, n)
+    end
+    return tostring(a):gsub("%.?%d+", padnum) .. ("%3d"):format(#b) <
+        tostring(b):gsub("%.?%d+", padnum) .. ("%3d"):format(#a)
+end
+
+function GSE.SortTableAlphabetical(o)
+    table.sort(o, GSE.AlphabeticalTableSortAlgorithm)
+    return o
+end
+
+GSE.DebugProfile("StringFunctions")

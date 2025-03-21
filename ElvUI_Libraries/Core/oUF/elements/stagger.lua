@@ -42,11 +42,10 @@ local UnitIsUnit = UnitIsUnit
 local UnitStagger = UnitStagger
 -- end block
 
--- sourced from FrameXML/Constants.lua
+-- sourced from Blizzard_FrameXMLBase/Constants.lua
 local SPEC_MONK_BREWMASTER = _G.SPEC_MONK_BREWMASTER or 1
 
--- sourced from FrameXML/MonkStaggerBar.lua
-local BREWMASTER_POWER_BAR_NAME = _G.BREWMASTER_POWER_BAR_NAME or 'STAGGER'
+local BREWMASTER_POWER_BAR_NAME = 'STAGGER'
 
 -- percentages at which bar should change color
 local STAGGER_YELLOW_TRANSITION =  _G.STAGGER_YELLOW_TRANSITION or 0.3
@@ -170,11 +169,11 @@ local function Visibility(self, event, unit)
 
 	if useClassbar and isShown then
 		element:Hide()
-		self:UnregisterEvent('UNIT_AURA', Path)
+		oUF:UnregisterEvent(self, 'UNIT_AURA', Path)
 		stateChanged = true
 	elseif not useClassbar and not isShown then
 		element:Show()
-		self:RegisterEvent('UNIT_AURA', Path)
+		oUF:RegisterEvent(self, 'UNIT_AURA', Path)
 		stateChanged = true
 	end
 
@@ -200,7 +199,7 @@ local function VisibilityPath(self, ...)
 end
 
 local function ForceUpdate(element)
-	VisibilityPath(element.__owner, 'ForceUpdate', element.__owner.unit)
+	return VisibilityPath(element.__owner, 'ForceUpdate', element.__owner.unit)
 end
 
 local function Enable(self, unit)
@@ -209,8 +208,9 @@ local function Enable(self, unit)
 		element.__owner = self
 		element.ForceUpdate = ForceUpdate
 
+		oUF:RegisterEvent(self, 'PLAYER_TALENT_UPDATE', VisibilityPath, true)
+
 		self:RegisterEvent('UNIT_DISPLAYPOWER', VisibilityPath)
-		self:RegisterEvent('PLAYER_TALENT_UPDATE', VisibilityPath, true)
 
 		if(element:IsObjectType('StatusBar') and not element:GetStatusBarTexture()) then
 			element:SetStatusBarTexture([[Interface\TargetingFrame\UI-StatusBar]])
@@ -228,9 +228,10 @@ local function Disable(self)
 	if(element) then
 		element:Hide()
 
-		self:UnregisterEvent('UNIT_AURA', Path)
+		oUF:UnregisterEvent(self, 'UNIT_AURA', Path)
+		oUF:UnregisterEvent(self, 'PLAYER_TALENT_UPDATE', VisibilityPath)
+
 		self:UnregisterEvent('UNIT_DISPLAYPOWER', VisibilityPath)
-		self:UnregisterEvent('PLAYER_TALENT_UPDATE', VisibilityPath)
 	end
 end
 

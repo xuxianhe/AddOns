@@ -2,14 +2,16 @@ local E, L, V, P, G = unpack(ElvUI)
 local S = E:GetModule('Skins')
 
 local _G = _G
-local pairs = pairs
+local next = next
 local hooksecurefunc = hooksecurefunc
 
 local function SkinPvpTalents(slot)
 	local icon = slot.Texture
 	slot:StripTextures()
-	S:HandleIcon(icon, true)
 	slot.Border:Hide()
+
+	S:HandleIcon(icon, true)
+	icon.backdrop:SetFrameLevel(2)
 end
 
 local function HandleTabs()
@@ -40,10 +42,6 @@ function S:Blizzard_InspectUI()
 	S:HandleButton(_G.InspectPaperDollFrame.ViewButton)
 	S:HandleButton(_G.InspectPaperDollItemsFrame.InspectTalents)
 
-	_G.SpecializationRing:Hide()
-	S:HandleIcon(_G.SpecializationSpecIcon, true)
-	_G.SpecializationSpecIcon:Size(55) -- 70, 70 default size
-
 	-- Create portrait element for the PvP Frame so we can see prestige
 	local InspectPVPFrame = _G.InspectPVPFrame
 	local portrait = InspectPVPFrame:CreateTexture(nil, 'OVERLAY')
@@ -72,7 +70,6 @@ function S:Blizzard_InspectUI()
 	if E.private.skins.parchmentRemoverEnable then
 		_G.InspectGuildFrameBG:Kill()
 		_G.InspectPVPFrame.BG:Kill()
-		_G.InspectTalentFrame:StripTextures()
 	end
 
 	_G.InspectModelFrameBorderTopLeft:Kill()
@@ -89,7 +86,7 @@ function S:Blizzard_InspectUI()
 	InspectModelFrame.BackgroundOverlay:SetColorTexture(0, 0, 0)
 
 	-- Give inspect frame model backdrop it's color back
-	for _, corner in pairs({'TopLeft','TopRight','BotLeft','BotRight'}) do
+	for _, corner in next, { 'TopLeft','TopRight','BotLeft','BotRight' } do
 		local bg = _G['InspectModelFrameBackground'..corner]
 		if bg then
 			bg:SetDesaturated(false)
@@ -102,7 +99,7 @@ function S:Blizzard_InspectUI()
 		end
 	end
 
-	for _, Slot in pairs({_G.InspectPaperDollItemsFrame:GetChildren()}) do
+	for _, Slot in next, { _G.InspectPaperDollItemsFrame:GetChildren() } do
 		if Slot:IsObjectType('Button') or Slot:IsObjectType('ItemButton') then
 			if not Slot.icon then return end
 

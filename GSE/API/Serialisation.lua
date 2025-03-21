@@ -231,7 +231,7 @@ function GSE.DecodeMessage(data)
     return success, final
 end
 
-function GSE.TransmitSequence(key, channel, target)
+function GSE.TransmitSequence(key, channel, target, transmissionFrame)
     local t = {}
     t.Command = "GS-E_TRANSMITSEQUENCE"
     local elements = GSE.split(key, ",")
@@ -242,7 +242,9 @@ function GSE.TransmitSequence(key, channel, target)
     t.SequenceName = SequenceName
     t.Sequence = GSE.Library[classid][SequenceName]
     GSE.sendMessage(t, channel, target)
-    GSE.GUITransmissionFrame:SetStatusText(SequenceName .. L[" sent"])
+    if transmissionFrame then
+        transmissionFrame:SetStatusText(SequenceName .. L[" sent"])
+    end
 end
 
 function GSE.sendMessage(tab, channel, target, priority)
@@ -405,7 +407,7 @@ function GSE:OnCommReceived(prefix, message, channel, sender)
         end
     end
     local success, t = GSE.DecodeMessage(message)
-    if success then
+    if success and t then
         if t.Command == "GS-E_VERSIONCHK" then
             if not GSE.old then
                 GSE.performVersionCheck(t.Version)
@@ -435,7 +437,7 @@ function GSE:OnCommReceived(prefix, message, channel, sender)
             end
         elseif t.Command == "GSE_REQUESTSEQUENCE" then
             if sender ~= GetUnitName("player", true) then
-                if not GSE.isEmpty(GSE3Storage[tonumber(t.ClassID)][t.SequenceName]) then
+                if not GSE.isEmpty(GSESequences[tonumber(t.ClassID)][t.SequenceName]) then
                     GSE.SendSequence(tonumber(t.ClassID), t.SequenceName, sender, "WHISPER")
                 end
             else
@@ -443,7 +445,7 @@ function GSE:OnCommReceived(prefix, message, channel, sender)
             end
         elseif t.Command == "GSE_REQUESTSEQUENCEMETA" then
             if sender ~= GetUnitName("player", true) then
-                if not GSE.isEmpty(GSE3Storage[t.ClassID][t.SequenceName]) then
+                if not GSE.isEmpty(GSESequences[t.ClassID][t.SequenceName]) then
                     GSE.SendSequenceMeta(t.ClassID, t.SequenceName, sender, "WHISPER")
                 end
             else
@@ -451,7 +453,7 @@ function GSE:OnCommReceived(prefix, message, channel, sender)
             end
         elseif t.Command == "GSE_SEQUENCEMETA" then
             if sender ~= GetUnitName("player", true) then
-                if not GSE.isEmpty(GSE3Storage[t.ClassID][t.SequenceName]) then
+                if not GSE.isEmpty(GSESequences[t.ClassID][t.SequenceName]) then
                     local sequence = GSE.Library[t.ClassID][t.SequenceName]
                     if sequence.MetaData.LastUpdated ~= t.LastUpdated then
                         GSE.RequestSequence(t.ClassID, t.SequenceName, sender, "WHISPER")
@@ -467,7 +469,7 @@ function GSE:OnCommReceived(prefix, message, channel, sender)
                         ["enUS"] = {}
                     }
                 end
-                if not GSE.isEmpty(t.cache) and table.getn(t.cache) > 0 then
+                if not GSE.isEmpty(t.cache) and #t.cache > 0 then
                     for locale, spells in pairs(t.cache) do
                         GSE.PrintDebugMessage("processing Locale" .. locale, Statics.SourceTransmission)
                         for k, v in pairs(spells) do
@@ -534,7 +536,10 @@ local function filterFunc(_, event, msg, player, l, cs, t, flag, channelId, ...)
                     local toon = C_BattleNet.GetFriendNumGameAccounts(i)
                     for j = 1, toon do
                         local gameAccountInfo = C_BattleNet.GetFriendGameAccountInfo(i, j)
-                        if gameAccountInfo.characterName == trimmedPlayer and gameAccountInfo.clientProgram == "WoW" then
+                        if
+                            gameAccountInfo and gameAccountInfo.characterName == trimmedPlayer and
+                                gameAccountInfo.clientProgram == "WoW"
+                         then
                             return false, newMsg, player, l, cs, t, flag, channelId, ... -- Player is a real id friend, allow it
                         end
                     end
@@ -575,15 +580,17 @@ ChatFrame_AddMessageEventFilter("CHAT_MSG_INSTANCE_CHAT_LEADER", filterFunc)
 hooksecurefunc(
     "SetItemRef",
     function(link)
-        local linkType, addon, param1 = strsplit(":", link)
+        local linkType, addon, param1 = string.split(":", link)
         if linkType == "garrmission" and addon == "GSE" then
             if param1 == "foo" then
                 print("Processed test link foo")
             else
-                local cmd, sequenceName, player, ClassID = strsplit("@", param1)
+                local cmd, sequenceName, player, ClassID = string.split("@", param1)
                 if cmd == "seq" then
                     if player == UnitName("player") then
-                        GSE.GUILoadEditor(ClassID .. "," .. sequenceName, GSE.GUIViewFrame)
+                        local editor = GSE.CreateEditor()
+                        editor.listSequences()
+                        GSE.GUILoadEditor(editor, ClassID .. "," .. sequenceName)
                     else
                         GSE.Print("Requested " .. sequenceName .. " from " .. player, Statics.SourceTransmission)
                         GSE.RequestSequence(ClassID, sequenceName, player, "WHISPER")

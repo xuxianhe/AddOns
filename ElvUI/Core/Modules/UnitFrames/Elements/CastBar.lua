@@ -6,20 +6,19 @@ local ElvUF = E.oUF
 local abs, next = abs, next
 local unpack = unpack
 
-local GetTime = GetTime
 local CreateFrame = CreateFrame
-local GetTalentInfo = GetTalentInfo
+local GetTime = GetTime
+local IsPlayerSpell = IsPlayerSpell
 local UnitCanAttack = UnitCanAttack
 local UnitClass = UnitClass
 local UnitIsPlayer = UnitIsPlayer
 local UnitName = UnitName
 local UnitReaction = UnitReaction
 local UnitSpellHaste = UnitSpellHaste
-
-local ticks = {}
+local IsSpellKnownOrOverridesKnown = IsSpellKnownOrOverridesKnown
 
 do
-	local pipMapColor = {4, 1, 2, 3}
+	local pipMapColor = {4, 1, 2, 3, 5}
 	function UF:CastBar_UpdatePip(castbar, pip, stage)
 		if castbar.pipColor then
 			local color = castbar.pipColor[pipMapColor[stage]]
@@ -27,7 +26,7 @@ do
 		end
 	end
 
-	local pipMapAlpha = {2, 3, 4, 1}
+	local pipMapAlpha = {2, 3, 4, 1, 5}
 	function UF:UpdatePipStep(stage) -- self is element
 		local onlyThree = (stage == 3 and self.numStages == 3) and 4
 		local pip = self.Pips[pipMapAlpha[onlyThree or stage]]
@@ -119,6 +118,7 @@ function UF:Construct_Castbar(frame, moverName)
 	castbar.UpdatePipStep = UF.UpdatePipStep
 	castbar.PostUpdatePip = UF.PostUpdatePip
 	castbar.CreatePip = UF.BuildPip
+	castbar.TickLines = {}
 
 	castbar:SetClampedToScreen(true)
 	castbar:CreateBackdrop(nil, nil, nil, nil, true)
@@ -186,6 +186,8 @@ function UF:Configure_Castbar(frame)
 	local SPACING1 = UF.BORDER + UF.SPACING
 	local SPACING2 = SPACING1 * 2
 
+	E:SetSmoothing(castbar, db.smoothbars)
+
 	castbar.timeToHold = db.timeToHold
 	castbar:SetReverseFill(db.reverse)
 	castbar:ClearAllPoints()
@@ -194,13 +196,8 @@ function UF:Configure_Castbar(frame)
 	local oSC = castbar.Holder:GetScript('OnSizeChanged')
 	if oSC then oSC(castbar.Holder) end
 
-	if db.strataAndLevel and db.strataAndLevel.useCustomStrata then
-		castbar:SetFrameStrata(db.strataAndLevel.frameStrata)
-	end
-
-	if db.strataAndLevel and db.strataAndLevel.useCustomLevel then
-		castbar:SetFrameLevel(db.strataAndLevel.frameLevel)
-	end
+	castbar:SetFrameStrata(db.strataAndLevel and db.strataAndLevel.useCustomStrata and db.strataAndLevel.frameStrata or 'LOW')
+	castbar:SetFrameLevel((db.strataAndLevel and db.strataAndLevel.useCustomLevel and db.strataAndLevel.frameLevel) or (frame.RaisedElementParent and frame.RaisedElementParent.CastBarLevel) or 1)
 
 	--Empowered
 	castbar.pipColor = UF.db.colors.empoweredCast
@@ -333,7 +330,7 @@ function UF:Configure_Castbar(frame)
 		castbar.tickWidth = db.tickWidth
 		castbar.tickColor = db.tickColor
 
-		for _, tick in next, ticks do
+		for _, tick in next, castbar.TickLines do
 			tick:SetVertexColor(castbar.tickColor.r, castbar.tickColor.g, castbar.tickColor.b, castbar.tickColor.a)
 			tick:Width(castbar.tickWidth)
 		end
@@ -427,26 +424,26 @@ function UF:CustomTimeText(duration)
 	self.Time:SetWidth(self.Time:GetStringWidth())
 end
 
-function UF:HideTicks()
-	for _, tick in next, ticks do
+function UF:HideTicks(frame)
+	for _, tick in next, frame.TickLines do
 		tick:Hide()
 	end
 end
 
 function UF:SetCastTicks(frame, numTicks)
-	UF:HideTicks()
+	UF:HideTicks(frame)
 
 	if numTicks and numTicks <= 0 then return end
 
 	local offset = frame:GetWidth() / numTicks
 
 	for i = 1, numTicks - 1 do
-		local tick = ticks[i]
+		local tick = frame.TickLines[i]
 		if not tick then
 			tick = frame:CreateTexture(nil, 'OVERLAY')
 			tick:SetTexture(E.media.blankTex)
 			tick:Width(frame.tickWidth)
-			ticks[i] = tick
+			frame.TickLines[i] = tick
 		end
 
 		tick:SetVertexColor(frame.tickColor.r, frame.tickColor.g, frame.tickColor.b, frame.tickColor.a)
@@ -455,11 +452,6 @@ function UF:SetCastTicks(frame, numTicks)
 		tick:Height(frame.tickHeight)
 		tick:Show()
 	end
-end
-
-function UF:GetTalentTicks(info)
-	local _, _, _, selected = GetTalentInfo(info.tier, info.column, 1)
-	return selected and info.ticks
 end
 
 function UF:GetInterruptColor(db, unit)
@@ -497,28 +489,37 @@ function UF:PostCastStart(unit)
 
 	self.unit = unit
 
+	local spellRename = db.castbar.spellRename and E:GetSpellRename(self.spellID)
+	local spellName = spellRename or self.spellName
+
 	if db.castbar.displayTarget then -- player or NPCs; if used on other players: the cast target doesn't match their target, can be misleading if they mouseover cast
 		if parent.unitframeType == 'player' then
 			if self.curTarget then
-				self.Text:SetText(self.spellName..' > '..self.curTarget)
+				self.Text:SetText(spellName..' > '..self.curTarget)
 			end
 		elseif parent.unitframeType == 'pet' or parent.unitframeType == 'boss' then
 			local target = self.curTarget or UnitName(unit..'target')
 			if target and target ~= '' and target ~= UnitName(unit) then
-				self.Text:SetText(self.spellName..' > '..target)
+				self.Text:SetText(spellName..' > '..target)
 			end
 		end
+	elseif spellRename then
+		self.Text:SetText(spellName)
 	end
 
-	if self.channeling and db.castbar.ticks and unit == 'player' then
+	if self.channeling and db.castbar.ticks and parent.unitframeType == 'player' then
 		local spellID, global = self.spellID, E.global.unitframe
 		local baseTicks = global.ChannelTicks[spellID]
 
 		-- Separate group, so they can be effected by haste or size if needed
 		local talentTicks = baseTicks and global.TalentChannelTicks[spellID]
-		local selectedTicks = talentTicks and UF:GetTalentTicks(talentTicks)
-		if selectedTicks then
-			baseTicks = selectedTicks
+		if talentTicks then
+			for auraID, tickCount in next, talentTicks do
+				if IsSpellKnownOrOverridesKnown(auraID) or IsPlayerSpell(auraID) then
+					baseTicks = tickCount
+					break -- found one so stop
+				end
+			end
 		end
 
 		-- Base ticks upgraded by another aura
@@ -540,7 +541,7 @@ function UF:PostCastStart(unit)
 			local match = seconds and self.chainTime and self.chainTick == spellID
 
 			if match and (now - seconds) < self.chainTime then
-				baseTicks = chainTicks
+				baseTicks = baseTicks + chainTicks
 			end
 
 			self.chainTime = now
@@ -576,7 +577,7 @@ function UF:PostCastStart(unit)
 			UF:SetCastTicks(self, baseTicks)
 			self.hadTicks = true
 		else
-			UF:HideTicks()
+			UF:HideTicks(self)
 		end
 	end
 
@@ -589,7 +590,7 @@ end
 
 function UF:PostCastStop(unit)
 	if self.hadTicks and unit == 'player' then
-		UF:HideTicks()
+		UF:HideTicks(self)
 		self.hadTicks = false
 		self.chainTick = nil -- reset the chain
 		self.chainTime = nil -- spell cast vars

@@ -1,5 +1,5 @@
 local LibStub = _G.LibStub
-local MAJOR, MINOR = 'LibAceConfigHelper', 11
+local MAJOR, MINOR = 'LibAceConfigHelper', 13
 local ACH = LibStub:NewLibrary(MAJOR, MINOR)
 local LSM = LibStub('LibSharedMedia-3.0')
 
@@ -28,14 +28,8 @@ end
 
 local function insertConfirm(opt, confirm)
 	local confirmType = type(confirm)
-	if confirmType == 'boolean' then
-		opt.confirm = true
-	elseif confirmType == 'string' then
-		opt.confirm = true
-		opt.confirmText = confirm
-	elseif confirmType == 'function' then
-		opt.confirm = confirm
-	end
+	opt.confirm = confirmType == 'function' and confirm or true -- func|bool
+	opt.confirmText = confirmType == 'string' and confirm or nil
 end
 
 function ACH:Color(name, desc, order, alpha, width, get, set, disabled, hidden)
@@ -79,8 +73,8 @@ function ACH:Input(name, desc, order, multiline, width, get, set, disabled, hidd
 	return optionTable
 end
 
-function ACH:Select(name, desc, order, values, confirm, width, get, set, disabled, hidden)
-	local optionTable = { type = 'select', name = name, desc = desc, order = order, values = values or {}, get = get, set = set, disabled = disabled, hidden = hidden }
+function ACH:Select(name, desc, order, values, confirm, width, get, set, disabled, hidden, sortByValue)
+	local optionTable = { type = 'select', name = name, desc = desc, order = order, values = values or {}, get = get, set = set, disabled = disabled, hidden = hidden, sortByValue = sortByValue }
 
 	if width then insertWidth(optionTable, width) end
 	if confirm then insertConfirm(optionTable, confirm) end
@@ -88,8 +82,8 @@ function ACH:Select(name, desc, order, values, confirm, width, get, set, disable
 	return optionTable
 end
 
-function ACH:MultiSelect(name, desc, order, values, confirm, width, get, set, disabled, hidden)
-	local optionTable = { type = 'multiselect', name = name, desc = desc, order = order, values = values or {}, get = get, set = set, disabled = disabled, hidden = hidden }
+function ACH:MultiSelect(name, desc, order, values, confirm, width, get, set, disabled, hidden, sortByValue)
+	local optionTable = { type = 'multiselect', name = name, desc = desc, order = order, values = values or {}, get = get, set = set, disabled = disabled, hidden = hidden, sortByValue = sortByValue }
 
 	if width then insertWidth(optionTable, width) end
 	if confirm then insertConfirm(optionTable, confirm) end

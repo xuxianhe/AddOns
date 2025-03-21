@@ -1,19 +1,12 @@
-local PA = _G.ProjectAzilroka
+local PA, ACL, ACH = unpack(_G.ProjectAzilroka)
 local FG = PA:NewModule('FriendGroups', 'AceEvent-3.0', 'AceTimer-3.0', 'AceHook-3.0')
 _G.FriendGroups= FG
 
-FG.Title = PA.ACL['|cFF16C3F2Friend|r |cFFFFFFFFGroups|r']
-FG.Description = PA.ACL['Manage Friends List with Groups']
-FG.Authors = 'Azilroka'
-FG.Credits = 'Mikeprod    frankkkkk'
+FG.Title, FG.Description, FG.Authors, FG.Credits = 'Friend Groups', ACL['Manage Friends List with Groups'], 'Azilroka', 'Mikeprod    frankkkkk'
 
 local FRIENDS_GROUP_NAME_COLOR = NORMAL_FONT_COLOR
 
-local ONE_MINUTE = 60
-local ONE_HOUR = 60 * ONE_MINUTE
-local ONE_DAY = 24 * ONE_HOUR
-local ONE_MONTH = 30 * ONE_DAY
-local ONE_YEAR = 12 * ONE_MONTH
+local ONE_YEAR = 31536000
 
 local FriendListEntries = {}
 local GroupCount = 0
@@ -110,7 +103,7 @@ function FG:FriendGroups_UpdateFriendButton(button)
 		button.summonButton:SetPoint("TOPRIGHT", button, "TOPRIGHT", 1, -1)
 		FriendsFrame_SummonButton_Update(button.summonButton)
 	elseif button.buttonType == FRIENDS_BUTTON_TYPE_BNET then
-		local accountInfo = PA:GetBattleNetInfo(button.id);
+		local accountInfo = _G.C_BattleNet.GetFriendAccountInfo(button.id)
 		if accountInfo then
 			nameText = accountInfo.accountName
 			infoText = accountInfo.gameAccountInfo.richPresence
@@ -957,7 +950,7 @@ function FG:GetOptions()
 			Enable = {
 				order = 1,
 				type = 'toggle',
-				name = PA.ACL['Enable'],
+				name = ACL['Enable'],
 				set = function(info, value)
 					FG.db[info[#info]] = value
 					if (not FG.isEnabled) then
@@ -970,14 +963,14 @@ function FG:GetOptions()
 			General = {
 				order = 2,
 				type = 'group',
-				name = PA.ACL['General'],
+				name = ACL['General'],
 				guiInline = true,
 				args = {},
 			},
 			AuthorHeader = {
 				order = -2,
 				type = 'header',
-				name = PA.ACL['Authors:'],
+				name = ACL['Authors:'],
 			},
 			Authors = {
 				order = -1,
@@ -996,9 +989,11 @@ function FG:BuildProfile()
 	}
 end
 
-function FG:Initialize()
+function FG:UpdateSettings()
 	FG.db = PA.db.FriendGroups
+end
 
+function FG:Initialize()
 	if FG.db.Enable ~= true then
 		return
 	end

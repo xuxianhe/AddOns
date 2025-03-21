@@ -386,6 +386,7 @@ BG.Init(function()
                         end
                     end
                 end
+                BiaoGe[FB].tradeTbl = {}
 
                 for _, v in ipairs(BiaoGe[FB].auctionLog) do
                     if v.type == 1 then
@@ -442,7 +443,7 @@ BG.Init(function()
                 duizhang.addons = "biaoge"
                 duizhang.FB = FB
                 duizhang.t = GetServerTime()
-                duizhang.time = date("%H:%M:%S", GetServerTime())
+                duizhang.time = date("%m-%d %H:%M:%S", GetServerTime())
                 duizhang.msgTbl = {}
                 duizhang.player = BG.STC_g1(L["自动拍卖记录"])
                 duizhang.sumjine = 0
@@ -846,6 +847,7 @@ BG.Init(function()
             bt:Hide()
         end
     end
+    -- 右键菜单
     local function CreateMenu(f, i, v, notAuctioned, link, icon, isHistory)
         local FB = BG.FB1
         local menu
@@ -1103,6 +1105,7 @@ BG.Init(function()
         end
         return menu
     end
+    -- 列表内容
     local function CreateButton(i, v, isHistory, num)
         local FB = BG.FB1
         local bts = {}
@@ -1562,118 +1565,177 @@ BG.Init(function()
     BG.auctionLogFrame.serachEdit:HookScript("OnTextChanged", BG.UpdateAuctionLogFrame)
 
     -- 记录自动拍卖结果
-    local function DeleteAuctioning(itemID)
-        for i = #BG.auctionLogFrame.auctioning, 1, -1 do
-            if BG.auctionLogFrame.auctioning[i] == itemID then
-                tremove(BG.auctionLogFrame.auctioning, i)
-                break
+    do
+        local function DeleteAuctioning(itemID)
+            for i = #BG.auctionLogFrame.auctioning, 1, -1 do
+                if BG.auctionLogFrame.auctioning[i] == itemID then
+                    tremove(BG.auctionLogFrame.auctioning, i)
+                    break
+                end
             end
         end
-    end
-    function BG.auctionLogFrame.GetTargetTradeTbl(tradeName)
-        local FB = BG.FB1
-        BG.auctionTrade[tradeName] = {}
-        for _, v in ipairs(BiaoGe[FB].auctionLog or {}) do
-            if v.type == 1 and not v.trade and v.maijia == tradeName then
-                tinsert(BG.auctionTrade[tradeName], BG.Copy(v))
+        function BG.auctionLogFrame.GetTargetTradeTbl(tradeName)
+            local FB = BG.FB1
+            BG.auctionTrade[tradeName] = {}
+            for _, v in ipairs(BiaoGe[FB].auctionLog or {}) do
+                if v.type == 1 and not v.trade and v.maijia == tradeName then
+                    tinsert(BG.auctionTrade[tradeName], BG.Copy(v))
+                end
             end
         end
+
+        BG.RegisterEvent("CHAT_MSG_RAID_LEADER", function(self, event, ...)
+            local msg, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid = ...
+            local time = GetServerTime()
+            local zhuangbei, maijia, jine
+            zhuangbei, maijia, jine = msg:match("^{rt6}拍卖成功{rt6} (.-) (.-) (.+)$")
+            if not (zhuangbei and maijia and jine) then
+                zhuangbei, maijia, jine = msg:match("^{rt6}拍賣成功{rt6} (.-) (.-) (.+)$")
+            end
+            if (zhuangbei and maijia and jine) then
+                local itemID = GetItemID(zhuangbei)
+                DeleteAuctioning(itemID)
+                local name, link, quality, level, _, _, _, _, EquipLoc, Texture, _, typeID, subclassID, bindType = GetItemInfo(zhuangbei)
+                local FB = BG.FB1
+                local log
+                if BG.sendMoneyLog and BG.sendMoneyLog[itemID] and next(BG.sendMoneyLog[itemID]) then
+                    log = {}
+                    local num = 1
+                    local isVIP = BG.BiaoGeVIPVerNum and BG.BiaoGeVIPVerNum >= 10120 or nil
+                    for i = #BG.sendMoneyLog[itemID], 1, -1 do
+                        if not isVIP and num > 5 then break end
+                        num = num + 1
+                        local a = BG.Copy(BG.sendMoneyLog[itemID][i])
+                        a.i = i
+                        tinsert(log, 1, a)
+                    end
+                    BG.After(0, function()
+                        BG.sendMoneyLog[itemID] = nil
+                    end)
+                end
+
+                local playerClass = {}
+                for k, v in pairs(BG.playerClass) do
+                    local value = select(v.select, v.func(maijia))
+                    if value == 0 then value = nil end
+                    playerClass[k] = value
+                end
+                if not playerClass.guild then
+                    playerClass.realm = nil
+                end
+                local a = {
+                    type = 1,
+                    time = time,
+                    zhuangbei = zhuangbei,
+                    maijia = maijia,
+                    jine = jine,
+                    itemlevel = level,
+                    quality = quality,
+                    bindType = bindType,
+                    log = log,
+                }
+                for k, v in pairs(playerClass) do
+                    a[k] = v
+                end
+                BiaoGe[FB].auctionLog = BiaoGe[FB].auctionLog or {}
+                tinsert(BiaoGe[FB].auctionLog, a)
+                BG.UpdateAuctionLogFrame(nil, true)
+
+                local tradeName = UnitName("NPC")
+                if BG.lastAuctionFrame.frame:IsVisible() and tradeName and maijia == tradeName then
+                    BG.auctionLogFrame.GetTargetTradeTbl(maijia)
+                    if BG.ImML() then
+                        BG.lastAuctionFrame.UpdateChooseType()
+                        BG.lastAuctionFrame.UpdateAutoButtons()
+                    end
+                end
+                return
+            end
+
+            zhuangbei = msg:match("^{rt7}流拍{rt7} (.+)$")
+            if zhuangbei then
+                DeleteAuctioning(GetItemID(zhuangbei))
+                local name, link, quality, level, _, _, _, _, EquipLoc, Texture,
+                _, typeID, subclassID, bindType = GetItemInfo(zhuangbei)
+                local FB = BG.FB1
+                local a = {
+                    type = 2,
+                    time = time,
+                    zhuangbei = zhuangbei,
+                    itemlevel = level,
+                    quality = quality,
+                    bindType = bindType,
+                }
+                BiaoGe[FB].auctionLog = BiaoGe[FB].auctionLog or {}
+                tinsert(BiaoGe[FB].auctionLog, a)
+                BG.UpdateAuctionLogFrame(nil, true)
+                return
+            end
+
+            zhuangbei = msg:match("^{rt7}拍卖取消{rt7} (.+)$")
+            if not zhuangbei then
+                zhuangbei = msg:match("^{rt7}拍賣取消{rt7} (.+)$")
+            end
+            if zhuangbei then
+                DeleteAuctioning(GetItemID(zhuangbei))
+                BG.UpdateAuctioning()
+            end
+        end)
     end
 
-    BG.RegisterEvent("CHAT_MSG_RAID_LEADER", function(self, event, ...)
-        local msg, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid = ...
-        local time = GetServerTime()
-        local zhuangbei, maijia, jine
-        zhuangbei, maijia, jine = msg:match("{rt6}拍卖成功{rt6} (.-) (.-) (.+)")
-        if not (zhuangbei and maijia and jine) then
-            zhuangbei, maijia, jine = msg:match("{rt6}拍賣成功{rt6} (.-) (.-) (.+)")
-        end
-        if (zhuangbei and maijia and jine) then
+    -- 拍卖成功的聊天信息后面附上出价记录
+    do
+        ChatFrame_AddMessageEventFilter("CHAT_MSG_RAID_LEADER", function(self, event, msg, ...)
+            if BiaoGe.options.autoAuctionLogLink ~= 1 then return end
+            local zhuangbei, maijia, jine = msg:match("^{rt6}拍卖成功{rt6} (.-) (.-) (.+)$")
+            if not (zhuangbei and maijia and jine) then
+                zhuangbei, maijia, jine = msg:match("^{rt6}拍賣成功{rt6} (.-) (.-) (.+)$")
+            end
+            if not (zhuangbei and maijia and jine) then return end
             local itemID = GetItemID(zhuangbei)
-            DeleteAuctioning(itemID)
-            local name, link, quality, level, _, _, _, _, EquipLoc, Texture, _, typeID, subclassID, bindType = GetItemInfo(zhuangbei)
+            BG.chatAuctionLog = BG.chatAuctionLog or {}
             local FB = BG.FB1
             local log
-            if BG.sendMoneyLog and BG.sendMoneyLog[itemID] then
-                log = {}
-                local num = 1
-                for i = #BG.sendMoneyLog[itemID], 1, -1 do
-                    if num > 5 then break end
-                    num = num + 1
-                    local a = BG.Copy(BG.sendMoneyLog[itemID][i])
-                    a.i = i
-                    tinsert(log, 1, a)
-                end
-                BG.sendMoneyLog[itemID] = nil
-            end
-
-            local playerClass = {}
-            for k, v in pairs(BG.playerClass) do
-                local value = select(v.select, v.func(maijia))
-                if value == 0 then value = nil end
-                playerClass[k] = value
-            end
-            if not playerClass.guild then
-                playerClass.realm = nil
-            end
-            local a = {
-                type = 1,
-                time = time,
-                zhuangbei = zhuangbei,
-                maijia = maijia,
-                jine = jine,
-                itemlevel = level,
-                quality = quality,
-                bindType = bindType,
-                log = log,
-            }
-            for k, v in pairs(playerClass) do
-                a[k] = v
-            end
-            BiaoGe[FB].auctionLog = BiaoGe[FB].auctionLog or {}
-            tinsert(BiaoGe[FB].auctionLog, a)
-            BG.UpdateAuctionLogFrame(nil, true)
-
-            local tradeName = UnitName("NPC")
-            if BG.lastAuctionFrame.frame:IsVisible() and tradeName and maijia == tradeName then
-                BG.auctionLogFrame.GetTargetTradeTbl(maijia)
-                if BG.ImML() then
-                    BG.lastAuctionFrame.UpdateChooseType()
-                    BG.lastAuctionFrame.UpdateAutoButtons()
+            if BiaoGe[FB].auctionLog and next(BiaoGe[FB].auctionLog) then
+                local info = BiaoGe[FB].auctionLog[#BiaoGe[FB].auctionLog]
+                if GetItemID(info.zhuangbei) == itemID and info.log then
+                    log = BG.Copy(info.log)
                 end
             end
-            return
+            if not log then return end
+            tinsert(BG.chatAuctionLog, log)
+            local link = "|cffFFFF00" .. "|Hgarrmission:BiaoGe:AuctionWALog:" .. itemID .. ":"
+                .. #BG.chatAuctionLog .. "|h[" .. L["记录"] .. "]|h|r"
+            local newmsg = msg .. link
+            return false, newmsg, ...
+        end)
+        local function OnHyperlinkEnter(self, link)
+            if not link then return end
+            local arg1, arg2, arg3, itemID, num = strsplit(":", link)
+            if arg2 == "BiaoGe" and arg3 == "AuctionWALog" and num then
+                itemID = tonumber(itemID)
+                num = tonumber(num)
+                local _, link = GetItemInfo(itemID)
+                if not link then return end
+                GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT", 0, 0)
+                GameTooltip:ClearLines()
+                GameTooltip:AddLine(link:gsub("%[", ""):gsub("%]", ""), 1, 1, 1, true)
+                if BG.chatAuctionLog[num][1] and BG.chatAuctionLog[num][1].i ~= 1 then
+                    GameTooltip:AddLine("......", .5, .5, .5, true)
+                end
+                for i, v in ipairs(BG.chatAuctionLog[num]) do
+                    GameTooltip:AddLine(v.i .. L["、"] .. v.money .. format(L["（%s）"], v.player), 1, .82, 0)
+                end
+                GameTooltip:Show()
+            end
         end
-
-        zhuangbei = msg:match("{rt7}流拍{rt7} (.+)")
-        if zhuangbei then
-            DeleteAuctioning(GetItemID(zhuangbei))
-            local name, link, quality, level, _, _, _, _, EquipLoc, Texture,
-            _, typeID, subclassID, bindType = GetItemInfo(zhuangbei)
-            local FB = BG.FB1
-            local a = {
-                type = 2,
-                time = time,
-                zhuangbei = zhuangbei,
-                itemlevel = level,
-                quality = quality,
-                bindType = bindType,
-            }
-            BiaoGe[FB].auctionLog = BiaoGe[FB].auctionLog or {}
-            tinsert(BiaoGe[FB].auctionLog, a)
-            BG.UpdateAuctionLogFrame(nil, true)
-            return
+        local i = 1
+        while _G["ChatFrame" .. i] do
+            _G["ChatFrame" .. i]:HookScript("OnHyperlinkEnter", OnHyperlinkEnter)
+            _G["ChatFrame" .. i]:HookScript("OnHyperlinkLeave", GameTooltip_Hide)
+            i = i + 1
         end
-
-        zhuangbei = msg:match("{rt7}拍卖取消{rt7} (.+)")
-        if not zhuangbei then
-            zhuangbei = msg:match("{rt7}拍賣取消{rt7} (.+)")
-        end
-        if zhuangbei then
-            DeleteAuctioning(GetItemID(zhuangbei))
-            BG.UpdateAuctioning()
-        end
-    end)
+    end
 
     -- 创建应收/应付对象
     do

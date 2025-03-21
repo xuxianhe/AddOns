@@ -4,16 +4,18 @@
 local E, L, V, P, G = unpack(ElvUI)
 local TT = E:GetModule('Tooltip')
 local LCS = E.Libs.LCS
+local ElvUF = E.oUF
 
 local _G = _G
+local setmetatable = setmetatable
+local hooksecurefunc = hooksecurefunc
 local type, ipairs, pairs, unpack = type, ipairs, pairs, unpack
 local wipe, max, next, tinsert, date, time = wipe, max, next, tinsert, date, time
 local strfind, strlen, tonumber, tostring = strfind, strlen, tonumber, tostring
-local hooksecurefunc = hooksecurefunc
 
+local CopyTable = CopyTable
 local CreateFrame = CreateFrame
 local GetBattlefieldArenaFaction = GetBattlefieldArenaFaction
-local GetClassInfo = GetClassInfo
 local GetGameTime = GetGameTime
 local GetInstanceInfo = GetInstanceInfo
 local GetNumGroupMembers = GetNumGroupMembers
@@ -39,19 +41,21 @@ local UnitInRaid = UnitInRaid
 local UnitIsMercenary = UnitIsMercenary
 local UnitIsPlayer = UnitIsPlayer
 local UnitIsUnit = UnitIsUnit
+local UnitSex = UnitSex
+
+local GetWatchedFactionInfo = GetWatchedFactionInfo
+local GetWatchedFactionData = C_Reputation and C_Reputation.GetWatchedFactionData
 
 local GetAuraDataByIndex = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
 local UnpackAuraData = AuraUtil and AuraUtil.UnpackAuraData
 local UnitAura = UnitAura
 
-local GetSpecialization = (E.Classic or E.Wrath) and LCS.GetSpecialization or GetSpecialization
-local GetSpecializationInfo = (E.Classic or E.Wrath) and LCS.GetSpecializationInfo or GetSpecializationInfo
+local GetSpecialization = (E.Classic or E.Cata) and LCS.GetSpecialization or GetSpecialization
+local GetSpecializationInfo = (E.Classic or E.Cata) and LCS.GetSpecializationInfo or GetSpecializationInfo
 
-local IsAddOnLoaded = (C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded
-
-local C_AddOns_GetAddOnEnableState = C_AddOns and C_AddOns.GetAddOnEnableState
-local GetAddOnEnableState = GetAddOnEnableState -- eventually this will be on C_AddOns and args swap
-
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
+local StoreEnabled = C_StorePublic.IsEnabled
+local GetClassInfo = C_CreatureInfo.GetClassInfo
 local C_TooltipInfo_GetUnit = C_TooltipInfo and C_TooltipInfo.GetUnit
 local C_TooltipInfo_GetHyperlink = C_TooltipInfo and C_TooltipInfo.GetHyperlink
 local C_TooltipInfo_GetInventoryItem = C_TooltipInfo and C_TooltipInfo.GetInventoryItem
@@ -70,13 +74,13 @@ local GameMenuButtonAddons = GameMenuButtonAddons
 local GameMenuButtonLogout = GameMenuButtonLogout
 local GameMenuFrame = GameMenuFrame
 local UIErrorsFrame = UIErrorsFrame
--- GLOBALS: ElvDB, ElvUF
+-- GLOBALS: ElvDB
 
 local DebuffColors = E.Libs.Dispel:GetDebuffTypeColor()
+local DispelTypes = E.Libs.Dispel:GetMyDispelTypes()
 
 E.MountIDs = {}
 E.MountText = {}
-E.MountDragons = {}
 
 E.SpecInfoBySpecClass = {} -- ['Protection Warrior'] = specInfo (table)
 E.SpecInfoBySpecID = {} -- [250] = specInfo (table)
@@ -151,9 +155,9 @@ E.SpecName = { -- english locale
 	[257]	= 'Holy',
 	[258]	= 'Shadow',
 	-- Rogue
-	[259]	= 'Assasination',
+	[259]	= 'Assassination',
 	[260]	= 'Combat',
-	[261]	= 'Sublety',
+	[261]	= 'Subtlety',
 	-- Shaman
 	[262]	= 'Elemental',
 	[263]	= 'Enhancement',
@@ -219,6 +223,28 @@ function E:InverseClassColor(class, usePriestColor, forceCap)
 	return color
 end
 
+do
+	local classByID = {}
+	local classByFile = {}
+
+	E.ClassInfoByID = classByID
+	E.ClassInfoByFile = classByFile
+
+	for index = 1, 13 do -- really blizzard, whats up with this?
+		-- 1) _G.GetClassInfo gives SHAMAN for 6 and 7 on anniversary
+		-- 2) 14 is Adventurer on Retail ?
+		local info = GetClassInfo(index)
+		if info then
+			classByID[info.classID] = info
+			classByFile[info.classFile] = info
+		end
+	end
+
+	function E:GetClassInfo(value) -- classFile or classID
+		return classByFile[value] or classByID[value]
+	end
+end
+
 do -- other non-english locales require this
 	E.UnlocalizedClasses = {}
 	for k, v in pairs(_G.LOCALIZED_CLASS_NAMES_MALE) do E.UnlocalizedClasses[v] = k end
@@ -226,6 +252,15 @@ do -- other non-english locales require this
 
 	function E:UnlocalizedClassName(className)
 		return E.UnlocalizedClasses[className]
+	end
+
+	function E:LocalizedClassName(className, unit)
+		local gender = (not unit and E.mygender) or UnitSex(unit)
+		if gender == 3 then
+			return _G.LOCALIZED_CLASS_NAMES_FEMALE[className]
+		else
+			return _G.LOCALIZED_CLASS_NAMES_MALE[className]
+		end
 	end
 end
 
@@ -277,6 +312,88 @@ do
 	end
 end
 
+do -- backwards compatibility for GetMouseFocus
+	local GetMouseFocus = GetMouseFocus
+	local GetMouseFoci = GetMouseFoci
+	function E:GetMouseFocus()
+		if GetMouseFoci then
+			local frames = GetMouseFoci()
+			return frames and frames[1]
+		else
+			return GetMouseFocus()
+		end
+	end
+end
+
+do	-- backwards compatibility for C_Spell
+	local GetSpellInfo = GetSpellInfo
+	local C_Spell_GetSpellInfo = not GetSpellInfo and C_Spell.GetSpellInfo
+	function E:GetSpellInfo(spellID)
+		if not spellID then return end
+
+		if C_Spell_GetSpellInfo then
+			local info = C_Spell_GetSpellInfo(spellID)
+			if info then
+				return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+			end
+		else
+			return GetSpellInfo(spellID)
+		end
+	end
+
+	local GetSpellCooldown = GetSpellCooldown
+	local C_Spell_GetSpellCooldown = C_Spell.GetSpellCooldown
+	function E:GetSpellCooldown(spellID)
+		if not spellID then return end
+
+		if GetSpellCooldown then
+			return GetSpellCooldown(spellID)
+		else
+			local info = C_Spell_GetSpellCooldown(spellID)
+			if info then
+				return info.startTime, info.duration, info.isEnabled, info.modRate
+			end
+		end
+	end
+
+	local GetSpellCharges = GetSpellCharges
+	local C_Spell_GetSpellCharges = C_Spell.GetSpellCharges
+	function E:GetSpellCharges(spellID)
+		if not spellID then return end
+
+		if GetSpellCharges then
+			return GetSpellCharges(spellID)
+		else
+			local info = C_Spell_GetSpellCharges(spellID)
+			if info then
+				return info.currentCharges, info.maxCharges, info.cooldownStartTime, info.cooldownDuration, info.chargeModRate
+			end
+		end
+	end
+end
+
+do -- Spell renaming provided by BigWigs
+	function E:GetSpellRename(spellID)
+		if not spellID then return end
+
+		local API = _G.BigWigsAPI
+		local GetRename = API and API.GetSpellRename
+		if GetRename then
+			return GetRename(spellID)
+		end
+	end
+
+	function E:SetSpellRename(spellID, text)
+		if not spellID then return end
+
+		local API = _G.BigWigsAPI
+		local SetRename = API and API.SetSpellRename
+		if SetRename then
+			SetRename(spellID, text)
+		end
+	end
+end
+
 do
 	function E:GetAuraData(unitToken, index, filter)
 		if E.Retail then
@@ -324,18 +441,18 @@ function E:GetThreatStatusColor(status, nothreat)
 end
 
 function E:GetPlayerRole()
-	local role = (E.Retail or E.Wrath) and UnitGroupRolesAssigned('player') or 'NONE'
+	local role = E.allowRoles and UnitGroupRolesAssigned('player') or 'NONE'
 	return (role ~= 'NONE' and role) or E.myspecRole or 'NONE'
 end
 
 function E:CheckRole()
-	E.myspec = GetSpecialization()
+	--E.myspec = GetSpecialization()
 
 	if E.myspec then
 		if E.Retail then
 			E.myspecID, E.myspecName, E.myspecDesc, E.myspecIcon, E.myspecRole = GetSpecializationInfo(E.myspec)
 		else -- they add background
-			E.myspecID, E.myspecName, E.myspecDesc, E.myspecIcon, E.myspecBackground, E.myspecRole = GetSpecializationInfo(E.myspec)
+			--E.myspecID, E.myspecName, E.myspecDesc, E.myspecIcon, E.myspecBackground, E.myspecRole = GetSpecializationInfo(E.myspec)
 		end
 	end
 
@@ -343,7 +460,19 @@ function E:CheckRole()
 end
 
 function E:IsDispellableByMe(debuffType)
-	return E.Libs.Dispel:IsDispellableByMe(debuffType)
+	return DispelTypes[debuffType]
+end
+
+function E:UpdateDispelColor(debuffType, r, g, b)
+	local color = DebuffColors[debuffType]
+	if color then
+		color.r, color.g, color.b = r, g, b
+	end
+
+	local db = E.db.general.debuffColors[debuffType]
+	if db then
+		db.r, db.g, db.b = r, g, b
+	end
 end
 
 function E:UpdateDispelColors()
@@ -357,15 +486,83 @@ function E:UpdateDispelColors()
 	end
 end
 
-function E:UpdateDispelColor(debuffType, r, g, b)
-	local color = DebuffColors[debuffType]
-	if color then
-		color.r, color.g, color.b = r, g, b
+do
+	local callbacks = {}
+	function E:CustomClassColorUpdate()
+		for func in next, callbacks do
+			func()
+		end
 	end
 
-	local db = E.db.general.debuffColors[debuffType]
-	if db then
-		db.r, db.g, db.b = r, g, b
+	function E:CustomClassColorRegister(func)
+		callbacks[func] = true
+	end
+
+	function E:CustomClassColorUnregister(func)
+		callbacks[func] = nil
+	end
+
+	function E:CustomClassColorNotify()
+		local changed = E:UpdateCustomClassColors()
+		if changed then
+			E:CustomClassColorUpdate()
+		end
+	end
+
+	function E:CustomClassColorClassToken(className)
+		return E:UnlocalizedClassName(className)
+	end
+
+	local meta = {
+		__index = {
+			RegisterCallback = E.CustomClassColorRegister,
+			UnregisterCallback = E.CustomClassColorUnregister,
+			NotifyChanges = E.CustomClassColorNotify,
+			GetClassToken = E.CustomClassColorClassToken
+		}
+	}
+
+	function E:SetupCustomClassColors()
+		local object = CopyTable(_G.RAID_CLASS_COLORS)
+
+		_G.CUSTOM_CLASS_COLORS = setmetatable(object, meta)
+
+		return object
+	end
+
+	function E:UpdateCustomClassColor(classTag, r, g, b)
+		local colors = _G.CUSTOM_CLASS_COLORS
+		local color = colors and colors[classTag]
+		if color then
+			color.r, color.g, color.b = r, g, b
+			color.colorStr = E:RGBToHex(r, g, b, 'ff')
+		end
+
+		local db = E.db.general.classColors[classTag]
+		if db then
+			db.r, db.g, db.b = r, g, b
+		end
+
+		E:CustomClassColorNotify()
+	end
+
+	function E:UpdateCustomClassColors()
+		if not E.private.general.classColors then return end
+
+		local custom = _G.CUSTOM_CLASS_COLORS or E:SetupCustomClassColors()
+		local colors, changed = E.db.general.classColors
+
+		for classTag, db in next, colors do
+			local color, r, g, b = custom[classTag], db.r, db.g, db.b
+			if color and (color.r ~= r or color.g ~= g or color.b ~= b) then
+				color.r, color.g, color.b = r, g, b
+				color.colorStr = E:RGBToHex(r, g, b, 'ff')
+
+				changed = true
+			end
+		end
+
+		return changed
 	end
 end
 
@@ -443,12 +640,7 @@ do
 end
 
 function E:Dump(object, inspect)
-	if C_AddOns_GetAddOnEnableState then
-		if C_AddOns_GetAddOnEnableState('Blizzard_DebugTools', E.myname) == 0 then
-			E:Print('Blizzard_DebugTools is disabled.')
-			return
-		end
-	elseif GetAddOnEnableState(E.myname, 'Blizzard_DebugTools') == 0 then
+	if not E:IsAddOnEnabled('Blizzard_DebugTools') then
 		E:Print('Blizzard_DebugTools is disabled.')
 		return
 	end
@@ -567,7 +759,7 @@ function E:RegisterObjectForVehicleLock(object, originalParent)
 	end
 
 	--Check if we are already in a vehicles
-	if (E.Retail or E.Wrath) and UnitHasVehicleUI('player') then
+	if (E.Retail or E.Cata) and UnitHasVehicleUI('player') then
 		object:SetParent(E.HiddenFrame)
 	end
 
@@ -615,6 +807,18 @@ function E:RequestBGInfo()
 	RequestBattlefieldScoreData()
 end
 
+do
+	local watchedInfo = {}
+	function E:GetWatchedFactionInfo()
+		if GetWatchedFactionInfo then
+			watchedInfo.name, watchedInfo.reaction, watchedInfo.currentReactionThreshold, watchedInfo.nextReactionThreshold, watchedInfo.currentStanding, watchedInfo.factionID = GetWatchedFactionInfo()
+			return watchedInfo
+		else
+			return GetWatchedFactionData()
+		end
+	end
+end
+
 function E:PLAYER_ENTERING_WORLD(_, initLogin, isReload)
 	E:CheckRole()
 
@@ -624,16 +828,16 @@ function E:PLAYER_ENTERING_WORLD(_, initLogin, isReload)
 
 	if initLogin or isReload then
 		E:CheckIncompatible()
+
+		-- Blizzard will set this value to int(60/CVar cameraDistanceMax)+1 at logout if it is manually set higher than that
+		if not E.Retail and E.db.general.lockCameraDistanceMax then
+			E:SetCVar('cameraDistanceMaxZoomFactor', E.db.general.cameraDistanceMax)
+		end
 	end
 
 	if not E.MediaUpdated then
 		E:UpdateMedia()
 		E.MediaUpdated = true
-	end
-
-	-- Blizzard will set this value to int(60/CVar cameraDistanceMax)+1 at logout if it is manually set higher than that
-	if not E.Retail and E.db.general.lockCameraDistanceMax then
-		E:SetCVar('cameraDistanceMaxZoomFactor', E.db.general.cameraDistanceMax)
 	end
 
 	local _, instanceType = GetInstanceInfo()
@@ -670,13 +874,10 @@ do
 			end
 		end
 
-		if E.CreatedMovers then
-			for name in pairs(E.CreatedMovers) do
-				local mover = _G[name]
-				if mover and mover:IsShown() then
-					mover:Hide()
-					wasShown = true
-				end
+		for _, frame in next, E.CreatedMovers do
+			if frame.mover and frame.mover:IsShown() then
+				frame.mover:Hide()
+				wasShown = true
 			end
 		end
 
@@ -743,30 +944,59 @@ function E:GetUnitBattlefieldFaction(unit)
 	return englishFaction, localizedFaction
 end
 
-function E:PositionGameMenuButton()
-	if E.Retail then
-		GameMenuFrame.Header.Text:SetTextColor(unpack(E.media.rgbvaluecolor))
-	end
-	GameMenuFrame:Height(GameMenuFrame:GetHeight() + GameMenuButtonLogout:GetHeight() - 4)
-
-	local button = GameMenuFrame.ElvUI
-	button:SetFormattedText('%sElvUI|r', E.media.hexvaluecolor)
-
-	local _, relTo, _, _, offY = GameMenuButtonLogout:GetPoint()
-	if relTo ~= button then
-		button:ClearAllPoints()
-		button:Point('TOPLEFT', relTo, 'BOTTOMLEFT', 0, -1)
-		GameMenuButtonLogout:ClearAllPoints()
-		GameMenuButtonLogout:Point('TOPLEFT', button, 'BOTTOMLEFT', 0, offY)
-	end
-end
-
 function E:NEUTRAL_FACTION_SELECT_RESULT()
 	E.myfaction, E.myLocalizedFaction = UnitFactionGroup('player')
 end
 
 function E:PLAYER_LEVEL_UP(_, level)
 	E.mylevel = level
+end
+
+local gameMenuLastButtons = {
+	[_G.GAMEMENU_OPTIONS] = 1,
+	[_G.BLIZZARD_STORE] = 2
+}
+
+function E:PositionGameMenuButton()
+	if E.Retail then
+		GameMenuFrame.Header.Text:SetTextColor(unpack(E.media.rgbvaluecolor))
+
+		local anchorIndex = (StoreEnabled and StoreEnabled() and 2) or 1
+		for button in GameMenuFrame.buttonPool:EnumerateActive() do
+			local text = button:GetText()
+
+			GameMenuFrame.MenuButtons[text] = button -- export these
+
+			local lastIndex = gameMenuLastButtons[text]
+			if lastIndex == anchorIndex and GameMenuFrame.ElvUI then
+				GameMenuFrame.ElvUI:Point('TOPLEFT', button, 'BOTTOMLEFT', 0, -10)
+			elseif not lastIndex then
+				button:NudgePoint(nil, -35)
+			end
+		end
+
+		GameMenuFrame:Height(GameMenuFrame:GetHeight() + 35)
+	else
+		local button = GameMenuFrame.ElvUI
+		if button then
+			button:SetFormattedText('%sElvUI|r', E.media.hexvaluecolor)
+
+			local _, relTo, _, _, offY = GameMenuButtonLogout:GetPoint()
+			if relTo ~= button then
+				button:ClearAllPoints()
+				button:Point('TOPLEFT', relTo, 'BOTTOMLEFT', 0, -1)
+
+				GameMenuButtonLogout:ClearAllPoints()
+				GameMenuButtonLogout:Point('TOPLEFT', button, 'BOTTOMLEFT', 0, offY)
+			end
+		end
+
+		GameMenuFrame:Height(GameMenuFrame:GetHeight() + GameMenuButtonLogout:GetHeight() - 4)
+	end
+
+	if GameMenuFrame.ElvUI then
+		GameMenuFrame.ElvUI:SetFormattedText('%sElvUI|r', E.media.hexvaluecolor)
+	end
 end
 
 function E:ClickGameMenu()
@@ -777,23 +1007,32 @@ function E:ClickGameMenu()
 	end
 end
 
-function E:SetupGameMenu()
-	local button = CreateFrame('Button', nil, GameMenuFrame, 'GameMenuButtonTemplate')
-	button:SetScript('OnClick', E.ClickGameMenu)
-	GameMenuFrame.ElvUI = button
-
-	if not E:IsAddOnEnabled('ConsolePortUI_Menu') then
-		button:Size(GameMenuButtonLogout:GetWidth(), GameMenuButtonLogout:GetHeight())
-		button:Point('TOPLEFT', GameMenuButtonAddons, 'BOTTOMLEFT', 0, -1)
-		hooksecurefunc('GameMenuFrame_UpdateVisibleButtons', E.PositionGameMenuButton)
-	end
+function E:ScaleGameMenu()
+	GameMenuFrame:SetScale(E.db.general.gameMenuScale or 1)
 end
 
-function E:IsDragonRiding() -- currently unused, was used to help actionbars fade
-	for spellID in next, E.MountDragons do
-		if E:GetAuraByID('player', spellID, 'HELPFUL') then
-			return true
-		end
+function E:SetupGameMenu()
+	if GameMenuFrame.ElvUI then return end
+
+	if E.Retail then
+		local button = CreateFrame('Button', 'ElvUI_GameMenuButton', GameMenuFrame, 'MainMenuFrameButtonTemplate')
+		button:SetScript('OnClick', E.ClickGameMenu)
+		button:Size(200, 35)
+
+		GameMenuFrame.ElvUI = button
+		GameMenuFrame.MenuButtons = {}
+
+		E:ScaleGameMenu()
+
+		hooksecurefunc(GameMenuFrame, 'Layout', E.PositionGameMenuButton)
+	else
+		local button = CreateFrame('Button', nil, GameMenuFrame, 'GameMenuButtonTemplate')
+		button:SetScript('OnClick', E.ClickGameMenu)
+		GameMenuFrame.ElvUI = button
+
+		button:Size(GameMenuButtonLogout:GetSize())
+		button:Point('TOPLEFT', GameMenuButtonAddons, 'BOTTOMLEFT', 0, -1)
+		hooksecurefunc('GameMenuFrame_UpdateVisibleButtons', E.PositionGameMenuButton)
 	end
 end
 
@@ -905,6 +1144,42 @@ function E:ScanTooltip_HyperlinkInfo(link)
 	end
 end
 
+do -- complicated backwards compatible menu
+	local HandleMenuList
+	HandleMenuList = function(root, menuList, submenu, depth)
+		if submenu then root = submenu end
+
+		for _, list in next, menuList do
+			local previous
+			if list.isTitle then
+				root:CreateTitle(list.text)
+			elseif list.func or list.hasArrow then
+				local name = list.text or ('test'..depth)
+
+				local func = (list.arg1 or list.arg2) and (function() list.func(nil, list.arg1, list.arg2) end) or list.func
+				local checked = list.checked and (not list.notCheckable and function() return list.checked(list) end or E.noop)
+				if checked then
+					previous = root:CreateCheckbox(list.text or name, checked, func)
+				else
+					previous = root:CreateButton(list.text or name, func)
+				end
+			end
+
+			if list.menuList then -- loop it
+				HandleMenuList(root, list.menuList, list.hasArrow and previous, depth + 1)
+			end
+		end
+	end
+
+	function E:ComplicatedMenu(menuList, menuFrame, anchor, x, y, displayMode, autoHideDelay)
+		if _G.EasyMenu then
+			_G.EasyMenu(menuList, menuFrame, anchor, x, y, displayMode, autoHideDelay)
+		else
+			_G.MenuUtil.CreateContextMenu(menuFrame, function(_, root) HandleMenuList(root, menuList, nil, 1) end)
+		end
+	end
+end
+
 function E:LoadAPI()
 	E:RegisterEvent('PLAYER_LEVEL_UP')
 	E:RegisterEvent('PLAYER_ENTERING_WORLD')
@@ -917,46 +1192,42 @@ function E:LoadAPI()
 	if E.Retail then
 		for _, mountID in next, C_MountJournal_GetMountIDs() do
 			local _, _, sourceText = C_MountJournal_GetMountInfoExtraByID(mountID)
-			local _, spellID, _, _, _, _, _, _, _, _, _, _, isForDragonriding = C_MountJournal_GetMountInfoByID(mountID)
+			local _, spellID = C_MountJournal_GetMountInfoByID(mountID)
 			E.MountIDs[spellID] = mountID
 			E.MountText[mountID] = sourceText
-
-			if isForDragonriding then
-				E.MountDragons[spellID] = mountID
-			end
 		end
 
 		do -- fill the spec info tables
 			local MALE = _G.LOCALIZED_CLASS_NAMES_MALE
 			local FEMALE = _G.LOCALIZED_CLASS_NAMES_FEMALE
 
-			local i = 1
-			local className, classFile, classID = GetClassInfo(i)
-			local male, female = MALE[classFile], FEMALE[classFile]
-			while classID do
-				for index, id in next, E.SpecByClass[classFile] do
-					local info = {
+			for classFile, specData in next, E.SpecByClass do
+				local male, female = MALE[classFile], FEMALE[classFile]
+				local info = E.ClassInfoByFile[classFile]
+
+				for index, id in next, specData do
+					local data = {
 						id = id,
 						index = index,
 						classFile = classFile,
-						className = className,
+						className = info.className,
 						englishName = E.SpecName[id]
 					}
 
-					E.SpecInfoBySpecID[id] = info
+					E.SpecInfoBySpecID[id] = data
 
 					for x = 3, 1, -1 do
 						local _, name, desc, icon, role = GetSpecializationInfoForSpecID(id, x)
 
 						if x == 1 then -- SpecInfoBySpecID
-							info.name = name
-							info.desc = desc
-							info.icon = icon
-							info.role = role
+							data.name = name
+							data.desc = desc
+							data.icon = icon
+							data.role = role
 
-							E.SpecInfoBySpecClass[name..' '..className] = info
+							E.SpecInfoBySpecClass[name..' '..info.className] = data
 						else
-							local copy = E:CopyTable({}, info)
+							local copy = E:CopyTable({}, data)
 							copy.name = name
 							copy.desc = desc
 							copy.icon = icon
@@ -971,10 +1242,6 @@ function E:LoadAPI()
 						end
 					end
 				end
-
-				i = i + 1
-				className, classFile, classID = GetClassInfo(i)
-				male, female = MALE[classFile], FEMALE[classFile]
 			end
 		end
 
@@ -993,7 +1260,7 @@ function E:LoadAPI()
 	E.ScanTooltip.GetHyperlinkInfo = E.ScanTooltip_HyperlinkInfo
 	E.ScanTooltip.GetInventoryInfo = E.ScanTooltip_InventoryInfo
 
-	if E.Retail or E.Wrath then
+	if E.Retail or E.Cata then
 		E:RegisterEvent('UNIT_ENTERED_VEHICLE', 'EnterVehicleHideFrames')
 		E:RegisterEvent('UNIT_EXITED_VEHICLE', 'ExitVehicleShowFrames')
 	else

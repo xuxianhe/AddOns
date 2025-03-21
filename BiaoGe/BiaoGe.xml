@@ -42,14 +42,17 @@
     <Script file="Core\Module\AuctionMSG.lua"/>
     <Script file="Core\Module\YY.lua"/>
     <Script file="Core\Module\Report.lua"/>
+    <Script file="Core\Module\WhoHistory.lua"/>
     <Script file="Core\Module\MeetingHorn.lua"/>
     <Script file="Core\Module\AtlasLoot.lua"/>
+    <Script file="Core\Module\LeftInfoBar.lua"/>
     <Script file="Core\Module\ad.lua"/>
     <Script file="Core\Module\AuctionWA.lua"/>
     <Script file="Core\Module\Auction.lua"/>
     <Script file="Core\Module\AuctionLog.lua"/>
     <Script file="Core\Module\ItemOutTime.lua"/>
     <Script file="Core\Module\Achievement.lua"/>
+    <Script file="Core\Module\QuickAccounting.lua"/>
     <Script file="Core\Module\InfoBar.lua"/>
     <Script file="Core\Module\Newbee.lua"/>
     <Script file="Core\Module\CommerceAuthority_Vanilla.lua"/>

@@ -8,7 +8,7 @@ local iconSource = "Interface\\Addons\\GSE_GUI\\Assets\\GSE_Logo_Dark_512.blp"
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local dataobj =
   ldb:NewDataObject(
-  L["GSE"] .. " " .. L["GnomeSequencer-Enhanced"],
+  L["GSE"] .. " " .. L["Gnome Sequencer Enhanced"],
   {
     type = "data source",
     text = "GSE",
@@ -20,7 +20,7 @@ local LibQTip = LibStub("LibQTip-1.0")
 local LibSharedMedia = LibStub("LibSharedMedia-3.0")
 
 local icon = LibStub("LibDBIcon-1.0")
-icon:Register(L["GSE"] .. " " .. L["GnomeSequencer-Enhanced"], dataobj, GSEOptions.showMiniMap)
+icon:Register(L["GSE"] .. " " .. L["Gnome Sequencer Enhanced"], dataobj, GSEOptions.showMiniMap)
 
 local LibDBCompartment = LibStub:GetLibrary("LibDBCompartment-1.0")
 LibDBCompartment:Register(L["GSE"], dataobj)
@@ -50,7 +50,7 @@ local function CheckOOCQueueStatus()
 end
 
 local function prepareTooltipOOCLine(tooltip, OOCEvent, row, oockey)
-  tooltip:SetCell(row, 1, L[OOCEvent.action], "LEFT", 1)
+  tooltip:SetCell(row, 1, OOCEvent.action, "LEFT", 1)
   if OOCEvent.action == "UpdateSequence" then
     tooltip:SetCell(row, 3, OOCEvent.name, "RIGHT", 1)
   elseif OOCEvent.action == "Save" then
@@ -58,6 +58,14 @@ local function prepareTooltipOOCLine(tooltip, OOCEvent, row, oockey)
   elseif OOCEvent.action == "Replace" then
     tooltip:SetCell(row, 3, OOCEvent.sequencename, "RIGHT", 1)
   elseif OOCEvent.action == "CheckMacroCreated" then
+    tooltip:SetCell(row, 3, OOCEvent.sequencename, "RIGHT", 1)
+  elseif OOCEvent.action == "updatemacro" then
+    tooltip:SetCell(row, 3, OOCEvent.node.name, "RIGHT", 1)
+  elseif OOCEvent.action == "updatevariable" then
+    tooltip:SetCell(row, 3, OOCEvent.name, "RIGHT", 1)
+  elseif OOCEvent.action == "importmacro" then
+    tooltip:SetCell(row, 3, OOCEvent.node.name, "RIGHT", 1)
+  elseif OOCEvent.action == "MergeSequence" then
     tooltip:SetCell(row, 3, OOCEvent.sequencename, "RIGHT", 1)
   end
   tooltip:SetLineScript(
@@ -69,20 +77,32 @@ local function prepareTooltipOOCLine(tooltip, OOCEvent, row, oockey)
   )
 end
 
+local function handleLeave(self)
+  -- Dont close the tooltip if mouseover
+  if self.tooltip and not self.tooltip:IsMouseOver() then
+    self.tooltip:Release()
+    self.tooltip = nil
+  end
+  return true
+end
+
 function dataobj:OnEnter()
   -- Acquire a tooltip with 3 columns, respectively aligned to left, center and right
   --local tooltip = LibQTip:Acquire("GSSE", 3, "LEFT", "CENTER", "RIGHT")
   local tooltip = LibQTip:Acquire("GSE", 3, "LEFT", "CENTER", "RIGHT")
   self.tooltip = tooltip
   tooltip:SetHighlightTexture("Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar")
-
+  tooltip:EnableMouse(true)
+  tooltip:SmartAnchorTo(self)
+  tooltip.OnRelease = handleLeave
+  tooltip:SetAutoHideDelay(1, self)
   tooltip:Clear()
   tooltip:SetFont(baseFont)
   --tooltip:SetHeaderFont(red17font)
   local y, _ = tooltip:AddLine()
   tooltip:SetCell(y, 1, L["GSE: Left Click to open the Sequence Editor"], "CENTER", 3)
   y, _ = tooltip:AddLine()
-  tooltip:SetCell(y, 1, L["GSE: Middle Click to open the Transmission Interface"], "CENTER", 3)
+  tooltip:SetCell(y, 1, L["GSE: Middle Click to open the Keybinding Interface"], "CENTER", 3)
   y, _ = tooltip:AddLine()
   tooltip:SetCell(y, 1, L["GSE: Right Click to open the Sequence Debugger"], "CENTER", 3)
 
@@ -103,18 +123,6 @@ function dataobj:OnEnter()
     end
   end
 
-  tooltip:AddSeparator()
-  y, _ = tooltip:AddLine()
-  tooltip:SetCell(y, 1, GSE.ReportTargetProtection(), "CENTER", 3)
-  local RequireTargetStatusline = y
-  tooltip:SetLineScript(
-    y,
-    "OnMouseDown",
-    function(obj, button)
-      GSE.ToggleTargetProtection()
-      tooltip:SetCell(RequireTargetStatusline, 1, CheckOOCQueueStatus(), "CENTER", 3)
-    end
-  )
   tooltip:AddSeparator()
   y, _ = tooltip:AddLine()
   tooltip:SetCell(y, 1, string.format("GCD: %ss", GSE.GetGCD()), "CENTER", 3)
@@ -141,14 +149,8 @@ function dataobj:OnEnter()
     )
     tooltip:AddSeparator()
     y, _ = tooltip:AddLine()
-    if table.getn(GSE.OOCQueue) > 0 then
-      tooltip:SetCell(
-        y,
-        1,
-        string.format(L["There are %i events in out of combat queue"], table.getn(GSE.OOCQueue)),
-        "CENTER",
-        3
-      )
+    if #GSE.OOCQueue > 0 then
+      tooltip:SetCell(y, 1, string.format(L["There are %i events in out of combat queue"], #GSE.OOCQueue), "CENTER", 3)
       tooltip:SetLineScript(
         y,
         "OnMouseDown",
@@ -176,16 +178,6 @@ function dataobj:OnEnter()
   tooltip:Show()
 end
 
-local function handleLeave(self)
-  -- Dont close the tooltip if mouseover
-  if not MouseIsOver(self.tooltip) then
-    -- Release the tooltip
-    LibQTip:Release(self.tooltip)
-    self.tooltip = nil
-  end
-  return true
-end
-
 local function dataObject_OnLeave(self)
   -- this may throw an error - capture the error silently
   pcall(handleLeave, self)
@@ -198,9 +190,9 @@ end
 function dataobj:OnClick(button)
   if GSE.CheckGUI() then
     if button == "LeftButton" then
-      GSE.GUIShowViewer()
+      GSE.ShowSequences()
     elseif button == "MiddleButton" then
-      GSE.GUIShowTransmissionGui()
+      GSE.ShowKeyBindings()
     elseif button == "RightButton" then
       GSE.GUIShowDebugWindow()
     end
@@ -208,11 +200,11 @@ function dataobj:OnClick(button)
 end
 
 function GSE.miniMapShow()
-  icon:Show(L["GSE"] .. " " .. L["GnomeSequencer-Enhanced"])
+  icon:Show(L["GSE"] .. " " .. L["Gnome Sequencer Enhanced"])
 end
 
 function GSE.miniMapHide()
-  icon:Hide(L["GSE"] .. " " .. L["GnomeSequencer-Enhanced"])
+  icon:Hide(L["GSE"] .. " " .. L["Gnome Sequencer Enhanced"])
 end
 
 --- This shows or hides the minimap icon.

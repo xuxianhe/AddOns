@@ -11,7 +11,6 @@ local pairs, ipairs, type = pairs, ipairs, type
 local next, tinsert, tremove = next, tinsert, tremove
 
 local CreateFrame = CreateFrame
-local GetMouseFocus = GetMouseFocus
 local GetInstanceInfo = GetInstanceInfo
 local UnitAffectingCombat = UnitAffectingCombat
 local UnitCastingInfo = UnitCastingInfo
@@ -24,6 +23,11 @@ local UnitPower = UnitPower
 local UnitPowerMax = UnitPowerMax
 local UnitPowerType = UnitPowerType
 local C_PlayerInfo_GetGlidingInfo = C_PlayerInfo and C_PlayerInfo.GetGlidingInfo
+
+local GetMouseFocus = GetMouseFocus or function()
+	local frames = _G.GetMouseFoci()
+	return frames and frames[1]
+end
 
 -- These variables will be left-over when disabled if they were used (for reuse later if they become re-enabled):
 ---- Fader.HoverHooked, Fader.TargetHooked
@@ -62,27 +66,27 @@ local function updateInstanceDifficulty(element)
 	element.InstancedCached = element.InstanceDifficulty and element.InstanceDifficulty[difficultyID] or nil
 end
 
-local function CanGlide()
-	if not C_PlayerInfo_GetGlidingInfo then return end
-
-	local _, canGlide = C_PlayerInfo_GetGlidingInfo()
-	return canGlide
-end
-
+local isGliding = false
 local function Update(self, event, unit)
 	local element = self.Fader
 	if self.isForced or (not element or not element.count or element.count <= 0) then
 		self:SetAlpha(1)
 		return
+	elseif element.Range and event ~= 'OnRangeUpdate' then
+		return
 	end
 
-	-- Instance Difficulty is enabled and we haven't checked yet
-	if element.InstanceDifficulty and not element.InstancedCached then
-		updateInstanceDifficulty(element)
+	-- stuff for Skyriding
+	if oUF.isRetail then
+		if event == 'ForceUpdate' then
+			isGliding = C_PlayerInfo_GetGlidingInfo()
+		elseif event == 'PLAYER_IS_GLIDING_CHANGED' then
+			isGliding = unit -- unit is true/false with the event being PLAYER_IS_GLIDING_CHANGED
+		end
 	end
 
 	-- try to get the unit from the parent
-	if event == 'PLAYER_CAN_GLIDE_CHANGED' or not unit then
+	if not unit or type(unit) ~= 'string' then
 		unit = self.unit
 	end
 
@@ -99,6 +103,11 @@ local function Update(self, event, unit)
 		return
 	end
 
+	-- Instance Difficulty is enabled and we haven't checked yet
+	if element.InstanceDifficulty and not element.InstancedCached then
+		updateInstanceDifficulty(element)
+	end
+
 	-- normal fader
 	local _, powerType
 	if element.Power then
@@ -113,8 +122,8 @@ local function Update(self, event, unit)
 		(element.Focus and not oUF.isClassic and UnitExists('focus')) or
 		(element.Health and UnitHealth(unit) < UnitHealthMax(unit)) or
 		(element.Power and (PowerTypesFull[powerType] and UnitPower(unit) < UnitPowerMax(unit))) or
-		(element.Vehicle and (oUF.isRetail or oUF.isWrath) and UnitHasVehicleUI(unit)) or
-		(element.DynamicFlight and oUF.isRetail and not CanGlide()) or
+		(element.Vehicle and (oUF.isRetail or oUF.isCata) and UnitHasVehicleUI(unit)) or
+		(element.DynamicFlight and oUF.isRetail and not isGliding) or
 		(element.Hover and GetMouseFocus() == (self.__faderobject or self))
 	then
 		ToggleAlpha(self, element, element.MaxAlpha)
@@ -130,8 +139,8 @@ local function Update(self, event, unit)
 	end
 end
 
-local function ForceUpdate(element)
-	return Update(element.__owner, "ForceUpdate", element.__owner.unit)
+local function ForceUpdate(element, event)
+	return Update(element.__owner, event or 'ForceUpdate', element.__owner.unit)
 end
 
 local function onRangeUpdate(frame, elapsed)
@@ -140,7 +149,7 @@ local function onRangeUpdate(frame, elapsed)
 	if (frame.timer >= .20) then
 		for _, object in next, onRangeObjects do
 			if object:IsVisible() then
-				object.Fader:ForceUpdate()
+				object.Fader:ForceUpdate('OnRangeUpdate')
 			end
 		end
 
@@ -151,20 +160,20 @@ end
 local function onInstanceDifficulty(self)
 	local element = self.Fader
 	updateInstanceDifficulty(element)
-	element:ForceUpdate()
+	element:ForceUpdate('OnInstanceDifficulty')
 end
 
 local function HoverScript(self)
 	local Fader = self.__faderelement or self.Fader
 	if Fader and Fader.HoverHooked == 1 then
-		Fader:ForceUpdate()
+		Fader:ForceUpdate('HoverScript')
 	end
 end
 
 local function TargetScript(self)
 	if self.Fader and self.Fader.TargetHooked == 1 then
 		if self:IsShown() then
-			self.Fader:ForceUpdate()
+			self.Fader:ForceUpdate('TargetScript')
 		else
 			self:SetAlpha(0)
 		end
@@ -250,13 +259,12 @@ local options = {
 		enable = function(self)
 			if oUF.isClassic then
 				self:RegisterEvent('UNIT_HEALTH_FREQUENT', Update)
-			else
-				self:RegisterEvent('UNIT_HEALTH', Update)
 			end
 
+			self:RegisterEvent('UNIT_HEALTH', Update)
 			self:RegisterEvent('UNIT_MAXHEALTH', Update)
 		end,
-		events = oUF.isClassic and {'UNIT_HEALTH_FREQUENT','UNIT_MAXHEALTH'} or {'UNIT_HEALTH','UNIT_MAXHEALTH'}
+		events = oUF.isClassic and {'UNIT_HEALTH_FREQUENT','UNIT_HEALTH','UNIT_MAXHEALTH'} or {'UNIT_HEALTH','UNIT_MAXHEALTH'}
 	},
 	Power = {
 		enable = function(self)
@@ -312,9 +320,9 @@ if oUF.isRetail then
 	tinsert(options.Casting.events, 'UNIT_SPELLCAST_EMPOWER_STOP')
 	options.DynamicFlight = {
 		enable = function(self)
-			self:RegisterEvent('PLAYER_CAN_GLIDE_CHANGED', Update, true)
+			self:RegisterEvent('PLAYER_IS_GLIDING_CHANGED', Update, true)
 		end,
-		events = {'PLAYER_CAN_GLIDE_CHANGED'}
+		events = {'PLAYER_IS_GLIDING_CHANGED'}
 	}
 end
 
@@ -327,7 +335,7 @@ if not oUF.isClassic then
 	}
 end
 
-if oUF.isRetail or oUF.isWrath then
+if oUF.isRetail or oUF.isCata then
 	options.Vehicle = {
 		enable = function(self)
 			self:RegisterEvent('UNIT_ENTERED_VEHICLE', Update, true)

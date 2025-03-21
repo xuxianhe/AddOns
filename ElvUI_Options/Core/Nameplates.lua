@@ -9,7 +9,7 @@ local max, wipe, strfind = max, wipe, strfind
 local pairs, type, strsplit = pairs, type, strsplit
 local next, tonumber, format = next, tonumber, format
 
-local IsAddOnLoaded = (C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local GetCVarBool = C_CVar.GetCVarBool
 
 local function GetAddOnStatus(index, locale, name)
@@ -51,12 +51,13 @@ local function GetUnitSettings(unit, name)
 	group.args.healthGroup.args.height = ACH:Range(L["Height"], nil, 3, { min = minHeight, max = MaxHeight(unit), step = 1 })
 	group.args.healthGroup.args.width = ACH:Execute(L["Width"], nil, 4, function() ACD:SelectGroup('ElvUI', 'nameplates', 'generalGroup', 'clickableRange') end)
 	group.args.healthGroup.args.healPrediction = ACH:Toggle(L["Heal Prediction"], nil, 5)
+	group.args.healthGroup.args.smoothbars = ACH:Toggle(L["Smooth Bars"], L["Bars will transition smoothly."], 6)
 
 	group.args.healthGroup.args.textGroup = ACH:Group(L["Text"], nil, 200, nil, function(info) return E.db.nameplates.units[unit].health.text[info[#info]] end, function(info, value) E.db.nameplates.units[unit].health.text[info[#info]] = value NP:ConfigureAll() end)
 	group.args.healthGroup.args.textGroup.inline = true
 	group.args.healthGroup.args.textGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
 	group.args.healthGroup.args.textGroup.args.format = ACH:Input(L["Text Format"], nil, 2, nil, 'full')
-	group.args.healthGroup.args.textGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = 'CENTER', TOPLEFT = 'TOPLEFT', BOTTOMLEFT = 'BOTTOMLEFT', TOPRIGHT = 'TOPRIGHT', BOTTOMRIGHT = 'BOTTOMRIGHT' })
+	group.args.healthGroup.args.textGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = L["CENTER"], TOPLEFT = L["TOPLEFT"], BOTTOMLEFT = L["BOTTOMLEFT"], TOPRIGHT = L["TOPRIGHT"], BOTTOMRIGHT = L["BOTTOMRIGHT"] })
 	group.args.healthGroup.args.textGroup.args.parent = ACH:Select(L["Parent"], nil, 4, { Nameplate = L["Nameplate"], Health = L["Health"] })
 	group.args.healthGroup.args.textGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 5, { min = -100, max = 100, step = 1 })
 	group.args.healthGroup.args.textGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 6, { min = -100, max = 100, step = 1 })
@@ -76,13 +77,14 @@ local function GetUnitSettings(unit, name)
 	group.args.powerGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 6, { min = -100, max = 100, step = 1 })
 	group.args.powerGroup.args.displayAltPower = ACH:Toggle(L["Swap to Alt Power"], nil, 7)
 	group.args.powerGroup.args.useAtlas = ACH:Toggle(L["Use Atlas Textures"], nil, 8)
-	group.args.powerGroup.args.classColor = ACH:Toggle(L["Use Class Color"], nil, 9)
+	group.args.powerGroup.args.useClassColor = ACH:Toggle(L["Use Class Color"], nil, 9)
+	group.args.powerGroup.args.smoothbars = ACH:Toggle(L["Smooth Bars"], L["Bars will transition smoothly."], 10)
 
 	group.args.powerGroup.args.textGroup = ACH:Group(L["Text"], nil, 200, nil, function(info) return E.db.nameplates.units[unit].power.text[info[#info]] end, function(info, value) E.db.nameplates.units[unit].power.text[info[#info]] = value NP:ConfigureAll() end)
 	group.args.powerGroup.args.textGroup.inline = true
 	group.args.powerGroup.args.textGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
 	group.args.powerGroup.args.textGroup.args.format = ACH:Input(L["Text Format"], nil, 2, nil, 'full')
-	group.args.powerGroup.args.textGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = 'CENTER', TOPLEFT = 'TOPLEFT', BOTTOMLEFT = 'BOTTOMLEFT', TOPRIGHT = 'TOPRIGHT', BOTTOMRIGHT = 'BOTTOMRIGHT' })
+	group.args.powerGroup.args.textGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = L["CENTER"], TOPLEFT = L["TOPLEFT"], BOTTOMLEFT = L["BOTTOMLEFT"], TOPRIGHT = L["TOPRIGHT"], BOTTOMRIGHT = L["BOTTOMRIGHT"] })
 	group.args.powerGroup.args.textGroup.args.parent = ACH:Select(L["Parent"], nil, 4, { Nameplate = L["Nameplate"], Health = L["Health"] })
 	group.args.powerGroup.args.textGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 5, { min = -100, max = 100, step = 1 })
 	group.args.powerGroup.args.textGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 6, { min = -100, max = 100, step = 1 })
@@ -93,87 +95,93 @@ local function GetUnitSettings(unit, name)
 	group.args.powerGroup.args.textGroup.args.fontGroup.args.fontSize = ACH:Range(L["Font Size"], nil, 2, { min = 4, max = 60, step = 1 })
 	group.args.powerGroup.args.textGroup.args.fontGroup.args.fontOutline = ACH:FontFlags(L["Font Outline"], nil, 3)
 
-	group.args.castGroup = ACH:Group(L["Cast Bar"], nil, 20, nil, function(info) return E.db.nameplates.units[unit].castbar[info[#info]] end, function(info, value) E.db.nameplates.units[unit].castbar[info[#info]] = value NP:ConfigureAll() end)
+	group.args.castGroup = ACH:Group(L["Cast Bar"], nil, 20, 'tab', function(info) return E.db.nameplates.units[unit].castbar[info[#info]] end, function(info, value) E.db.nameplates.units[unit].castbar[info[#info]] = value NP:ConfigureAll() end)
 	group.args.castGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
 	group.args.castGroup.args.sourceInterrupt = ACH:Toggle(L["Display Interrupt Source"], L["Display the unit name who interrupted a spell on the castbar. You should increase the Time to Hold to show properly."], 2)
 	group.args.castGroup.args.sourceInterruptClassColor = ACH:Toggle(L["Class Color Source"], nil, 3, nil, nil, nil, nil, nil, function() return not E.db.nameplates.units[unit].castbar.sourceInterrupt end)
+	group.args.castGroup.args.smoothbars = ACH:Toggle(L["Smooth Bars"], L["Bars will transition smoothly."], 5)
+
 	-- order 4 is player Display Target
-	group.args.castGroup.args.timeToHold = ACH:Range(L["Time To Hold"], L["How many seconds the castbar should stay visible after the cast failed or was interrupted."], 5, { min = 0, max = 5, step = .1 })
-	group.args.castGroup.args.width = ACH:Range(L["Width"], nil, 6, { min = minWidth, max = MaxWidth(unit), step = 1 })
-	group.args.castGroup.args.height = ACH:Range(L["Height"], nil, 7, { min = minHeight, max = MaxHeight(unit), step = 1 })
-	group.args.castGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 8, { min = -100, max = 100, step = 1 })
-	group.args.castGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 9, { min = -100, max = 100, step = 1 })
+	group.args.castGroup.args.generalGroup = ACH:Group(L["General"], nil, 10)
+	group.args.castGroup.args.generalGroup.args.timeToHold = ACH:Range(L["Time To Hold"], L["How many seconds the castbar should stay visible after the cast failed or was interrupted."], 5, { min = 0, max = 5, step = .1 })
+	group.args.castGroup.args.generalGroup.args.width = ACH:Range(L["Width"], nil, 6, { min = minWidth, max = MaxWidth(unit), step = 1 })
+	group.args.castGroup.args.generalGroup.args.height = ACH:Range(L["Height"], nil, 7, { min = minHeight, max = MaxHeight(unit), step = 1 })
+	group.args.castGroup.args.generalGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 8, { min = -300, softMin = -100, softMax = 100, max = 300, step = 1 })
+	group.args.castGroup.args.generalGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 9, { min = -300, softMin = -100, softMax = 100, max = 300, step = 1 })
+
+	group.args.castGroup.args.generalGroup.args.iconGroup = ACH:Group(L["Icon"], nil, 21)
+	group.args.castGroup.args.generalGroup.args.iconGroup.args.showIcon = ACH:Toggle(L["Show Icon"], nil, 1)
+	group.args.castGroup.args.generalGroup.args.iconGroup.args.iconPosition = ACH:Select(L["Position"], nil, 3, { LEFT = L["Left"], RIGHT = L["Right"] })
+	group.args.castGroup.args.generalGroup.args.iconGroup.args.iconSize = ACH:Range(L["Icon Size"], nil, 3, { min = 4, max = 40, step = 1 })
+	group.args.castGroup.args.generalGroup.args.iconGroup.args.iconOffsetX = ACH:Range(L["X-Offset"], nil, 8, { min = -100, max = 100, step = 1 })
+	group.args.castGroup.args.generalGroup.args.iconGroup.args.iconOffsetY = ACH:Range(L["Y-Offset"], nil, 9, { min = -100, max = 100, step = 1 })
+	group.args.castGroup.args.generalGroup.args.iconGroup.inline = true
 
 	group.args.castGroup.args.textGroup = ACH:Group(L["Text"], nil, 20)
-	group.args.castGroup.args.textGroup.inline = true
 	group.args.castGroup.args.textGroup.args.hideSpellName = ACH:Toggle(L["Hide Spell Name"], nil, 1)
 	group.args.castGroup.args.textGroup.args.hideTime = ACH:Toggle(L["Hide Time"], nil, 2)
-	group.args.castGroup.args.textGroup.args.textPosition = ACH:Select(L["Position"], nil, 3, { ONBAR = L["Cast Bar"], ABOVE = L["Above"], BELOW = L["Below"] })
-	group.args.castGroup.args.textGroup.args.castTimeFormat = ACH:Select(L["Cast Time Format"], nil, 4, { CURRENT = L["Current"], CURRENTMAX = L["Current / Max"], REMAINING = L["Remaining"], REMAININGMAX = L["Remaining / Max"] })
-	group.args.castGroup.args.textGroup.args.channelTimeFormat = ACH:Select(L["Channel Time Format"], nil, 5, { CURRENT = L["Current"], CURRENTMAX = L["Current / Max"], REMAINING = L["Remaining"], REMAININGMAX = L["Remaining / Max"] })
+	group.args.castGroup.args.textGroup.args.spellRename = ACH:Toggle(L["BigWigs Spell Rename"], L["Allows BigWigs to rename specific encounter spells on your castbar to something better to understand.\nExample: 'Impaling Eruption' becomes 'Frontal' and 'Twilight Massacre' becomes 'Dash'."], 3)
+	group.args.castGroup.args.textGroup.args.textPosition = ACH:Select(L["Position"], nil, 5, { ONBAR = L["Cast Bar"], ABOVE = L["Above"], BELOW = L["Below"] })
+	group.args.castGroup.args.textGroup.args.castTimeFormat = ACH:Select(L["Cast Time Format"], nil, 6, { CURRENT = L["Current"], CURRENTMAX = L["Current / Max"], REMAINING = L["Remaining"], REMAININGMAX = L["Remaining / Max"] })
+	group.args.castGroup.args.textGroup.args.channelTimeFormat = ACH:Select(L["Channel Time Format"], nil, 7, { CURRENT = L["Current"], CURRENTMAX = L["Current / Max"], REMAINING = L["Remaining"], REMAININGMAX = L["Remaining / Max"] })
 
 	group.args.castGroup.args.textGroup.args.time = ACH:Group(L["Time Options"], nil, 10)
 	group.args.castGroup.args.textGroup.args.time.args.timeXOffset = ACH:Range(L["X-Offset"], nil, 6, { min = -100, max = 100, step = 1 })
 	group.args.castGroup.args.textGroup.args.time.args.timeYOffset = ACH:Range(L["Y-Offset"], nil, 7, { min = -100, max = 100, step = 1 })
+	group.args.castGroup.args.textGroup.args.time.inline = true
 
 	group.args.castGroup.args.textGroup.args.text = ACH:Group(L["Text Options"], nil, 11)
 	group.args.castGroup.args.textGroup.args.text.args.textXOffset = ACH:Range(L["X-Offset"], nil, 8, { min = -100, max = 100, step = 1 })
 	group.args.castGroup.args.textGroup.args.text.args.textYOffset = ACH:Range(L["Y-Offset"], nil, 9, { min = -100, max = 100, step = 1 })
+	group.args.castGroup.args.textGroup.args.text.inline = true
 
-	group.args.castGroup.args.iconGroup = ACH:Group(L["Icon"], nil, 21)
-	group.args.castGroup.args.iconGroup.inline = true
-	group.args.castGroup.args.iconGroup.args.showIcon = ACH:Toggle(L["Show Icon"], nil, 1)
-	group.args.castGroup.args.iconGroup.args.iconPosition = ACH:Select(L["Position"], nil, 3, { LEFT = L["Left"], RIGHT = L["Right"] })
-	group.args.castGroup.args.iconGroup.args.iconSize = ACH:Range(L["Icon Size"], nil, 3, { min = 4, max = 40, step = 1 })
-	group.args.castGroup.args.iconGroup.args.iconOffsetX = ACH:Range(L["X-Offset"], nil, 8, { min = -100, max = 100, step = 1 })
-	group.args.castGroup.args.iconGroup.args.iconOffsetY = ACH:Range(L["Y-Offset"], nil, 9, { min = -100, max = 100, step = 1 })
+	group.args.castGroup.args.textGroup.args.fontGroup = ACH:Group(L["Font"], nil, 30)
+	group.args.castGroup.args.textGroup.args.fontGroup.args.font = ACH:SharedMediaFont(L["Font"], nil, 1)
+	group.args.castGroup.args.textGroup.args.fontGroup.args.fontSize = ACH:Range(L["Font Size"], nil, 2, { min = 4, max = 60, step = 1 })
+	group.args.castGroup.args.textGroup.args.fontGroup.args.fontOutline = ACH:FontFlags(L["Font Outline"], nil, 3)
+	group.args.castGroup.args.textGroup.args.fontGroup.inline = true
 
-	group.args.castGroup.args.fontGroup = ACH:Group(L["Font"], nil, 30)
-	group.args.castGroup.args.fontGroup.inline = true
-	group.args.castGroup.args.fontGroup.args.font = ACH:SharedMediaFont(L["Font"], nil, 1)
-	group.args.castGroup.args.fontGroup.args.fontSize = ACH:Range(L["Font Size"], nil, 2, { min = 4, max = 60, step = 1 })
-	group.args.castGroup.args.fontGroup.args.fontOutline = ACH:FontFlags(L["Font Outline"], nil, 3)
-
-	group.args.buffsGroup = ACH:Group(L["Buffs"], nil, 25, nil, function(info) return E.db.nameplates.units[unit].buffs[info[#info]] end, function(info, value) E.db.nameplates.units[unit].buffs[info[#info]] = value NP:ConfigureAll() end)
+	group.args.buffsGroup = ACH:Group(L["Buffs"], nil, 25, 'tab', function(info) return E.db.nameplates.units[unit].buffs[info[#info]] end, function(info, value) E.db.nameplates.units[unit].buffs[info[#info]] = value NP:ConfigureAll() end)
 	group.args.buffsGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
 	group.args.buffsGroup.args.stackAuras = ACH:Toggle(L["Stack Auras"], L["This will join auras together which are normally separated. Example: Bolstering and Force of Nature."], 2)
 	group.args.buffsGroup.args.desaturate = ACH:Toggle(L["Desaturate Icon"], L["Set auras that are not from you to desaturated."], 3)
 	group.args.buffsGroup.args.keepSizeRatio = ACH:Toggle(L["Keep Size Ratio"], nil, 4)
-	group.args.buffsGroup.args.size = ACH:Range(function() return E.db.nameplates.units[unit].buffs.keepSizeRatio and L["Size"] or L["Width"] end, nil, 5, { min = 6, max = 60, step = 1 })
-	group.args.buffsGroup.args.height = ACH:Range(L["Height"], nil, 6, { min = 6, max = 60, step = 1 }, nil, nil, nil, nil, function() return E.db.nameplates.units[unit].buffs.keepSizeRatio end)
-	group.args.buffsGroup.args.numAuras = ACH:Range(L["Per Row"], nil, 7, { min = 1, max = 20, step = 1 })
-	group.args.buffsGroup.args.numRows = ACH:Range(L["Num Rows"], nil, 8, { min = 1, max = 5, step = 1 })
-	group.args.buffsGroup.args.spacing = ACH:Range(L["Spacing"], nil, 9, { min = 0, max = 60, step = 1 })
-	group.args.buffsGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 10, { min = -100, max = 100, step = 1 })
-	group.args.buffsGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 11, { min = -100, max = 100, step = 1 })
-	group.args.buffsGroup.args.anchorPoint = ACH:Select(L["Anchor Point"], L["What point to anchor to the frame you set to attach to."], 12, C.Values.Anchors)
-	group.args.buffsGroup.args.attachTo = ACH:Select(L["Attach To"], L["What to attach the anchor frame to."], 13, { FRAME = L["Frame"], DEBUFFS = L["Debuffs"], HEALTH = L["Health"], POWER = L["Power"] }, nil, nil, nil, nil, function() local position = E.db.nameplates.units[unit].smartAuraPosition return position == 'BUFFS_ON_DEBUFFS' or position == 'FLUID_BUFFS_ON_DEBUFFS' end)
-	group.args.buffsGroup.args.growthX = ACH:Select(L["Growth X-Direction"], nil, 14, { LEFT = L["Left"], RIGHT = L["Right"] }, nil, nil, nil, nil, function() local point = E.db.nameplates.units[unit].buffs.anchorPoint return point == 'LEFT' or point == 'RIGHT' end)
-	group.args.buffsGroup.args.growthY = ACH:Select(L["Growth Y-Direction"], nil, 15, { UP = L["Up"], DOWN = L["Down"] }, nil, nil, nil, nil, function() local point = E.db.nameplates.units[unit].buffs.anchorPoint return point == 'TOP' or point == 'BOTTOM' end)
-	group.args.buffsGroup.args.sortMethod = ACH:Select(L["Sort By"], L["Method to sort by."], 16, { TIME_REMAINING = L["Time Remaining"], DURATION = L["Duration"], NAME = L["Name"], INDEX = L["Index"], PLAYER = L["Player"] })
-	group.args.buffsGroup.args.sortDirection = ACH:Select(L["Sort Direction"], L["Ascending or Descending order."], 17, { ASCENDING = L["Ascending"], DESCENDING = L["Descending"] })
 
-	group.args.buffsGroup.args.stacks = ACH:Group(L["Stack Counter"], nil, 20)
-	group.args.buffsGroup.args.stacks.inline = true
-	group.args.buffsGroup.args.stacks.args.countFont = ACH:SharedMediaFont(L["Font"], nil, 1)
-	group.args.buffsGroup.args.stacks.args.countFontSize = ACH:Range(L["Font Size"], nil, 2, { min = 4, max = 60, step = 1 })
-	group.args.buffsGroup.args.stacks.args.countFontOutline = ACH:FontFlags(L["Font Outline"], nil, 3)
-	group.args.buffsGroup.args.stacks.args.countXOffset = ACH:Range(L["X-Offset"], nil, 10, { min = -100, max = 100, step = 1 })
-	group.args.buffsGroup.args.stacks.args.countYOffset = ACH:Range(L["Y-Offset"], nil, 9, { min = -100, max = 100, step = 1 })
-	group.args.buffsGroup.args.stacks.args.countPosition = ACH:Select(L["Position"], nil, 3, C.Values.AllPoints)
+	group.args.buffsGroup.args.generalGroup = ACH:Group(L["General"], nil, 10)
+	group.args.buffsGroup.args.generalGroup.args.size = ACH:Range(function() return E.db.nameplates.units[unit].buffs.keepSizeRatio and L["Size"] or L["Width"] end, nil, 5, { min = 6, max = 60, step = 1 })
+	group.args.buffsGroup.args.generalGroup.args.height = ACH:Range(L["Height"], nil, 6, { min = 6, max = 60, step = 1 }, nil, nil, nil, nil, function() return E.db.nameplates.units[unit].buffs.keepSizeRatio end)
+	group.args.buffsGroup.args.generalGroup.args.numAuras = ACH:Range(L["Per Row"], nil, 7, { min = 1, max = 20, step = 1 })
+	group.args.buffsGroup.args.generalGroup.args.numRows = ACH:Range(L["Num Rows"], nil, 8, { min = 1, max = 5, step = 1 })
+	group.args.buffsGroup.args.generalGroup.args.spacing = ACH:Range(L["Spacing"], nil, 9, { min = 0, max = 60, step = 1 })
+	group.args.buffsGroup.args.generalGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 10, { min = -100, max = 100, step = 1 })
+	group.args.buffsGroup.args.generalGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 11, { min = -100, max = 100, step = 1 })
+	group.args.buffsGroup.args.generalGroup.args.anchorPoint = ACH:Select(L["Anchor Point"], L["What point to anchor to the frame you set to attach to."], 12, C.Values.Anchors)
+	group.args.buffsGroup.args.generalGroup.args.attachTo = ACH:Select(L["Attach To"], L["What to attach the anchor frame to."], 13, { FRAME = L["Frame"], DEBUFFS = L["Debuffs"], HEALTH = L["Health"], POWER = L["Power"] }, nil, nil, nil, nil, function() local position = E.db.nameplates.units[unit].smartAuraPosition return position == 'BUFFS_ON_DEBUFFS' or position == 'FLUID_BUFFS_ON_DEBUFFS' end)
+	group.args.buffsGroup.args.generalGroup.args.growthX = ACH:Select(L["Growth X-Direction"], nil, 14, { LEFT = L["Left"], RIGHT = L["Right"] }, nil, nil, nil, nil, function() local point = E.db.nameplates.units[unit].buffs.anchorPoint return point == 'LEFT' or point == 'RIGHT' end)
+	group.args.buffsGroup.args.generalGroup.args.growthY = ACH:Select(L["Growth Y-Direction"], nil, 15, { UP = L["Up"], DOWN = L["Down"] }, nil, nil, nil, nil, function() local point = E.db.nameplates.units[unit].buffs.anchorPoint return point == 'TOP' or point == 'BOTTOM' end)
+	group.args.buffsGroup.args.generalGroup.args.sortMethod = ACH:Select(L["Sort By"], L["Method to sort by."], 16, { TIME_REMAINING = L["Time Remaining"], DURATION = L["Duration"], NAME = L["Name"], INDEX = L["Index"], PLAYER = L["Player"] })
+	group.args.buffsGroup.args.generalGroup.args.sortDirection = ACH:Select(L["Sort Direction"], L["Ascending or Descending order."], 17, { ASCENDING = L["Ascending"], DESCENDING = L["Descending"] })
 
-	group.args.buffsGroup.args.duration = ACH:Group(L["Duration"], nil, 25)
-	group.args.buffsGroup.args.duration.inline = true
-	group.args.buffsGroup.args.duration.args.cooldownShortcut = ACH:Execute(L["Cooldowns"], nil, 1, function() ACD:SelectGroup('ElvUI', 'cooldown', 'nameplates') end)
-	group.args.buffsGroup.args.duration.args.durationPosition = ACH:Select(L["Position"], nil, 2, C.Values.AllPoints)
+	group.args.buffsGroup.args.textGroup = ACH:Group(L["Text"], nil, 15)
+	group.args.buffsGroup.args.textGroup.args.stacks = ACH:Group(L["Stack Counter"], nil, 20)
+	group.args.buffsGroup.args.textGroup.args.stacks.inline = true
+	group.args.buffsGroup.args.textGroup.args.stacks.args.countFont = ACH:SharedMediaFont(L["Font"], nil, 1)
+	group.args.buffsGroup.args.textGroup.args.stacks.args.countFontSize = ACH:Range(L["Font Size"], nil, 2, { min = 4, max = 60, step = 1 })
+	group.args.buffsGroup.args.textGroup.args.stacks.args.countFontOutline = ACH:FontFlags(L["Font Outline"], nil, 3)
+	group.args.buffsGroup.args.textGroup.args.stacks.args.countXOffset = ACH:Range(L["X-Offset"], nil, 10, { min = -100, max = 100, step = 1 })
+	group.args.buffsGroup.args.textGroup.args.stacks.args.countYOffset = ACH:Range(L["Y-Offset"], nil, 9, { min = -100, max = 100, step = 1 })
+	group.args.buffsGroup.args.textGroup.args.stacks.args.countPosition = ACH:Select(L["Position"], nil, 3, C.Values.AllPoints)
+
+	group.args.buffsGroup.args.textGroup.args.duration = ACH:Group(L["Duration"], nil, 25)
+	group.args.buffsGroup.args.textGroup.args.duration.inline = true
+	group.args.buffsGroup.args.textGroup.args.duration.args.cooldownShortcut = ACH:Execute(L["Cooldowns"], nil, 1, function() ACD:SelectGroup('ElvUI', 'cooldown', 'nameplates') end)
+	group.args.buffsGroup.args.textGroup.args.duration.args.durationPosition = ACH:Select(L["Position"], nil, 2, C.Values.AllPoints)
 
 	group.args.buffsGroup.args.filtersGroup = ACH:Group(L["Filters"], nil, 30)
-	group.args.buffsGroup.args.filtersGroup.inline = true
 	group.args.buffsGroup.args.filtersGroup.args.minDuration = ACH:Range(L["Minimum Duration"], L["Don't display auras that are shorter than this duration (in seconds). Set to zero to disable."], 1, { min = 0, max = 10800, step = 1 })
 	group.args.buffsGroup.args.filtersGroup.args.maxDuration = ACH:Range(L["Maximum Duration"], L["Don't display auras that are longer than this duration (in seconds). Set to zero to disable."], 1, { min = 0, max = 10800, step = 1 })
 	group.args.buffsGroup.args.filtersGroup.args.jumpToFilter = ACH:Execute(L["Filters Page"], L["Shortcut to global filters."], 3, function() ACD:SelectGroup('ElvUI', 'filters') end)
-	group.args.buffsGroup.args.filtersGroup.args.specialFilters = ACH:Select(L["Add Special Filter"], L["These filters don't use a list of spells like the regular filters. Instead they use the WoW API and some code logic to determine if an aura should be allowed or blocked."], 4, function() wipe(filters) local list = E.global.unitframe.specialFilters if not (list and next(list)) then return filters end for filter in pairs(list) do filters[filter] = L[filter] end return filters end, nil, nil, nil, function(_, value) C.SetFilterPriority(E.db.nameplates.units, unit, 'buffs', value) NP:ConfigureAll() end)
-	group.args.buffsGroup.args.filtersGroup.args.specialFilters.sortByValue = true
+	group.args.buffsGroup.args.filtersGroup.args.specialFilters = ACH:Select(L["Add Special Filter"], L["These filters don't use a list of spells like the regular filters. Instead they use the WoW API and some code logic to determine if an aura should be allowed or blocked."], 4, function() wipe(filters) local list = E.global.unitframe.specialFilters if not (list and next(list)) then return filters end for filter in pairs(list) do filters[filter] = L[filter] end return filters end, nil, nil, nil, function(_, value) C.SetFilterPriority(E.db.nameplates.units, unit, 'buffs', value) NP:ConfigureAll() end, nil, nil, true)
 	group.args.buffsGroup.args.filtersGroup.args.filter = ACH:Select(L["Add Regular Filter"], L["These filters use a list of spells to determine if an aura should be allowed or blocked. The content of these filters can be modified in the Filters section of the config."], 5, function() wipe(filters) local list = E.global.unitframe.aurafilters if not (list and next(list)) then return filters end for filter in pairs(list) do filters[filter] = L[filter] end return filters end, nil, nil, nil, function(_, value) C.SetFilterPriority(E.db.nameplates.units, unit, 'buffs', value) NP:ConfigureAll() end)
 	group.args.buffsGroup.args.filtersGroup.args.resetPriority = ACH:Execute(L["Reset Priority"], L["Reset filter priority to the default state."], 7, function() E.db.nameplates.units[unit].buffs.priority = P.nameplates.units[unit].buffs.priority NP:ConfigureAll() end)
 
@@ -188,46 +196,47 @@ local function GetUnitSettings(unit, name)
 	group.args.buffsGroup.args.filtersGroup.args.filterPriority.stateSwitchOnClick = function() C.SetFilterPriority(E.db.nameplates.units, unit, 'buffs', carryFilterFrom, nil, nil, true) end
 	group.args.buffsGroup.args.filtersGroup.args.spacer1 = ACH:Description(L["Use drag and drop to rearrange filter priority or right click to remove a filter."] ..'\n'..L["Use Shift+LeftClick to toggle between friendly or enemy or normal state. Normal state will allow the filter to be checked on all units. Friendly state is for friendly units only and enemy state is for enemy units."], 9)
 
-	group.args.debuffsGroup = ACH:Group(L["Debuffs"], nil, 30, nil, function(info) return E.db.nameplates.units[unit].debuffs[info[#info]] end, function(info, value) E.db.nameplates.units[unit].debuffs[info[#info]] = value NP:ConfigureAll() end)
+	group.args.debuffsGroup = ACH:Group(L["Debuffs"], nil, 30, 'tab', function(info) return E.db.nameplates.units[unit].debuffs[info[#info]] end, function(info, value) E.db.nameplates.units[unit].debuffs[info[#info]] = value NP:ConfigureAll() end)
 	group.args.debuffsGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
 	group.args.debuffsGroup.args.stackAuras = ACH:Toggle(L["Stack Auras"], L["This will join auras together which are normally separated. Example: Bolstering and Force of Nature."], 2)
 	group.args.debuffsGroup.args.desaturate = ACH:Toggle(L["Desaturate Icon"], L["Set auras that are not from you to desaturated."], 3)
 	group.args.debuffsGroup.args.keepSizeRatio = ACH:Toggle(L["Keep Size Ratio"], nil, 4)
-	group.args.debuffsGroup.args.size = ACH:Range(function() return E.db.nameplates.units[unit].debuffs.keepSizeRatio and L["Size"] or L["Width"] end, nil, 5, { min = 6, max = 60, step = 1 })
-	group.args.debuffsGroup.args.height = ACH:Range(L["Height"], nil, 6, { min = 6, max = 60, step = 1 }, nil, nil, nil, nil, function() return E.db.nameplates.units[unit].debuffs.keepSizeRatio end)
-	group.args.debuffsGroup.args.numAuras = ACH:Range(L["Per Row"], nil, 7, { min = 1, max = 20, step = 1 })
-	group.args.debuffsGroup.args.numRows = ACH:Range(L["Num Rows"], nil, 8, { min = 1, max = 5, step = 1 })
-	group.args.debuffsGroup.args.spacing = ACH:Range(L["Spacing"], nil, 9, { min = 0, max = 60, step = 1 })
-	group.args.debuffsGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 10, { min = -100, max = 100, step = 1 })
-	group.args.debuffsGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 11, { min = -100, max = 100, step = 1 })
-	group.args.debuffsGroup.args.anchorPoint = ACH:Select(L["Anchor Point"], L["What point to anchor to the frame you set to attach to."], 12, C.Values.Anchors)
-	group.args.debuffsGroup.args.attachTo = ACH:Select(L["Attach To"], L["What to attach the anchor frame to."], 13, { FRAME = L["Frame"], BUFFS = L["Buffs"], HEALTH = L["Health"], POWER = L["Power"] }, nil, nil, nil, nil, function() local position = E.db.nameplates.units[unit].smartAuraPosition return position == 'BUFFS_ON_DEBUFFS' or position == 'FLUID_BUFFS_ON_DEBUFFS' end)
-	group.args.debuffsGroup.args.growthX = ACH:Select(L["Growth X-Direction"], nil, 14, { LEFT = L["Left"], RIGHT = L["Right"] }, nil, nil, nil, nil, function() local point = E.db.nameplates.units[unit].debuffs.anchorPoint return point == 'LEFT' or point == 'RIGHT' end)
-	group.args.debuffsGroup.args.growthY = ACH:Select(L["Growth Y-Direction"], nil, 15, { UP = L["Up"], DOWN = L["Down"] }, nil, nil, nil, nil, function() local point = E.db.nameplates.units[unit].debuffs.anchorPoint return point == 'TOP' or point == 'BOTTOM' end)
-	group.args.debuffsGroup.args.sortMethod = ACH:Select(L["Sort By"], L["Method to sort by."], 16, { TIME_REMAINING = L["Time Remaining"], DURATION = L["Duration"], NAME = L["Name"], INDEX = L["Index"], PLAYER = L["Player"] })
-	group.args.debuffsGroup.args.sortDirection = ACH:Select(L["Sort Direction"], L["Ascending or Descending order."], 17, { ASCENDING = L["Ascending"], DESCENDING = L["Descending"] })
 
-	group.args.debuffsGroup.args.stacks = ACH:Group(L["Stack Counter"], nil, 20)
-	group.args.debuffsGroup.args.stacks.inline = true
-	group.args.debuffsGroup.args.stacks.args.countFont = ACH:SharedMediaFont(L["Font"], nil, 1)
-	group.args.debuffsGroup.args.stacks.args.countFontSize = ACH:Range(L["Font Size"], nil, 2, { min = 4, max = 60, step = 1 })
-	group.args.debuffsGroup.args.stacks.args.countFontOutline = ACH:FontFlags(L["Font Outline"], nil, 3)
-	group.args.debuffsGroup.args.stacks.args.countXOffset = ACH:Range(L["X-Offset"], nil, 10, { min = -100, max = 100, step = 1 })
-	group.args.debuffsGroup.args.stacks.args.countYOffset = ACH:Range(L["Y-Offset"], nil, 9, { min = -100, max = 100, step = 1 })
-	group.args.debuffsGroup.args.stacks.args.countPosition = ACH:Select(L["Position"], nil, 3, C.Values.AllPoints)
+	group.args.debuffsGroup.args.generalGroup = ACH:Group(L["General"], nil, 10)
+	group.args.debuffsGroup.args.generalGroup.args.size = ACH:Range(function() return E.db.nameplates.units[unit].debuffs.keepSizeRatio and L["Size"] or L["Width"] end, nil, 5, { min = 6, max = 60, step = 1 })
+	group.args.debuffsGroup.args.generalGroup.args.height = ACH:Range(L["Height"], nil, 6, { min = 6, max = 60, step = 1 }, nil, nil, nil, nil, function() return E.db.nameplates.units[unit].debuffs.keepSizeRatio end)
+	group.args.debuffsGroup.args.generalGroup.args.numAuras = ACH:Range(L["Per Row"], nil, 7, { min = 1, max = 20, step = 1 })
+	group.args.debuffsGroup.args.generalGroup.args.numRows = ACH:Range(L["Num Rows"], nil, 8, { min = 1, max = 5, step = 1 })
+	group.args.debuffsGroup.args.generalGroup.args.spacing = ACH:Range(L["Spacing"], nil, 9, { min = 0, max = 60, step = 1 })
+	group.args.debuffsGroup.args.generalGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 10, { min = -100, max = 100, step = 1 })
+	group.args.debuffsGroup.args.generalGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 11, { min = -100, max = 100, step = 1 })
+	group.args.debuffsGroup.args.generalGroup.args.anchorPoint = ACH:Select(L["Anchor Point"], L["What point to anchor to the frame you set to attach to."], 12, C.Values.Anchors)
+	group.args.debuffsGroup.args.generalGroup.args.attachTo = ACH:Select(L["Attach To"], L["What to attach the anchor frame to."], 13, { FRAME = L["Frame"], BUFFS = L["Buffs"], HEALTH = L["Health"], POWER = L["Power"] }, nil, nil, nil, nil, function() local position = E.db.nameplates.units[unit].smartAuraPosition return position == 'BUFFS_ON_DEBUFFS' or position == 'FLUID_BUFFS_ON_DEBUFFS' end)
+	group.args.debuffsGroup.args.generalGroup.args.growthX = ACH:Select(L["Growth X-Direction"], nil, 14, { LEFT = L["Left"], RIGHT = L["Right"] }, nil, nil, nil, nil, function() local point = E.db.nameplates.units[unit].debuffs.anchorPoint return point == 'LEFT' or point == 'RIGHT' end)
+	group.args.debuffsGroup.args.generalGroup.args.growthY = ACH:Select(L["Growth Y-Direction"], nil, 15, { UP = L["Up"], DOWN = L["Down"] }, nil, nil, nil, nil, function() local point = E.db.nameplates.units[unit].debuffs.anchorPoint return point == 'TOP' or point == 'BOTTOM' end)
+	group.args.debuffsGroup.args.generalGroup.args.sortMethod = ACH:Select(L["Sort By"], L["Method to sort by."], 16, { TIME_REMAINING = L["Time Remaining"], DURATION = L["Duration"], NAME = L["Name"], INDEX = L["Index"], PLAYER = L["Player"] })
+	group.args.debuffsGroup.args.generalGroup.args.sortDirection = ACH:Select(L["Sort Direction"], L["Ascending or Descending order."], 17, { ASCENDING = L["Ascending"], DESCENDING = L["Descending"] })
 
-	group.args.debuffsGroup.args.duration = ACH:Group(L["Duration"], nil, 25)
-	group.args.debuffsGroup.args.duration.inline = true
-	group.args.debuffsGroup.args.duration.args.cooldownShortcut = ACH:Execute(L["Cooldowns"], nil, 1, function() ACD:SelectGroup('ElvUI', 'cooldown', 'nameplates') end)
-	group.args.debuffsGroup.args.duration.args.durationPosition = ACH:Select(L["Position"], nil, 2, C.Values.AllPoints)
+	group.args.debuffsGroup.args.textGroup = ACH:Group(L["Text"], nil, 15)
+	group.args.debuffsGroup.args.textGroup.args.stacks = ACH:Group(L["Stack Counter"], nil, 20)
+	group.args.debuffsGroup.args.textGroup.args.stacks.inline = true
+	group.args.debuffsGroup.args.textGroup.args.stacks.args.countFont = ACH:SharedMediaFont(L["Font"], nil, 1)
+	group.args.debuffsGroup.args.textGroup.args.stacks.args.countFontSize = ACH:Range(L["Font Size"], nil, 2, { min = 4, max = 60, step = 1 })
+	group.args.debuffsGroup.args.textGroup.args.stacks.args.countFontOutline = ACH:FontFlags(L["Font Outline"], nil, 3)
+	group.args.debuffsGroup.args.textGroup.args.stacks.args.countXOffset = ACH:Range(L["X-Offset"], nil, 10, { min = -100, max = 100, step = 1 })
+	group.args.debuffsGroup.args.textGroup.args.stacks.args.countYOffset = ACH:Range(L["Y-Offset"], nil, 9, { min = -100, max = 100, step = 1 })
+	group.args.debuffsGroup.args.textGroup.args.stacks.args.countPosition = ACH:Select(L["Position"], nil, 3, C.Values.AllPoints)
+
+	group.args.debuffsGroup.args.textGroup.args.duration = ACH:Group(L["Duration"], nil, 25)
+	group.args.debuffsGroup.args.textGroup.args.duration.inline = true
+	group.args.debuffsGroup.args.textGroup.args.duration.args.cooldownShortcut = ACH:Execute(L["Cooldowns"], nil, 1, function() ACD:SelectGroup('ElvUI', 'cooldown', 'nameplates') end)
+	group.args.debuffsGroup.args.textGroup.args.duration.args.durationPosition = ACH:Select(L["Position"], nil, 2, C.Values.AllPoints)
 
 	group.args.debuffsGroup.args.filtersGroup = ACH:Group(L["Filters"], nil, 30)
-	group.args.debuffsGroup.args.filtersGroup.inline = true
 	group.args.debuffsGroup.args.filtersGroup.args.minDuration = ACH:Range(L["Minimum Duration"], L["Don't display auras that are shorter than this duration (in seconds). Set to zero to disable."], 1, { min = 0, max = 10800, step = 1 })
 	group.args.debuffsGroup.args.filtersGroup.args.maxDuration = ACH:Range(L["Maximum Duration"], L["Don't display auras that are longer than this duration (in seconds). Set to zero to disable."], 1, { min = 0, max = 10800, step = 1 })
 	group.args.debuffsGroup.args.filtersGroup.args.jumpToFilter = ACH:Execute(L["Filters Page"], L["Shortcut to global filters."], 3, function() ACD:SelectGroup('ElvUI', 'filters') end)
-	group.args.debuffsGroup.args.filtersGroup.args.specialFilters = ACH:Select(L["Add Special Filter"], L["These filters don't use a list of spells like the regular filters. Instead they use the WoW API and some code logic to determine if an aura should be allowed or blocked."], 4, function() wipe(filters) local list = E.global.unitframe.specialFilters if not (list and next(list)) then return filters end for filter in pairs(list) do filters[filter] = L[filter] end return filters end, nil, nil, nil, function(_, value) C.SetFilterPriority(E.db.nameplates.units, unit, 'debuffs', value) NP:ConfigureAll() end)
-	group.args.debuffsGroup.args.filtersGroup.args.specialFilters.sortByValue = true
+	group.args.debuffsGroup.args.filtersGroup.args.specialFilters = ACH:Select(L["Add Special Filter"], L["These filters don't use a list of spells like the regular filters. Instead they use the WoW API and some code logic to determine if an aura should be allowed or blocked."], 4, function() wipe(filters) local list = E.global.unitframe.specialFilters if not (list and next(list)) then return filters end for filter in pairs(list) do filters[filter] = L[filter] end return filters end, nil, nil, nil, function(_, value) C.SetFilterPriority(E.db.nameplates.units, unit, 'debuffs', value) NP:ConfigureAll() end, nil, nil, true)
 	group.args.debuffsGroup.args.filtersGroup.args.filter = ACH:Select(L["Add Regular Filter"], L["These filters use a list of spells to determine if an aura should be allowed or blocked. The content of these filters can be modified in the Filters section of the config."], 5, function() wipe(filters) local list = E.global.unitframe.aurafilters if not (list and next(list)) then return filters end for filter in pairs(list) do filters[filter] = L[filter] end return filters end, nil, nil, nil, function(_, value) C.SetFilterPriority(E.db.nameplates.units, unit, 'debuffs', value) NP:ConfigureAll() end)
 	group.args.debuffsGroup.args.filtersGroup.args.resetPriority = ACH:Execute(L["Reset Priority"], L["Reset filter priority to the default state."], 7, function() E.db.nameplates.units[unit].debuffs.priority = P.nameplates.units[unit].debuffs.priority NP:ConfigureAll() end)
 
@@ -255,8 +264,7 @@ local function GetUnitSettings(unit, name)
 	group.args.privateAuras.args.icon.inline = true
 
 	group.args.privateAuras.args.duration = ACH:Group(L["Duration"], nil, 20, nil, function(info) return E.db.nameplates.units[unit].privateAuras.duration[info[#info]] end, function(info, value) E.db.nameplates.units[unit].privateAuras.duration[info[#info]] = value NP:ConfigureAll() end)
-	group.args.privateAuras.args.duration.args.enable = ACH:Toggle(L["Enable"], nil, 1)
-	group.args.privateAuras.args.duration.args.enable.customWidth = 100
+	group.args.privateAuras.args.duration.args.enable = ACH:Toggle(L["Enable"], nil, 1, nil, nil, 100)
 	group.args.privateAuras.args.duration.args.point = ACH:Select(L["Point"], nil, 5, C.Values.AllPoints)
 	group.args.privateAuras.args.duration.args.offsetX = ACH:Range(L["X-Offset"], nil, 6, { min = -100, max = 100, step = 1 })
 	group.args.privateAuras.args.duration.args.offsetY = ACH:Range(L["Y-Offset"], nil, 7, { min = -100, max = 100, step = 1 })
@@ -279,7 +287,7 @@ local function GetUnitSettings(unit, name)
 	group.args.levelGroup = ACH:Group(L["Level"], nil, 45, nil, function(info) return E.db.nameplates.units[unit].level[info[#info]] end, function(info, value) E.db.nameplates.units[unit].level[info[#info]] = value NP:ConfigureAll() end)
 	group.args.levelGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
 	group.args.levelGroup.args.format = ACH:Input(L["Text Format"], nil, 2, nil, 'full')
-	group.args.levelGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = 'CENTER', TOPLEFT = 'TOPLEFT', BOTTOMLEFT = 'BOTTOMLEFT', TOPRIGHT = 'TOPRIGHT', BOTTOMRIGHT = 'BOTTOMRIGHT' })
+	group.args.levelGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = L["CENTER"], TOPLEFT = L["TOPLEFT"], BOTTOMLEFT = L["BOTTOMLEFT"], TOPRIGHT = L["TOPRIGHT"], BOTTOMRIGHT = L["BOTTOMRIGHT"] })
 	group.args.levelGroup.args.parent = ACH:Select(L["Parent"], nil, 4, { Nameplate = L["Nameplate"], Health = L["Health"] })
 	group.args.levelGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 5, { min = -100, max = 100, step = 1 })
 	group.args.levelGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 6, { min = -100, max = 100, step = 1 })
@@ -293,7 +301,7 @@ local function GetUnitSettings(unit, name)
 	group.args.nameGroup = ACH:Group(L["Name"], nil, 50, nil, function(info) return E.db.nameplates.units[unit].name[info[#info]] end, function(info, value) E.db.nameplates.units[unit].name[info[#info]] = value NP:ConfigureAll() end)
 	group.args.nameGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
 	group.args.nameGroup.args.format = ACH:Input(L["Text Format"], nil, 2, nil, 'full')
-	group.args.nameGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = 'CENTER', TOPLEFT = 'TOPLEFT', BOTTOMLEFT = 'BOTTOMLEFT', TOPRIGHT = 'TOPRIGHT', BOTTOMRIGHT = 'BOTTOMRIGHT' })
+	group.args.nameGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = L["CENTER"], TOPLEFT = L["TOPLEFT"], BOTTOMLEFT = L["BOTTOMLEFT"], TOPRIGHT = L["TOPRIGHT"], BOTTOMRIGHT = L["BOTTOMRIGHT"] })
 	group.args.nameGroup.args.parent = ACH:Select(L["Parent"], nil, 4, { Nameplate = L["Nameplate"], Health = L["Health"] })
 	group.args.nameGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 5, { min = -100, max = 100, step = 1 })
 	group.args.nameGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 6, { min = -100, max = 100, step = 1 })
@@ -307,7 +315,7 @@ local function GetUnitSettings(unit, name)
 	group.args.titleGroup = ACH:Group(L["UNIT_NAME_PLAYER_TITLE"], nil, 55, nil, function(info) return E.db.nameplates.units[unit].title[info[#info]] end, function(info, value) E.db.nameplates.units[unit].title[info[#info]] = value NP:ConfigureAll() end)
 	group.args.titleGroup.args.enable = ACH:Toggle(L["Enable"], nil, 1)
 	group.args.titleGroup.args.format = ACH:Input(L["Text Format"], nil, 2, nil, 'full')
-	group.args.titleGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = 'CENTER', TOPLEFT = 'TOPLEFT', BOTTOMLEFT = 'BOTTOMLEFT', TOPRIGHT = 'TOPRIGHT', BOTTOMRIGHT = 'BOTTOMRIGHT' })
+	group.args.titleGroup.args.position = ACH:Select(L["Position"], nil, 3, { CENTER = L["CENTER"], TOPLEFT = L["TOPLEFT"], BOTTOMLEFT = L["BOTTOMLEFT"], TOPRIGHT = L["TOPRIGHT"], BOTTOMRIGHT = L["BOTTOMRIGHT"] })
 	group.args.titleGroup.args.parent = ACH:Select(L["Parent"], nil, 4, { Nameplate = L["Nameplate"], Health = L["Health"] })
 	group.args.titleGroup.args.xOffset = ACH:Range(L["X-Offset"], nil, 5, { min = -100, max = 100, step = 1 })
 	group.args.titleGroup.args.yOffset = ACH:Range(L["Y-Offset"], nil, 6, { min = -100, max = 100, step = 1 })
@@ -411,7 +419,6 @@ NamePlates.generalGroup = ACH:Group(L["General"], nil, 5, nil, nil, function(inf
 NamePlates.generalGroup.args.motionType = ACH:Select(L["UNIT_NAMEPLATES_TYPES"], L["Set to either stack nameplates vertically or allow them to overlap."], 1, { STACKED = L["UNIT_NAMEPLATES_TYPE_2"], OVERLAP = L["UNIT_NAMEPLATES_TYPE_1"] })
 NamePlates.generalGroup.args.showEnemyCombat = ACH:Select(L["Enemy Combat Toggle"], L["Control enemy nameplates toggling on or off when in combat."], 2, { DISABLED = L["Disable"], TOGGLE_ON = L["Toggle On While In Combat"], TOGGLE_OFF = L["Toggle Off While In Combat"] }, nil, nil, nil, function(info, value) E.db.nameplates[info[#info]] = value NP:PLAYER_REGEN_ENABLED() end)
 NamePlates.generalGroup.args.showFriendlyCombat = ACH:Select(L["Friendly Combat Toggle"], L["Control friendly nameplates toggling on or off when in combat."], 3, { DISABLED = L["Disable"], TOGGLE_ON = L["Toggle On While In Combat"], TOGGLE_OFF = L["Toggle Off While In Combat"] }, nil, nil, nil, function(info, value) E.db.nameplates[info[#info]] = value NP:PLAYER_REGEN_ENABLED() end)
-NamePlates.generalGroup.args.smoothbars = ACH:Toggle(L["Smooth Bars"], L["Bars will transition smoothly."], 4, nil, nil, 110)
 NamePlates.generalGroup.args.clampToScreen = ACH:Toggle(L["Clamp Nameplates"], L["Clamp nameplates to the top of the screen when outside of view."], 5, nil, nil, 140)
 NamePlates.generalGroup.args.spacer1 = ACH:Spacer(6, 'full')
 NamePlates.generalGroup.args.overlapV = ACH:Range(L["Overlap Vertical"], L["Percentage amount for vertical overlap of Nameplates."], 10, { min = 0, max = 3, step = .1 })
@@ -436,6 +443,15 @@ NamePlates.generalGroup.args.plateVisibility.args.playerVisibility.args.alphaDel
 
 NamePlates.generalGroup.args.plateVisibility.args.enemyVisibility = ACH:MultiSelect(L["Enemy"], nil, 10, { guardians = L["Guardians"], minions = L["Minions"], minus = L["Minus"], pets = L["Pets"], totems = L["Totems"] }, nil, nil, function(_, key) return E.db.nameplates.visibility.enemy[key] end, function(_, key, value) E.db.nameplates.visibility.enemy[key] = value NP:SetCVars() NP:ConfigureAll() end, function() return not E.db.nameplates.visibility.showAll end)
 NamePlates.generalGroup.args.plateVisibility.args.friendlyVisibility = ACH:MultiSelect(L["Friendly"], nil, 15, { guardians = L["Guardians"], minions = L["Minions"], npcs = L["NPC"], pets = L["Pets"], totems = L["Totems"] }, nil, nil, function(_, key) return E.db.nameplates.visibility.friendly[key] end, function(_, key, value) E.db.nameplates.visibility.friendly[key] = value NP:SetCVars() NP:ConfigureAll() end, function() return not E.db.nameplates.visibility.showAll end)
+
+local envConditions = { party = L["Dungeons"], raid = L["Raids"], scenario = L["Scenario"], arena = L["Arena"], pvp = L["Battleground"], resting = L["Resting"], world = L["World"] }
+NamePlates.generalGroup.args.enviromentConditions = ACH:Group(L["Enviroment Conditions"], nil, 60, nil, function(info) return E.db.nameplates.enviromentConditions[info[#info]] end, function(info, value) E.db.nameplates.enviromentConditions[info[#info]] = value NP:EnviromentConditionals() end)
+NamePlates.generalGroup.args.enviromentConditions.args.enemyEnabled = ACH:Toggle(E.NewSign..L["Enemy Enabled"], L["This option controls whether nameplates will follow the visibility settings below.\n|cffFF3333Warning:|r This will be overridden by the Enemy Combat Toggle."], 10, nil, nil, 250)
+NamePlates.generalGroup.args.enviromentConditions.args.enemy = ACH:MultiSelect(L["Enemy"], nil, 11, envConditions, nil, nil, function(_, key) return E.db.nameplates.enviromentConditions.enemy[key] end, function(_, key, value) E.db.nameplates.enviromentConditions.enemy[key] = value NP:EnviromentConditionals() end, nil, function() return not E.db.nameplates.enviromentConditions.enemyEnabled end)
+NamePlates.generalGroup.args.enviromentConditions.args.friendlyEnabled = ACH:Toggle(E.NewSign..L["Friendly Enabled"], L["This option controls whether nameplates will follow the visibility settings below.\n|cffFF3333Warning:|r This will be overridden by the Friendly Combat Toggle."], 20, nil, nil, 250)
+NamePlates.generalGroup.args.enviromentConditions.args.friendly = ACH:MultiSelect(L["Friendly"], nil, 21, envConditions, nil, nil, function(_, key) return E.db.nameplates.enviromentConditions.friendly[key] end, function(_, key, value) E.db.nameplates.enviromentConditions.friendly[key] = value NP:EnviromentConditionals() end, nil, function() return not E.db.nameplates.enviromentConditions.friendlyEnabled end)
+NamePlates.generalGroup.args.enviromentConditions.args.stackingEnabled = ACH:Toggle(E.NewSign..L["Stacking Enabled"], L["This option controls whether nameplates will follow the settings below.\n|cffFF3333Warning:|r This is an override to the Motion Type setting."], 30, nil, nil, 250)
+NamePlates.generalGroup.args.enviromentConditions.args.stacking = ACH:MultiSelect(L["Stacking Plates"], nil, 31, envConditions, nil, nil, function(_, key) return E.db.nameplates.enviromentConditions.stackingNameplates[key] end, function(_, key, value) E.db.nameplates.enviromentConditions.stackingNameplates[key] = value NP:EnviromentConditionals() end, nil, function() return not E.db.nameplates.enviromentConditions.stackingEnabled end)
 
 NamePlates.generalGroup.args.bossMods = ACH:Group(L["Boss Mod Auras"], nil, 55, nil, function(info) return E.db.nameplates.bossMods[info[#info]] end, function(info, value) E.db.nameplates.bossMods[info[#info]] = value NP:ConfigureAll() end)
 NamePlates.generalGroup.args.bossMods.args.enable = ACH:Toggle(L["Enable"], nil, 0)
@@ -542,7 +558,7 @@ NamePlates.colorsGroup.args.castGroup.args.castbarDesaturate = ACH:Toggle(L["Des
 NamePlates.colorsGroup.args.castGroup.args.empowerStage = ACH:Group(L["Empower Stages"], nil, 20, nil, function(info) local i = tonumber(info[#info]); local t, d = E.db.nameplates.colors.empoweredCast[i], P.nameplates.colors.empoweredCast[i] return t.r, t.g, t.b, 1, d.r, d.g, d.b, 1 end, function(info, r, g, b) local t = E.db.nameplates.colors.empoweredCast[tonumber(info[#info])] t.r, t.g, t.b = r, g, b NP:ConfigureAll() end, nil, not E.Retail)
 NamePlates.colorsGroup.args.castGroup.args.empowerStage.inline = true
 
-for i = 1, 4 do
+for i in next, P.nameplates.colors.empoweredCast do
 	NamePlates.colorsGroup.args.castGroup.args.empowerStage.args[''..i] = ACH:Color(C.Values.Roman[i])
 end
 
@@ -594,9 +610,9 @@ do
 end
 
 NamePlates.colorsGroup.args.classResources.inline = true
-NamePlates.colorsGroup.args.classResources.args.PALADIN = ACH:Color(L["HOLY_POWER"], nil, 1, nil, nil, nil, nil, nil, not E.Retail)
+NamePlates.colorsGroup.args.classResources.args.PALADIN = ACH:Color(L["HOLY_POWER"], nil, 1, nil, nil, nil, nil, nil, E.Classic)
 NamePlates.colorsGroup.args.classResources.args.MAGE = ACH:Color(L["POWER_TYPE_ARCANE_CHARGES"], nil, 2, nil, nil, nil, nil, nil, not E.Retail)
-NamePlates.colorsGroup.args.classResources.args.WARLOCK = ACH:Color(L["SOUL_SHARDS"], nil, 3, nil, nil, nil, nil, nil, not E.Retail)
+NamePlates.colorsGroup.args.classResources.args.WARLOCK = ACH:Color(L["SOUL_SHARDS"], nil, 3, nil, nil, nil, nil, nil, E.Classic)
 
 NamePlates.colorsGroup.args.COMBO_POINTS = ACH:Group(L["COMBO_POINTS"], nil, 10, nil, function(info) local i = tonumber(info[#info]); local t, d = E.db.nameplates.colors.classResources.comboPoints[i], P.nameplates.colors.classResources.comboPoints[i] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.nameplates.colors.classResources.comboPoints[tonumber(info[#info])] t.r, t.g, t.b = r, g, b NP:ConfigureAll() end)
 NamePlates.colorsGroup.args.COMBO_POINTS.args.chargedComboPoint = ACH:Color(L["Charged Combo Point"], nil, 13, nil, nil, function(info) local t, d = E.db.nameplates.colors.classResources[info[#info]], P.nameplates.colors.classResources[info[#info]] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.nameplates.colors.classResources[info[#info]] t.r, t.g, t.b = r, g, b NP:ConfigureAll() end, nil, not E.Retail)
@@ -617,13 +633,13 @@ for i = 1, 7 do
 	NamePlates.colorsGroup.args.COMBO_POINTS.args[''..i] = ACH:Color(C.Values.Roman[i])
 end
 
-NamePlates.colorsGroup.args.RUNES = ACH:Group(L["RUNES"], nil, 4, nil, function(info) local i = tonumber(info[#info]); local t, d = E.db.nameplates.colors.classResources.DEATHKNIGHT[i], P.nameplates.colors.classResources.DEATHKNIGHT[i] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.nameplates.colors.classResources.DEATHKNIGHT[tonumber(info[#info])] t.r, t.g, t.b = r, g, b NP:ConfigureAll() end, nil, not (E.Retail or E.Wrath))
+NamePlates.colorsGroup.args.RUNES = ACH:Group(L["RUNES"], nil, 4, nil, function(info) local i = tonumber(info[#info]); local t, d = E.db.nameplates.colors.classResources.DEATHKNIGHT[i], P.nameplates.colors.classResources.DEATHKNIGHT[i] return t.r, t.g, t.b, t.a, d.r, d.g, d.b end, function(info, r, g, b) local t = E.db.nameplates.colors.classResources.DEATHKNIGHT[tonumber(info[#info])] t.r, t.g, t.b = r, g, b NP:ConfigureAll() end, nil, not (E.Retail or E.Cata))
 NamePlates.colorsGroup.args.RUNES.inline = true
 
 do
 	local runeText = { [-1] = L["RUNE_CHARGE"], [0] = L["RUNES"], L["RUNE_BLOOD"], L["RUNE_FROST"], L["RUNE_UNHOLY"], L["RUNE_DEATH"] }
 	for i = -1, 4 do
-		NamePlates.colorsGroup.args.RUNES.args[''..i] = ACH:Color(runeText[i], nil, i == -1 and 10 or i, nil, nil, nil, nil, function() return i == -1 and not E.db.nameplates.colors.chargingRunes end, function() return (E.Wrath and i < 1) or (not E.Wrath and i == 4) or (E.Retail and E.db.unitframe.colors.runeBySpec and i == 0) or (E.Retail and not E.db.unitframe.colors.runeBySpec and i > 0) end)
+		NamePlates.colorsGroup.args.RUNES.args[''..i] = ACH:Color(runeText[i], nil, i == -1 and 10 or i, nil, nil, nil, nil, function() return i == -1 and not E.db.nameplates.colors.chargingRunes end, function() return (E.Cata and i < 1) or (not E.Cata and i == 4) or (E.Retail and E.db.unitframe.colors.runeBySpec and i == 0) or (E.Retail and not E.db.unitframe.colors.runeBySpec and i > 0) end)
 	end
 end
 

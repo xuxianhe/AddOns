@@ -1,87 +1,81 @@
-local AddOnName = ...
-local _G = _G
+local AddOnName, Engine = ...
+local _G, _ = _G
 local LibStub = _G.LibStub
 
 local PA = LibStub('AceAddon-3.0'):NewAddon('ProjectAzilroka', 'AceConsole-3.0', 'AceEvent-3.0', 'AceTimer-3.0')
 
-_G.ProjectAzilroka = PA
-
 local min, max = min, max
-local select = select
-local pairs = pairs
-local sort = sort
-local gsub = gsub
-local tinsert = tinsert
-local print = print
-local format = format
-local strsplit, strmatch, strlen, strsub = strsplit, strmatch, strlen, strsub
+local next, sort, tinsert, print = next, sort, tinsert, print
+local format, strmatch, strlen, strsub, gsub = format, strmatch, strlen, strsub, gsub
 
-local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
-local GetAddOnEnableState = GetAddOnEnableState
-local UnitName = UnitName
-local UnitClass = UnitClass
-local GetRealmName = GetRealmName
-local UIParent = UIParent
-local CreateFrame = CreateFrame
-local BNGetFriendInfo = BNGetFriendInfo
-local BNGetGameAccountInfo = BNGetGameAccountInfo
+local GetAddOnMetadata, GetAddOnEnableState = C_AddOns.GetAddOnMetadata, C_AddOns.GetAddOnEnableState
+local UnitName, UnitClass, GetRealmName = UnitName, UnitClass, GetRealmName
+local GetAuraDataByIndex = C_UnitAuras.GetAuraDataByIndex
 
--- Ace Libraries
-PA.AC = LibStub('AceConfig-3.0')
-PA.GUI = LibStub('AceGUI-3.0')
-PA.ACR = LibStub('AceConfigRegistry-3.0')
-PA.ACD = LibStub('AceConfigDialog-3.0')
-PA.ACL = LibStub('AceLocale-3.0'):GetLocale(AddOnName, false)
-PA.ADB = LibStub('AceDB-3.0')
+local UIParent, CreateFrame = UIParent, CreateFrame
 
--- Extra Libraries
-PA.LSM = LibStub('LibSharedMedia-3.0')
-PA.LDB = LibStub('LibDataBroker-1.1')
-PA.LCG = LibStub("LibCustomGlow-1.0")
-PA.LAB = LibStub('LibActionButton-1.0')
-PA.ACH = LibStub('LibAceConfigHelper')
+PA.Libs = {
+	-- Ace Libraries
+	AC = LibStub('AceConfig-3.0'),
+	GUI = LibStub('AceGUI-3.0'),
+	ACR = LibStub('AceConfigRegistry-3.0'),
+	ACD = LibStub('AceConfigDialog-3.0'),
+	ACL = LibStub('AceLocale-3.0'):GetLocale(AddOnName, false),
+	ADB = LibStub('AceDB-3.0'),
 
--- External Libraries
-PA.Masque = LibStub("Masque", true)
-PA.LCD = LibStub("LibClassicDurations", true)
+	-- Extra Libraries
+	LSM = LibStub('LibSharedMedia-3.0'),
+	LDB = LibStub('LibDataBroker-1.1'),
+	LCG = LibStub("LibCustomGlow-1.0"),
+	LAB = LibStub('LibActionButton-1.0'),
+	ACH = LibStub('LibAceConfigHelper'),
 
-if PA.LCD then
-	PA.LCD:Register(AddOnName) 	-- Register LibClassicDurations
+	-- External Libraries
+	Masque = LibStub("Masque", true),
+	LCD = LibStub("LibClassicDurations", true),
+}
+
+local ACL, ACH = PA.Libs.ACL, PA.Libs.ACH
+_G.ProjectAzilroka, Engine[1], Engine[2], Engine[3] = Engine, PA, ACL, ACH
+
+if PA.Libs.LCD then
+	PA.Libs.LCD:Register(AddOnName) 	-- Register LibClassicDurations
 end
 
 -- WoW Data
-PA.MyClass = select(2, UnitClass('player'))
+_, PA.MyClass = UnitClass('player')
 PA.MyName = UnitName('player')
-PA.MyRace = select(2, UnitRace("player"))
+_, PA.MyRace = UnitRace("player")
 PA.MyRealm = GetRealmName()
 PA.Locale = GetLocale()
 PA.Noop = function() end
-PA.TexCoords = {.08, .92, .08, .92}
 
-if _G.ElvUI then
-	PA.TexCoords = {0, 1, 0, 1}
-	local modifier = 0.04 * _G.ElvUI[1].db.general.cropIcon
-	for i, v in ipairs(PA.TexCoords) do
-		if i % 2 == 0 then
-			PA.TexCoords[i] = v - modifier
-		else
-			PA.TexCoords[i] = v + modifier
+do
+	local modifier, left, right, top, bottom
+
+	function PA:TexCoords(pack)
+		if not modifier then
+			modifier = .04 * (ElvUI and _G.ElvUI[1].db.general.cropIcon or 2)
+			left, right, top, bottom = modifier, 1 - modifier, modifier, 1 - modifier
 		end
+		if pack then return { left, right, top, bottom } end
+		return left, right, top, bottom
 	end
 end
 
 PA.UIScale = UIParent:GetScale()
 PA.MyFaction = UnitFactionGroup('player')
 
-PA.Retail = _G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE
-PA.Classic = _G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC
-PA.TBC = _G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC
-PA.Wrath = _G.WOW_PROJECT_ID == _G.WOW_PROJECT_WRATH_CLASSIC
+PA.Retail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+PA.Classic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+PA.TBC = WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC
+PA.Wrath = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
+PA.Cata = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
 
 -- Pixel Perfect
 PA.ScreenWidth, PA.ScreenHeight = GetPhysicalScreenSize()
 PA.Multiple = 1
-PA.Solid = PA.LSM:Fetch('background', 'Solid')
+PA.Solid = PA.Libs.LSM:Fetch('background', 'Solid')
 
 -- Project Data
 function PA:IsAddOnEnabled(addon, character)
@@ -89,7 +83,7 @@ function PA:IsAddOnEnabled(addon, character)
 		character = nil
 	end
 
-	return GetAddOnEnableState(character, addon) == 2
+	return GetAddOnEnableState(addon, character) == 2
 end
 
 function PA:IsAddOnPartiallyEnabled(addon, character)
@@ -97,30 +91,29 @@ function PA:IsAddOnPartiallyEnabled(addon, character)
 		character = nil
 	end
 
-	return GetAddOnEnableState(character, addon) == 1
+	return GetAddOnEnableState(addon, character) == 1
 end
 
 PA.Title = GetAddOnMetadata('ProjectAzilroka', 'Title')
 PA.Version = GetAddOnMetadata('ProjectAzilroka', 'Version')
-PA.Authors = GetAddOnMetadata('ProjectAzilroka', 'Author'):gsub(', ', '    ')
+PA.Authors = gsub(GetAddOnMetadata('ProjectAzilroka', 'Author'), ', ', '    ')
 
 PA.AllPoints = { CENTER = 'CENTER', BOTTOM = 'BOTTOM', TOP = 'TOP', LEFT = 'LEFT', RIGHT = 'RIGHT', BOTTOMLEFT = 'BOTTOMLEFT', BOTTOMRIGHT = 'BOTTOMRIGHT', TOPLEFT = 'TOPLEFT', TOPRIGHT = 'TOPRIGHT' }
 PA.GrowthDirection = {
-	DOWN_RIGHT = format(PA.ACL["%s and then %s"], PA.ACL["Down"], PA.ACL["Right"]),
-	DOWN_LEFT = format(PA.ACL["%s and then %s"], PA.ACL["Down"], PA.ACL["Left"]),
-	UP_RIGHT = format(PA.ACL["%s and then %s"], PA.ACL["Up"], PA.ACL["Right"]),
-	UP_LEFT = format(PA.ACL["%s and then %s"], PA.ACL["Up"], PA.ACL["Left"]),
-	RIGHT_DOWN = format(PA.ACL["%s and then %s"], PA.ACL["Right"], PA.ACL["Down"]),
-	RIGHT_UP = format(PA.ACL["%s and then %s"], PA.ACL["Right"], PA.ACL["Up"]),
-	LEFT_DOWN = format(PA.ACL["%s and then %s"], PA.ACL["Left"], PA.ACL["Down"]),
-	LEFT_UP = format(PA.ACL["%s and then %s"], PA.ACL["Left"], PA.ACL["Up"]),
+	DOWN_RIGHT = format(ACL["%s and then %s"], ACL["Down"], ACL["Right"]),
+	DOWN_LEFT = format(ACL["%s and then %s"], ACL["Down"], ACL["Left"]),
+	UP_RIGHT = format(ACL["%s and then %s"], ACL["Up"], ACL["Right"]),
+	UP_LEFT = format(ACL["%s and then %s"], ACL["Up"], ACL["Left"]),
+	RIGHT_DOWN = format(ACL["%s and then %s"], ACL["Right"], ACL["Down"]),
+	RIGHT_UP = format(ACL["%s and then %s"], ACL["Right"], ACL["Up"]),
+	LEFT_DOWN = format(ACL["%s and then %s"], ACL["Left"], ACL["Down"]),
+	LEFT_UP = format(ACL["%s and then %s"], ACL["Left"], ACL["Up"]),
 }
 
 PA.ElvUI = PA:IsAddOnEnabled('ElvUI', PA.MyName)
 PA.SLE = PA:IsAddOnEnabled('ElvUI_SLE', PA.MyName)
 PA.NUI = PA:IsAddOnEnabled('ElvUI_NihilistzscheUI', PA.MyName)
 PA.Tukui = PA:IsAddOnEnabled('Tukui', PA.MyName)
-PA.AzilUI = PA:IsAddOnEnabled('AzilUI', PA.MyName)
 PA.SpartanUI = PA:IsAddOnEnabled('SpartanUI', PA.MyName)
 PA.AddOnSkins = PA:IsAddOnEnabled('AddOnSkins', PA.MyName)
 
@@ -128,13 +121,13 @@ PA.AddOnSkins = PA:IsAddOnEnabled('AddOnSkins', PA.MyName)
 local function GetoUF()
 	local key = PA.ElvUI and "ElvUI_Libraries" or PA.Tukui and "Tukui" or PA.SpartanUI and "SpartanUI"
 	if not key then return end
-	return _G[_G.GetAddOnMetadata(key, 'X-oUF')]
+	return _G[GetAddOnMetadata(key, 'X-oUF')]
 end
 PA.oUF = GetoUF()
 
 PA.Classes = {}
-for k, v in pairs(_G.LOCALIZED_CLASS_NAMES_MALE) do PA.Classes[v] = k end
-for k, v in pairs(_G.LOCALIZED_CLASS_NAMES_FEMALE) do PA.Classes[v] = k end
+for k, v in next, _G.LOCALIZED_CLASS_NAMES_MALE do PA.Classes[v] = k end
+for k, v in next, _G.LOCALIZED_CLASS_NAMES_FEMALE do PA.Classes[v] = k end
 
 function PA:ClassColorCode(class)
 	local color = PA:GetClassColor(PA.Classes[class])
@@ -148,8 +141,8 @@ end
 local Color = PA:GetClassColor(PA.MyClass)
 PA.ClassColor = { Color.r, Color.g, Color.b }
 
-PA.ScanTooltip = CreateFrame('GameTooltip', 'PAScanTooltip', _G.UIParent, 'GameTooltipTemplate')
-PA.ScanTooltip:SetOwner(_G.UIParent, "ANCHOR_NONE")
+PA.ScanTooltip = CreateFrame('GameTooltip', 'PAScanTooltip', UIParent, 'GameTooltipTemplate')
+PA.ScanTooltip:SetOwner(UIParent, "ANCHOR_NONE")
 
 PA.PetBattleFrameHider = CreateFrame('Frame', 'PA_PetBattleFrameHider', UIParent, 'SecureHandlerStateTemplate')
 PA.PetBattleFrameHider:SetAllPoints()
@@ -157,7 +150,7 @@ PA.PetBattleFrameHider:SetFrameStrata('LOW')
 _G.RegisterStateDriver(PA.PetBattleFrameHider, 'visibility', '[petbattle] hide; show')
 
 function PA:GetUIScale()
-	local effectiveScale = _G.UIParent:GetEffectiveScale()
+	local effectiveScale = UIParent:GetEffectiveScale()
 	local magic = effectiveScale
 
 	local scale = max(.64, min(1.15, magic))
@@ -191,11 +184,13 @@ function PA:ShortValue(value)
 	end
 end
 
+function PA:Clamp(v, min, max)
+	min, max = min or 0, max or 1
+	return v > max and max or v < min or v
+end
+
 function PA:RGBToHex(r, g, b, header, ending)
-	r = r <= 1 and r >= 0 and r or 1
-	g = g <= 1 and g >= 0 and g or 1
-	b = b <= 1 and b >= 0 and b or 1
-	return format('%s%02x%02x%02x%s', header or '|cff', r*255, g*255, b*255, ending or '')
+	return format('%s%02x%02x%02x%s', header or '|cff', PA:Clamp(r) * 255, PA:Clamp(g) * 255, PA:Clamp(b) * 255, ending or '')
 end
 
 function PA:HexToRGB(hex)
@@ -207,7 +202,7 @@ function PA:HexToRGB(hex)
 end
 
 function PA:ConflictAddOn(AddOns)
-	for AddOn in pairs(AddOns) do
+	for AddOn in next, AddOns do
 		if PA:IsAddOnEnabled(AddOn, PA.MyName) then
 			return true
 		end
@@ -215,15 +210,9 @@ function PA:ConflictAddOn(AddOns)
 	return false
 end
 
-function PA:CountTable(T)
-	local n = 0
-	for _ in pairs(T) do n = n + 1 end
-	return n
-end
-
 function PA:PairsByKeys(t, f)
 	local a = {}
-	for n in pairs(t) do tinsert(a, n) end
+	for n in next, t do tinsert(a, n) end
 	sort(a, f)
 	local i = 0
 	local iter = function()
@@ -238,7 +227,7 @@ end
 function PA:AddKeysToTable(current, tbl)
 	if type(current) ~= 'table' then return end
 
-	for key, value in pairs(tbl) do
+	for key, value in next, tbl do
 		if current[key] == nil then
 			current[key] = value
 		end
@@ -298,7 +287,7 @@ function PA:CopyTable(current, default)
 	end
 
 	if type(default) == 'table' then
-		for option, value in pairs(default) do
+		for option, value in next, default do
 			current[option] = (type(value) == 'table' and PA:CopyTable(current[option], value)) or value
 		end
 	end
@@ -322,68 +311,232 @@ function PA:SetOutside(obj, anchor, xOffset, yOffset, anchor2)
 	obj:SetPoint('BOTTOMRIGHT', anchor2 or anchor, 'BOTTOMRIGHT', xOffset, -yOffset)
 end
 
-local accountInfo = { gameAccountInfo = {} }
-function PA:GetBattleNetInfo(friendIndex)
-	if not PA.Classic then
-		accountInfo = _G.C_BattleNet.GetFriendAccountInfo(friendIndex)
+function PA:GetAuraData(unitToken, index, filter)
+	local auraData = GetAuraDataByIndex(unitToken, index, filter)
+	if PA.Classic and PA.Libs.LCD and not UnitIsUnit('player', unitToken) then
+		local durationNew, expirationTimeNew
+		if auraData.spellId then durationNew, expirationTimeNew = PA.Libs.LCD:GetAuraDurationByUnit(unitToken, auraData.spellId, auraData.sourceUnit, auraData.name) end
+		if durationNew and durationNew > 0 then auraData.duration, auraData.expirationTime = durationNew, expirationTimeNew end
+	end
 
-		return accountInfo
-	else
-		local bnetIDAccount, accountName, battleTag, isBattleTag, _, bnetIDGameAccount, _, isOnline, lastOnline, isBnetAFK, isBnetDND, messageText, noteText, _, messageTime, _, isReferAFriend, canSummonFriend, isFavorite = BNGetFriendInfo(friendIndex)
+	return auraData
+end
 
-		if not bnetIDGameAccount then return end
+function PA:SetFont(obj, font, fontSize, fontStyle)
+	if fontStyle == 'NONE' or not fontStyle then fontStyle = '' end
 
-		local hasFocus, characterName, client, realmName, realmID, faction, race, class, guild, zoneName, level, gameText, broadcastText, broadcastTime, _, toonID, _, isGameAFK, isGameBusy, guid, wowProjectID, mobile  = BNGetGameAccountInfo(bnetIDGameAccount)
+	local shadow = strsub(fontStyle, 0, 6) == 'SHADOW'
+	if shadow then fontStyle = strsub(fontStyle, 7) end -- shadow isnt a real style
 
-		accountInfo.bnetAccountID = bnetIDAccount
-		accountInfo.accountName = accountName
-		accountInfo.battleTag = battleTag
-		accountInfo.isBattleTagFriend = isBattleTag
-		accountInfo.isDND = isBnetDND
-		accountInfo.isAFK = isBnetAFK
-		accountInfo.isFriend = true
-		accountInfo.isFavorite = isFavorite
-		accountInfo.note = noteText
-		accountInfo.rafLinkType = 0
-		accountInfo.appearOffline = false
-		accountInfo.customMessage = messageText
-		accountInfo.lastOnlineTime = lastOnline
-		accountInfo.customMessageTime = messageTime
+	obj:SetFont(font, fontSize, fontStyle)
+	obj:SetShadowColor(0, 0, 0, (shadow and (fontStyle == '' and 1 or 0.6)) or 0)
+	obj:SetShadowOffset((shadow and 1) or 0, (shadow and -1) or 0)
+end
 
-		accountInfo.gameAccountInfo.clientProgram = client or "App"
-		accountInfo.gameAccountInfo.richPresence = gameText ~= '' and gameText or PA.ACL["Mobile"]
-		accountInfo.gameAccountInfo.gameAccountID = bnetIDGameAccount
-		accountInfo.gameAccountInfo.isOnline = isOnline
-		accountInfo.gameAccountInfo.isGameAFK = isGameAFK
-		accountInfo.gameAccountInfo.isGameBusy = isGameBusy
-		accountInfo.gameAccountInfo.isWowMobile = mobile
-		accountInfo.gameAccountInfo.hasFocus = hasFocus
-		accountInfo.gameAccountInfo.canSummon = canSummonFriend
+function PA:GetFont(font, fontSize, fontStyle)
+	if fontStyle == 'NONE' or not fontStyle then fontStyle = '' end
+	local shadow = strsub(fontStyle, 0, 6) == 'SHADOW'
+	if shadow then fontStyle = strsub(fontStyle, 7) end -- shadow isnt a real style
 
-		if wowProjectID == _G.WOW_PROJECT_MAINLINE then
-			zoneName, realmName = strsplit("-", gameText)
+	return PA.Libs.LSM:Fetch('font', font), fontSize, fontStyle
+end
+
+-- backwards compatibility
+do
+	-- GetMouseFocus
+	local GetMouseFocus = GetMouseFocus
+	local GetMouseFoci = GetMouseFoci
+	function PA:GetMouseFocus()
+		if GetMouseFoci then
+			local frames = GetMouseFoci()
+			return frames and frames[1]
+		else
+			return GetMouseFocus()
+		end
+	end
+
+	-- EasyMenu
+	local HandleMenuList
+	HandleMenuList = function(root, menuList, submenu, depth)
+		if submenu then root = submenu end
+
+		for _, list in next, menuList do
+			local previous
+			if list.isTitle then
+				root:CreateTitle(list.text)
+			elseif list.func or list.hasArrow then
+				local name = list.text or ('test'..depth)
+
+				local func = (list.arg1 or list.arg2) and (function() list.func(nil, list.arg1, list.arg2) end) or list.func
+				local checked = list.checked and (not list.notCheckable and function() return list.checked(list) end or PA.Noop)
+				if checked then
+					previous = root:CreateCheckbox(list.text or name, checked, func)
+				else
+					previous = root:CreateButton(list.text or name, func)
+				end
+			end
+
+			if list.menuList then -- loop it
+				HandleMenuList(root, list.menuList, list.hasArrow and previous, depth + 1)
+			end
+		end
+	end
+
+	function PA:EasyMenu(menuList, menuFrame, anchor, x, y, displayMode, autoHideDelay)
+		if _G.EasyMenu then
+			_G.EasyMenu(menuList, menuFrame, anchor, x, y, displayMode, autoHideDelay)
+		else
+			_G.MenuUtil.CreateContextMenu(menuFrame, function(_, root) HandleMenuList(root, menuList, nil, 1) end)
+		end
+	end
+
+	-- Spell Book 
+	local BOOKTYPE_SPELL = (Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Player) or BOOKTYPE_SPELL
+	local BOOKTYPE_PET = (Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Pet) or BOOKTYPE_PET
+	local GetSpellBookItemName = C_SpellBook.GetSpellBookItemName or GetSpellBookItemName
+	local HasPetSpells = C_SpellBook.HasPetSpells or HasPetSpells
+
+	local GetSpellCooldown = C_Spell.GetSpellCooldown or function(index, bookType)
+		local info = {}
+		if bookType then
+			info.startTime, info.duration, info.isEnabled, info.modRate = GetSpellCooldown(index, bookType)
+		else
+			info.startTime, info.duration, info.isEnabled, info.modRate = GetSpellCooldown(index)
+		end
+		return info
+	end
+
+	local GetSpellCharges = C_Spell.GetSpellCharges or function(index, bookType)
+		local info = {}
+		info.currentCharges, info.maxCharges, info.cooldownStartTime, info.cooldownDuration, info.chargeModRate = GetSpellCharges(index, bookType)
+		return info
+	end
+
+	local bookTypes = { SPELL = 1, FUTURESPELL = 2, PETACTION = 3, FLYOUT = 4 }
+	local GetSpellBookItemInfo = C_SpellBook.GetSpellBookItemInfo or function(index, bookType)
+		local info, _ = { isPassive = _G.IsPassiveSpell(index, bookType), isOffSpec = false, skillLineIndex = index }
+		info.itemType, info.actionID = _G.GetSpellBookItemInfo(index, bookType)
+		_, info.subName = GetSpellBookItemName(index, bookType)
+		info.name, _, info.iconID, _, info.minRange, info.maxRange, info.spellID = _G.GetSpellInfo(index, bookType)
+		info.itemType = bookTypes[info.itemType]
+		return info
+	end
+
+	local GetSpellInfo = C_Spell.GetSpellInfo or function(index, bookType)
+		local info, _ = {}
+		info.name, _, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIcon = GetSpellInfo(index, bookType)
+		return info
+	end
+
+	local GetNumSpellBookSkillLines = C_SpellBook.GetNumSpellBookSkillLines or GetNumSpellTabs
+	local GetSpellBookSkillLineInfo = C_SpellBook.GetSpellBookSkillLineInfo or function(index)
+		local info = { shouldHide = false }
+		info.name, info.iconID, info.itemIndexOffset, info.numSpellBookItems, info.isGuild, info.offspecID = GetSpellTabInfo(index)
+		return info
+	end
+
+	-- Need for modules
+	PA.GetSpellInfo, PA.GetSpellCooldown, PA.GetSpellCharges = GetSpellInfo, GetSpellCooldown, GetSpellCharges
+
+	PA.SpellBook = { Complete = {}, Spells = {} }
+
+	-- Simpy Magic
+	local t = {}
+	for _, name in next, { 'SPELL_RECAST_TIME_SEC', 'SPELL_RECAST_TIME_MIN', 'SPELL_RECAST_TIME_CHARGES_SEC', 'SPELL_RECAST_TIME_CHARGES_MIN' } do
+		t[name] = _G[name]:gsub('%%%.%dg','[%%d%%.]-'):gsub('%.$','%%.'):gsub('^(.-)$','^%1$')
+	end
+
+	local function scanTooltip(spellID)
+		PA.ScanTooltip:SetOwner(UIParent, 'ANCHOR_NONE')
+		PA.ScanTooltip:SetSpellByID(spellID)
+		PA.ScanTooltip:Show()
+
+		for i = 2, 4 do
+			local str = _G['PAScanTooltipTextRight'..i]
+			local text = str and str:GetText()
+			if text then
+				for _, matchtext in next, t do
+					if strmatch(text, matchtext) then return true end
+				end
+			end
+		end
+	end
+
+	local function ScanSpellBook(bookType, numSpells, offset)
+		offset = offset or 0
+
+		for index = offset + 1, offset + numSpells do
+			local info = GetSpellBookItemInfo(index, bookType)
+
+			if (info.itemType == 1 or info.itemType == 3) and info.spellID then
+				local spellName = PA.Classic and info.subName and format('%s %s', info.name, info.subName or '')
+				PA.SpellBook.Complete[info.spellID] = info
+				if scanTooltip(info.spellID) then PA.SpellBook.Spells[info.spellID] = spellName or true end
+			elseif info.itemType == 4 then
+				local _, _, numSlots, isKnown = GetFlyoutInfo(info.actionID)
+				if numSlots > 0 then
+					for flyoutIndex = 1, numSlots do
+						local flyoutSpellID, overrideId = GetFlyoutSlotInfo(info.actionID, flyoutIndex)
+						local spellID = overrideId or flyoutSpellID
+
+						PA.SpellBook.Complete[spellID] = GetSpellInfo(spellID)
+						if scanTooltip(spellID) then PA.SpellBook.Spells[spellID] = true end
+					end
+				end
+			end
 		end
 
-		local isWow = client == _G.BNET_CLIENT_WOW
+		PA.ScanTooltip:Hide()
+	end
 
-		accountInfo.gameAccountInfo.characterName = isWow and characterName
-		accountInfo.gameAccountInfo.factionName = isWow and faction ~= '' and faction
-		accountInfo.gameAccountInfo.playerGuid = isWow and guid
-		accountInfo.gameAccountInfo.wowProjectID = isWow and wowProjectID
-		accountInfo.gameAccountInfo.realmID = isWow and realmID
-		accountInfo.gameAccountInfo.realmDisplayName = isWow and realmName
-		accountInfo.gameAccountInfo.realmName = isWow and realmName
-		accountInfo.gameAccountInfo.areaName = isWow and zoneName
-		accountInfo.gameAccountInfo.className = isWow and class
-		accountInfo.gameAccountInfo.characterLevel = isWow and level
-		accountInfo.gameAccountInfo.raceName = isWow and race
+	local SpellOptions = {}
+	function PA:GenerateSpellOptions(db)
+		for SpellID in next, db do
+			local spellData, tblID = PA.SpellBook.Complete[SpellID], tostring(SpellID)
 
-		return accountInfo
+			if spellData.name and not SpellOptions[tblID] then
+				SpellOptions[tblID] = ACH:Toggle(' '..spellData.name, 'Spell ID: '..SpellID)
+				SpellOptions[tblID].image, SpellOptions[tblID].imageCoords = spellData.iconID, PA:TexCoords(true)
+			end
+		end
+
+		return SpellOptions
+	end
+
+	function PA:ScanSpellBook(event)
+		for tab = 1, GetNumSpellBookSkillLines() do
+			local info = GetSpellBookSkillLineInfo(tab)
+			ScanSpellBook(BOOKTYPE_SPELL, info.numSpellBookItems, info.itemIndexOffset)
+		end
+
+		local numPetSpells = HasPetSpells()
+		if numPetSpells then
+			ScanSpellBook(BOOKTYPE_PET, numPetSpells)
+		end
+
+		if event then
+			-- Process Modules Event
+			for _, module in PA:IterateModules() do
+				if module.isEnabled and module.SPELLS_CHANGED then PA:ProtectedCall(module, module.SPELLS_CHANGED) end
+			end
+		end
+	end
+
+	function PA:GetCooldownInfo(spellID)
+		local cooldownInfo, chargeInfo = GetSpellCooldown(spellID), GetSpellCharges(spellID)
+		local start, duration = cooldownInfo.startTime, cooldownInfo.duration
+
+		if chargeInfo and (chargeInfo.currentCharges and chargeInfo.maxCharges > 1 and chargeInfo.currentCharges < chargeInfo.maxCharges) then
+			start, duration = chargeInfo.cooldownStartTime, (chargeInfo.cooldownDuration * (chargeInfo.maxCharges - chargeInfo.currentCharges))
+		end
+
+		local currentDuration = max((start + duration - GetTime()), 0)
+		return currentDuration, start, duration, chargeInfo
 	end
 end
 
 _G.StaticPopupDialogs["PROJECTAZILROKA"] = {
-	text = PA.ACL["A setting you have changed will change an option for this character only. This setting that you have changed will be uneffected by changing user profiles. Changing this setting requires that you reload your User Interface."],
+	text = ACL["A setting you have changed will change an option for this character only. This setting that you have changed will be uneffected by changing user profiles. Changing this setting requires that you reload your User Interface."],
 	button1 = _G.ACCEPT,
 	button2 = _G.CANCEL,
 	OnAccept = _G.ReloadUI,
@@ -393,7 +546,7 @@ _G.StaticPopupDialogs["PROJECTAZILROKA"] = {
 }
 
 _G.StaticPopupDialogs["PROJECTAZILROKA_RL"] = {
-	text = PA.ACL["This setting requires that you reload your User Interface."],
+	text = ACL["This setting requires that you reload your User Interface."],
 	button1 = _G.ACCEPT,
 	button2 = _G.CANCEL,
 	OnAccept = _G.ReloadUI,
@@ -407,22 +560,28 @@ PA.Defaults = {
 		Cooldown = {
 			Enable = true,
 			threshold = 3,
+			roundTime = true,
 			hideBlizzard = false,
 			useIndicatorColor = false,
-			expiringColor = { r = 1, g = 0, b = 0 },
-			secondsColor = { r = 1, g = 1, b = 0 },
+			showModRate = false,
+
+			expiringColor = { r = 1, g = 0.2, b = 0.2 },
+			secondsColor = { r = 1, g = 1, b = 0.2 },
 			minutesColor = { r = 1, g = 1, b = 1 },
 			hoursColor = { r = 0.4, g = 1, b = 1 },
 			daysColor = { r = 0.4, g = 0.4, b = 1 },
-			expireIndicator = { r = 1, g = 1, b = 1 },
-			secondsIndicator = { r = 1, g = 1, b = 1 },
-			minutesIndicator = { r = 1, g = 1, b = 1 },
-			hoursIndicator = { r = 1, g = 1, b = 1 },
-			daysIndicator = { r = 1, g = 1, b = 1 },
+
+			expireIndicator = { r = 0.8, g = 0.8, b = 0.8 },
+			secondsIndicator = { r = 0.8, g = 0.8, b = 0.8 },
+			minutesIndicator = { r = 0.8, g = 0.8, b = 0.8 },
+			hoursIndicator = { r = 0.8, g = 0.8, b = 0.8 },
+			daysIndicator = { r = 0.8, g = 0.8, b = 0.8 },
 			hhmmColorIndicator = { r = 1, g = 1, b = 1 },
 			mmssColorIndicator = { r = 1, g = 1, b = 1 },
 
 			checkSeconds = false,
+			targetAuraDuration = 3600,
+			modRateColor = { r = 0.6, g = 1, b = 0.4 },
 			hhmmColor = { r = 0.43, g = 0.43, b = 0.43 },
 			mmssColor = { r = 0.56, g = 0.56, b = 0.56 },
 			hhmmThreshold = -1,
@@ -438,24 +597,28 @@ PA.Defaults = {
 	}
 }
 
-PA.Options = PA.ACH:Group(PA:Color(PA.Title), nil, 6)
+PA.Options = ACH:Group(PA:Color(PA.Title), nil, 6)
 
 function PA:GetOptions()
-	if _G.ElvUI then
-		_G.ElvUI[1].Options.args.ProjectAzilroka = PA.Options
-	end
+	if _G.ElvUI then _G.ElvUI[1].Options.args.ProjectAzilroka = PA.Options end
 end
 
 function PA:BuildProfile()
-	PA.data = PA.ADB:New('ProjectAzilrokaDB', PA.Defaults, true)
+	for _, module in PA:IterateModules() do
+		if module.BuildProfile then PA:ProtectedCall(module, module.BuildProfile) end
+	end
+
+	PA.data = PA.Libs.ADB:New('ProjectAzilrokaDB', PA.Defaults, true)
 
 	PA.data.RegisterCallback(PA, 'OnProfileChanged', 'SetupProfile')
 	PA.data.RegisterCallback(PA, 'OnProfileCopied', 'SetupProfile')
 
+	PA.Options.args.blank1 = ACH:Group('', nil, 1, nil, nil, nil, true)
+	PA.Options.args.blank2 = ACH:Group('', nil, -2, nil, nil, nil, true)
 	PA.Options.args.profiles = LibStub('AceDBOptions-3.0'):GetOptionsTable(PA.data)
-	PA.Options.args.profiles.order = -2
+	PA.Options.args.profiles.order = -1
 
-	PA.db = PA.data.profile
+	PA:SetupProfile()
 end
 
 function PA:SetupProfile()
@@ -466,7 +629,7 @@ function PA:SetupProfile()
 	end
 end
 
-function PA:CallModuleFunction(module, func)
+function PA:ProtectedCall(module, func)
 	local pass, err = pcall(func, module)
 	if not pass and PA.Debug then
 		error(err)
@@ -477,32 +640,30 @@ function PA:PLAYER_LOGIN()
 	PA.Multiple = PA:GetUIScale()
 
 	PA.AS = _G.AddOnSkins and _G.AddOnSkins[1]
-	PA.EP = LibStub('LibElvUIPlugin-1.0', true)
+	PA.Libs.EP = LibStub('LibElvUIPlugin-1.0', true)
 
-	PA.Options.childGroups = PA.EC and 'tab' or 'tree'
-
-	for _, module in PA:IterateModules() do
-		if module.BuildProfile then PA:CallModuleFunction(module, module.BuildProfile) end
-	end
-
+	PA:ProtectedCall(PA, PA.ScanSpellBook)
 	PA:BuildProfile()
 
-	if PA.EP then
-		PA.EP:RegisterPlugin('ProjectAzilroka', PA.GetOptions)
+	if PA.Libs.EP then
+		PA.Libs.EP:RegisterPlugin('ProjectAzilroka', PA.GetOptions)
 	else
-		PA.AC:RegisterOptionsTable('ProjectAzilroka', PA.Options)
-		PA.ACD:AddToBlizOptions('ProjectAzilroka', 'ProjectAzilroka')
+		PA.Libs.AC:RegisterOptionsTable('ProjectAzilroka', PA.Options)
+		PA.Libs.ACD:AddToBlizOptions('ProjectAzilroka', 'ProjectAzilroka')
 	end
 
 	PA:UpdateCooldownSettings('all')
 
 	for _, module in PA:IterateModules() do
-		if module.GetOptions then
-			PA:CallModuleFunction(module, module.GetOptions)
-		end
-		if module.Initialize then
-			PA:CallModuleFunction(module, module.Initialize)
-		end
+		if module.GetOptions then PA:ProtectedCall(module, module.GetOptions) end
+		if module.Initialize then PA:ProtectedCall(module, module.Initialize) end
+	end
+
+	if PA.Retail then
+		PA:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', 'ScanSpellBook')
+		PA:RegisterEvent('TRAIT_CONFIG_UPDATED', 'ScanSpellBook')
+	else
+		PA:RegisterEvent('SPELLS_CHANGED', 'ScanSpellBook')
 	end
 end
 

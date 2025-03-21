@@ -28,60 +28,63 @@ local player = UnitName("player")
 local realmName = GetRealmName()
 
 -- 全局变量
-BG.FBtable = {}
-BG.FBtable2 = {}
-BG.FBIDtable = {}
-BG.lootQuality = {}
-BG.difficultyTable = {}
-BG.phaseFBtable = {}
-BG.bossPositionStartEnd = {}
-BG.FBfromBossPosition = {}
-BG.instanceIDfromBossPosition = {}
-BG.Movetable = {}
-BG.options = {}
-BG.itemCaches = {}
-BG.dropDown = LibBG:Create_UIDropDownMenu(nil, UIParent)
-BG.onEnterAlpha = 0.1
-BG.highLightAlpha = 0.2
-BG.otherEditAlpha = 0.3
-BG.scrollStep = 80
-BG.borderAlpha = .5
-BG.ver = ns.ver
-BG.instructionsText = ns.instructionsText
-BG.updateText = ns.updateText
-BG.BG = "|cff00BFFF<BiaoGe>|r "
-BG.rareIcon = "|A:nameplates-icon-elite-silver:0:0|a"
-BG.iconTexCoord={.03, .97, .03, .97}
+do
+    BG.FBtable = {}
+    BG.FBtable2 = {}
+    BG.FBIDtable = {}
+    BG.lootQuality = {}
+    BG.difficultyTable = {}
+    BG.phaseFBtable = {}
+    BG.bossPositionStartEnd = {}
+    BG.FBfromBossPosition = {}
+    BG.instanceIDfromBossPosition = {}
+    BG.Movetable = {}
+    BG.options = {}
+    BG.itemCaches = {}
+    BG.dropDown = LibBG:Create_UIDropDownMenu(nil, UIParent)
+    BG.onEnterAlpha = 0.1
+    BG.highLightAlpha = 0.2
+    BG.otherEditAlpha = 0.3
+    BG.scrollStep = 80
+    BG.borderAlpha = .5
+    BG.ver = ns.ver
+    BG.instructionsText = ns.instructionsText
+    BG.updateText = ns.updateText
+    BG.BG = "|cff00BFFF<BiaoGe>|r "
+    BG.rareIcon = "|A:nameplates-icon-elite-silver:0:0|a"
+    BG.iconTexCoord = { .03, .97, .03, .97 }
 
-BG.blackListPlayer = {}
-if BG.IsWLK then
-    BG.blackListPlayer = {
-        ["匕首岭"] = {
-            ["曰日曰日曰"] = true,
-            ["锁血"] = true,
-            ["艾弗森灬"] = true,
-            ["亏贼"] = true,
-            ["西施"] = true,
-            ["大頭爆栗子"] = true,
-            ["你先动筷子"] = true,
-            ["抽象怪"] = true,
-            ["九折"] = true,
-            ["Bluebiu"] = true,
-            ["搞子"] = true,
-            -- [""] = true,
-            -- [""] = true,
-            -- [""] = true,
-            -- [""] = true,
-            -- [""] = true,
-            -- ["苍刃"] = true,
-        },
-    }
+    BG.blackListPlayer = {}
+    if BG.IsWLK then
+        BG.blackListPlayer = {
+            ["匕首岭"] = {
+                ["曰日曰日曰"] = true,
+                ["锁血"] = true,
+                ["艾弗森灬"] = true,
+                ["亏贼"] = true,
+                ["西施"] = true,
+                ["大頭爆栗子"] = true,
+                ["你先动筷子"] = true,
+                ["抽象怪"] = true,
+                ["九折"] = true,
+                ["Bluebiu"] = true,
+                ["搞子"] = true,
+                -- [""] = true,
+                -- [""] = true,
+                -- [""] = true,
+                -- [""] = true,
+                -- [""] = true,
+                -- ["苍刃"] = true,
+            },
+        }
+    end
+
+
+    if BG.blackListPlayer[realmName] and BG.blackListPlayer[realmName][UnitName("player")] then
+        BG.IsBlackListPlayer = true
+    end
 end
-
-if BG.blackListPlayer[realmName] and BG.blackListPlayer[realmName][UnitName("player")] then
-    BG.IsBlackListPlayer = true
-end
-
+-- 初始化
 do
     BG.Maxi                                                               = 30
     local mainFrameWidth                                                  = 1295
@@ -117,6 +120,10 @@ do
             AddDB("TOC", mainFrameWidth, 835, 3, 9, { 0, 5, 8 }, 4)
             AddDB("ULD", mainFrameWidth, 875, 3, 16, { 0, 7, 13 }, 2)
             AddDB("NAXX", 1715, 945, 4, 19, { 0, 6, 12, 16 }, 2)
+            -- TBC
+            AddDB("SW", mainFrameWidth, 835, 3, 8, { 0, 5, 8 })
+            AddDB("BT", mainFrameWidth, 835, 3, 11, { 0, 5, 9 })
+            AddDB("BWL", mainFrameWidth, 810, 3, 10, { 0, 5, 9 })
         elseif BG.IsCTM then
             AddDB("BOT", 1715, 930, 4, 15, { 0, 5, 10, 14 }, 2)
         end
@@ -216,6 +223,13 @@ do
             BG.bossPositionStartEnd[724] = { 13, 13 }
             BG.FBfromBossPosition["ICC"][13] = { name = "RS", localName = GetRealZoneText(724) }
             BG.instanceIDfromBossPosition["ICC"][13] = 724
+
+            -- TBC
+            do
+                AddDB("BWL", 469, "")
+                AddDB("BT", 564, "")
+                AddDB("SW", 580, "")
+            end
         elseif BG.IsCTM then
             BG.FB1 = "BOT"
             BG.fullLevel = 85
@@ -286,15 +300,6 @@ do
         color = { func = UnitColor, select = 1 },               -- 颜色
     }
 
-    ---------- 获取副本tbl某个value ----------
-    function BG.GetFBinfo(FB, info)
-        for i, v in ipairs(BG.FBtable2) do
-            if FB == v.FB then
-                return v[info]
-            end
-        end
-    end
-
     -- 表格
     do
         -- 表格UI
@@ -319,12 +324,12 @@ do
 
         -- 心愿UI
         BG.HopeFrame = {}
-        for index, value in ipairs(BG.FBtable) do
-            BG.HopeFrame[value] = {}
-            for n = 1, 4 do
-                BG.HopeFrame[value]["nandu" .. n] = {}
+        for _, FB in ipairs(BG.FBtable) do
+            BG.HopeFrame[FB] = {}
+            for n = 1, HopeMaxn[FB] do
+                BG.HopeFrame[FB]["nandu" .. n] = {}
                 for b = 1, 22 do
-                    BG.HopeFrame[value]["nandu" .. n]["boss" .. b] = {}
+                    BG.HopeFrame[FB]["nandu" .. n]["boss" .. b] = {}
                 end
             end
         end
@@ -653,8 +658,8 @@ do
 end
 
 
--- 数据库（保存至本地）
-local function DataBase()
+-- 本地配置数据库
+BG.Init(function()
     if BiaoGe then
         if type(BiaoGe) ~= "table" then
             BiaoGe = {}
@@ -870,13 +875,23 @@ local function DataBase()
             end
         end
     end
-end
+end)
 
-
-local f = CreateFrame("Frame")
-f:RegisterEvent("ADDON_LOADED")
-f:SetScript("OnEvent", function(self, event, addonName)
-    if addonName == AddonName then
-        DataBase()
+BG.Init2(function()
+    if IsAddOnLoaded("BiaoGeVIP") then
+        BG.BiaoGeVIPVerNum = BGV.GetVerNum(GetAddOnMetadata("BiaoGeVIP", "Version"))
+    end
+    if BG.IsWLK then
+        if BG.BiaoGeVIPVerNum and BG.BiaoGeVIPVerNum >= 10120 then
+            ns.canShowTBC = true
+        end
+        if BG.IsTBCFB(BG.FB1) and not ns.canShowTBC then
+            BG.ClickFBbutton("ICC")
+        end
+        if not ns.canShowTBC then
+            BG.TabButtonsFB_TBC:Hide()
+            BG.TabButtonsFB_TBC:SetParent(nil)
+            BG.TabButtonsFB_TBC = nil
+        end
     end
 end)

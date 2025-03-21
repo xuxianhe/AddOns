@@ -5,7 +5,7 @@ Handles the visibility and updating of the player's class resources (like Chi Or
 
 ## Widget
 
-ClassPower - An `table` consisting of as many StatusBars as the theoretical maximum return of [UnitPowerMax](http://wowprogramming.com/docs/api/UnitPowerMax.html).
+ClassPower - An `table` consisting of as many StatusBars as the theoretical maximum return of [UnitPowerMax](https://warcraft.wiki.gg/wiki/API_UnitPowerMax).
 
 ## Sub-Widgets
 
@@ -22,6 +22,7 @@ If the sub-widgets are StatusBars, their minimum and maximum values will be set 
 
 Supported class powers:
   - All     - Combo Points
+  - Evoker  - Essence
   - Mage    - Arcane Charges
   - Monk    - Chi Orbs
   - Paladin - Holy Power
@@ -49,10 +50,11 @@ local oUF = ns.oUF
 
 local _, PlayerClass = UnitClass('player')
 
--- sourced from FrameXML/Constants.lua
+-- sourced from Blizzard_FrameXMLBase/Constants.lua
 local SPEC_MAGE_ARCANE = _G.SPEC_MAGE_ARCANE or 1
 local SPEC_MONK_WINDWALKER = _G.SPEC_MONK_WINDWALKER or 3
 local SPEC_WARLOCK_DESTRUCTION = _G.SPEC_WARLOCK_DESTRUCTION or 3
+
 local SPELL_POWER_ENERGY = Enum.PowerType.Energy or 3
 local SPELL_POWER_COMBO_POINTS = Enum.PowerType.ComboPoints or 4
 local SPELL_POWER_SOUL_SHARDS = Enum.PowerType.SoulShards or 7
@@ -95,10 +97,11 @@ local function UpdateColor(element, powerType)
 end
 
 local function Update(self, event, unit, powerType)
-	if(not (unit and (UnitIsUnit(unit, 'player') and (not powerType or powerType == ClassPowerType)
-		or unit == 'vehicle' and powerType == 'COMBO_POINTS'))) then
-		return
-	end
+	if not (powerType and unit and UnitIsUnit(unit, 'player')) then return end
+
+	local vehicle = unit == 'vehicle' and powerType == 'COMBO_POINTS'
+	local classic = not oUF.isRetail and (powerType == 'COMBO_POINTS' or (PlayerClass == 'ROGUE' and powerType == 'ENERGY'))
+	if not (vehicle or classic or powerType == ClassPowerType) then return end
 
 	local element = self.ClassPower
 
@@ -113,7 +116,7 @@ local function Update(self, event, unit, powerType)
 
 	local cur, max, mod, oldMax, chargedPoints
 	if(event ~= 'ClassPowerDisable') then
-		local powerID = unit == 'vehicle' and SPELL_POWER_COMBO_POINTS or ClassPowerID
+		local powerID = (vehicle and SPELL_POWER_COMBO_POINTS) or ClassPowerID
 
 		max = UnitPowerMax(unit, powerID)
 		mod = UnitPowerDisplayMod(powerID)
@@ -127,7 +130,7 @@ local function Update(self, event, unit, powerType)
 		elseif oUF.isRetail and (ClassPowerType == 'SOUL_SHARDS' and GetSpecialization() == SPEC_WARLOCK_DESTRUCTION) then -- destro locks are special
 			cur = UnitPower(unit, powerID, true) / mod
 		else
-			cur = not oUF.isRetail and powerType == 'COMBO_POINTS' and GetComboPoints(unit, 'target') or UnitPower(unit, powerID)
+			cur = classic and GetComboPoints(unit, 'target') or UnitPower(unit, powerID)
 		end
 
 		local numActive = cur + 0.9
@@ -161,7 +164,7 @@ local function Update(self, event, unit, powerType)
 	* max           - the maximum amount of power (number)
 	* hasMaxChanged - indicates whether the maximum amount has changed since the last update (boolean)
 	* powerType     - the active power type (string)
-	* chargedTable  - current chargedPoints table
+	* ...           - the indices of currently charged power points, if any
 	--]]
 	if(element.PostUpdate) then
 		return element:PostUpdate(cur, max, oldMax ~= max, powerType, chargedPoints)  -- ElvUI uses chargedPoints as table
@@ -184,19 +187,19 @@ local function Visibility(self, event, unit)
 	local element = self.ClassPower
 	local shouldEnable
 
-	if (oUF.isRetail or oUF.isWrath) and UnitHasVehicleUI('player') then
-		shouldEnable = oUF.isWrath and UnitPowerType('vehicle') == SPELL_POWER_COMBO_POINTS or oUF.isRetail and PlayerVehicleHasComboPoints()
+	if (oUF.isRetail or oUF.isCata) and UnitHasVehicleUI('player') then
+		shouldEnable = oUF.isCata and UnitPowerType('vehicle') == SPELL_POWER_COMBO_POINTS or oUF.isRetail and PlayerVehicleHasComboPoints()
 		unit = 'vehicle'
 	elseif(ClassPowerID) then
 		if(not RequireSpec or oUF.isRetail and (RequireSpec == GetSpecialization())) then
 			-- use 'player' instead of unit because 'SPELLS_CHANGED' is a unitless event
 			if(not RequirePower or RequirePower == UnitPowerType('player')) then
 				if(not RequireSpell or IsPlayerSpell(RequireSpell)) then
-					self:UnregisterEvent('SPELLS_CHANGED', Visibility)
+					oUF:UnregisterEvent(self, 'SPELLS_CHANGED', Visibility)
 					shouldEnable = true
 					unit = 'player'
 				else
-					self:RegisterEvent('SPELLS_CHANGED', Visibility, true)
+					oUF:RegisterEvent(self, 'SPELLS_CHANGED', Visibility, true)
 				end
 			end
 		end
@@ -255,20 +258,18 @@ end
 
 do
 	function ClassPowerEnable(self)
+		self:RegisterEvent('UNIT_POWER_FREQUENT', Path)
 		self:RegisterEvent('UNIT_MAXPOWER', Path)
-		self:RegisterEvent('UNIT_POWER_UPDATE', Path)
-
-		if not oUF.isRetail then
-			self:RegisterEvent('PLAYER_TARGET_CHANGED', VisibilityPath, true)
-		end
 
 		if oUF.isRetail then -- according to Blizz any class may receive this event due to specific spell auras
-			self:RegisterEvent('UNIT_POWER_POINT_CHARGE', Path)
+			oUF:RegisterEvent(self, 'UNIT_POWER_POINT_CHARGE', Path)
+		else
+			oUF:RegisterEvent(self, 'PLAYER_TARGET_CHANGED', VisibilityPath, true)
 		end
 
 		self.ClassPower.__isEnabled = true
 
-		if (oUF.isRetail or oUF.isWrath) and UnitHasVehicleUI('player') then
+		if (oUF.isRetail or oUF.isCata) and UnitHasVehicleUI('player') then
 			Path(self, 'ClassPowerEnable', 'vehicle', 'COMBO_POINTS')
 		else
 			Path(self, 'ClassPowerEnable', 'player', ClassPowerType)
@@ -276,13 +277,13 @@ do
 	end
 
 	function ClassPowerDisable(self)
-		self:UnregisterEvent('UNIT_POWER_UPDATE', Path)
+		self:UnregisterEvent('UNIT_POWER_FREQUENT', Path)
 		self:UnregisterEvent('UNIT_MAXPOWER', Path)
 
 		if oUF.isRetail then
-			self:UnregisterEvent('UNIT_POWER_POINT_CHARGE', Path)
+			oUF:UnregisterEvent(self, 'UNIT_POWER_POINT_CHARGE', Path)
 		else
-			self:UnregisterEvent('PLAYER_TARGET_CHANGED', VisibilityPath)
+			oUF:UnregisterEvent(self, 'PLAYER_TARGET_CHANGED', VisibilityPath)
 		end
 
 		local element = self.ClassPower
@@ -329,12 +330,12 @@ local function Enable(self, unit)
 		element.__max = #element
 		element.ForceUpdate = ForceUpdate
 
-		if(oUF.isRetail or oUF.isWrath) and (RequireSpec or RequireSpell) then
-			self:RegisterEvent('PLAYER_TALENT_UPDATE', VisibilityPath, true)
-		end
-
 		if(RequirePower) then
 			self:RegisterEvent('UNIT_DISPLAYPOWER', VisibilityPath)
+		end
+
+		if(oUF.isRetail or oUF.isCata) and (RequireSpec or RequireSpell) then
+			oUF:RegisterEvent(self, 'PLAYER_TALENT_UPDATE', VisibilityPath, true)
 		end
 
 		element.ClassPowerEnable = ClassPowerEnable
@@ -359,12 +360,13 @@ local function Disable(self)
 	if(self.ClassPower) then
 		ClassPowerDisable(self)
 
-		if oUF.isRetail or oUF.isWrath then
-			self:UnregisterEvent('PLAYER_TALENT_UPDATE', VisibilityPath)
-		end
+		oUF:UnregisterEvent(self, 'SPELLS_CHANGED', Visibility)
 
 		self:UnregisterEvent('UNIT_DISPLAYPOWER', VisibilityPath)
-		self:UnregisterEvent('SPELLS_CHANGED', Visibility)
+
+		if oUF.isRetail or oUF.isCata then
+			oUF:UnregisterEvent(self, 'PLAYER_TALENT_UPDATE', VisibilityPath)
+		end
 	end
 end
 

@@ -1,17 +1,16 @@
 local GSE = GSE
 local Statics = GSE.Static
-
 local L = GSE.L
 
 local GNOME = "Storage"
 
 function GSE.ImportLegacyStorage(Library)
-    if GSE.isEmpty(GSE3Storage) then
-        GSE3Storage = {}
+    if GSE.isEmpty(GSESequences) then
+        GSESequences = {}
     end
     for i = 0, 13 do
-        if GSE.isEmpty(GSE3Storage[i]) then
-            GSE3Storage[i] = {}
+        if GSE.isEmpty(GSESequences[i]) then
+            GSESequences[i] = {}
         end
     end
 
@@ -19,7 +18,7 @@ function GSE.ImportLegacyStorage(Library)
         for k, v in pairs(Library) do
             for i, j in pairs(v) do
                 local compressedVersion = GSE.EncodeMessage({i, j})
-                GSE3Storage[k][i] = compressedVersion
+                GSESequences[k][i] = compressedVersion
             end
         end
     end
@@ -58,7 +57,6 @@ function GSE.OOCAddSequenceToCollection(sequenceName, sequence, classid)
     -- Remove Spaces or commas from SequenceNames and replace with _'s
     sequenceName = string.gsub(sequenceName, " ", "_")
     sequenceName = string.gsub(sequenceName, ",", "_")
-    sequenceName = string.upper(sequenceName)
 
     -- check Sequence TOC matches the current TOC
     local gameversion, build, date, tocversion = GetBuildInfo()
@@ -115,6 +113,7 @@ function GSE.OOCAddSequenceToCollection(sequenceName, sequence, classid)
         GSE.PrintDebugMessage("As its the current class updating buttons", "Storage")
         GSE.UpdateSequence(sequenceName, sequence.Macros[sequence.MetaData.Default])
     end
+    GSE:SendMessage(Statics.SEQUENCE_UPDATED, sequenceName)
 end
 
 function GSE.OOCPerformMergeAction(action, classid, sequenceName, newSequence)
@@ -142,18 +141,18 @@ function GSE.OOCPerformMergeAction(action, classid, sequenceName, newSequence)
         end
         GSE.PrintDebugMessage("Finished colliding entry entry", "Storage")
         GSE.Print(string.format(L["Extra Macro Versions of %s has been added."], sequenceName), GNOME)
-        GSE3Storage[classid][sequenceName] = GSE.EncodeMessage({sequenceName, GSE.Library[classid][sequenceName]})
+        GSESequences[classid][sequenceName] = GSE.EncodeMessage({sequenceName, GSE.Library[classid][sequenceName]})
     elseif action == "REPLACE" then
         GSE.Library[classid][sequenceName] = {}
         GSE.Library[classid][sequenceName] = newSequence
         GSE.PrintDebugMessage("About to encode: Sequence " .. sequenceName)
         GSE.PrintDebugMessage(" New Entry: " .. GSE.Dump(GSE.Library[classid][sequenceName]), "Storage")
-        GSE3Storage[classid][sequenceName] = GSE.EncodeMessage({sequenceName, GSE.Library[classid][sequenceName]})
+        GSESequences[classid][sequenceName] = GSE.EncodeMessage({sequenceName, GSE.Library[classid][sequenceName]})
         GSE.Print(sequenceName .. L[" was updated to new version."], "GSE Storage")
     elseif action == "RENAME" then
         GSE.Library[classid][sequenceName] = {}
         GSE.Library[classid][sequenceName] = newSequence
-        GSE3Storage[classid][sequenceName] = GSE.EncodeMessage({sequenceName, GSE.Library[classid][sequenceName]})
+        GSESequences[classid][sequenceName] = GSE.EncodeMessage({sequenceName, GSE.Library[classid][sequenceName]})
         GSE.Print(sequenceName .. L[" was imported as a new macro."], "GSE Storage")
         GSE.PrintDebugMessage(
             "Sequence " .. sequenceName .. " New Entry: " .. GSE.Dump(GSE.Library[classid][sequenceName]),
@@ -167,11 +166,7 @@ function GSE.OOCPerformMergeAction(action, classid, sequenceName, newSequence)
         "Sequence " .. sequenceName .. " Finalised Entry: " .. GSE.Dump(GSE.Library[classid][sequenceName]),
         "Storage"
     )
-    if GSE.GUI then
-        local event = {}
-        event.action = "openviewer"
-        table.insert(GSE.OOCQueue, event)
-    end
+    GSE:SendMessage(Statics.SEQUENCE_UPDATED, sequenceName)
 end
 
 --- Load a collection of Sequences
@@ -233,27 +228,131 @@ function GSE.CreateMacroIcon(sequenceName, icon, forceglobalstub)
     end
 end
 
+local function fixContainer(v)
+    local fixedTable = {}
+    for k, val in pairs(v) do
+        if type(v[k]) == "table" then
+            if tonumber(k) then
+                fixedTable[tonumber(k)] = {}
+                fixedTable[tonumber(k)] = fixContainer(val)
+            else
+                fixedTable[k] = fixContainer(val)
+            end
+        else
+            fixedTable[k] = val
+        end
+    end
+    for k, val in ipairs(v) do
+        if type(v[k]) == "table" then
+            fixedTable[k] = fixContainer(val)
+        else
+            fixedTable[k] = val
+        end
+    end
+    return fixedTable
+end
+
+function GSE.processWAGOImport(input, dontencode)
+    for k, v in ipairs(input) do
+        if type(v) == "table" then
+            input[k] = fixContainer(v)
+        end
+    end
+    for k, v in pairs(input) do
+        if type(v) == "table" then
+            input[k] = fixContainer(v)
+        end
+    end
+    if dontencode then
+        return input
+    else
+        return GSE.EncodeMessage(input)
+    end
+end
+
 --- Load a serialised Sequence
-function GSE.ImportSerialisedSequence(importstring, createicon)
-    local decompresssuccess, actiontable = GSE.DecodeMessage(importstring)
+function GSE.ImportSerialisedSequence(importstring, forcereplace)
+    local decompresssuccess, actiontable
+    if type(importstring) == "table" then
+        decompresssuccess, actiontable = true, importstring
+    else
+        decompresssuccess, actiontable = GSE.DecodeMessage(importstring)
+    end
     GSE.PrintDebugMessage(string.format("Decomsuccess: %s ", tostring(decompresssuccess)), Statics.SourceTransmission)
-    if
-        (decompresssuccess) and (table.getn(actiontable) == 2) and (type(actiontable[1]) == "string") and
-            (type(actiontable[2]) == "table")
-     then
-        GSE.PrintDebugMessage(
-            string.format(
-                "tablerows: %s   type cell1 %s cell2 %s",
-                table.getn(actiontable),
-                type(actiontable[1]),
-                type(actiontable[2])
-            ),
-            Statics.SourceTransmission
-        )
-        local seqName = string.upper(actiontable[1])
-        GSE.AddSequenceToCollection(seqName, actiontable[2])
-        if createicon then
-            GSE.CheckMacroCreated(seqName, true)
+
+    if decompresssuccess and actiontable then
+        if actiontable.type == "COLLECTION" then
+            actiontable = actiontable.payload
+            for _, v in pairs(actiontable["Variables"]) do
+                GSE.ImportSerialisedSequence(v, forcereplace)
+            end
+            for _, v in pairs(actiontable["Sequences"]) do
+                GSE.ImportSerialisedSequence(v, forcereplace)
+            end
+            for _, v in pairs(actiontable["Macros"]) do
+                GSE.ImportSerialisedSequence(v, forcereplace)
+            end
+            GSE:SendMessage(Statics.COLLECTION_IMPORTED)
+            if GSE.GUI and GSE.GUIVariableFrame:IsVisible() then
+                GSE.ShowVariables()
+            end
+            if GSE.GUI and GSE.GUIMacroFrame:IsVisible() then
+                GSE.ShowMacros()
+            end
+        elseif actiontable.objectType == "MACRO" then
+            actiontable.objectType = nil
+            local oocaction = {
+                ["action"] = "importmacro",
+                ["node"] = actiontable
+            }
+            table.insert(GSE.OOCQueue, oocaction)
+        elseif actiontable.objectType == "VARIABLE" then
+            actiontable.objectType = nil
+            local oocaction = {
+                ["action"] = "updatevariable",
+                ["variable"] = actiontable,
+                ["name"] = actiontable.name
+            }
+            table.insert(GSE.OOCQueue, oocaction)
+        else
+            actiontable.objectType = nil
+            GSE.PrintDebugMessage(
+                string.format(
+                    "tablerows: %s   type cell1 %s cell2 %s",
+                    #actiontable,
+                    type(actiontable[1]),
+                    type(actiontable[2])
+                ),
+                Statics.SourceTransmission
+            )
+            local k, v = actiontable[1], actiontable[2]
+            local seqName = k
+            v = GSE.processWAGOImport(v, true)
+
+            if v.MetaData.GSEVersion and v.MetaData.GSEVersion < 3200 then
+                if GSE.Update31Actions then
+                    v = GSE.Update31Actions(v)
+                else
+                    GSE.Print(
+                        L["This macro is not compatible with this version of the game and cannot be imported."],
+                        L["Import"]
+                    )
+                    return
+                end
+            end
+            if forcereplace then
+                GSE.PerformMergeAction("REPLACE", GSE.GetClassIDforSpec(v.MetaData.SpecID), seqName, v)
+            else
+                GSE.AddSequenceToCollection(seqName, v)
+            end
+
+            GSE:SendMessage(Statics.SEQUENCE_UPDATED, seqName)
+            if GSE.GUI and GSE.GUIVariableFrame:IsVisible() then
+                GSE.ShowVariables()
+            end
+            if GSE.GUI and GSE.GUIMacroFrame:IsVisible() then
+                GSE.ShowMacros()
+            end
         end
     else
         GSE.Print(L["Unable to interpret sequence."], GNOME)
@@ -298,16 +397,6 @@ function GSE.DebugDumpButton(SequenceName)
     GSE.Print("====================================\nStep\n====================================")
     GSE.Print(GSE.SequencesExec[SequenceName][_G[SequenceName]:GetAttribute("step")])
     GSE.Print("====================================\nEnd GSE Button Dump\n====================================")
-end
-
---- Load in the sample macros for the current class.
-function GSE.LoadSampleMacros(classID)
-    if not GSE.isEmpty(Statics.SampleMacros[classID]) then
-        GSE.ImportCompressedMacroCollection(Statics.SampleMacros[classID])
-        GSE.Print(L["The Sample Macros have been reloaded."])
-    else
-        GSE.Print(L["No Sample Macros are available yet for this class."])
-    end
 end
 
 --- Moves Macros hidden in Global Macros to their appropriate class.
@@ -379,23 +468,13 @@ function GSE.ScanMacrosForErrors()
     GSE.Print(L["Finished scanning for errors.  If no other messages then no errors were found."])
 end
 
---- This function allows the player to toggle Target Protection from the LDB Plugin.
-function GSE.ToggleTargetProtection()
-    if GSE.isEmpty(GSE.GetRequireTarget()) then
-        GSE.SetRequireTarget(true)
-    else
-        GSE.SetRequireTarget(false)
-    end
-    GSE.ReloadSequences()
-end
-
 --- This creates a pretty export for WLM Forums
 function GSE.ExportSequenceWLMFormat(sequence, sequencename)
     local returnstring =
         "# " ..
         sequencename ..
             "\n\n## Talents: " ..
-                (GSE.isEmpty(sequence["MetaData"].Talents) and "?,?,?,?,?,?,?" or sequence["MetaData"].Talents) ..
+                (GSE.isEmpty(sequence["MetaData"].Talents) and "?,?,?,?,?,?,?" or GSE.Dump(sequence["MetaData"].Talents)) ..
                     "\n\n"
     if not GSE.isEmpty(sequence["MetaData"].Help) then
         returnstring = "\n\n## Usage Information\n" .. sequence["MetaData"].Help .. "\n\n"
@@ -403,10 +482,9 @@ function GSE.ExportSequenceWLMFormat(sequence, sequencename)
     returnstring =
         returnstring ..
         "This macro contains " ..
-            (table.getn(sequence.Macros) > 1 and table.getn(sequence.Macros) .. " macro templates. " or
-                "1 macro template. ") ..
+            (#sequence.Macros > 1 and #sequence.Macros .. " macro templates. " or "1 macro template. ") ..
                 string.format(L["This Sequence was exported from GSE %s."], GSE.VersionString) .. "\n\n"
-    if (table.getn(sequence.Macros) > 1) then
+    if (#sequence.Macros > 1) then
         for k, _ in pairs(sequence.Macros) do
             if not GSE.isEmpty(sequence["MetaData"].Default) then
                 if sequence["MetaData"].Default == k then
@@ -475,9 +553,12 @@ function GSE.ExportSequence(sequence, sequenceName, verbose)
     local returnVal
     if verbose then
         GSE.PrintDebugMessage("ExportSequence Sequence Name: " .. sequenceName, "Storage")
-        returnVal = GSE.Dump(GSE.TranslateSequence(sequence, Statics.TranslatorMode.Current)) .. "\n"
+        returnVal = GSE.Dump(GSE.UnEscapeTable(GSE.TranslateSequence(sequence, Statics.TranslatorMode.Current))) .. "\n"
     else
-        returnVal = GSE.EncodeMessage({sequenceName, sequence})
+        returnVal =
+            GSE.EncodeMessage(
+            {sequenceName, GSE.UnEscapeTable(GSE.TranslateSequence(sequence, Statics.TranslatorMode.ID))}
+        )
     end
 
     return returnVal
@@ -542,7 +623,7 @@ GSE:RegisterChatCommand("gse", "GSSlash")
 -- Functions
 
 --- This function finds a macro by name.  It checks current class first then global
-local function FindMacro(sequenceName)
+function GSE.FindMacro(sequenceName)
     local returnVal = {}
     if not GSE.isEmpty(GSE.Library[GSE.GetCurrentClassID()][sequenceName]) then
         returnVal = GSE.Library[GSE.GetCurrentClassID()][sequenceName]
@@ -556,12 +637,12 @@ end
 function GSE:GSSlash(input)
     local _, _, currentclassId = UnitClass("player")
     local params = GSE.split(input, " ")
-    if table.getn(params) > 1 then
+    if #params > 1 then
         input = params[1]
     end
     local command = string.lower(input)
     if command == "showspec" then
-        if GSE.GameMode == 1 then
+        if GSE.GameMode < 7 then
             GSE.Print(L["Your ClassID is "] .. currentclassId .. " " .. Statics.SpecIDList[currentclassId], GNOME)
         else
             local currentSpec = GetSpecialization()
@@ -580,6 +661,14 @@ function GSE:GSSlash(input)
     elseif command == "forceclean" then
         GSE.CleanOrphanSequences()
         GSE.CleanMacroLibrary(true)
+    elseif command == "export" then
+        if GSE.Patron then
+            GSE.CheckGUI()
+            if GSE.UnsavedOptions["GUI"] and GSE.GUIAdvancedExport then
+                GSE.GUIAdvancedExport(GSE.GUIExportframe)
+                GSE.GUIExportframe:Show()
+            end
+        end
     elseif command == "showdebugoutput" then
         StaticPopup_Show("GS-DebugOutput")
     elseif command == "record" then
@@ -592,13 +681,15 @@ function GSE:GSSlash(input)
         if GSE.UnsavedOptions["GUI"] then
             GSE.GUIShowDebugWindow()
         end
+    elseif command == "variables" then
+        GSE.CheckGUI()
+        if GSE.UnsavedOptions["GUI"] then
+            GSE.ShowVariables()
+        end
     elseif command == "resetoptions" then
         GSE.SetDefaultOptions()
         GSE.Print(L["Options have been reset to defaults."])
         StaticPopup_Show("GSE_ConfirmReloadUIDialog")
-    elseif command == "updatemacrostrings" then
-        -- Convert macros to new format in a one off run.
-        GSE.UpdateMacroString()
     elseif command == "movelostmacros" then
         GSE.MoveMacroToClassFromGlobal()
     elseif command == "checkmacrosforerrors" then
@@ -608,47 +699,69 @@ function GSE:GSSlash(input)
         if GSE.UnsavedOptions["GUI"] then
             GSE.GUICompressFrame:Show()
         end
-    elseif command == "dumpmacro" then
-        GSE_C[params[2]] = {}
-        GSE_C[params[2]].name = params[2]
-        GSE_C[params[2]].sequence = FindMacro(params[2])
-        GSE_C[params[2]].button = _G[params[2]]
     elseif command == "recompilesequences" then
         GSE.ReloadSequences()
     elseif string.lower(command) == "clearoocqueue" then
         GSE.OOCQueue = {}
-    elseif string.lower(command) == "retro" then
-        local loaded, _ = LoadAddOn("GSE2")
-        if loaded then
-            GSE.Print(
-                string.format(
-                    L[
-                        "GSE2 Retro interface loaded.  Type `%s/gse2 import%s` to import an old GSE2 string or `%s/gse2 edit%s` to mock up a new template using the GSE2 editor."
-                    ],
-                    GSEOptions.CommandColour,
-                    Statics.StringReset,
-                    GSEOptions.CommandColour,
-                    Statics.StringReset
-                ),
-                "GSE2"
-            )
+    elseif string.lower(command) == "import" then
+        GSE.CheckGUI()
+        if GSE.UnsavedOptions["GUI"] then
+            GSE.ShowImport()
         end
     else
         GSE.CheckGUI()
         if GSE.UnsavedOptions["GUI"] then
-            GSE.GUIShowViewer()
+            GSE.ShowMenu()
         end
     end
 end
 
-function GSE.ReportTargetProtection()
-    local disabledstr = "disabled"
-    if GSEOptions.requireTarget then
-        disabledstr = "enabled"
-    end
-    return string.format(L["Target protection is currently %s"], disabledstr)
-end
+local colorTable = {}
 
-LibStub("AceConfig-3.0"):RegisterOptionsTable("GSE", GSE.GetOptionsTable(), {"gseo"})
+local tokens = IndentationLib.tokens
+
+colorTable[tokens.TOKEN_SPECIAL] = GSEOptions.WOWSHORTCUTS
+colorTable[tokens.TOKEN_KEYWORD] = GSEOptions.KEYWORD
+colorTable[tokens.TOKEN_UNKNOWN] = GSEOptions.UNKNOWN
+colorTable[tokens.TOKEN_COMMENT_SHORT] = GSEOptions.COMMENT
+colorTable[tokens.TOKEN_COMMENT_LONG] = GSEOptions.COMMENT
+
+local stringColor = GSEOptions.NormalColour
+colorTable[tokens.TOKEN_STRING] = stringColor
+colorTable[".."] = stringColor
+
+local tableColor = GSEOptions.CONCAT
+colorTable["..."] = tableColor
+colorTable["{"] = tableColor
+colorTable["}"] = tableColor
+colorTable["["] = GSEOptions.STRING
+colorTable["]"] = GSEOptions.STRING
+
+local arithmeticColor = GSEOptions.NUMBER
+colorTable[tokens.TOKEN_NUMBER] = arithmeticColor
+colorTable["+"] = arithmeticColor
+colorTable["-"] = arithmeticColor
+colorTable["/"] = arithmeticColor
+colorTable["*"] = arithmeticColor
+
+local logicColor1 = GSEOptions.EQUALS
+colorTable["=="] = logicColor1
+colorTable["<"] = logicColor1
+colorTable["<="] = logicColor1
+colorTable[">"] = logicColor1
+colorTable[">="] = logicColor1
+colorTable["~="] = logicColor1
+
+local logicColor2 = GSEOptions.EQUALS
+colorTable["and"] = logicColor2
+colorTable["or"] = logicColor2
+colorTable["not"] = logicColor2
+
+local castColor = GSEOptions.UNKNOWN
+colorTable["/cast"] = castColor
+
+colorTable[0] = "|r"
+
+Statics.IndentationColorTable = colorTable
 
 GSE.Utils = true

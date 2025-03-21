@@ -3,15 +3,16 @@ local S = E:GetModule('Skins')
 
 local _G = _G
 local unpack, select = unpack, select
+local hooksecurefunc = hooksecurefunc
 
-local GetItemInfo = GetItemInfo
 local GetTradeSkillNumReagents = GetTradeSkillNumReagents
 local GetTradeSkillInfo = GetTradeSkillInfo
-local GetItemQualityColor = GetItemQualityColor
 local GetTradeSkillItemLink = GetTradeSkillItemLink
 local GetTradeSkillReagentInfo = GetTradeSkillReagentInfo
 local GetTradeSkillReagentItemLink = GetTradeSkillReagentItemLink
-local hooksecurefunc = hooksecurefunc
+
+local GetItemQualityByID = C_Item.GetItemQualityByID
+local GetItemQualityColor = C_Item.GetItemQualityColor
 
 function S:Blizzard_TradeSkillUI()
 	if not (E.private.skins.blizzard.enable and E.private.skins.blizzard.tradeskill) then return end
@@ -45,13 +46,13 @@ function S:Blizzard_TradeSkillUI()
 	TradeSkillCollapseAllButton:GetDisabledTexture():Size(15)
 	TradeSkillCollapseAllButton:GetDisabledTexture():SetDesaturated(true)
 
-	S:HandleDropDownBox(_G.TradeSkillInvSlotDropDown, 140)
-	_G.TradeSkillInvSlotDropDown:ClearAllPoints()
-	_G.TradeSkillInvSlotDropDown:Point('TOPRIGHT', TradeSkillFrame, 'TOPRIGHT', -32, -68)
+	S:HandleDropDownBox(_G.TradeSkillInvSlotDropdown, 110)
+	_G.TradeSkillInvSlotDropdown:ClearAllPoints()
+	_G.TradeSkillInvSlotDropdown:Point('TOPRIGHT', TradeSkillFrame, 'TOPRIGHT', -32, -68)
 
-	S:HandleDropDownBox(_G.TradeSkillSubClassDropDown, 140)
-	_G.TradeSkillSubClassDropDown:ClearAllPoints()
-	_G.TradeSkillSubClassDropDown:Point('RIGHT', _G.TradeSkillInvSlotDropDown, 'RIGHT', -120, 0)
+	S:HandleDropDownBox(_G.TradeSkillSubClassDropdown, 110)
+	_G.TradeSkillSubClassDropdown:ClearAllPoints()
+	_G.TradeSkillSubClassDropdown:Point('RIGHT', _G.TradeSkillInvSlotDropdown, 'RIGHT', -120, 0)
 
 	_G.TradeSkillFrameTitleText:ClearAllPoints()
 	_G.TradeSkillFrameTitleText:Point('TOP', TradeSkillFrame, 'TOP', 0, -18)
@@ -122,7 +123,7 @@ function S:Blizzard_TradeSkillUI()
 
 		local skillLink = GetTradeSkillItemLink(id)
 		if skillLink then
-			local _, _, quality = GetItemInfo(skillLink)
+			local quality = GetItemQualityByID(skillLink)
 			if quality and quality > 1 then
 				local r, g, b = GetItemQualityColor(quality)
 
@@ -140,7 +141,7 @@ function S:Blizzard_TradeSkillUI()
 
 			if reagentLink then
 				local icon = _G['TradeSkillReagent'..i..'IconTexture']
-				local _, _, quality = GetItemInfo(reagentLink)
+				local quality = GetItemQualityByID(reagentLink)
 				if quality and quality > 1 then
 					local name = _G['TradeSkillReagent'..i..'Name']
 					local r, g, b = GetItemQualityColor(quality)

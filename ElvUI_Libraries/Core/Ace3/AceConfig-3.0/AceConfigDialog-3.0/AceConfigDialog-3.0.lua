@@ -7,7 +7,7 @@ local LibStub = LibStub
 local gui = LibStub("AceGUI-3.0")
 local reg = LibStub("AceConfigRegistry-3.0-ElvUI")
 
-local MAJOR, MINOR = "AceConfigDialog-3.0-ElvUI", 89
+local MAJOR, MINOR = "AceConfigDialog-3.0-ElvUI", 91 -- based off 87
 local AceConfigDialog, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfigDialog then return end
@@ -577,6 +577,7 @@ local function GetFuncName(option)
 	end
 end
 do
+	local InCombatLockdown = InCombatLockdown
 	local frame = AceConfigDialog.popup
 	if not frame or oldminor < 81 then
 		frame = CreateFrame("Frame", nil, UIParent)
@@ -589,13 +590,15 @@ do
 		frame:SetFrameLevel(100) -- Lots of room to draw under it
 		frame:SetScript("OnKeyDown", function(self, key)
 			if key == "ESCAPE" then
-				self:SetPropagateKeyboardInput(false)
+				if not InCombatLockdown() then
+					self:SetPropagateKeyboardInput(false)
+				end
 				if self.cancel:IsShown() then
 					self.cancel:Click()
 				else -- Showing a validation error
 					self:Hide()
 				end
-			else
+			elseif not InCombatLockdown() then
 				self:SetPropagateKeyboardInput(true)
 			end
 		end)
@@ -1234,6 +1237,7 @@ local function FeedOptions(appName, options,container,rootframe,path,group,inlin
 						control:DisableButton(true)
 					end
 
+					control.preferSpellID = v.preferSpellID
 					control.textChanged = v.textChanged
 					control.focusSelect = v.focusSelect
 					-- End ElvUI block

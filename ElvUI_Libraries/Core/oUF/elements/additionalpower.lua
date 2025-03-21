@@ -18,7 +18,6 @@ A default texture will be applied if the widget is a StatusBar and doesn't have 
 
 ## Options
 
-.frequentUpdates - Indicates whether to use UNIT_POWER_FREQUENT instead UNIT_POWER_UPDATE to update the bar (boolean)
 .displayPairs    - Use to override display pairs. (table)
 .smoothGradient  - 9 color values to be used with the .colorSmooth option (table)
 
@@ -27,7 +26,7 @@ The following options are listed by priority. The first check that returns true 
 .colorPower  - Use `self.colors.power[token]` to color the bar based on the player's additional power type
                (boolean)
 .colorClass  - Use `self.colors.class[class]` to color the bar based on unit class. `class` is defined by the
-               second return of [UnitClass](http://wowprogramming.com/docs/api/UnitClass.html) (boolean)
+               second return of [UnitClass](https://warcraft.wiki.gg/wiki/API_UnitClass) (boolean)
 .colorSmooth - Use `self.colors.smooth` to color the bar with a smooth gradient based on the player's current
                additional power percentage (boolean)
 
@@ -69,7 +68,7 @@ local UnitHasVehicleUI = UnitHasVehicleUI
 local UnitPowerType = UnitPowerType
 -- end block
 
--- sourced from FrameXML/AlternatePowerBar.lua
+-- sourced from Blizzard_UnitFrame/AlternatePowerBar.lua
 local POWER_NAME = _G.ADDITIONAL_POWER_BAR_NAME or 'MANA'
 local POWER_INDEX = _G.ADDITIONAL_POWER_BAR_INDEX or 0
 local ALT_POWER_INFO = _G.ALT_POWER_BAR_PAIR_DISPLAY_INFO or _G.ALT_MANA_BAR_PAIR_DISPLAY_INFO or {DRUID={[8]=true}, SHAMAN={[11]=true}, PRIEST={[13]=true}}
@@ -174,16 +173,10 @@ end
 local function ElementEnable(self)
 	local element = self.AdditionalPower
 
-	if(element.frequentUpdates) then
-		self:RegisterEvent('UNIT_POWER_FREQUENT', Path)
-	else
-		self:RegisterEvent('UNIT_POWER_UPDATE', Path)
-	end
-
+	self:RegisterEvent('UNIT_POWER_FREQUENT', Path)
 	self:RegisterEvent('UNIT_MAXPOWER', Path)
 
 	element:Show()
-
 	element.__isEnabled = true
 
 	Path(self, 'ElementEnable', 'player', POWER_NAME)
@@ -192,13 +185,12 @@ end
 local function ElementDisable(self)
 	local element = self.AdditionalPower
 
-	self:UnregisterEvent('UNIT_MAXPOWER', Path)
 	self:UnregisterEvent('UNIT_POWER_FREQUENT', Path)
-	self:UnregisterEvent('UNIT_POWER_UPDATE', Path)
+	self:UnregisterEvent('UNIT_MAXPOWER', Path)
 
 	element:Hide()
-
 	element.__isEnabled = false
+
 	Path(self, 'ElementDisable', 'player', POWER_NAME)
 end
 
@@ -214,7 +206,6 @@ local function Visibility(self, event, unit)
 	end
 
 	local isEnabled = element.__isEnabled
-
 	if(shouldEnable and not isEnabled) then
 		ElementEnable(self)
 
@@ -250,27 +241,7 @@ local function VisibilityPath(self, ...)
 end
 
 local function ForceUpdate(element)
-	VisibilityPath(element.__owner, 'ForceUpdate', element.__owner.unit)
-end
-
---[[ Power:SetFrequentUpdates(state, isForced)
-Used to toggle frequent updates.
-
-* self  - the Power element
-* state - the desired state (boolean)
-* isForced - forces the event update even if the state wasn't changed (boolean)
---]]
-local function SetFrequentUpdates(element, state, isForced)
-	if(element.frequentUpdates ~= state or isForced) then
-		element.frequentUpdates = state
-		if(state) then
-			element.__owner:UnregisterEvent('UNIT_POWER_UPDATE', Path)
-			element.__owner:RegisterEvent('UNIT_POWER_FREQUENT', Path)
-		else
-			element.__owner:UnregisterEvent('UNIT_POWER_FREQUENT', Path)
-			element.__owner:RegisterEvent('UNIT_POWER_UPDATE', Path)
-		end
-	end
+	return VisibilityPath(element.__owner, 'ForceUpdate', element.__owner.unit)
 end
 
 local function Enable(self, unit)
@@ -278,7 +249,6 @@ local function Enable(self, unit)
 	if(element and UnitIsUnit(unit, 'player')) then
 		element.__owner = self
 		element.ForceUpdate = ForceUpdate
-		element.SetFrequentUpdates = SetFrequentUpdates
 
 		self:RegisterEvent('UNIT_DISPLAYPOWER', VisibilityPath)
 

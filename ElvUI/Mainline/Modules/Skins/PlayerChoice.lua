@@ -7,10 +7,12 @@ local pairs = pairs
 local hooksecurefunc = hooksecurefunc
 
 function S:PlayerChoice_SetupButtons(buttons)
-	if buttons and buttons.buttonPool then
-		for button in buttons.buttonPool:EnumerateActive() do
-			if not button.isSkinned then
-				S:HandleButton(button)
+	if buttons and buttons.buttonFramePool then
+		for buttonFrame in buttons.buttonFramePool:EnumerateActive() do
+			if not buttonFrame.IsSkinned then
+				S:HandleButton(buttonFrame.Button, true)
+
+				buttonFrame.IsSkinned = true
 			end
 		end
 	end
@@ -25,7 +27,7 @@ function S:PlayerChoice_SetupRewards(rewards)
 			end
 
 			local item = reward.itemButton
-			if item and not item.isSkinned then
+			if item and not item.IsSkinned then
 				S:HandleItemButton(item)
 				S:HandleIconBorder(item.IconBorder)
 			end
@@ -62,6 +64,7 @@ function S:PlayerChoice_SetupOptions()
 		self.BlackBackground:SetAlpha(0)
 		self.Background:SetAlpha(0)
 		self.NineSlice:SetAlpha(0)
+		self.BorderOverlay:SetAlpha(0)
 
 		self.Title:DisableDrawLayer('BACKGROUND')
 		self.Title.Text:SetTextColor(1, 0.8, 0)

@@ -204,6 +204,23 @@ function RSGeneralDB.GetBestMapForUnit(entityID, atlasName)
 end
 
 ---============================================================================
+-- Entities with pre-events
+----- Obtains the latest entityID in a chain of pre-events
+---============================================================================
+
+function RSGeneralDB.GetFinalEntityID(entityPreEventID)
+	local entityID = tonumber(entityPreEventID)
+	
+	-- NPC with pre-event
+	entityID = RSNpcDB.GetFinalNpcID(entityID)
+	
+	-- Container with pre-event
+	entityID = RSContainerDB.GetFinalContainerID(entityID)
+	
+	return entityID
+end
+
+---============================================================================
 -- Loot info cache database
 ----- Stores information of items to avoid requesting the server too often
 ---============================================================================
@@ -220,7 +237,7 @@ function RSGeneralDB.GetItemName(itemID)
 	end
 
 	-- The first time request the server for the information
-	local retOk, itemName, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = pcall(GetItemInfo, itemID)
+	local retOk, itemName, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ = pcall(C_Item.GetItemInfo, itemID)
 	return itemName
 end
 
@@ -231,7 +248,7 @@ function RSGeneralDB.GetItemInfo(itemID)
 
 	-- The first time request the server for the information
 	if (not private.dbglobal.loot_info[itemID]) then
-		local retOk, _, itemLink, itemRarity, _, _, _, _, _, itemEquipLoc, iconFileDataID, _, itemClassID, itemSubClassID, _, _, _, _ = pcall(GetItemInfo, itemID)
+		local retOk, _, itemLink, itemRarity, _, _, _, _, _, itemEquipLoc, iconFileDataID, _, itemClassID, itemSubClassID, _, _, _, _ = pcall(C_Item.GetItemInfo, itemID)
 		if (itemLink and itemRarity and itemEquipLoc and iconFileDataID and itemClassID and itemSubClassID) then
 			RSGeneralDB.SetItemInfo(itemID, itemLink, itemRarity, itemEquipLoc, iconFileDataID, itemClassID, itemSubClassID)
 		end
@@ -245,6 +262,41 @@ end
 function RSGeneralDB.SetItemInfo(itemID, itemLink, itemRarity, itemEquipLoc, iconFileDataID, itemClassID, itemSubClassID)
 	if (itemID) then
 		private.dbglobal.loot_info[itemID] = { itemLink, itemRarity, itemEquipLoc, iconFileDataID, itemClassID, itemSubClassID }
+	end
+end
+
+---============================================================================
+-- Completed quests cache database
+----- Stores information of completed quests
+---============================================================================
+
+function RSGeneralDB.InitCompletedQuestDB()
+	if (RSConstants.DEBUG_MODE and not private.dbchar.quests_completed) then
+		private.dbchar.quests_completed = {}
+	end
+end
+
+function RSGeneralDB.IsCompletedQuestInCache(questID)
+	if (questID and private.dbchar.quests_completed) then
+		return private.dbchar.quests_completed[questID]
+	end
+	
+	return false
+end
+
+function RSGeneralDB.SetCompletedQuest(questID)
+	if (questID and private.dbchar.quests_completed) then
+		private.dbchar.quests_completed[questID] = true
+	end
+end
+
+function RSGeneralDB.ResetCompletedQuestDB()
+	if (private.dbchar.quests_completed) then
+		if (RSConstants.DEBUG_MODE) then
+			private.dbchar.quests_completed = {}
+		else
+			private.dbchar.quests_completed = nil
+		end
 	end
 end
 
@@ -486,4 +538,24 @@ end
 
 function RSGeneralDB.SetLastCleanDb()
 	private.dbchar.lastClean = time()
+end
+
+---============================================================================
+-- Search plugin integration
+---============================================================================
+
+function RSGeneralDB.ClearWorldMapTextFilter()
+	private.dbchar.worldMapTextFilter = nil
+end
+
+function RSGeneralDB.GetWorldMapTextFilter()
+	return private.dbchar.worldMapTextFilter
+end
+
+function RSGeneralDB.SetWorldMapTextFilter(text)
+	if (text == '') then
+		RSGeneralDB.ClearWorldMapTextFilter()
+	else
+		private.dbchar.worldMapTextFilter = text
+	end
 end

@@ -30,7 +30,7 @@ ANIMATIONS_TYPE[RSConstants.MAP_ANIMATIONS_ON_CLICK] = AL["MAP_ANIMATIONS_ON_CLI
 ANIMATIONS_TYPE[RSConstants.MAP_ANIMATIONS_ON_BOTH] = AL["MAP_ANIMATIONS_ON_BOTH"];
 
 -----------------------------------------------------------------------
--- Options tab: Display
+-- Options tab: Map options
 -----------------------------------------------------------------------
 
 function RSMapOptions.GetMapOptions()	
@@ -136,13 +136,40 @@ function RSMapOptions.GetMapOptions()
 							width = "full",
 							disabled = function() return not RSConfigDB.IsShowingNpcs() end,
 						},
-						separatorContainers = {
+						displayAlreadyKilledNpcIcons = {
 							order = 4,
+							type = "toggle",
+							name = AL["MAP_SHOW_ICON_ALREADY_KILLED"],
+							desc = AL["MAP_SHOW_ICON_ALREADY_KILLED_DESC"],
+							get = function() return RSConfigDB.IsShowingAlreadyKilledNpcs() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingAlreadyKilledNpcs(value)
+								RSConfigDB.SetShowingAlreadyKilledNpcsInReseteableZones(false)
+								RSMinimap.RefreshAllData(true)
+							end,
+							width = "full",
+							disabled = function() return not RSConfigDB.IsShowingNpcs() end,
+						},
+						displayAlreadyKilledReseteable = {
+							order = 5,
+							type = "toggle",
+							name = AL["MAP_SHOW_ICON_ALREADY_KILLED_RESETEABLE"],
+							desc = AL["MAP_SHOW_ICON_ALREADY_KILLED_RESETEABLE_DESC"],
+							get = function() return RSConfigDB.IsShowingAlreadyKilledNpcsInReseteableZones() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingAlreadyKilledNpcsInReseteableZones(value)
+								RSMinimap.RefreshAllData(true)
+							end,
+							width = "full",
+							disabled = function() return not RSConfigDB.IsShowingNpcs() or not RSConfigDB.IsShowingAlreadyKilledNpcs() end,
+						},
+						separatorContainers = {
+							order = 6,
 							type = "header",
 							name = AL["MAP_CONTAINERS_ICONS"],
 						},
 						displayContainerIcons = {
-							order = 5,
+							order = 7,
 							type = "toggle",
 							name = AL["DISPLAY_CONTAINER_ICONS"],
 							desc = AL["DISPLAY_CONTAINER_ICONS_DESC"],
@@ -154,7 +181,7 @@ function RSMapOptions.GetMapOptions()
 							width = "full",
 						},
 						displayNotDiscoveredContainerIcons = {
-							order = 6,
+							order = 8,
 							type = "toggle",
 							name = AL["MAP_SHOW_ICON_NOT_DISCOVERED_CONTAINER"],
 							desc = AL["MAP_SHOW_ICON_NOT_DISCOVERED_CONTAINER_DESC"],
@@ -166,13 +193,86 @@ function RSMapOptions.GetMapOptions()
 							width = "full",
 							disabled = function() return not RSConfigDB.IsShowingContainers() end,
 						},
+						displayAlreadyOpenedContainersIcons = {
+							order = 9,
+							type = "toggle",
+							name = AL["MAP_SHOW_ICON_ALREADY_OPENED"],
+							desc = AL["MAP_SHOW_ICON_ALREADY_OPENED_DESC"],
+							get = function() return RSConfigDB.IsShowingAlreadyOpenedContainers() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingAlreadyOpenedContainers(value)
+								RSMinimap.RefreshAllData(true)
+							end,
+							width = "full",
+							disabled = function() return not RSConfigDB.IsShowingContainers() end,
+						},
+						separatorEvents = {
+							order = 10,
+							type = "header",
+							name = AL["MAP_EVENTS_ICONS"],
+						},
+						displayEventIcons = {
+							order = 11,
+							type = "toggle",
+							name = AL["DISPLAY_EVENT_ICONS"],
+							desc = AL["DISPLAY_EVENT_ICONS_DESC"],
+							get = function() return RSConfigDB.IsShowingEvents() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingEvents(value)
+								RSMinimap.RefreshAllData(true)
+							end,
+							width = "full",
+						},
+						displayNotDiscoveredEventIcons = {
+							order = 12,
+							type = "toggle",
+							name = AL["MAP_SHOW_ICON_NOT_DISCOVERED_EVENT"],
+							desc = AL["MAP_SHOW_ICON_NOT_DISCOVERED_EVENT_DESC"],
+							get = function() return RSConfigDB.IsShowingNotDiscoveredEvents() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingNotDiscoveredEvents(value)
+								RSMinimap.RefreshAllData(true)
+							end,
+							width = "full",
+							disabled = function() return not RSConfigDB.IsShowingEvents() end,
+						},
+						displayAlreadyCompletedEventIcons = {
+							order = 13,
+							type = "toggle",
+							name = AL["MAP_SHOW_ICON_ALREADY_COMPLETED"],
+							desc = AL["MAP_SHOW_ICON_ALREADY_COMPLETED_DESC"],
+							get = function() return RSConfigDB.IsShowingCompletedEvents() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingCompletedEvents(value)
+								RSMinimap.RefreshAllData(true)
+							end,
+							width = "full",
+							disabled = function() return not RSConfigDB.IsShowingEvents() end,
+						},
+						separatorOthers = {
+							order = 14,
+							type = "header",
+							name = AL["MAP_OTHER_ICONS"],
+						},
+						displayDragonGlyphsIcons = {
+							order = 15,
+							type = "toggle",
+							name = AL["DISPLAY_MAP_DRAGON_GLYPHS_ICONS"],
+							desc = AL["DISPLAY_MAP_DRAGON_GLYPHS_ICONS_DESC"],
+							get = function() return RSConfigDB.IsShowingDragonGlyphs() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingDragonGlyphs(value)
+								RSMinimap.RefreshAllData(true)
+							end,
+							width = "full",
+						},
 						separatorNotDiscovered = {
-							order = 7,
+							order = 16,
 							type = "header",
 							name = AL["MAP_NOT_DISCOVERED_ICONS"],
 						},
 						displayOldNotDiscoveredMapIcons = {
-							order = 8,
+							order = 17,
 							type = "toggle",
 							name = AL["DISPLAY_MAP_OLD_NOT_DISCOVERED_ICONS"],
 							desc = AL["DISPLAY_MAP_OLD_NOT_DISCOVERED_ICONS_DESC"],
@@ -227,11 +327,59 @@ function RSMapOptions.GetMapOptions()
 							width = "full",
 							disabled = function() return (not RSConfigDB.IsShowingContainers()) end,
 						},
+						maxSeenTimeEvent = {
+							order = 2,
+							type = "range",
+							name = AL["MAP_SHOW_ICON_EVENT_MAX_SEEN_TIME"],
+							desc = AL["MAP_SHOW_ICON_EVENT_MAX_SEEN_TIME_DESC"],
+							min	= 0,
+							max	= 15,
+							step = 1,
+							bigStep = 1,
+							get = function() return RSConfigDB.GetMaxSeenEventTimeFilter() end,
+							set = function(_, value)
+								RSConfigDB.SetMaxSeenEventTimeFilter(value, true)
+								RSMinimap.RefreshAllData(true)
+							end,
+							width = "full",
+							disabled = function() return (not RSConfigDB.IsShowingEvents()) end,
+						}
 					}
 				},
-				waypoints = {
+				searcher = {
 					type = "group",
 					order = 5,
+					name = AL["MAP_SEARCHER"],
+					handler = RareScanner,
+					desc = AL["MAP_SEARCHER_DESC"],
+					args = {
+						displaySearch = {
+							order = 0,
+							type = "toggle",
+							name = AL["MAP_SEARCHER_DISPLAY"],
+							desc = AL["MAP_SEARCHER_DISPLAY_DESC"],
+							get = function() return RSConfigDB.IsShowingWorldMapSearcher() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingWorldMapSearcher(value)
+							end,
+							width = "double",
+						},
+						clearValueOnChange = {
+							order = 1,
+							type = "toggle",
+							name = AL["MAP_SEARCHER_CLEAR"],
+							desc = AL["MAP_SEARCHER_CLEAR_DESC"],
+							get = function() return RSConfigDB.IsClearingWorldMapSearcher() end,
+							set = function(_, value)
+								RSConfigDB.SetClearingWorldMapSearcher(value)
+							end,
+							width = "double",
+						},
+					}
+				}, 
+				waypoints = {
+					type = "group",
+					order = 6,
 					name = AL["MAP_WAYPOINTS"],
 					handler = RareScanner,
 					desc = AL["MAP_WAYPOINTS_DESC"],
@@ -248,11 +396,22 @@ function RSMapOptions.GetMapOptions()
 							width = "double",
 							disabled = function() return not TomTom end,
 						},
+						ingame = {
+							order = 1,
+							type = "toggle",
+							name = AL["MAP_WAYPOINT_INGAME"],
+							desc = AL["MAP_WAYPOINT_INGAME_DESC"],
+							get = function() return RSConfigDB.IsAddingWorldMapIngameWaypoints() end,
+							set = function(_, value)
+								RSConfigDB.SetAddingWorldMapIngameWaypoints(value)
+							end,
+							width = "double",
+						},
 					}
 				},
 				tooltips = {
 					type = "group",
-					order = 6,
+					order = 7,
 					name = AL["MAP_TOOLTIPS"],
 					handler = RareScanner,
 					desc = AL["MAP_TOOLTIPS_DESC"],
@@ -271,8 +430,31 @@ function RSMapOptions.GetMapOptions()
 							end,
 							width = "full",
 						},
-						achievementsInfo = {
+						worldmapTooltips = {
 							order = 1,
+							type = "toggle",
+							name = AL["MAP_TOOLTIPS_WORLDMAP_ICONS"],
+							desc = AL["MAP_TOOLTIPS_WORLDMAP_ICONS_DESC"],
+							get = function() return RSConfigDB.IsShowingTooltipsOnIngameIcons() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingTooltipsOnIngameIcons(value)
+							end,
+							width = "full",
+						},
+						tooltipsExtraInfo = {
+							order = 2,
+							type = "toggle",
+							name = AL["MAP_TOOLTIPS_EXTRA_INFO"],
+							desc = AL["MAP_TOOLTIPS_EXTRA_INFO_DESC"],
+							get = function() return RSConfigDB.IsShowingTooltipsExtraInfo() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingTooltipsExtraInfo(value)
+							end,
+							width = "full",
+							disabled = function() return not RSConfigDB.IsShowingTooltipsOnIngameIcons() end,
+						},
+						achievementsInfo = {
+							order = 3,
 							type = "toggle",
 							name = AL["MAP_TOOLTIPS_ACHIEVEMENT"],
 							desc = AL["MAP_TOOLTIPS_ACHIEVEMENT_DESC"],
@@ -283,7 +465,7 @@ function RSMapOptions.GetMapOptions()
 							width = "full",
 						},
 						notes = {
-							order = 2,
+							order = 4,
 							type = "toggle",
 							name = AL["MAP_TOOLTIPS_NOTES"],
 							desc = AL["MAP_TOOLTIPS_NOTES_DESC"],
@@ -294,7 +476,7 @@ function RSMapOptions.GetMapOptions()
 							width = "full",
 						},
 						loot = {
-							order = 3,
+							order = 5,
 							type = "toggle",
 							name = AL["MAP_TOOLTIPS_LOOT"],
 							desc = AL["MAP_TOOLTIPS_LOOT_DESC"],
@@ -305,7 +487,7 @@ function RSMapOptions.GetMapOptions()
 							width = "full",
 						},
 						lastTimeSeen = {
-							order = 4,
+							order = 6,
 							type = "toggle",
 							name = AL["MAP_TOOLTIPS_SEEN"],
 							desc = AL["MAP_TOOLTIPS_SEEN_DESC"],
@@ -315,8 +497,19 @@ function RSMapOptions.GetMapOptions()
 							end,
 							width = "full",
 						},
+						state = {
+							order = 7,
+							type = "toggle",
+							name = AL["MAP_TOOLTIPS_STATE"],
+							desc = AL["MAP_TOOLTIPS_STATE_DESC"],
+							get = function() return RSConfigDB.IsShowingTooltipsState() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingTooltipsState(value)
+							end,
+							width = "full",
+						},
 						commands = {
-							order = 5,
+							order = 8,
 							type = "toggle",
 							name = AL["MAP_TOOLTIPS_COMMANDS"],
 							desc = AL["MAP_TOOLTIPS_COMMANDS_DESC"],
@@ -326,13 +519,24 @@ function RSMapOptions.GetMapOptions()
 							end,
 							width = "full",
 						},
+						filterState = {
+							order = 9,
+							type = "toggle",
+							name = AL["MAP_TOOLTIPS_FILTER_STATE"],
+							desc = AL["MAP_TOOLTIPS_FILTER_STATE_DESC"],
+							get = function() return RSConfigDB.IsShowingTooltipsFilterState() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingTooltipsFilterState(value)
+							end,
+							width = "full",
+						},
 						separatorLootAchievements = {
-							order = 6,
+							order = 10,
 							type = "header",
 							name = AL["MAP_TOOLTIPS_LOOT_ACHIEVEMENT"],
 						},
 						lootAchievementsScale = {
-							order = 7,
+							order = 11,
 							type = "range",
 							name = AL["MAP_TOOLTIPS_LOOT_ACHIEVEMENT_SCALE"],
 							desc = AL["MAP_TOOLTIPS_LOOT_ACHIEVEMENT_SCALE_DESC"],
@@ -346,7 +550,7 @@ function RSMapOptions.GetMapOptions()
 							width = "full"
 						},
 						lootAchievementsPosition = {
-							order = 8,
+							order = 12,
 							type = "select",
 							name = AL["MAP_TOOLTIPS_LOOT_ACHIEVEMENT_POSITION"],
 							desc = AL["MAP_TOOLTIPS_LOOT_ACHIEVEMENT_POSITION_DESC"],
@@ -361,7 +565,7 @@ function RSMapOptions.GetMapOptions()
 				},
 				spawnSpots = {
 					type = "group",
-					order = 7,
+					order = 8,
 					name = AL["MAP_SPAWN_SPOTS"],
 					handler = RareScanner,
 					desc = AL["MAP_SPAWN_SPOTS_DESC"],
@@ -370,7 +574,7 @@ function RSMapOptions.GetMapOptions()
 				},
 				animations = {
 					type = "group",
-					order = 8,
+					order = 9,
 					name = AL["MAP_ANIMATIONS"],
 					handler = RareScanner,
 					desc = AL["MAP_ANIMATIONS_DESC"],
@@ -437,8 +641,96 @@ function RSMapOptions.GetMapOptions()
 							width = "full",
 							disabled = function() return not RSConfigDB.IsShowingAnimationForContainers() end,
 						},
+						separatorEvents = {
+							order = 6,
+							type = "header",
+							name = AL["MAP_ANIMATIONS_EVENTS_SEPARATOR"],
+						},
+						events = {
+							order = 7,
+							type = "toggle",
+							name = AL["MAP_ANIMATIONS_EVENTS"],
+							desc = AL["MAP_ANIMATIONS_EVENTS_DESC"],
+							get = function() return RSConfigDB.IsShowingAnimationForEvents() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingAnimationForEvents(value)
+								if (not value and not RSConfigDB.IsShowingAnimationForNpcs() and not RSConfigDB.IsShowingAnimationForContainers()) then
+									RSConfigDB.SetShowingAnimationForVignettes(false)
+								end
+							end,
+							width = "full",
+						},
+						eventsBehaviour = {
+							order = 8,
+							type = "select",
+							name = AL["MAP_ANIMATIONS_WHEN"],
+							values = ANIMATIONS_TYPE,
+							get = function() return RSConfigDB.GetAnimationForEvents() end,
+							set = function(_, value)
+								RSConfigDB.SetAnimationForEvents(value)
+							end,
+							width = "full",
+							disabled = function() return not RSConfigDB.IsShowingAnimationForEvents() end,
+						},
+						separatorVignettes = {
+							order = 9,
+							type = "header",
+							name = AL["MAP_ANIMATIONS_VIGNETTES_SEPARATOR"],
+						},
+						vignettes = {
+							order = 10,
+							type = "toggle",
+							name = AL["MAP_ANIMATIONS_VIGNETTES"],
+							desc = AL["MAP_ANIMATIONS_VIGNETTES_DESC"],
+							get = function() return RSConfigDB.IsShowingAnimationForVignettes() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingAnimationForVignettes(value)
+							end,
+							width = "full",
+							disabled = function() return not RSConfigDB.IsShowingAnimationForNpcs() and not RSConfigDB.IsShowingAnimationForContainers() and not RSConfigDB.IsShowingAnimationForEvents() end,
+						},
 					}
 				},
+				reputation = {
+					type = "group",
+					order = 10,
+					name = AL["MAP_REPUTATION"],
+					handler = RareScanner,
+					desc = AL["MAP_REPUTATION_DESC"],
+					args = {
+						support = {
+							order = 0,
+							type = "toggle",
+							name = AL["MAP_REPUTATION_HIGHLIGHT"],
+							desc = AL["MAP_REPUTATION_HIGHLIGHT_DESC"],
+							get = function() return RSConfigDB.IsHighlightingReputation() end,
+							set = function(_, value)
+								RSConfigDB.SetHighlightingReputation(value)
+							end,
+							width = "full",
+						},
+					}
+				},
+				guidance = {
+					type = "group",
+					order = 11,
+					name = AL["MAP_GUIDE"],
+					handler = RareScanner,
+					desc = AL["MAP_GUIDE_DESC"],
+					args = {
+						support = {
+							order = 0,
+							type = "toggle",
+							name = AL["MAP_GUIDE_AUTOMATIC"],
+							desc = AL["MAP_GUIDE_AUTOMATIC_DESC"],
+							get = function() return RSConfigDB.IsShowingAutoGuidanceIcons() end,
+							set = function(_, value)
+								RSConfigDB.SetShowingAutoGuidanceIcons(value)
+							end,
+							width = "full",
+						},
+					}
+				}
 			}
 		}
 		

@@ -16,15 +16,9 @@ end
 
 --- Return the current GCD for the current character
 function GSE.GetGCD()
-    local gcdSpell
-
-    local gcd = 1.5
-    -- Classic doesnt have haste.
-    if GSE.GameMode > 3 then
-        local haste = UnitSpellHaste("player")
-        gcd = 1.5 / (1 + 0.01 * haste)
-    --gcd = math.floor(gcd - (750 * haste / 100) + 0.5) / 1000
-    end
+    local gcd
+    local haste = UnitSpellHaste("player")
+    gcd = 1.5 / (1 + 0.01 * haste)
 
     return gcd
 end
@@ -107,51 +101,35 @@ end
 
 --- Returns the current Talent Selections as a string
 function GSE.GetCurrentTalents()
-    local talents = ""
-    -- Need to change this later on to something meaningful
-    if GSE.GameMode <= 4 then
-        local Talented = Talented
-        if not GSE.isEmpty(Talented) then
-            if GSE.isEmpty(Talented.alternates) then
-                Talented:UpdatePlayerSpecs()
-            end
-            local LT = LibStub("AceLocale-3.0"):GetLocale("Talented")
-            local current_spec = Talented.alternates[GetActiveTalentGroup()]
-            talents = Talented.exporters[LT["Wowhead Talent Calculator"]](Talented, current_spec)
-        else
-            if GSE.GameMode == 1 then
-                talents = "CLASSIC"
-            elseif GSE.GameMode == 2 then
-                talents = "BC CLASSIC"
-            else --GSE.GameMode == 3 then
-                talents = "Wrath CLASSIC"
-            end
-        end
-    elseif GSE.GameMode >= 10 then
-        -- force load the addon
-        local loaded, _ = LoadAddOn("Blizzard_ClassTalentUI")
+    local talents
 
-        if not loaded then
-            talents = ""
-        else
-            local t = ClassTalentFrame.TalentsTab
-            if t.isAnythingPending ~= nil then
-                t:UpdateTreeInfo()
-                talents = t:GetLoadoutExportString()
+    -- force load the addon
+    local addonName = "Blizzard_PlayerSpells"
+
+    xpcall(
+        function()
+            local loaded, reason = C_AddOns.LoadAddOn(addonName)
+
+            if not loaded then
+                talents = ""
+                GSE.PrintDebugMessage(reason, "TALENTS")
+            else
+                if PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame then
+                    PlayerSpellsFrame.TalentsFrame:UpdateTreeInfo()
+                    talents = PlayerSpellsFrame.TalentsFrame:GetLoadoutExportString()
+                end
             end
+            return talents
+        end,
+        function()
+            return talents
         end
-    else
-        for talentTier = 1, MAX_TALENT_TIERS do
-            local available, selected = GetTalentTierInfo(talentTier, 1)
-            talents = talents .. (available and selected or "?" .. ",")
-        end
-    end
-    return talents
+    )
 end
 
 --- Experimental attempt to load a WeakAuras string.
 function GSE.LoadWeakAura(str)
-    if IsAddOnLoaded("WeakAuras") then
+    if C_AddOns.IsAddOnLoaded("WeakAuras") then
         WeakAuras.OpenOptions()
         WeakAuras.OpenOptions()
         WeakAuras.Import(str)
@@ -168,14 +146,21 @@ end
 
 --- This function clears the Shift+n and CTRL+x keybindings.
 function GSE.ClearCommonKeyBinds()
-    local combinators = {"SHIFT-", "CTRL-", "ALT-"}
+    local combinators = {"SHIFT", "CTRL", "ALT"}
     local defaultbuttons = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "="}
     for _, p in ipairs(combinators) do
         for _, v in ipairs(defaultbuttons) do
-            SetBinding(p .. v)
+            SetBinding(p .. "-" .. v)
             GSE.PrintDebugMessage("Cleared KeyCombination " .. p .. v)
         end
+        SetBinding(p)
     end
+    local char = UnitFullName("player")
+    local realm = GetRealmName()
+    GSE_C = {}
+    GSE_C["KeyBindings"] = {}
+    GSE_C["KeyBindings"][char .. "-" .. realm] = {}
+    GSE_C["KeyBindings"][char .. "-" .. realm][tostring(GetSpecialization())] = {}
     -- Save for this character
     SaveBindings(2)
     GSE.Print("Common Keybinding combinations cleared for this character.")
@@ -200,81 +185,14 @@ function GSE.GetResetOOC()
     return GSE_C.resetOOC and GSE_C.resetOOC or GSEOptions.resetOOC
 end
 
-function GSE.GetRequireTarget()
-    if GSE.isEmpty(GSE_C) then
-        GSE_C = {}
-    end
-    return GSE_C.requireTarget and GSE_C.requireTarget or GSEOptions.requireTarget
-end
-
-function GSE.SetRequireTarget(value)
-    if GSE.isEmpty(GSE_C) then
-        GSE_C = {}
-    end
-    if GSE_C.requireTarget then
-        GSE_C.requireTarget = value
-    else
-        GSEOptions.requireTarget = value
-    end
-end
-
-function GSE.GetUse11()
-    if GSE.isEmpty(GSE_C) then
-        GSE_C = {}
-    end
-    return GSE_C.use11 and GSE_C.use11 or GSEOptions.use11
-end
-
-function GSE.GetUse12()
-    if GSE.isEmpty(GSE_C) then
-        GSE_C = {}
-    end
-    return GSE_C.use12 and GSE_C.use12 or GSEOptions.use12
-end
-
-function GSE.GetUse13()
-    if GSE.isEmpty(GSE_C) then
-        GSE_C = {}
-    end
-    return GSE_C.use13 and GSE_C.use13 or GSEOptions.use13
-end
-
-function GSE.GetUse14()
-    if GSE.isEmpty(GSE_C) then
-        GSE_C = {}
-    end
-    return GSE_C.use14 and GSE_C.use14 or GSEOptions.use14
-end
-
-function GSE.GetUse2()
-    if GSE.isEmpty(GSE_C) then
-        GSE_C = {}
-    end
-    return GSE_C.use2 and GSE_C.use2 or GSEOptions.use2
-end
-
-function GSE.GetUse6()
-    if GSE.isEmpty(GSE_C) then
-        GSE_C = {}
-    end
-    return GSE_C.use6 and GSE_C.use6 or GSEOptions.use6
-end
-
-function GSE.GetUse1()
-    if GSE.isEmpty(GSE_C) then
-        GSE_C = {}
-    end
-    return GSE_C.use1 and GSE_C.use11 or GSEOptions.use1
-end
-
 function GSE.setActionButtonUseKeyDown()
     local state = GSEOptions.CvarActionButtonState and GSEOptions.CvarActionButtonState or "DONTFORCE"
-    GSE.UpdateMacroString()
+
     if state == "UP" then
         C_CVar.SetCVar("ActionButtonUseKeyDown", 0)
         GSE.Print(
             L[
-                "GSE Macro Stubs have been reset to KeyUp configuration.  The /click command needs to be `/click TEMPLATENAME`"
+                "The UI has been set to KeyUp configuration.  The /click command needs to be `/click TEMPLATENAME` You will need to check your macros and adjust your click commands."
             ],
             L["GSE"] .. " " .. L["Troubleshooting"]
         )
@@ -282,12 +200,25 @@ function GSE.setActionButtonUseKeyDown()
         C_CVar.SetCVar("ActionButtonUseKeyDown", 1)
         GSE.Print(
             L[
-                "GSE Macro Stubs have been reset to KeyDown configuration.  The /click command needs to be `/click TEMPLATENAME LeftButton t` (Note the 't' here is required along with the LeftButton.)"
+                "The UI has been set to KeyDown configuration.  The /click command needs to be `/click TEMPLATENAME LeftButton t` (Note the 't' here is required along with the LeftButton.)  You will need to check your macros and adjust your click commands."
             ],
             L["GSE"] .. " " .. L["Troubleshooting"]
         )
     end
     GSE.ReloadSequences()
+end
+
+function GSE.GetSelectedLoadoutConfigID()
+    GSE.GetCurrentTalents()
+    local lastSelected =
+        PlayerUtil.GetCurrentSpecID() and C_ClassTalents.GetLastSelectedSavedConfigID(PlayerUtil.GetCurrentSpecID())
+    local selectionID =
+        PlayerSpellsFrame and PlayerSpellsFrame.TalentsFrame and PlayerSpellsFrame.TalentsFrame.LoadoutDropDown and
+        PlayerSpellsFrame.TalentsFrame.LoadoutDropDown.GetSelectionID and
+        PlayerSpellsFrame.TalentsFrame.LoadoutDropDown:GetSelectionID()
+
+    -- the priority in authoritativeness is [default UI's dropdown] > [API] > ['ActiveConfigID'] > nil
+    return selectionID or lastSelected or C_ClassTalents.GetActiveConfigID() or nil -- nil happens when you don't have any spec selected, e.g. on a freshly created character
 end
 
 GSE.DebugProfile("CharacterFuntions")

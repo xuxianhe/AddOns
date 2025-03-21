@@ -15,7 +15,7 @@ local FrameHide = ns.FrameHide
 
 local pt = print
 
-BG.zaxiang = {} -- 杂项如果太多，则需要换行
+BG.zaxiang = {} -- 杂项如果太多，则需要换列
 
 local buttonCount = {}
 if BG.IsVanilla_Sod then
@@ -44,6 +44,10 @@ elseif BG.IsWLK then
     buttonCount.TOC = { 5, 5, 5, 5, 5, 3, 8, 22, 5, }
     BG.zaxiang.TOC = { i = 16 }
     buttonCount.ICC = { 3, 3, 3, 5, 3, 3, 5, 3, 5, 3, 5, 8, 3, 8, 7, }
+    -- TBC
+    buttonCount.SW = { 5, 5, 5, 6, 5, 6, 10, 11, }
+    buttonCount.BT = { 5, 5, 5, 5, 5, 5, 5, 6, 8, 8, 5, }
+    buttonCount.BWL = { 5, 5, 5, 5, 5, 5, 5, 6, 9, 12, }
 elseif BG.IsCTM then
     buttonCount.BOT = { 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 8, 24, 5, }
     BG.zaxiang.BOT = { i = 12 }
@@ -194,13 +198,13 @@ function BG.CreateFBUI(FB)
 
     if not buttonCount[FB] then return end
     if FB == "ULD" then
-        tinsert(buttonCount[FB], 5)     -- 设置支出格子为x个
+        tinsert(buttonCount[FB], 5) -- 设置支出格子为x个
     elseif FB == "MC" then
-        tinsert(buttonCount[FB], 6)     -- 设置支出格子为x个
+        tinsert(buttonCount[FB], 6) -- 设置支出格子为x个
     else
-        tinsert(buttonCount[FB], 8)     -- 设置支出格子为x个
+        tinsert(buttonCount[FB], 8) -- 设置支出格子为x个
     end
-    tinsert(buttonCount[FB], 5)         -- 设置总览工资格子为x个
+    tinsert(buttonCount[FB], 5)     -- 设置总览工资格子为x个
 
 
     -- 正常格子

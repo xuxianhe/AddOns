@@ -39,7 +39,9 @@ local function Update(self, event)
 	end
 
 	local isAssistant = UnitInRaid(unit) and UnitIsGroupAssistant(unit) and not UnitIsGroupLeader(unit)
-	if(isAssistant) then
+	if element.combatHide and UnitAffectingCombat(unit) then
+		element:Hide()
+	elseif(isAssistant) then
 		element:Show()
 	else
 		element:Hide()
@@ -77,7 +79,10 @@ local function Enable(self)
 		element.__owner = self
 		element.ForceUpdate = ForceUpdate
 
-		self:RegisterEvent('GROUP_ROSTER_UPDATE', Path, true)
+		oUF:RegisterEvent(self, 'UNIT_FLAGS', Path)
+		oUF:RegisterEvent(self, 'GROUP_ROSTER_UPDATE', Path, true)
+		oUF:RegisterEvent(self, 'PLAYER_REGEN_DISABLED', Path, true)
+		oUF:RegisterEvent(self, 'PLAYER_REGEN_ENABLED', Path, true)
 
 		if(element:IsObjectType('Texture') and not element:GetTexture()) then
 			element:SetTexture([[Interface\GroupFrame\UI-Group-AssistantIcon]])
@@ -92,7 +97,10 @@ local function Disable(self)
 	if(element) then
 		element:Hide()
 
-		self:UnregisterEvent('GROUP_ROSTER_UPDATE', Path)
+		oUF:UnregisterEvent(self, 'UNIT_FLAGS', Path)
+		oUF:UnregisterEvent(self, 'GROUP_ROSTER_UPDATE', Path)
+		oUF:UnregisterEvent(self, 'PLAYER_REGEN_DISABLED', Path)
+		oUF:UnregisterEvent(self, 'PLAYER_REGEN_ENABLED', Path)
 	end
 end
 

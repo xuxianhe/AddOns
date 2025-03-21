@@ -5,13 +5,13 @@ local ADDON_NAME, private = ...
 
 local LibStub = _G.LibStub
 local AL = LibStub("AceLocale-3.0"):GetLocale("RareScanner", false)
-local LB = LibStub("LibBabble-Zone-3.0"):GetUnstrictLookupTable()
 
 local RSMap = private.NewLib("RareScannerMap")
 
 -- RareScanner database libraries
 local RSNpcDB = private.ImportLib("RareScannerNpcDB")
 local RSContainerDB = private.ImportLib("RareScannerContainerDB")
+local RSEventDB = private.ImportLib("RareScannerEventDB")
 local RSGeneralDB = private.ImportLib("RareScannerGeneralDB")
 local RSMapDB = private.ImportLib("RareScannerMapDB")
 local RSConfigDB = private.ImportLib("RareScannerConfigDB")
@@ -25,7 +25,9 @@ local RSUtils = private.ImportLib("RareScannerUtils")
 -- RareScanner services
 local RSNpcPOI = private.ImportLib("RareScannerNpcPOI")
 local RSContainerPOI = private.ImportLib("RareScannerContainerPOI")
+local RSEventPOI = private.ImportLib("RareScannerEventPOI")
 local RSGroupPOI = private.ImportLib("RareScannerGroupPOI")
+local RSDragonGlyphPOI = private.ImportLib("RareScannerDragonGlyphPOI")
 local RSRecentlySeenTracker = private.ImportLib("RareScannerRecentlySeenTracker")
 
 
@@ -35,6 +37,7 @@ local RSRecentlySeenTracker = private.ImportLib("RareScannerRecentlySeenTracker"
 ---============================================================================
 
 function RSMap.InitializeNotDiscoveredLists()
+	RSEventPOI.InitializeNotDiscoveredEvents()
 	RSNpcPOI.InitializeNotDiscoveredNpcs()
 	RSContainerPOI.InitializeNotDiscoveredContainers()
 end
@@ -100,22 +103,43 @@ end
 
 local MapPOIs = {}
 
-local function GetMapNotDiscoveredPOIs(mapID, onWorldMap, onMiniMap)
+local function GetMapDragonGlyphsPOIs(mapID)
+	-- Skip if not showing dragon glyphs
+	if (not RSConfigDB.IsShowingDragonGlyphs()) then
+		return
+	end
+
+	-- Add icons
+	local dragonGlyphsPOIs = RSDragonGlyphPOI.GetDragonGlyphPOIs(mapID)
+	if (RSUtils.GetTableLength(dragonGlyphsPOIs) > 0) then
+		for _, POI in ipairs (dragonGlyphsPOIs) do
+			tinsert(MapPOIs,POI)
+		end
+	end
+end
+
+local function GetMapNotDiscoveredPOIs(mapID, questTitles, vignetteGUIDs, onWorldMap, onMiniMap)
 	-- Skip if not showing 'not discovered' icons in old expansions
 	if (not RSConfigDB.IsShowingOldNotDiscoveredMapIcons() and not RSMapDB.IsMapInCurrentExpansion(mapID)) then
 		return
 	end
 
 	-- Add icons
-	local notDiscoveredNpcPOIs = RSNpcPOI.GetMapNotDiscoveredNpcPOIs(mapID, onWorldMap, onMiniMap)
+	local notDiscoveredNpcPOIs = RSNpcPOI.GetMapNotDiscoveredNpcPOIs(mapID, questTitles, vignetteGUIDs, onWorldMap, onMiniMap)
 	if (RSUtils.GetTableLength(notDiscoveredNpcPOIs) > 0) then
 		for _, POI in ipairs (notDiscoveredNpcPOIs) do
 			tinsert(MapPOIs,POI)
 		end
 	end
-	local notDiscoveredContainerPOIs = RSContainerPOI.GetMapNotDiscoveredContainerPOIs(mapID, onWorldMap, onMiniMap)
+	local notDiscoveredContainerPOIs = RSContainerPOI.GetMapNotDiscoveredContainerPOIs(mapID, vignetteGUIDs, onWorldMap, onMiniMap)
 	if (RSUtils.GetTableLength(notDiscoveredContainerPOIs) > 0) then
 		for _, POI in ipairs (notDiscoveredContainerPOIs) do
+			tinsert(MapPOIs,POI)
+		end
+	end
+	local notDiscoveredEventPOIs = RSEventPOI.GetMapNotDiscoveredEventPOIs(mapID, vignetteGUIDs, onWorldMap, onMiniMap)
+	if (RSUtils.GetTableLength(notDiscoveredEventPOIs) > 0) then
+		for _, POI in ipairs (notDiscoveredEventPOIs) do
 			tinsert(MapPOIs,POI)
 		end
 	end
@@ -131,25 +155,30 @@ function RSMap.GetMapPOIs(mapID, onWorldMap, onMiniMap)
 	end
 
 	-- Extract world quests in the area.
-	local quests = C_TaskQuest.GetQuestsForPlayerByMapID(mapID)
+	local questsOnMap = C_TaskQuest.GetQuestsOnMap(mapID)
 	local questTitles = {}
-	if (quests) then
-		for _, quest in ipairs (quests) do
-			if (HaveQuestData(quest.questId)) then
-				local title, _, _ = C_TaskQuest.GetQuestInfoByQuestID(quest.questId)
+	if (questsOnMap) then
+		for _, info in ipairs (questsOnMap) do
+			if (info.questID and HaveQuestData(info.questID)) then
+				local title, _, _ = C_TaskQuest.GetQuestInfoByQuestID(info.questID)
 				table.insert(questTitles, title)
 			end
 		end
 	end
+
+	-- Extract ingame vignettes
+	local vignetteGUIDs = C_VignetteInfo.GetVignettes();
 
 	-- Extract POIs from already found entities
 	for entityID, entityInfo in pairs (RSGeneralDB.GetAlreadyFoundEntities()) do
 		-- Extract POI from already found NPC
 		local POI = nil
 		if (RSConstants.IsNpcAtlas(entityInfo.atlasName)) then
-			POI = RSNpcPOI.GetMapAlreadyFoundNpcPOI(entityID, entityInfo, mapID, onWorldMap, onMiniMap)
+			POI = RSNpcPOI.GetMapAlreadyFoundNpcPOI(entityID, entityInfo, mapID, questTitles, vignetteGUIDs, onWorldMap, onMiniMap)
 		elseif (RSConstants.IsContainerAtlas(entityInfo.atlasName)) then
-			POI = RSContainerPOI.GetMapAlreadyFoundContainerPOI(entityID, entityInfo, mapID, onWorldMap, onMiniMap)
+			POI = RSContainerPOI.GetMapAlreadyFoundContainerPOI(entityID, entityInfo, mapID, vignetteGUIDs, onWorldMap, onMiniMap)
+		elseif (RSConstants.IsEventAtlas(entityInfo.atlasName)) then
+			POI = RSEventPOI.GetMapAlreadyFoundEventPOI(entityID, entityInfo, mapID, vignetteGUIDs, onWorldMap, onMiniMap)
 		end
 
 		if (POI) then
@@ -172,9 +201,14 @@ function RSMap.GetMapPOIs(mapID, onWorldMap, onMiniMap)
 					
 						local POI = nil
 						if (RSConstants.IsNpcAtlas(info.atlasName)) then
-							POI = RSNpcPOI.GetMapAlreadyFoundNpcPOI(entityID, entityInfo, mapID, onWorldMap, onMiniMap)
+							RSNpcDB.DeleteNpcKilled(entityID)
+							POI = RSNpcPOI.GetMapAlreadyFoundNpcPOI(entityID, entityInfo, mapID, questTitles, vignetteGUIDs, onWorldMap, onMiniMap)
 						elseif (RSConstants.IsContainerAtlas(info.atlasName)) then
-							POI = RSContainerPOI.GetMapAlreadyFoundContainerPOI(entityID, entityInfo, mapID, onWorldMap, onMiniMap)
+							RSContainerDB.DeleteContainerOpened(entityID)
+							POI = RSContainerPOI.GetMapAlreadyFoundContainerPOI(entityID, entityInfo, mapID, vignetteGUIDs, onWorldMap, onMiniMap)
+						elseif (RSConstants.IsEventAtlas(info.atlasName)) then
+							RSEventDB.DeleteEventCompleted(entityID)
+							POI = RSEventPOI.GetMapAlreadyFoundEventPOI(entityID, entityInfo, mapID, vignetteGUIDs, onWorldMap, onMiniMap)
 						end
 		
 						if (POI) then						
@@ -198,7 +232,10 @@ function RSMap.GetMapPOIs(mapID, onWorldMap, onMiniMap)
 	end
 
 	-- Extract POIs not discovered
-	GetMapNotDiscoveredPOIs(mapID, onWorldMap, onMiniMap)
+	GetMapNotDiscoveredPOIs(mapID, questTitles, vignetteGUIDs, onWorldMap, onMiniMap)
+	
+	-- Extract POIs dragon glyphs
+	GetMapDragonGlyphsPOIs(mapID)
 
 	-- Create groups if the pins go in the worldmap
 	if (onWorldMap) then
@@ -213,47 +250,54 @@ function RSMap.GetWorldMapPOI(objectGUID, vignetteInfo, mapID)
 		return nil
 	end
 	
-	if (RSConstants.IsContainerAtlas(vignetteInfo.atlasName)) then
-		local _, _, _, _, _, vignetteObjectID = strsplit("-", objectGUID)
+	local _, _, _, _, _, vignetteObjectID = strsplit("-", objectGUID)
+		
+	if (vignetteInfo.type == Enum.VignetteType.Treasure or RSConstants.IsContainerAtlas(vignetteInfo.atlasName)) then
 		local containerID = tonumber(vignetteObjectID)
+		
+		-- If pre-event, sets the container ID
+		if (RSConstants.CONTAINERS_WITH_PRE_EVENT[containerID]) then
+			containerID = RSContainerDB.GetFinalContainerID(containerID)
+		end
+		
 		local containerInfo = RSContainerDB.GetInternalContainerInfo(containerID)
 		local alreadyFoundInfo = RSGeneralDB.GetAlreadyFoundEntity(containerID)
 		
 		if (containerInfo or alreadyFoundInfo) then
 			return RSContainerPOI.GetContainerPOI(containerID, mapID, containerInfo, alreadyFoundInfo)
 		end
-	elseif (RSConstants.IsNpcAtlas(vignetteInfo.atlasName)) then
-		local _, _, _, _, _, vignetteObjectID = strsplit("-", objectGUID)
+	elseif (vignetteInfo.type == Enum.VignetteType.Torghast 
+		or RSConstants.IsNpcAtlas(vignetteInfo.atlasName) 
+		or (vignetteInfo.atlasName == RSConstants.NPC_VIGNETTE_BOSS and RSUtils.Contains(RSConstants.WORLDBOSSES, tonumber(vignetteObjectID))) 
+		or (RSConstants.IsEventAtlas(vignetteInfo.atlasName) and RSConstants.NPCS_WITH_PRE_EVENT[tonumber(vignetteObjectID)])) then
 		local npcID = tonumber(vignetteObjectID)
+
+		-- If Ancestral Spirit in Forbidden Reach or Loam Scoat in Zaralek Cavern, locate real NPC
+		if ((npcID == RSConstants.FORBIDDEN_REACH_ANCESTRAL_SPIRIT or npcID == RSConstants.ZARALEK_CAVERN_LOAM_SCOUT) and RSNpcDB.GetNpcId(vignetteInfo.name, mapID)) then
+			npcID = RSNpcDB.GetNpcId(vignetteInfo.name, mapID)
+		-- If pre-event, sets the NPC ID
+		elseif (RSConstants.NPCS_WITH_PRE_EVENT[npcID]) then
+			npcID = RSNpcDB.GetFinalNpcID(npcID)
+		end
+		
 		local npcInfo = RSNpcDB.GetInternalNpcInfo(npcID)
 		local alreadyFoundInfo = RSGeneralDB.GetAlreadyFoundEntity(npcID)
 		
 		if (npcInfo or alreadyFoundInfo) then
 			return RSNpcPOI.GetNpcPOI(npcID, mapID, npcInfo, alreadyFoundInfo)
 		end
+	elseif (RSConstants.IsEventAtlas(vignetteInfo.atlasName) or (vignetteInfo.atlasName == RSConstants.EVENT_SCRAP_VIGNETTE and mapID == RSConstants.UNDERMINE)) then
+		local eventID = tonumber(vignetteObjectID)
+		
+		local eventInfo = RSEventDB.GetInternalEventInfo(eventID)
+		local alreadyFoundInfo = RSGeneralDB.GetAlreadyFoundEntity(eventID)
+	
+		if (eventInfo or alreadyFoundInfo) then
+			return RSEventPOI.GetEventPOI(eventID, mapID, eventInfo, alreadyFoundInfo)
+		end
 	end
 	
 	return nil
-end
-
----============================================================================
--- Map names
----============================================================================
-
-function RSMap.GetMapName(mapID)
-	local mapInfo = C_Map.GetMapInfo(mapID)
-	if (mapInfo) then
-		-- For those zones with the same name, add a comment
-		if (AL["ZONE_"..mapID] ~= "ZONE_"..mapID) then
-			return string.format(AL["ZONE_"..mapID], mapInfo.name)
-		else
-			return mapInfo.name
-		end
-	elseif (private.DUNGEONS_IDS[mapID]) then
-		return LB[private.DUNGEONS_IDS[mapID]]
-	end
-	
-	return AL["ZONES_CONTINENT_LIST"][mapID]
 end
 
 ---============================================================================
@@ -264,7 +308,7 @@ local worldMapButton
 function RSMap.LoadWorldMapButton()
 	if (RSConfigDB.IsShowingWorldmapButton()) then 
 		local rwm = LibStub('Krowi_WorldMapButtons-1.4')
-		worldMapButton = rwm:Add("RSWorldMapButtonTemplate", 'DROPDOWNTOGGLEBUTTON')
+		worldMapButton = rwm:Add("RSWorldMapButtonTemplate", 'DROPDOWNBUTTON')
 	end
 end
 

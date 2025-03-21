@@ -2,10 +2,12 @@ local E, L, V, P, G = unpack(ElvUI)
 local UF = E:GetModule('UnitFrames')
 local ElvUF = E.oUF
 
-local _G = _G
 local tinsert = tinsert
 
 function UF:Construct_TargetTargetFrame(frame)
+	UF:PrepareFrame(frame)
+	UF:ConstructFrame(frame, 'targettarget')
+
 	frame.Health = UF:Construct_HealthBar(frame, true, true, 'RIGHT')
 	frame.Power = UF:Construct_PowerBar(frame, true, true, 'LEFT')
 	frame.PowerPrediction = UF:Construct_PowerPrediction(frame)
@@ -23,12 +25,9 @@ function UF:Construct_TargetTargetFrame(frame)
 	frame.FocusGlow = UF:Construct_FocusGlow(frame)
 	frame.Fader = UF:Construct_Fader()
 	frame.Cutaway = UF:Construct_Cutaway(frame)
-	frame.customTexts = {}
 
 	frame:Point('BOTTOM', E.UIParent, 'BOTTOM', 342, 100) --Set to default position
 	E:CreateMover(frame, frame:GetName()..'Mover', L["TargetTarget Frame"], nil, nil, nil, 'ALL,SOLO', nil, 'unitframe,individualUnits,targettarget,generalGroup')
-
-	frame.unitframeType = 'targettarget'
 end
 
 function UF:Update_TargetTargetFrame(frame, db)
@@ -55,36 +54,12 @@ function UF:Update_TargetTargetFrame(frame, db)
 		frame.BOTTOM_OFFSET = UF:GetHealthBottomOffset(frame)
 	end
 
-	if db.strataAndLevel and db.strataAndLevel.useCustomStrata then
-		frame:SetFrameStrata(db.strataAndLevel.frameStrata)
-	end
-
-	if db.strataAndLevel and db.strataAndLevel.useCustomLevel then
-		frame:SetFrameLevel(db.strataAndLevel.frameLevel)
-	end
-
 	frame:Size(frame.UNIT_WIDTH, frame.UNIT_HEIGHT)
 	frame.mover:Size(frame:GetSize())
+	frame:SetFrameStrata(db.strataAndLevel and db.strataAndLevel.useCustomStrata and db.strataAndLevel.frameStrata or 'LOW')
+	frame:SetFrameLevel(db.strataAndLevel and db.strataAndLevel.useCustomLevel and db.strataAndLevel.frameLevel or 1)
 
-	UF:Configure_InfoPanel(frame)
-	UF:Configure_HealthBar(frame)
-	UF:UpdateNameSettings(frame)
-	UF:Configure_Power(frame)
-	UF:Configure_PowerPrediction(frame)
-	UF:Configure_Portrait(frame)
-	UF:Configure_Threat(frame)
-	UF:EnableDisable_Auras(frame)
-	UF:Configure_AllAuras(frame)
-	UF:Configure_HealComm(frame)
-	UF:Configure_RaidIcon(frame)
-	UF:Configure_Cutaway(frame)
-	UF:Configure_CustomTexts(frame)
-	UF:Configure_Fader(frame)
-
-	UF:HandleRegisterClicks(frame)
-
-	E:SetMoverSnapOffset(frame.mover.name, -(12 + UF.db.units.player.castbar.height))
-	frame:UpdateAllElements('ElvUI_UpdateAllElements')
+	UF:ConfigureFrame(frame, 'targettarget', 12 + UF.db.units.player.castbar.height)
 end
 
 tinsert(UF.unitstoload, 'targettarget')

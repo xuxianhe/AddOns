@@ -42,6 +42,7 @@ G.datatexts = {
 	settings = {
 		Agility = { Label = '', NoLabel = false },
 		Armor = { Label = '', NoLabel = false },
+		['Attack Power'] = { Label = '', NoLabel = false },
 		Avoidance = { Label = '', NoLabel = false, decimalLength = 1 },
 		Bags = { textFormat = 'USED_TOTAL', Label = '', NoLabel = false, includeReagents = false },
 		CallToArms = { Label = '', NoLabel = false },
@@ -71,8 +72,8 @@ G.datatexts = {
 			hideBSAp = false, --Mobile
 			hideApp = false, --Launcher
 		},
-		Gold = { goldFormat = 'BLIZZARD', goldCoins = true },
-		Guild = { Label = '', NoLabel = false },
+		Gold = { goldFormat = 'BLIZZARD', maxLimit = 30, goldCoins = true },
+		Guild = { Label = '', NoLabel = false, maxLimit = 30 },
 		Haste = { Label = '', NoLabel = false, decimalLength = 1 },
 		Hit = { Label = '', NoLabel = false, decimalLength = 1 },
 		Intellect = { Label = '', NoLabel = false},
@@ -83,18 +84,21 @@ G.datatexts = {
 		MovementSpeed = { Label = '', NoLabel = false, decimalLength = 1 },
 		QuickJoin = { Label = '', NoLabel = false },
 		Reputation = { textFormat = 'CUR' },
-		['Talent/Loot Specialization'] = { displayStyle = 'BOTH', iconOnly = false },
+		['Talent/Loot Specialization'] = { displayStyle = 'BOTH', showBoth = false, iconSize = 16, iconOnly = false },
 		SpellPower = { school = 0 },
 		['Spell Crit Chance'] = { school = 0 },
 		Speed = { Label = '', NoLabel = false, decimalLength = 1 },
 		Stamina = { Label = '', NoLabel = false },
 		Strength = { Label = '', NoLabel = false },
-		System = { NoLabel = false, ShowOthers = true, latency = 'WORLD' },
-		Time = { time24 = _G.GetCurrentRegion() ~= 1, localTime = true, flashInvite = true },
+		System = { NoLabel = false, ShowOthers = true, latency = 'WORLD', showTooltip = true },
+		Time = { time24 = _G.GetCurrentRegion() ~= 1, localTime = true, flashInvite = true, savedInstances = true },
 		Versatility = { Label = '', NoLabel = false, decimalLength = 1 },
 		Dodge = { decimalLength = 1 },
 		Parry = { decimalLength = 1 },
-		Block = { decimalLength = 1 }
+		Block = { decimalLength = 1 },
+		['Mana Regen'] = { Label = '', NoLabel = false, decimalLength = 1 },
+		HealPower = { Label = '', NoLabel = false },
+		['Spell Hit'] = { Label = '', NoLabel = false, decimalLength = 0 }
 	},
 	newPanelInfo = {
 		growth = 'HORIZONTAL',
@@ -124,8 +128,8 @@ G.datatexts = {
 G.nameplates = {}
 
 G.unitframe = {
-	aurafilters = {},
 	aurawatch = {},
+	aurafilters = {},
 	raidDebuffIndicator = {
 		instanceFilter = 'RaidDebuffs',
 		otherFilter = 'CCDebuffs'
@@ -139,6 +143,145 @@ G.unitframe = {
 		yOffset = 0,
 		justifyH = 'CENTER',
 		attachTextTo = 'Health'
+	},
+	rangeCheck = {
+		FRIENDLY = {
+			DEATHKNIGHT = {
+				['47541'] = 'Death Coil'
+			},
+			DEMONHUNTER = {},
+			DRUID = {
+				['8936'] = 'Regrowth'
+			},
+			EVOKER = {
+				['355913'] = 'Emerald Blossom'
+			},
+			HUNTER = {},
+			MAGE = {
+				['1459'] = 'Arcane Intellect'
+			},
+			MONK = {
+				['116670'] = 'Vivify'
+			},
+			PALADIN = {
+				['85673'] = 'Word of Glory'
+			},
+			PRIEST = {
+				['17'] = E.Retail and 'Power Word: Shield' or nil,
+				['2050'] = not E.Retail and 'Lesser Heal' or nil
+			},
+			ROGUE = {
+				['36554'] = E.Retail and 'Shadowstep' or nil,
+				['921'] = E.Retail and 'Pick Pocket' or nil
+			},
+			SHAMAN = {
+				['8004'] = 'Healing Surge'
+			},
+			WARLOCK = {
+				['5697'] = 'Unending Breath'
+			},
+			WARRIOR = {}
+		},
+		ENEMY = {
+			DEATHKNIGHT = {
+				['49576'] = 'Death Grip'
+			},
+			DEMONHUNTER = {
+				['278326'] = 'Consume Magic'
+			},
+			DRUID = {
+				['8921'] = 'Moonfire'
+			},
+			EVOKER = {
+				['362969'] = 'Azure Strike'
+			},
+			HUNTER = {
+				['19503'] = not E.Retail and 'Scatter Shot' or nil,
+				['2974'] = not E.Retail and 'Wing Clip' or nil,
+				['2973'] = E.Cata and 'Raptor Strike' or nil,
+				['75'] = 'Auto Shot'
+			},
+			MAGE = {
+				['2139'] = 'Counterspell'
+			},
+			MONK = {
+				['115546'] = 'Provoke'
+			},
+			PALADIN = {
+				['20473'] = 'Holy Shock',
+				['20271'] = 'Judgement'
+			},
+			PRIEST = {
+				['589'] = 'Shadow Word: Pain'
+			},
+			ROGUE = {
+				['36554'] = 'Shadowstep'
+			},
+			SHAMAN = {
+				['8042'] = 'Earth Shock',
+				['188196'] = E.Retail and 'Lightning Bolt' or nil,
+				['403'] = not E.Retail and 'Lightning Bolt' or nil
+			},
+			WARLOCK = {
+				['234153'] = E.Retail and 'Drain Life' or nil,
+				['348'] = not E.Retail and 'Immolate' or nil,
+			},
+			WARRIOR = {
+				['355'] = 'Taunt'
+			}
+		},
+		RESURRECT = {
+			DEATHKNIGHT = {
+				['61999'] = 'Raise Ally'
+			},
+			DEMONHUNTER = {},
+			DRUID = {
+				['50769'] = 'Revive'
+			},
+			EVOKER = {
+				['361227'] = 'Return'
+			},
+			HUNTER = {},
+			MAGE = {},
+			MONK = {
+				['115178'] = 'Resuscitate'
+			},
+			PALADIN = {
+				['7328'] = 'Redemption'
+			},
+			PRIEST = {
+				['2006'] = 'Resurrection'
+			},
+			ROGUE = {},
+			SHAMAN = {
+				['2008'] = 'Ancestral Spirit'
+			},
+			WARLOCK = {
+				['20707'] = not E.Classic and 'Soulstone' or nil
+			},
+			WARRIOR = {}
+		},
+		PET = {
+			DEATHKNIGHT = {
+				['47541'] = 'Death Coil'
+			},
+			DEMONHUNTER = {},
+			DRUID = {},
+			EVOKER = {},
+			HUNTER = {
+				['136'] = 'Mend Pet'
+			},
+			MAGE = {},
+			MONK = {},
+			PALADIN = {},
+			PRIEST = {},
+			ROGUE = {},
+			SHAMAN = {},
+			WARLOCK = {
+				['755'] = 'Health Funnel'
+			},
+			WARRIOR = {}
+		}
 	}
 }
 

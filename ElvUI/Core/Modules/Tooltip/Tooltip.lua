@@ -6,7 +6,7 @@ local B = E:GetModule('Bags')
 local LSM = E.Libs.LSM
 
 local _G = _G
-local unpack, select, ipairs = unpack, select, ipairs
+local unpack, ipairs = unpack, ipairs
 local wipe, next, tinsert, tconcat = wipe, next, tinsert, table.concat
 local floor, tonumber, strlower = floor, tonumber, strlower
 local strfind, format, strmatch, gmatch, gsub = strfind, format, strmatch, gmatch, gsub
@@ -20,11 +20,8 @@ local GameTooltip_ClearWidgetSet = GameTooltip_ClearWidgetSet
 local GetCraftReagentItemLink = GetCraftReagentItemLink
 local GetCraftSelectionIndex = GetCraftSelectionIndex
 local GetCreatureDifficultyColor = GetCreatureDifficultyColor
+local CheckInteractDistance = CheckInteractDistance
 local GetGuildInfo = GetGuildInfo
-local GetItemCount = GetItemCount
-local GetItemInfo = GetItemInfo
-local GetItemQualityColor = GetItemQualityColor
-local GetMouseFocus = GetMouseFocus
 local GetNumGroupMembers = GetNumGroupMembers
 local GetRelativeDifficultyColor = GetRelativeDifficultyColor
 local GetTime = GetTime
@@ -72,6 +69,11 @@ local UnitSex = UnitSex
 local TooltipDataType = Enum.TooltipDataType
 local AddTooltipPostCall = TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall
 local GetDisplayedItem = TooltipUtil and TooltipUtil.GetDisplayedItem
+
+local GetItemQualityByID = C_Item.GetItemQualityByID
+local GetItemQualityColor = C_Item.GetItemQualityColor
+local GetItemCount = C_Item.GetItemCount
+local GetItemInfo = C_Item.GetItemInfo
 
 local GameTooltip, GameTooltipStatusBar = GameTooltip, GameTooltipStatusBar
 local C_QuestLog_GetQuestIDForLogIndex = C_QuestLog.GetQuestIDForLogIndex
@@ -402,7 +404,7 @@ end
 
 local lastGUID
 function TT:AddInspectInfo(tt, unit, numTries, r, g, b)
-	if tt.ItemLevelShown or (not unit) or (numTries > 3) or not CanInspect(unit) then return end
+	if tt.ItemLevelShown or (not unit) or (numTries > 3) or not UnitIsPlayer(unit) or not CanInspect(unit) or (E.Cata and not CheckInteractDistance(unit, 4)) then return end
 
 	local unitGUID = UnitGUID(unit)
 	if not unitGUID then return end
@@ -543,14 +545,13 @@ function TT:GameTooltip_OnTooltipSetUnit(data)
 	if self ~= GameTooltip or self:IsForbidden() or not TT.db.visibility then return end
 
 	local _, unit = self:GetUnit()
-	local isPlayerUnit = UnitIsPlayer(unit)
 	if self:GetOwner() ~= UIParent and not TT:IsModKeyDown(TT.db.visibility.unitFrames) then
 		self:Hide()
 		return
 	end
 
 	if not unit then
-		local GMF = GetMouseFocus()
+		local GMF = E:GetMouseFocus()
 		local focusUnit = GMF and GMF.GetAttribute and GMF:GetAttribute('unit')
 		if focusUnit then unit = focusUnit end
 		if not unit or not UnitExists(unit) then
@@ -562,17 +563,19 @@ function TT:GameTooltip_OnTooltipSetUnit(data)
 
 	local isShiftKeyDown = IsShiftKeyDown()
 	local isControlKeyDown = IsControlKeyDown()
+
+	local isPlayerUnit = UnitIsPlayer(unit)
 	local color = TT:SetUnitText(self, unit, isPlayerUnit)
 
 	if TT.db.targetInfo and not isShiftKeyDown and not isControlKeyDown then
 		TT:AddTargetInfo(self, unit)
 	end
 
-	if E.Retail then
-		if TT.db.role then
-			TT:AddRoleInfo(self, unit)
-		end
+	if TT.db.role and E.allowRoles then
+		TT:AddRoleInfo(self, unit)
+	end
 
+	if E.Retail then
 		if not InCombatLockdown() then
 			if not isShiftKeyDown and (isPlayerUnit and unit ~= 'player') and TT.db.showMount and E.Retail then
 				TT:AddMountInfo(self, unit)
@@ -581,14 +584,18 @@ function TT:GameTooltip_OnTooltipSetUnit(data)
 			if TT.db.mythicDataEnable then
 				TT:AddMythicInfo(self, unit)
 			end
-
-			if isShiftKeyDown and color and TT.db.inspectDataEnable and not self.ItemLevelShown then
-				TT:AddInspectInfo(self, unit, 0, color.r, color.g, color.b)
-			end
 		end
 	end
 
-	if unit and not isPlayerUnit and TT:IsModKeyDown() and not (E.Retail and C_PetBattles_IsInBattle()) then
+	if (E.Retail or E.Cata) and isShiftKeyDown and isPlayerUnit and not InCombatLockdown() and TT.db.inspectDataEnable and not self.ItemLevelShown then
+		if color then
+			TT:AddInspectInfo(self, unit, 0, color.r, color.g, color.b)
+		else
+			TT:AddInspectInfo(self, unit, 0, 0.9, 0.9, 0.9)
+		end
+	end
+
+	if not isPlayerUnit and TT:IsModKeyDown() and not (E.Retail and C_PetBattles_IsInBattle()) then
 		local guid = (data and data.guid) or UnitGUID(unit) or ''
 		local id = tonumber(strmatch(guid, '%-(%d-)%-%x-$'), 10)
 		if id then -- NPC ID's
@@ -617,7 +624,7 @@ function TT:GameTooltipStatusBar_OnValueChanged(tt, value)
 	-- try to get ahold of the unit token
 	local _, unit = tt:GetParent():GetUnit()
 	if not unit then
-		local frame = GetMouseFocus()
+		local frame = E:GetMouseFocus()
 		if frame and frame.GetAttribute then
 			unit = frame:GetAttribute('unit')
 		end
@@ -700,7 +707,7 @@ function TT:GameTooltip_OnTooltipSetItem(data)
 		return
 	end
 
-	local itemID, bagCount, bankCount
+	local itemID, bagCount, bankCount, stackSize
 	local modKey = TT:IsModKeyDown()
 
 	local GetItem = GetDisplayedItem or self.GetItem
@@ -715,7 +722,7 @@ function TT:GameTooltip_OnTooltipSetItem(data)
 		if not link then return end
 
 		if TT.db.itemQuality then
-			local _, _, quality = GetItemInfo(link)
+			local quality = GetItemQualityByID(link)
 			if quality and quality > 1 then
 				local r, g, b = GetItemQualityColor(quality)
 				if self.NineSlice then
@@ -732,16 +739,26 @@ function TT:GameTooltip_OnTooltipSetItem(data)
 			itemID = format('|cFFCA3C3C%s|r %s', _G.ID, (data and data.id) or strmatch(link, ':(%w+)'))
 		end
 
-		if TT.db.itemCount ~= 'NONE' and (not TT.db.modifierCount or modKey) then
+		if not TT.db.modifierCount or modKey then
 			local count = GetItemCount(link)
-			local total = GetItemCount(link, true)
-			if TT.db.itemCount == 'BAGS_ONLY' then
+			local itemCount = TT.db.itemCount
+			if itemCount.bags then
 				bagCount = format(IDLine, L["Bags"], count)
-			elseif TT.db.itemCount == 'BANK_ONLY' then
-				bankCount = format(IDLine, L["Bank"], total - count)
-			elseif TT.db.itemCount == 'BOTH' then
-				bagCount = format(IDLine, L["Bags"], count)
-				bankCount = format(IDLine, L["Bank"], total - count)
+			end
+
+			if itemCount.bank then
+				local bank = GetItemCount(link, true, nil, TT.db.includeReagents, TT.db.includeWarband)
+				local amount = bank and (bank - count)
+				if amount and amount > 0 then
+					bankCount = format(IDLine, L["Bank"], amount)
+				end
+			end
+
+			if itemCount.stack then
+				local _, _, _, _, _, _, _, stack = GetItemInfo(link)
+				if stack and stack > 1 then
+					stackSize = format(IDLine, L["Stack Size"], stack)
+				end
 			end
 		end
 	elseif modKey then
@@ -751,9 +768,18 @@ function TT:GameTooltip_OnTooltipSetItem(data)
 		end
 	end
 
-	if itemID or bagCount or bankCount then self:AddLine(' ') end
-	if itemID or bagCount then self:AddDoubleLine(itemID or ' ', bagCount or ' ') end
-	if bankCount then self:AddDoubleLine(' ', bankCount) end
+	if itemID or bagCount or bankCount or stackSize then
+		self:AddLine(' ')
+		self:AddDoubleLine(itemID or ' ', bagCount or bankCount or stackSize or ' ')
+	end
+
+	if (bagCount and bankCount) then
+		self:AddDoubleLine(' ', bankCount)
+	end
+
+	if (bagCount or bankCount) and stackSize then
+		self:AddDoubleLine(' ', stackSize)
+	end
 end
 
 function TT:GameTooltip_AddQuestRewardsToTooltip(tt, questID)
@@ -812,8 +838,15 @@ function TT:MODIFIER_STATE_CHANGED()
 			else
 				GameTooltip:SetUnit('mouseover')
 			end
-		elseif owner and owner:GetParent() == _G.SpellBookSpellIconsFrame then
-			AB.SpellButtonOnEnter(owner, nil, GameTooltip)
+		else
+			local parent = owner and owner:GetParent()
+			if parent then
+				if parent.slotIndex then
+					AB.SpellButtonOnEnter(parent, nil, GameTooltip)
+				elseif parent == _G.SpellBookSpellIconsFrame then
+					AB.SpellButtonOnEnter(owner, nil, GameTooltip)
+				end
+			end
 		end
 	end
 
@@ -859,24 +892,25 @@ end
 function TT:GameTooltip_OnTooltipSetSpell(data)
 	if (self ~= GameTooltip and self ~= E.SpellBookTooltip) or self:IsForbidden() or not TT:IsModKeyDown() then return end
 
-	local id = (data and data.id) or select(2, self:GetSpell())
-	if not id then return end
-
-	local ID = format(IDLine, _G.ID, id)
-	local info = self:GetTooltipData()
-	if info and info.lines[3] then
-		for _, line in next, info.lines, 3 do
-			local text = line and line.leftText
-			if not text or text == '' then return end
-
-			if strfind(text, ID) then
-				return -- this is called twice on talents for some reason?
+	local spellID, _
+	if E.Retail then
+		if data and data.type then
+			if data.type == TooltipDataType.Spell then
+				spellID = data.id
+			elseif data.type == TooltipDataType.Macro then
+				local info = self:GetTooltipData()
+				local line = info and info.lines[1]
+				spellID = line and line.tooltipID
 			end
 		end
+	else
+		_, spellID = self:GetSpell()
 	end
 
-	self:AddLine(ID)
-	self:Show()
+	if spellID then
+		self:AddLine(format(IDLine, _G.ID, spellID))
+		self:Show()
+	end
 end
 
 function TT:SetItemRef(link)
@@ -1011,8 +1045,6 @@ function TT:WorldCursorTooltipUpdate(_, state)
 end
 
 function TT:Initialize()
-	TT.db = E.db.tooltip
-
 	if not E.private.tooltip.enable then return end
 	TT.Initialized = true
 
@@ -1054,8 +1086,9 @@ function TT:Initialize()
 	TT:SecureHookScript(GameTooltip, 'OnTooltipCleared', 'GameTooltip_OnTooltipCleared')
 	TT:SecureHookScript(GameTooltip.StatusBar, 'OnValueChanged', 'GameTooltipStatusBar_OnValueChanged')
 
-	if AddTooltipPostCall then
+	if AddTooltipPostCall and not E.Cata then -- exists but doesn't work atm on Cata
 		AddTooltipPostCall(TooltipDataType.Spell, TT.GameTooltip_OnTooltipSetSpell)
+		AddTooltipPostCall(TooltipDataType.Macro, TT.GameTooltip_OnTooltipSetSpell)
 		AddTooltipPostCall(TooltipDataType.Item, TT.GameTooltip_OnTooltipSetItem)
 		AddTooltipPostCall(TooltipDataType.Unit, TT.GameTooltip_OnTooltipSetUnit)
 

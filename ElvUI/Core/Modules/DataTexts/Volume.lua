@@ -7,7 +7,6 @@ local format = format
 local ipairs = ipairs
 local tinsert = tinsert
 
-local EasyMenu = EasyMenu
 local IsShiftKeyDown = IsShiftKeyDown
 local ShowOptionsPanel = ShowOptionsPanel
 local SOUND = SOUND
@@ -155,13 +154,13 @@ local function OnClick(self, button)
 		end
 
 		E:SetEasyMenuAnchor(E.EasyMenu, self)
-		EasyMenu(menu, E.EasyMenu, nil, nil, nil, 'MENU')
+		E:ComplicatedMenu(menu, E.EasyMenu, nil, nil, nil, 'MENU')
 	elseif button == 'MiddleButton' then
 		E:SetCVar(AudioStreams[1].Enabled, GetCVarBool(AudioStreams[1].Enabled) and 0 or 1, 'ELVUI_VOLUME')
 	elseif button == 'RightButton' then
 		E:SetEasyMenuAnchor(E.EasyMenu, self)
-		EasyMenu(IsShiftKeyDown() and deviceMenu or toggleMenu, E.EasyMenu, nil, nil, nil, 'MENU')
+		E:ComplicatedMenu(IsShiftKeyDown() and deviceMenu or toggleMenu, E.EasyMenu, nil, nil, nil, 'MENU')
 	end
 end
 
-DT:RegisterDatatext(L["Volume"], nil, {'CVAR_UPDATE'}, OnEvent, nil, OnClick, OnEnter)
+DT:RegisterDatatext("Volume", nil, {'CVAR_UPDATE'}, OnEvent, nil, OnClick, OnEnter, nil, L["Volume"])

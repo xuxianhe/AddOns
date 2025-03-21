@@ -27,24 +27,12 @@ end
 
 function GSE.SetDefaultOptions()
     GSEOptions.saveAllMacrosLocal = true
-    GSEOptions.hideSoundErrors = false
-    GSEOptions.hideUIErrors = false
-    GSEOptions.clearUIErrors = false
     GSEOptions.initialised = true
     GSEOptions.deleteOrphansOnLogout = false
     GSEOptions.debug = false
     GSEOptions.sendDebugOutputToChat = nil
     GSEOptions.sendDebugOutputToChatWindow = false
     GSEOptions.sendDebugOutputToDebugOutput = false
-    GSEOptions.useTranslator = false
-    GSEOptions.requireTarget = false
-    GSEOptions.use1 = false
-    GSEOptions.use2 = false
-    GSEOptions.use6 = false
-    GSEOptions.use11 = false
-    GSEOptions.use12 = false
-    GSEOptions.use13 = false
-    GSEOptions.use14 = false
     GSEOptions.setDefaultIconQuestionMark = true
     GSEOptions.TitleColour = "|cFFFF0000"
     GSEOptions.AuthorColour = "|cFF00D1FF"
@@ -66,6 +54,7 @@ function GSE.SetDefaultOptions()
     GSEOptions.ActiveSequenceVersions = {}
     GSEOptions.DisabledSequences = {}
     GSEOptions.DebugModules = {}
+    GSEOptions.shownew = true
 
     GSEOptions.DebugModules[Statics.DebugModules["Translator"]] = false
     GSEOptions.DebugModules[Statics.DebugModules["Editor"]] = false
@@ -99,11 +88,12 @@ function GSE.SetDefaultOptions()
     GSEOptions.showMiniMap = {
         hide = true
     }
-    GSEOptions.editorHeight = 700
-    GSEOptions.editorWidth = 700
+    -- GSEOptions.editorHeight = 500
+    -- GSEOptions.editorWidth = 700
     GSEOptions.showCurrentSpells = true
     GSEOptions.OOCQueueDelay = 7
     GSE.resetMacroResetModifiers()
+    GSEOptions.frameLocations = {}
 end
 
 GSE.SetDefaultOptions()

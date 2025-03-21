@@ -18,7 +18,7 @@ A default texture will be applied if the sub-widgets are StatusBars and don't ha
 ## Options
 
 .colorSpec - Use `self.colors.runes[specID]` to color the bar based on player's spec. `specID` is defined by the return
-             value of [GetSpecialization](http://wowprogramming.com/docs/api/GetSpecialization.html) (boolean)
+             value of [GetSpecialization](https://warcraft.wiki.gg/wiki/API_GetSpecialization) (boolean)
 .sortOrder - Sorting order. Sorts by the remaining cooldown time, 'asc' - from the least cooldown time remaining (fully
              charged) to the most (fully depleted), 'desc' - the opposite (string?)['asc', 'desc']
 
@@ -56,7 +56,7 @@ local GetRuneType = GetRuneType
 local UnitIsUnit = UnitIsUnit
 local GetTime = GetTime
 
-local runemap = oUF.isWrath and {1, 2, 5, 6, 3, 4} or {1, 2, 3, 4, 5, 6}
+local runemap = (oUF.isCata or oUF.isWrath) and {1, 2, 5, 6, 3, 4} or {1, 2, 3, 4, 5, 6}
 local hasSortOrder = false
 
 local function onUpdate(self, elapsed)
@@ -117,7 +117,7 @@ local function UpdateColor(self, event, runeID, alt)
 	local element = self.Runes
 
 	local rune, specType
-	if oUF.isWrath then -- runeID, alt
+	if oUF.isCata or oUF.isWrath then -- runeID, alt
 		if runeID and event == 'RUNE_TYPE_UPDATE' then
 			rune = UpdateRuneType(element[runemap[runeID]], runeID, alt)
 		end
@@ -134,7 +134,7 @@ local function UpdateColor(self, event, runeID, alt)
 	else
 		for i = 1, #element do
 			local bar = element[i]
-			if oUF.isWrath then
+			if oUF.isCata or oUF.isWrath then
 				if not bar.runeType then
 					bar.runeType = GetRuneType(runemap[i])
 				end
@@ -177,7 +177,7 @@ end
 local function Update(self, event)
 	local element = self.Runes
 
-	if not oUF.isWrath then
+	if not (oUF.isCata or oUF.isWrath) then
 		if element.sortOrder == 'asc' then
 			sort(runemap, ascSort)
 			hasSortOrder = true
@@ -245,13 +245,13 @@ local function Path(self, ...)
 end
 
 local function AllPath(...)
-	Path(...)
 	ColorPath(...)
+	Path(...)
 end
 
 local function ForceUpdate(element)
-	Path(element.__owner, 'ForceUpdate')
 	ColorPath(element.__owner, 'ForceUpdate')
+	return Path(element.__owner, 'ForceUpdate')
 end
 
 local function Enable(self, unit)
@@ -273,7 +273,7 @@ local function Enable(self, unit)
 		-- end block
 
 		if oUF.isRetail then
-			self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', ColorPath)
+			oUF:RegisterEvent(self, 'PLAYER_SPECIALIZATION_CHANGED', ColorPath)
 		else
 			self:RegisterEvent('RUNE_TYPE_UPDATE', ColorPath, true)
 		end
@@ -298,7 +298,7 @@ local function Disable(self)
 		-- end block
 
 		if oUF.isRetail then
-			self:UnregisterEvent('PLAYER_SPECIALIZATION_CHANGED', ColorPath)
+			oUF:UnregisterEvent(self, 'PLAYER_SPECIALIZATION_CHANGED', ColorPath)
 		else
 			self:UnregisterEvent('RUNE_TYPE_UPDATE', ColorPath)
 		end

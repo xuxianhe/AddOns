@@ -1,13 +1,10 @@
-local PA = _G.ProjectAzilroka
+local PA, ACL, ACH = unpack(_G.ProjectAzilroka)
 if PA.Classic then return end
 
 local SRF = PA:NewModule('SunsongRanchFarmer', 'AceEvent-3.0')
-PA.SRF, _G.SunsongRanchFarmer = SRF, SRF
+_G.SunsongRanchFarmer, PA.SunsongRanchFarmer = SRF, SRF
 
-SRF.Title = PA.ACL['|cFF16C3F2Sunsong|r |cFFFFFFFFRanch Farmer|r']
-SRF.Description = PA.ACL['A farm tool for Sunsong Ranch.']
-SRF.Authors = 'Azilroka'
-SRF.isEnabled = false
+SRF.Title, SRF.Description, SRF.Authors, SRF.isEnabled = 'Sunsong Ranch Farmer', ACL['A farm tool for Sunsong Ranch.'], 'Azilroka', false
 
 local _G = _G
 
@@ -107,35 +104,6 @@ SRF.Quests = {
 	--[31671] = {80591, 84783}, -- Scallion
 }
 
---local function QuestItems(itemID)
---	for i = 1, GetNumQuestLogEntries() do
---		for qid, sid in pairs(FarmQuests) do
---			if qid == select(9, GetQuestLogTitle(i)) then
---				if itemID == sid[1] or itemID == sid[2] then
---					return true
---				end
---			end
---		end
---	end
-
---	return false
---end
-
---	for i = 1, SeedAnchor.NumBars do
---		local seedBar = CreateFrame("Frame", SeedAnchor.BarsName..i, SeedAnchor)
---		seedBar:SetFrameStrata("BACKGROUND")
-
---		if i == 1 or i == 3 then
---			seedBar.Autotarget = function(button)
---				if not E.db.sle.legacy.farm.autotarget then return end
---				local container, slot = SLE:BagSearch(button.itemId)
---				if container and slot then
---					button:SetAttribute("type", "macro")
---					button:SetAttribute("macrotext", format("/targetexact %s \n/use %s %s", L["Tilled Soil"], container, slot))
---				end
---			end
---		end
-
 function SRF:Update()
 	if not SRF.Bar then return end
 
@@ -162,7 +130,7 @@ function SRF:SetButtonTexture(button, texture)
 
 	local Normal, Pushed, Disabled, Highlight = button:GetNormalTexture(), button:GetPushedTexture(), button:GetDisabledTexture(), button:GetHighlightTexture()
 
-	local left, right, top, bottom = unpack(PA.TexCoords)
+	local left, right, top, bottom = PA:TexCoords()
 	Normal:SetTexCoord(left, right, top, bottom)
 	Normal:SetVertexColor(.9, .9, .9)
 	PA:SetInside(Normal, button)
@@ -192,6 +160,7 @@ end
 function SRF:CreateBigButton(ItemID)
 	local Button = CreateFrame('Button', nil, SRF.Bar, 'SecureActionButtonTemplate, ActionButtonTemplate')
 	Button:Hide()
+	Buttons:RegisterForClicks('AnyDown')
 	PA:SetTemplate(Button)
 	Button:SetSize(50, 50)
 	Button:SetFrameLevel(1)
@@ -288,36 +257,20 @@ function SRF:CreateSeedButton(ItemID)
 	tinsert(SRF.Bar.SeedsFrame.Buttons, Button)
 end
 
-function SRF:DropTools()
-	if not SRF:InSeedZone() and SRF.db.DropTools then
-		for _, ItemID in pairs(SRF.Tools) do
-			for container = 0, NUM_BAG_SLOTS do
-				for slot = 1, GetContainerNumSlots(container) do
-					if ItemID == GetContainerItemID(container, slot) then
-						PickupContainerItem(container, slot)
-						DeleteCursorItem()
-					end
-				end
-			end
-		end
-	end
-end
-
 function SRF:GetOptions()
-	local SunsongRanchFarmer = PA.ACH:Group(SRF.Title, SRF.Description, nil, nil, function(info) return SRF.db[info[#info]] end)
+	local SunsongRanchFarmer = ACH:Group(SRF.Title, SRF.Description, nil, nil, function(info) return SRF.db[info[#info]] end)
 	PA.Options.args.SunsongRanchFarmer = SunsongRanchFarmer
 
-	SunsongRanchFarmer.args.Description = PA.ACH:Description(SRF.Description, 0)
-	SunsongRanchFarmer.args.Enable = PA.ACH:Toggle(PA.ACL['Enable'], nil, 1, nil, nil, nil, nil, function(info, value) SRF.db[info[#info]] = value if not SRF.isEnabled then SRF:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
+	SunsongRanchFarmer.args.Description = ACH:Description(SRF.Description, 0)
+	SunsongRanchFarmer.args.Enable = ACH:Toggle(ACL['Enable'], nil, 1, nil, nil, nil, nil, function(info, value) SRF.db[info[#info]] = value if not SRF.isEnabled then SRF:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
 
-	SunsongRanchFarmer.args.General = PA.ACH:Group(PA.ACL['General'], nil, 2, nil, nil, function(info, value) SRF.db[info[#info]] = value SRF:Update() end)
+	SunsongRanchFarmer.args.General = ACH:Group(ACL['General'], nil, 2, nil, nil, function(info, value) SRF.db[info[#info]] = value SRF:Update() end)
 	SunsongRanchFarmer.args.General.inline = true
-	SunsongRanchFarmer.args.General.args.DropTools = PA.ACH:Toggle(PA.ACL['Drop Farm Tools'], nil, 1)
-	SunsongRanchFarmer.args.General.args.ToolSize = PA.ACH:Range(PA.ACL['Farm Tool Size'], nil, 2, { min = 16, max = 64, step = 1 })
-	SunsongRanchFarmer.args.General.args.SeedSize = PA.ACH:Range(PA.ACL['Seed Size'], nil, 3, { min = 16, max = 64, step = 1 })
+	SunsongRanchFarmer.args.General.args.ToolSize = ACH:Range(ACL['Farm Tool Size'], nil, 2, { min = 16, max = 64, step = 1 })
+	SunsongRanchFarmer.args.General.args.SeedSize = ACH:Range(ACL['Seed Size'], nil, 3, { min = 16, max = 64, step = 1 })
 
-	SunsongRanchFarmer.args.AuthorHeader = PA.ACH:Header(PA.ACL['Authors:'], -2)
-	SunsongRanchFarmer.args.Authors = PA.ACH:Description(SRF.Authors, -1, 'large')
+	SunsongRanchFarmer.args.AuthorHeader = ACH:Header(ACL['Authors:'], -2)
+	SunsongRanchFarmer.args.Authors = ACH:Description(SRF.Authors, -1, 'large')
 end
 
 function SRF:BuildProfile()
@@ -329,8 +282,6 @@ function SRF:UpdateSettings()
 end
 
 function SRF:Initialize()
-	SRF:UpdateSettings()
-
 	if SRF.db.Enable ~= true then
 		return
 	end

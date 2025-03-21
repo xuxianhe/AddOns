@@ -3,28 +3,6 @@ local L = GSE.L
 local Statics = GSE.Static
 local LibQTip = LibStub("LibQTip-1.0")
 
---- This function pops up a confirmation dialog.
-function GSE.GUIDeleteSequence(classid, sequenceName)
-  StaticPopupDialogs["GSE-DeleteMacroDialog"].text =
-    string.format(
-    L["Are you sure you want to delete %s?  This will delete the macro and all versions.  This action cannot be undone."],
-    sequenceName
-  )
-  StaticPopupDialogs["GSE-DeleteMacroDialog"].OnAccept = function(self, data)
-    GSE.GUIConfirmDeleteSequence(classid, sequenceName)
-  end
-
-  StaticPopup_Show("GSE-DeleteMacroDialog")
-end
-
---- This function then deletes the macro.
-function GSE.GUIConfirmDeleteSequence(classid, sequenceName)
-  GSE.GUIViewFrame:Hide()
-  GSE.GUIEditFrame:Hide()
-  GSE.DeleteSequence(classid, sequenceName)
-  GSE.GUIShowViewer()
-end
-
 --- Format the text against the GSE Sequence Spec.
 function GSE.GUIParseText(editbox)
   if GSEOptions.RealtimeParse then
@@ -35,7 +13,7 @@ function GSE.GUIParseText(editbox)
   end
 end
 
-function GSE.GUILoadEditor(key, incomingframe, recordedstring)
+function GSE.GUILoadEditor(editor, key, recordedstring)
   local classid
   local sequenceName
   local sequence
@@ -55,122 +33,66 @@ function GSE.GUILoadEditor(key, incomingframe, recordedstring)
         [1] = {
           ["Actions"] = {
             [1] = {
-              [1] = "/say Hello",
+              ["macro"] = "Need Macro Here",
               ["Type"] = Statics.Actions.Action
             }
-          },
-          ["InbuiltVariables"] = {},
-          ["Variables"] = {}
+          }
         }
       }
     }
     if not GSE.isEmpty(recordedstring) then
       sequence.Macros[1]["Actions"] = nil
       local recordedMacro = {}
-      for _, v in ipairs(GSE.SplitMeIntolines(recordedstring)) do
-        local action = {
-          ["Type"] = Statics.Actions.Action
-        }
-
-        table.insert(action, v)
-        table.insert(recordedMacro, action)
+      for _, v in ipairs(GSE.SplitMeIntoLines(recordedstring)) do
+        local spellid = GSE.TranslateString(v, Statics.TranslatorMode.ID)
+        if spellid then
+          local action = {
+            ["Type"] = Statics.Actions.Action,
+            ["type"] = "macro",
+            ["macro"] = spellid
+          }
+          table.insert(recordedMacro, action)
+        end
       end
       sequence.Macros[1]["Actions"] = recordedMacro
     end
-    GSE.GUIEditFrame.NewSequence = true
+    editor.NewSequence = true
   else
     local elements = GSE.split(key, ",")
     classid = tonumber(elements[1])
-    sequenceName = elements[2]
+    sequenceName = elements[3]
     --sequence = GSE.CloneSequence(GSE.Library[classid][sequenceName], true)
-    local _, seq = GSE.DecodeMessage(GSE3Storage[classid][sequenceName])
-    sequence = seq[2]
-    GSE.GUIEditFrame.NewSequence = false
+    local _, seq = GSE.DecodeMessage(GSESequences[classid][sequenceName])
+    if seq then
+      sequence = seq[2]
+      editor.NewSequence = false
+    end
   end
   if GSE.isEmpty(sequence.WeakAuras) then
     sequence.WeakAuras = {}
   end
-  GSE.GUIEditFrame:SetStatusText("GSE: " .. GSE.VersionString)
-  GSE.GUIEditFrame.SequenceName = sequenceName
-  GSE.GUIEditFrame.Sequence = sequence
-  GSE.GUIEditFrame.ClassID = classid
-  GSE.GUIEditorPerformLayout(GSE.GUIEditFrame)
-  GSE.GUIEditFrame.ContentContainer:SelectTab("config")
-  incomingframe:Hide()
+  editor:SetStatusText("GSE: " .. GSE.VersionString)
+  editor.SequenceName = sequenceName
+  editor.Sequence = sequence
+  editor.ClassID = classid
+  editor.GUIEditorPerformLayout()
+  editor.ContentContainer:SelectTab("config")
   if sequence.ReadOnly then
-    GSE.GUIEditFrame.SaveButton:SetDisabled(true)
-    GSE.GUIEditFrame:SetStatusText(
+    editor.SaveButton:SetDisabled(true)
+    editor:SetStatusText(
       "GSE: " .. GSE.VersionString .. " " .. L["This sequence is Read Only and unable to be edited."]
     )
   end
-  GSE.GUIEditFrame:Show()
-end
-
-function GSE.GUIUpdateSequenceList()
-  local names = GSE.GetSequenceNames()
-  GSE.GUIViewFrame.SequenceListbox:SetList(names)
-end
-
--- function GSE.GUIToggleClasses(buttonname)
---   if buttonname == "class" then
---     classradio:SetValue(true)
---     specradio:SetValue(false)
---   else
---     classradio:SetValue(false)
---     specradio:SetValue(true)
---   end
--- end
-
-function GSE.GUIUpdateSequenceDefinition(classid, SequenceName, sequence)
-  sequence.LastUpdated = GSE.GetTimestamp()
-  -- Changes have been made, so save them
-  for k, v in ipairs(sequence.Macros) do
-    sequence.Macros[k].Actions = GSE.TranslateSequence(v.Actions, Statics.TranslatorMode.ID, false)
-    sequence.Macros[k].Variables = GSE.TranslateSequence(v.Variables, Statics.TranslatorMode.ID, false)
-    sequence.Macros[k] = GSE.UnEscapeTableRecursive(sequence.Macros[k])
-  end
-
-  if not GSE.isEmpty(SequenceName) then
-    if GSE.isEmpty(classid) then
-      classid = GSE.GetCurrentClassID()
-    end
-    sequence.MetaData.Name = SequenceName
-    if not GSE.isEmpty(SequenceName) then
-      local vals = {}
-      vals.action = "Replace"
-      vals.sequencename = SequenceName
-      vals.sequence = sequence
-      vals.classid = classid
-      if GSE.GUIEditFrame.NewSequence then
-        if GSE.ObjectExists(SequenceName) then
-          GSE.GUIEditFrame:SetStatusText(
-            string.format(L["Sequence Name %s is in Use. Please choose a different name."], SequenceName)
-          )
-          GSE.GUIEditFrame.nameeditbox:SetText(
-            GSEOptions.UNKNOWN .. GSE.GUIEditFrame.nameeditbox:GetText() .. Statics.StringReset
-          )
-          GSE.GUIEditFrame.nameeditbox:SetFocus()
-          return
-        end
-        vals.checkmacro = true
-        GSE.GUIEditFrame.NewSequence = false
-      end
-      table.insert(GSE.OOCQueue, vals)
-      GSE.GUIEditFrame:SetStatusText(string.format(L["Sequence %s saved."], SequenceName))
-    end
-  end
+  editor:Show()
 end
 
 function GSE:OnInitialize()
   GSE.GUIRecordFrame:Hide()
   GSE.GUIVersionFrame:Hide()
-  GSE.GUIEditFrame:Hide()
-  GSE.GUIViewFrame:Hide()
 end
 
 function GSE.OpenOptionsPanel()
-  local config = LibStub:GetLibrary("AceConfigDialog-3.0")
-  config:Open("GSE")
+  Settings.OpenToCategory("|cFFFFFFFFGS|r|cFF00FFFFE|r")
 end
 
 function GSE.CreateToolTip(title, tip, GSEFrame)

@@ -177,25 +177,6 @@ function S:QuestInfoItem_OnClick() -- self is not S
 	self.Name:SetTextColor(1, .8, .1)
 end
 
-function S:QuestLogQuests_Update() -- self is not S
-	for _, child in next, { _G.QuestMapFrame.QuestsFrame.Contents:GetChildren() } do
-		if child.ButtonText and not child.questID then
-			child:Size(16)
-
-			for _, tex in next, { child:GetRegions() } do
-				if tex.GetAtlas then
-					local atlas = tex:GetAtlas()
-					if atlas == 'Campaign_HeaderIcon_Closed' or atlas == 'Campaign_HeaderIcon_ClosedPressed' then
-						tex:SetTexture(E.Media.Textures.PlusButton)
-					elseif atlas == 'Campaign_HeaderIcon_Open' or atlas == 'Campaign_HeaderIcon_OpenPressed' then
-						tex:SetTexture(E.Media.Textures.MinusButton)
-					end
-				end
-			end
-		end
-	end
-end
-
 function S:QuestInfo_Display(parentFrame) -- self is template, not S
 	local rewardsFrame = _G.QuestInfoFrame.rewardsFrame
 	for i, questItem in ipairs(rewardsFrame.RewardButtons) do
@@ -230,7 +211,7 @@ function S:QuestInfo_Display(parentFrame) -- self is template, not S
 		end
 
 		for followerReward in rewardsFrame.followerRewardPool:EnumerateActive() do
-			if not followerReward.isSkinned then
+			if not followerReward.IsSkinned then
 				followerReward:CreateBackdrop()
 				followerReward.backdrop:SetAllPoints(followerReward.BG)
 				followerReward.backdrop:Point('TOPLEFT', 40, -5)
@@ -256,7 +237,7 @@ function S:QuestInfo_Display(parentFrame) -- self is template, not S
 				squareBG:SetTemplate()
 				followerReward.PortraitFrame.squareBG = squareBG
 
-				followerReward.isSkinned = true
+				followerReward.IsSkinned = true
 			end
 
 			local r, g, b = followerReward.PortraitFrame.PortraitRingQuality:GetVertexColor()
@@ -312,18 +293,6 @@ function S:QuestInfo_Display(parentFrame) -- self is template, not S
 			end
 		end
 	end
-end
-
-function S:CampaignCollapseButton_UpdateState(isCollapsed) -- self is button, not S
-	if isCollapsed then
-		self:SetNormalTexture(E.Media.Textures.PlusButton)
-		self:SetPushedTexture(E.Media.Textures.PlusButton)
-	else
-		self:SetNormalTexture(E.Media.Textures.MinusButton)
-		self:SetPushedTexture(E.Media.Textures.MinusButton)
-	end
-
-	self:Size(16)
 end
 
 function S:QuestFrameProgressItems_Update() -- self is not S
@@ -382,8 +351,6 @@ function S:BlizzardQuestFrames()
 
 	hooksecurefunc('QuestInfo_Display', S.QuestInfo_Display)
 	hooksecurefunc('QuestInfoItem_OnClick', S.QuestInfoItem_OnClick)
-	hooksecurefunc('QuestLogQuests_Update', S.QuestLogQuests_Update) -- Skin the Plus Minus buttons in the QuestLog
-	hooksecurefunc(_G.CampaignCollapseButtonMixin, 'UpdateState', S.CampaignCollapseButton_UpdateState) -- Plus Minus buttons for the CampaignHeaders in the QuestLog
 
 	for _, frame in pairs({'HonorFrame', 'XPFrame', 'SpellFrame', 'SkillPointFrame', 'ArtifactXPFrame', 'TitleFrame', 'WarModeBonusFrame'}) do
 		HandleReward(_G.MapQuestInfoRewardsFrame[frame])
@@ -436,7 +403,7 @@ function S:BlizzardQuestFrames()
 		_G.QuestFrameProgressPanel.SealMaterialBG:SetAlpha(0)
 		_G.QuestFrameGreetingPanel.SealMaterialBG:SetAlpha(0)
 
-		_G.QuestNPCModelTextFrame:StripTextures()
+		_G.QuestModelScene.ModelTextFrame:StripTextures()
 		_G.QuestNPCModelText:SetTextColor(1, 1, 1)
 	else
 		_G.QuestDetailScrollFrame:SetTemplate('Transparent')
@@ -458,7 +425,7 @@ function S:BlizzardQuestFrames()
 		_G.QuestFrameProgressPanel.SealMaterialBG:SetInside(_G.QuestProgressScrollFrame)
 		_G.QuestFrameGreetingPanel.SealMaterialBG:SetInside(_G.QuestGreetingScrollFrame)
 
-		S:HandleBlizzardRegions(_G.QuestNPCModelTextFrame)
+		S:HandleBlizzardRegions(_G.QuestModelScene.ModelTextFrame)
 	end
 
 	_G.QuestFrameGreetingPanel:StripTextures(true)
@@ -496,29 +463,29 @@ function S:BlizzardQuestFrames()
 		button.hover = hover
 	end
 
+	_G.QuestModelScene:Height(247)
+	_G.QuestModelScene:StripTextures()
+	_G.QuestModelScene:CreateBackdrop('Transparent')
+	_G.QuestModelScene.ModelTextFrame:CreateBackdrop('Transparent')
+
+	_G.QuestNPCModelNameText:ClearAllPoints()
+	_G.QuestNPCModelNameText:Point('TOP', G.QuestModelScene, 0, -10)
+	_G.QuestNPCModelNameText:FontTemplate(nil, 13, 'OUTLINE')
+
+	_G.QuestNPCModelText:SetJustifyH('CENTER')
+	_G.QuestNPCModelTextScrollFrame:ClearAllPoints()
+	_G.QuestNPCModelTextScrollFrame:Point('TOPLEFT', _G.QuestModelScene.ModelTextFrame, 2, -2)
+	_G.QuestNPCModelTextScrollFrame:Point('BOTTOMRIGHT', _G.QuestModelScene.ModelTextFrame, -10, 6)
+	_G.QuestNPCModelTextScrollChildFrame:SetInside(_G.QuestNPCModelTextScrollFrame)
+
+	S:HandleTrimScrollBar(_G.QuestNPCModelTextScrollFrame.ScrollBar)
+
 	hooksecurefunc('QuestFrame_ShowQuestPortrait', function(frame, _, _, _, _, _, x, y)
 		local mapFrame = _G.QuestMapFrame:GetParent()
 
 		_G.QuestModelScene:ClearAllPoints()
 		_G.QuestModelScene:Point('TOPLEFT', frame, 'TOPRIGHT', (x or 0) + (frame == mapFrame and 11 or 6), y or 0)
 	end)
-
-	_G.QuestModelScene:Height(247)
-	_G.QuestModelScene:StripTextures()
-	_G.QuestModelScene:CreateBackdrop('Transparent')
-	_G.QuestNPCModelTextFrame:CreateBackdrop('Transparent')
-
-	_G.QuestNPCModelNameText:ClearAllPoints()
-	_G.QuestNPCModelNameText:Point('TOP', G.QuestModelScene, 0, -10)
-	_G.QuestNPCModelNameText:FontTemplate(nil, 19, 'OUTLINE')
-
-	_G.QuestNPCModelText:SetJustifyH('CENTER')
-	_G.QuestNPCModelTextScrollFrame:ClearAllPoints()
-	_G.QuestNPCModelTextScrollFrame:Point('TOPLEFT', _G.QuestNPCModelTextFrame, 2, -2)
-	_G.QuestNPCModelTextScrollFrame:Point('BOTTOMRIGHT', _G.QuestNPCModelTextFrame, -10, 6)
-	_G.QuestNPCModelTextScrollChildFrame:SetInside(_G.QuestNPCModelTextScrollFrame)
-
-	S:HandleTrimScrollBar(_G.QuestNPCModelTextScrollFrame.ScrollBar)
 
 	local QuestLogPopupDetailFrame = _G.QuestLogPopupDetailFrame
 	S:HandlePortraitFrame(QuestLogPopupDetailFrame)

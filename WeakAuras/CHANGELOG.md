@@ -1,49 +1,38 @@
-# [5.12.9](https://github.com/WeakAuras/WeakAuras2/tree/5.12.9) (2024-04-29)
+# [5.19.5](https://github.com/WeakAuras/WeakAuras2/tree/5.19.5) (2025-03-10)
 
-[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.12.8...5.12.9)
+[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.19.4...5.19.5)
 
 ## Highlights
 
- - Added "Parent Frame" as option to "Glow Frame Type"
-- Cataclysm bug fixes 
+No new features this release, just fixes to some minor bugs
 
 ## Commits
 
-Boneshock (1):
+InfusOnWoW (9):
 
-- add Location trigger (#4917)
+- Update Discord List
+- Update Discord List
+- Stop Motion Sub Element: Fix setting of custom row/colum etc settings
+- Partially revert 4e628f546befa7
+- Being in Excavation Site 9 IsInInstance() returns false
+- Texture Sub Element: Don't resize main aura on atlas selection
+- Workaround boss unit stupidity by Blizzard
+- Workaround INSTANCE_ENGAGE_UNIT with incosistent UnitGUID/UnitExists
+- Remove Stop Motion texture data
 
-InfusOnWoW (8):
-
-- Update Atlas File List from wago.tools
-- Fix tracking specific charges being affeced by paused evoker spells
-- Weapon Enchant Trigger: Fix trigger stack check and missing condition
-- Add missing order increment
-- Fix AddFakeInformation for TSU auras to not overwrite progressType
-- Shape shift Trigger: Add note for incompatibility with SoD's Gladiator rune
-- Remove dead code
-- Update Atlas File List from wago.tools
-
-Lynn (1):
-
-- Added "Parent Frame" as option to "Glow Frame Type" (#5025)
-
-Stanzilla (4):
+Stanzilla (2):
 
 - Update WeakAurasModelPaths from wago.tools
 - Update WeakAurasModelPaths from wago.tools
-- Update WeakAurasModelPaths from wago.tools
-- Mark model paths script as executeable
+
+dependabot[bot] (4):
+
+- Bump cbrgm/mastodon-github-action from 2.1.12 to 2.1.13
+- Bump tsickert/discord-webhook from 6.0.0 to 7.0.0
+- Bump leafo/gh-actions-luarocks from 4 to 5
+- Bump leafo/gh-actions-lua from 10 to 11
 
 emptyrivers (1):
 
-- only use whisper comms if target is on the actually same server (#5019)
-
-mrbuds (5):
-
-- Cataclysm: add class & spec load option
-- FontString:SetJustifyV error with "CENTER" on cataclysm beta
-- Types (#5013)
-- Cataclysm: remove "Resilience" from "Character Stats" trigger
-- Classic: fix talent not checked on changing talent group
+- remove spurious enUS translations
 

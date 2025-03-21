@@ -105,13 +105,23 @@ BG.Init(function()
     local db_stats = {
         {
             ID = 334,
-            name = L["最大金币数量"],
+            name = L["历史最大金币"],
             icon = "Interface/MoneyFrame/UI-GoldIcon",
+        },
+        {
+            ID = 1544,
+            name = L["工程技能点"],
+            icon = "Interface/Icons/trade_engineering",
         },
         {
             ID = 339,
             name = L["获得坐骑数量"],
             icon = "Interface/Icons/inv_misc_summerfest_brazierorange",
+        },
+        {
+            ID = 338,
+            name = L["获得小宠物数量"],
+            icon = "Interface/Icons/spell_nature_polymorph",
         },
         {
             ID = 336,
@@ -170,7 +180,7 @@ BG.Init(function()
     end
 
     -- 统计
-    local f, child = BG.CreateScrollFrame(BG.AchievementMainFrame, 300, 100, nil, true)
+    local f, child = BG.CreateScrollFrame(BG.AchievementMainFrame, 300, 160, nil, true)
     do
         f:SetBackdrop({
             bgFile = "Interface/ChatFrame/ChatFrameBackground",
@@ -179,7 +189,7 @@ BG.Init(function()
         })
         f:SetBackdropColor(0, 0, 0, 0)
         f:SetBackdropBorderColor(1, 1, 1, .2)
-        f:SetPoint("TOPLEFT", BG.AchievementMainFrame.Frame2.frame, "BOTTOMLEFT", 0, -35)
+        f:SetPoint("TOPLEFT", BG.AchievementMainFrame.Frame2.frame, "BOTTOMLEFT", 0, -20)
         f.scroll:SetWidth(f:GetWidth() - 10)
         child:SetWidth(f:GetWidth() - 10)
         child.buttons = {}
@@ -210,19 +220,21 @@ BG.Init(function()
             GameTooltip:AddLine(L["成就："])
             local FB = BG.FB1
             for _, num in ipairs({ 25, 10 }) do
-                for _, ID in ipairs(db[num .. FB]) do
-                    local text, r1, g1, b1, r2, g2, b2
-                    local v = raidAchievement_AllPlayer[name][ID]
-                    if v then
-                        text = v.year .. "/" .. v.month .. "/" .. v.day
-                        r1, g1, b1 = 1, 1, 1
-                        r2, g2, b2 = 0, 1, 0
-                    else
-                        text = L["没有成就"]
-                        r1, g1, b1 = .5, .5, .5
-                        r2, g2, b2 = .5, .5, .5
+                if db[num .. FB] then
+                    for _, ID in ipairs(db[num .. FB]) do
+                        local text, r1, g1, b1, r2, g2, b2
+                        local v = raidAchievement_AllPlayer[name][ID]
+                        if v then
+                            text = v.year .. "/" .. v.month .. "/" .. v.day
+                            r1, g1, b1 = 1, 1, 1
+                            r2, g2, b2 = 0, 1, 0
+                        else
+                            text = L["没有成就"]
+                            r1, g1, b1 = .5, .5, .5
+                            r2, g2, b2 = .5, .5, .5
+                        end
+                        GameTooltip:AddDoubleLine(select(2, GetAchievementInfo(ID)), text, r1, g1, b1, r2, g2, b2)
                     end
-                    GameTooltip:AddDoubleLine(select(2, GetAchievementInfo(ID)), text, r1, g1, b1, r2, g2, b2)
                 end
             end
             GameTooltip:AddLine(" ")
@@ -583,11 +595,15 @@ BG.Init(function()
         end
         wipe(BG.AchievementMainFrame.Frame3.buttons)
 
-        for i, ID in ipairs(db["25" .. FB]) do
-            CreateButton(i, ID, BG.AchievementMainFrame.Frame1)
+        if db["25" .. FB] then
+            for i, ID in ipairs(db["25" .. FB]) do
+                CreateButton(i, ID, BG.AchievementMainFrame.Frame1)
+            end
         end
-        for i, ID in ipairs(db["10" .. FB]) do
-            CreateButton(i, ID, BG.AchievementMainFrame.Frame2)
+        if db["10" .. FB] then
+            for i, ID in ipairs(db["10" .. FB]) do
+                CreateButton(i, ID, BG.AchievementMainFrame.Frame2)
+            end
         end
         for i in pairs(db_stats) do
             CreateButton(i, nil, BG.AchievementMainFrame.Frame3, true)

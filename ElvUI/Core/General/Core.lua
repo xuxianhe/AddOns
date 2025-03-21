@@ -14,7 +14,6 @@ local CreateFrame = CreateFrame
 local GetBindingKey = GetBindingKey
 local GetCurrentBindingSet = GetCurrentBindingSet
 local GetNumGroupMembers = GetNumGroupMembers
-local GetSpellInfo = GetSpellInfo
 local InCombatLockdown = InCombatLockdown
 local IsInGroup = IsInGroup
 local IsInGuild = IsInGuild
@@ -26,14 +25,11 @@ local UIParent = UIParent
 local UnitFactionGroup = UnitFactionGroup
 local UnitGUID = UnitGUID
 
-local GetSpecialization = (E.Classic or E.Wrath) and LCS.GetSpecialization or GetSpecialization
+local GetSpecialization = (E.Classic or E.Wrath or E.Cata) and LCS.GetSpecialization or GetSpecialization
+local PlayerGetTimerunningSeasonID = PlayerGetTimerunningSeasonID
 
-local DisableAddOn = (C_AddOns and C_AddOns.DisableAddOn) or DisableAddOn
-local GetAddOnMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
+local DisableAddOn = C_AddOns.DisableAddOn
 local GetCVarBool = C_CVar.GetCVarBool
-
-local C_AddOns_GetAddOnEnableState = C_AddOns and C_AddOns.GetAddOnEnableState
-local GetAddOnEnableState = GetAddOnEnableState -- eventually this will be on C_AddOns and args swap
 
 local LE_PARTY_CATEGORY_HOME = LE_PARTY_CATEGORY_HOME
 local LE_PARTY_CATEGORY_INSTANCE = LE_PARTY_CATEGORY_INSTANCE
@@ -61,11 +57,11 @@ local LSM = E.Libs.LSM
 --Constants
 E.noop = function() end
 E.title = format('%s%s|r', E.InfoColor, 'ElvUI')
-E.toc = tonumber(GetAddOnMetadata('ElvUI', 'X-Interface'))
 E.version, E.versionString, E.versionDev, E.versionGit = E:ParseVersionString('ElvUI')
 E.myfaction, E.myLocalizedFaction = UnitFactionGroup('player')
 E.myLocalizedClass, E.myclass, E.myClassID = UnitClass('player')
 E.myLocalizedRace, E.myrace, E.myRaceID = UnitRace('player')
+E.mygender = UnitSex('player')
 E.mylevel = UnitLevel('player')
 E.myname = UnitName('player')
 E.myrealm = GetRealmName()
@@ -76,6 +72,7 @@ E.physicalWidth, E.physicalHeight = GetPhysicalScreenSize()
 E.screenWidth, E.screenHeight = GetScreenWidth(), GetScreenHeight()
 E.resolution = format('%dx%d', E.physicalWidth, E.physicalHeight)
 E.perfect = 768 / E.physicalHeight
+E.allowRoles = E.Retail or E.Cata or E.ClassicAnniv or E.ClassicAnnivHC or E.ClassicSOD
 E.NewSign = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14|t]]
 E.NewSignNoWhatsNew = [[|TInterface\OptionsFrame\UI-OptionsFrame-NewFeatureIcon:14:14:0:0|t]]
 E.TexturePath = [[Interface\AddOns\ElvUI\Media\Textures\]] -- for plugins?
@@ -95,7 +92,13 @@ E.texts = {}
 E.snapBars = {}
 E.RegisteredModules = {}
 E.RegisteredInitialModules = {}
-E.valueColorUpdateFuncs = {}
+E.valueColorUpdateFuncs = setmetatable({}, {
+	__newindex = function(_, key, value)
+		if type(key) == 'function' then return end
+		rawset(E.valueColorUpdateFuncs, key, value)
+	end
+})
+
 E.TexCoords = {0, 1, 0, 1}
 E.FrameLocks = {}
 E.VehicleLocks = {}
@@ -128,7 +131,7 @@ E.InverseAnchors = {
 -- Workaround for people wanting to use white and it reverting to their class color.
 E.PriestColors = { r = 0.99, g = 0.99, b = 0.99, colorStr = 'fffcfcfc' }
 
--- Socket Type info from 10.0.7
+-- Socket Type info from 11.0.7
 E.GemTypeInfo = {
 	Yellow			= { r = 0.97, g = 0.82, b = 0.29 },
 	Red				= { r = 1.00, g = 0.47, b = 0.47 },
@@ -144,6 +147,10 @@ E.GemTypeInfo = {
 	Cypher			= { r = 1.00, g = 0.80, b = 0.00 },
 	Tinker			= { r = 1.00, g = 0.47, b = 0.47 },
 	Primordial		= { r = 1.00, g = 0.00, b = 1.00 },
+	Fragrance		= { r = 1.00, g = 1.00, b = 1.00 },
+	SingingThunder	= { r = 0.97, g = 0.82, b = 0.29 },
+	SingingSea		= { r = 0.47, g = 0.67, b = 1.00 },
+	SingingWind		= { r = 1.00, g = 0.47, b = 0.47 },
 }
 
 --This frame everything in ElvUI should be anchored to for Eyefinity support.
@@ -525,14 +532,6 @@ do
 	end
 end
 
-function E:IsAddOnEnabled(addon)
-	if C_AddOns_GetAddOnEnableState then
-		return C_AddOns_GetAddOnEnableState(addon, E.myname) == 2
-	else
-		return GetAddOnEnableState(E.myname, addon) == 2
-	end
-end
-
 function E:IsIncompatible(module, addons)
 	for _, addon in ipairs(addons) do
 		local incompatible
@@ -560,6 +559,19 @@ do
 			},
 			'Bartender4',
 			'Dominos'
+		},
+		Bags = {
+			info = {
+				enabled = function() return E.private.bags.enable end,
+				accept = function() E.private.bags.enable = false; ReloadUI() end,
+				name = 'ElvUI Bags'
+			},
+			'AdiBags',
+			'ArkInventory',
+			'Baganator',
+			'Bagnon',
+			'BetterBags',
+			'Sorted'
 		},
 		Chat = {
 			info = {
@@ -1208,7 +1220,7 @@ do -- BFA Convert, deprecated..
 		local auraBarColors = E.global.unitframe.AuraBarColors
 		for spell, info in pairs(auraBarColors) do
 			if type(spell) == 'string' then
-				local spellID = select(7, GetSpellInfo(spell))
+				local _, _, _, _, _, _, spellID = E:GetSpellInfo(spell)
 				if spellID and not auraBarColors[spellID] then
 					auraBarColors[spellID] = info
 					auraBarColors[spell] = nil
@@ -1405,11 +1417,64 @@ function E:DBConvertDF()
 	local currency = E.global.datatexts.customCurrencies
 	if currency then
 		for id, data in next, E.global.datatexts.customCurrencies do
-			local info = { name = data.NAME, showMax = data.SHOW_MAX, currencyTooltip = data.DISPLAY_IN_MAIN_TOOLTIP, nameStyle = data.DISPLAY_STYLE and (strfind(data.DISPLAY_STYLE, 'ABBR') and 'abbr' or strfind(data.DISPLAY_STYLE, 'TEXT') and 'full' or 'none') or nil }
+			local info = {
+				name = data.NAME or nil,
+				showMax = data.SHOW_MAX or nil,
+				currencyTooltip = data.DISPLAY_IN_MAIN_TOOLTIP or nil,
+				nameStyle = data.DISPLAY_STYLE and (strfind(data.DISPLAY_STYLE, 'ABBR') and 'abbr' or strfind(data.DISPLAY_STYLE, 'TEXT') and 'full' or 'none') or nil
+			}
+
 			if next(info) then
 				E.global.datatexts.customCurrencies[id] = info
 			end
 		end
+	end
+
+	if E.private.general.gameMenuScale ~= nil then
+		E.db.general.gameMenuScale = E.private.general.gameMenuScale
+		E.private.general.gameMenuScale = nil
+	end
+end
+
+function E:DBConvertTWW()
+	-- tooltip item count to be more optional
+	local itemCount = E.db.tooltip.itemCount
+	if type(itemCount) == 'string' then
+		local db = E:CopyTable({}, P.tooltip.itemCount)
+		if itemCount == 'BAGS_ONLY' then
+			db.bags = true
+			db.bank = false
+		elseif itemCount == 'BANK_ONLY' then
+			db.bags = false
+			db.bank = true
+		elseif itemCount == 'BOTH' then
+			db.bags = true
+			db.bank = true
+		elseif itemCount == 'NONE' then
+			db.bags = false
+			db.bank = false
+		end
+
+		E.db.tooltip.itemCount = db
+	end
+
+	local healthBreak = E.db.unitframe.colors.healthBreak
+	local onlyLow = healthBreak.onlyLow
+	if onlyLow ~= nil then
+		healthBreak.onlyLow = nil
+
+		if onlyLow then
+			healthBreak.threshold.bad = true
+			healthBreak.threshold.neutral = false
+			healthBreak.threshold.good = false
+		end
+	end
+end
+
+function E:DBConvertDev()
+	if not ElvCharacterDB.ConvertKeybindings then
+		E:ConvertActionBarKeybinds()
+		ElvCharacterDB.ConvertKeybindings = true
 	end
 end
 
@@ -1419,19 +1484,11 @@ function E:UpdateDB()
 	E.db = E.data.profile
 
 	E:DBConversions()
+	E:SetupDB()
 
-	Auras.db = E.db.auras
-	ActionBars.db = E.db.actionbar
-	Bags.db = E.db.bags
-	Chat.db = E.db.chat
-	DataBars.db = E.db.databars
-	DataTexts.db = E.db.datatexts
-	NamePlates.db = E.db.nameplates
-	Tooltip.db = E.db.tooltip
-	UnitFrames.db = E.db.unitframe
-	TotemTracker.db = E.db.general.totems
-
-	--Not part of staggered update
+	-- default the non thing pixel border color to 191919, otherwise its 000000
+	if not E.PixelMode then P.general.bordercolor = { r = 0.1, g = 0.1, b = 0.1 } end
+	if not E.db.unitframe.thinBorders then P.unitframe.colors.borderColor = { r = 0.1, g = 0.1, b = 0.1 } end
 end
 
 function E:UpdateMoverPositions()
@@ -1455,6 +1512,7 @@ end
 function E:UpdateMediaItems(skipCallback)
 	E:UpdateMedia()
 	E:UpdateDispelColors()
+	E:UpdateCustomClassColors()
 	E:UpdateFrameTemplates()
 	E:UpdateStatusBars()
 
@@ -1480,11 +1538,11 @@ function E:UpdateActionBars(skipCallback)
 	ActionBars:UpdateMicroButtons()
 	ActionBars:UpdatePetCooldownSettings()
 
-	if E.Retail then
+	if E.Retail or E.Cata then
 		ActionBars:UpdateExtraButtons()
 	end
 
-	if E.Wrath and E.myclass == 'SHAMAN' then
+	if E.Cata and E.myclass == 'SHAMAN' then
 		ActionBars:UpdateTotemBindings()
 	end
 
@@ -1564,7 +1622,7 @@ function E:UpdateMisc(skipCallback)
 
 	if E.Retail then
 		TotemTracker:PositionAndSize()
-	elseif E.Wrath then
+	elseif E.Cata then
 		ActionBars:PositionAndSizeTotemBar()
 	end
 
@@ -1835,11 +1893,11 @@ do
 end
 
 function E:CallLoadedModule(obj, silent, object, index)
-	local name, func
-	if type(obj) == 'table' then name, func = unpack(obj) else name = obj end
-	local module = name and E:GetModule(name, silent)
+	local name, func = obj.name, obj.func
 
+	local module = name and E:GetModule(name, silent)
 	if not module then return end
+
 	if func and type(func) == 'string' then
 		E:CallLoadFunc(module[func], module)
 	elseif func and type(func) == 'function' then
@@ -1848,18 +1906,26 @@ function E:CallLoadedModule(obj, silent, object, index)
 		E:CallLoadFunc(module.Initialize, module)
 	end
 
-	if object and index then object[index] = nil end
+	if object and index then
+		object[index] = nil
+	end
 end
 
 function E:RegisterInitialModule(name, func)
-	E.RegisteredInitialModules[#E.RegisteredInitialModules + 1] = (func and {name, func}) or name
+	E.RegisteredInitialModules[#E.RegisteredInitialModules + 1] = { name = name, func = func }
 end
 
-function E:RegisterModule(name, func)
-	if E.initialized then
-		E:CallLoadedModule((func and {name, func}) or name)
-	else
-		E.RegisteredModules[#E.RegisteredModules + 1] = (func and {name, func}) or name
+do
+	local loaded = {}
+	function E:RegisterModule(name, func)
+		if E.initialized then
+			loaded.name = name
+			loaded.func = func
+
+			E:CallLoadedModule(loaded)
+		else
+			E.RegisteredModules[#E.RegisteredModules + 1] = { name = name, func = func }
+		end
 	end
 end
 
@@ -1882,16 +1948,12 @@ function E:DBConversions()
 
 		E:DBConvertBFA()
 		E:DBConvertSL()
+		E:DBConvertDF()
+		E:DBConvertTWW()
 	end
 
-	-- development converts
-	E:DBConvertDF()
-
-	-- always convert
-	if not ElvCharacterDB.ConvertKeybindings then
-		E:ConvertActionBarKeybinds()
-		ElvCharacterDB.ConvertKeybindings = true
-	end
+	-- development convert always
+	E:DBConvertDev()
 end
 
 function E:ConvertActionBarKeybinds()
@@ -1907,15 +1969,6 @@ function E:ConvertActionBarKeybinds()
 	local cur = GetCurrentBindingSet()
 	if cur and cur > 0 then
 		SaveBindings(cur)
-	end
-end
-
-function E:RefreshModulesDB()
-	-- this function is specifically used to reference the new database
-	-- onto the unitframe module, its useful dont delete! D:
-	if UnitFrames.db then
-		wipe(UnitFrames.db) --old ref, dont need so clear it
-		UnitFrames.db = E.db.unitframe --new ref
 	end
 end
 
@@ -1960,32 +2013,28 @@ function E:Initialize()
 	E.serverID = tonumber(serverID)
 	E.myguid = playerGUID
 
+	E.TimerunningID = PlayerGetTimerunningSeasonID and PlayerGetTimerunningSeasonID()
+
 	E.data = E.Libs.AceDB:New('ElvDB', E.DF, true)
 	E.data.RegisterCallback(E, 'OnProfileChanged', 'StaggeredUpdateAll')
 	E.data.RegisterCallback(E, 'OnProfileCopied', 'StaggeredUpdateAll')
 	E.data.RegisterCallback(E, 'OnProfileReset', 'OnProfileReset')
+
 	E.charSettings = E.Libs.AceDB:New('ElvPrivateDB', E.privateVars)
 	E.charSettings.RegisterCallback(E, 'OnProfileChanged', ReloadUI)
 	E.charSettings.RegisterCallback(E, 'OnProfileCopied', ReloadUI)
 	E.charSettings.RegisterCallback(E, 'OnProfileReset', 'OnPrivateProfileReset')
-	E.private = E.charSettings.profile
-	E.global = E.data.global
-	E.db = E.data.profile
 
-	-- default the non thing pixel border color to 191919, otherwise its 000000
-	if not E.PixelMode then P.general.bordercolor = { r = 0.1, g = 0.1, b = 0.1 } end
-	if not E.db.unitframe.thinBorders then P.unitframe.colors.borderColor = { r = 0.1, g = 0.1, b = 0.1 } end
-
-	E:DBConversions()
+	E:UpdateDB()
 	E:UIScale()
 	E:BuildPrefixValues()
 	E:LoadAPI()
 	E:LoadCommands()
 	E:InitializeModules()
-	E:RefreshModulesDB()
 	E:LoadMovers()
 	E:UpdateMedia()
 	E:UpdateDispelColors()
+	E:UpdateCustomClassColors()
 	E:UpdateCooldownSettings('all')
 	E:Contruct_StaticPopups()
 
@@ -1993,7 +2042,7 @@ function E:Initialize()
 		E:Tutorials()
 	end
 
-	if E.Retail or E.Wrath then
+	if E.Retail or E.Cata or E.ClassicSOD or E.ClassicAnniv or E.ClassicAnnivHC then
 		E.Libs.DualSpec:EnhanceDatabase(E.data, 'ElvUI')
 	end
 
@@ -2016,7 +2065,7 @@ function E:Initialize()
 		E:StaticPopup_Show('UPDATE_REQUEST')
 	end
 
-	if GetCVarBool('scriptProfile') and not E:IsAddOnEnabled('ElvUI_CPU') then
+	if GetCVarBool('scriptProfile') then
 		E:StaticPopup_Show('SCRIPT_PROFILE')
 	end
 
@@ -2025,11 +2074,5 @@ function E:Initialize()
 		if Chat.Initialized then msg = select(2, Chat:FindURL('CHAT_MSG_DUMMY', msg)) end
 		print(msg)
 		print(L["LOGIN_MSG_HELP"])
-	end
-
-	if E.wowtoc > E.toc then
-		local msg = format(L["LOGIN_PTR"], 'https://api.tukui.org/v1/download/dev/elvui/ptr')
-		if Chat.Initialized then msg = select(2, Chat:FindURL('CHAT_MSG_DUMMY', msg)) end
-		print(msg)
 	end
 end

@@ -7,19 +7,24 @@ local L = GSE.L
 local Statics = GSE.Static
 
 --- This function is used to debug a sequence and trace its execution.
-function GSE.TraceSequence(button, step, task)
-    if GSE.UnsavedOptions.DebugSequenceExecution and not GSE.isEmpty(task) then
-        local spell = task
-        local csindex, csitem, csspell = QueryCastSequence(task)
-        if not GSE.isEmpty(csitem) then
-            spell = csitem
-        end
-        if not GSE.isEmpty(csitem) then
-            spell = csspell
+function GSE.TraceSequence(button, step, spell)
+    if GSE.UnsavedOptions.DebugSequenceExecution and not GSE.isEmpty(spell) then
+        local isUsable, notEnoughMana = C_Spell.IsSpellUsable(spell)
+        local usableOutput, manaOutput, GCDOutput, CastingOutput
+        local spellid = GSE.GetSpellId(spell, Statics.TranslatorMode.ID)
+        local foundOutput
+        if spellid then
+            local FoundInSpellBook = C_SpellBook.FindSpellBookSlotForSpell(spellid)
+            if FoundInSpellBook > 0 then
+                foundOutput =
+                    GSEOptions.CommandColour .. "(" .. spellid .. ") Found in Spell Book" .. Statics.StringReset
+            else
+                foundOutput = GSEOptions.UNKNOWN .. spell .. " Not Found In Spell Book" .. Statics.StringReset
+            end
+        else
+            foundOutput = GSEOptions.UNKNOWN .. spell .. " Not Found In Spell Book" .. Statics.StringReset
         end
 
-        local isUsable, notEnoughMana = IsUsableSpell(spell)
-        local usableOutput, manaOutput, GCDOutput, CastingOutput
         if isUsable then
             usableOutput = GSEOptions.CommandColour .. "Able To Cast" .. Statics.StringReset
         else
@@ -30,13 +35,8 @@ function GSE.TraceSequence(button, step, task)
         else
             manaOutput = GSEOptions.CommandColour .. "Resources Available" .. Statics.StringReset
         end
-        local castingspell
+        local castingspell = UnitCastingInfo("player")
 
-        if GSE.GameMode == 1 then
-            castingspell, _, _, _, _, _, _, _ = CastingInfo()
-        else
-            castingspell, _, _, _, _, _, _, _ = UnitCastingInfo("player")
-        end
         if not GSE.isEmpty(castingspell) then
             CastingOutput = GSEOptions.UNKNOWN .. "Casting " .. castingspell .. Statics.StringReset
         else
@@ -49,14 +49,6 @@ function GSE.TraceSequence(button, step, task)
 
         local fullBlock = ""
 
-        if GSEOptions.showFullBlockDebug then
-            fullBlock =
-                "\n" ..
-                GSE.SequencesExec[button][step] ..
-                    GSEOptions.EmphasisColour ..
-                        "\n============================================================================================\n" ..
-                            Statics.StringReset
-        end
         GSE.PrintDebugMessage(
             table.concat(
                 {
@@ -66,11 +58,11 @@ function GSE.TraceSequence(button, step, task)
                     ",",
                     step,
                     ",",
-                    (spell and spell or "nil"),
-                    (csindex and
-                        " from castsequence " ..
-                            (csspell and csspell or csitem) .. " (item " .. csindex .. " in castsequence.) " or
-                        ""),
+                    tostring(GetServerTime()),
+                    ",",
+                    (spell and GSE.GetSpellId(spell, Statics.TranslatorMode.Current) or "nil"),
+                    ",",
+                    foundOutput,
                     ",",
                     usableOutput,
                     ",",
@@ -88,9 +80,15 @@ function GSE.TraceSequence(button, step, task)
 end
 
 function GSE:UNIT_SPELLCAST_SUCCEEDED(event, unit, action)
-    -- UPDATE for GSE3
     if unit == "player" then
-        local _, GCD_Timer = GetSpellCooldown(61304)
+        local GCD_Timer
+        if C_Spell.GetSpellCooldown then
+            GCD_Timer = C_Spell.GetSpellCooldown(61304)["duration"]
+        else
+            ---@diagnostic disable-next-line: deprecated
+            local _, gtime = GetSpellCooldown(61304)
+            GCD_Timer = gtime
+        end
         GCD = true
         C_Timer.After(
             GCD_Timer,
@@ -103,13 +101,33 @@ function GSE:UNIT_SPELLCAST_SUCCEEDED(event, unit, action)
         GSE.CurrentGCD = GCD_Timer
 
         local elements = GSE.split(action, "-")
-        local spell, _, _, _, _, _ = GetSpellInfo(elements[6])
-        local fskilltype, fspellid = GetSpellBookItemInfo(spell)
-        if not GSE.isEmpty(fskilltype) then
-            if GSE.RecorderActive then
-                GSE.GUIRecordFrame.RecordSequenceBox:SetText(
-                    GSE.GUIRecordFrame.RecordSequenceBox:GetText() .. "/cast " .. spell .. "\n"
-                )
+
+        local foundskill = false
+        if GSE.GameMode > 10 then
+            local spell
+
+            local found = C_SpellBook.FindSpellBookSlotForSpell(elements[6])
+            if found then
+                foundskill = true
+                spell = C_Spell.GetSpellInfo(elements[6]).name
+            end
+            if foundskill then
+                if GSE.RecorderActive then
+                    GSE.GUIRecordFrame.RecordSequenceBox:SetText(
+                        GSE.GUIRecordFrame.RecordSequenceBox:GetText() .. spell .. "\n"
+                    )
+                end
+            end
+        else
+            local spellInfo = C_Spell.GetSpellInfo(elements[6])
+            local spell = spellInfo and spellInfo.name
+            local fskilltype = spell and GetSpellBookItemInfo(spell)
+            if not GSE.isEmpty(fskilltype) then
+                if GSE.RecorderActive then
+                    GSE.GUIRecordFrame.RecordSequenceBox:SetText(
+                        GSE.GUIRecordFrame.RecordSequenceBox:GetText() .. "/cast " .. spell .. "\n"
+                    )
+                end
             end
         end
     end

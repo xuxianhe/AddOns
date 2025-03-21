@@ -608,7 +608,7 @@ function BG.RoleOverviewUI()
                                     if level and level >= BiaoGe.options["roleOverviewNotShowLevel"] then
                                         local class = db.playerInfo[realmID][player].class
                                         local iLevel = db.playerInfo[realmID][player].iLevel or (db.PlayerItemsLevel and db.PlayerItemsLevel[realmID] and db.PlayerItemsLevel[realmID][player])
-                                        if class and iLevel then
+                                        if class and iLevel and iLevel >= BiaoGe.options["roleOverviewNotShowiLevel"] then
                                             local colorplayer = "|c" .. select(4, GetClassColor(class)) .. player .. (isAccounts and "*" or "")
                                             tinsert(newTbl, {
                                                 player = player,
@@ -935,7 +935,7 @@ function BG.RoleOverviewUI()
                             if (level and level >= BiaoGe.options["roleOverviewNotShowLevel"]) then
                                 local class = db.playerInfo[realmID][player].class
                                 local iLevel = db.playerInfo[realmID][player].iLevel or (db.PlayerItemsLevel and db.PlayerItemsLevel[realmID] and db.PlayerItemsLevel[realmID][player])
-                                if class and iLevel then
+                                if class and iLevel and iLevel >= BiaoGe.options["roleOverviewNotShowiLevel"] then
                                     local colorplayer = "|c" .. select(4, GetClassColor(class)) .. player .. (isAccounts and "*" or "")
                                     tinsert(newTbl, {
                                         player = player,

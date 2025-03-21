@@ -3,25 +3,26 @@ local S = E:GetModule('Skins')
 
 local _G = _G
 local unpack = unpack
+local hooksecurefunc = hooksecurefunc
 
 local CreateFrame = CreateFrame
-local GetItemInfo = GetItemInfo
 local GetMerchantNumItems = GetMerchantNumItems
 local GetBuybackItemInfo = GetBuybackItemInfo
 local GetNumBuybackItems = GetNumBuybackItems
-local GetItemQualityColor = GetItemQualityColor
-local hooksecurefunc = hooksecurefunc
+
+local GetItemQualityByID = C_Item.GetItemQualityByID
+local GetItemQualityColor = C_Item.GetItemQualityColor
 
 local MERCHANT_ITEMS_PER_PAGE = MERCHANT_ITEMS_PER_PAGE
 
 local function merchantItemPoint()
-	S:HandlePointXY(_G.MerchantItem1, 6, -40)
+	_G.MerchantItem1:PointXY(6, -40)
 
 	for i = 2, _G.BUYBACK_ITEMS_PER_PAGE do
 		if E:IsEvenNumber(i) then
-			S:HandlePointXY(_G['MerchantItem'..i], 12, 0)
+			_G['MerchantItem'..i]:PointXY(12, 0)
 		else
-			S:HandlePointXY(_G['MerchantItem'..i], 0, -16)
+			_G['MerchantItem'..i]:PointXY(0, -16)
 		end
 	end
 end
@@ -113,7 +114,7 @@ function S:MerchantFrame()
 
 	S:HandleFrame(_G.MerchantBuyBackItem, true, nil, -1, 3, 2, -2)
 	_G.MerchantBuyBackItem:Height(46)
-	S:HandlePointXY(_G.MerchantBuyBackItem, 0, -16)
+	_G.MerchantBuyBackItem:PointXY(0, -16)
 
 	_G.MerchantBuyBackItemItemButton:StripTextures()
 	_G.MerchantBuyBackItemItemButton:StyleButton()
@@ -153,7 +154,7 @@ function S:MerchantFrame()
 				local name = _G['MerchantItem'..i..'Name']
 
 				if button.link then
-					local _, _, quality = GetItemInfo(button.link)
+					local quality = GetItemQualityByID(button.link)
 					if quality and quality > 1 then
 						local r, g, b = GetItemQualityColor(quality)
 						button:SetBackdropBorderColor(r, g, b)
@@ -170,7 +171,7 @@ function S:MerchantFrame()
 
 			local itemName = GetBuybackItemInfo(GetNumBuybackItems())
 			if itemName then
-				local _, _, quality = GetItemInfo(itemName)
+				local quality = GetItemQualityByID(itemName)
 				if quality and quality > 1 then
 					local r, g, b = GetItemQualityColor(quality)
 					_G.MerchantBuyBackItemItemButton:SetBackdropBorderColor(r, g, b)
@@ -199,7 +200,7 @@ function S:MerchantFrame()
 				if itemName then
 					local button = _G['MerchantItem'..i..'ItemButton']
 					local name = _G['MerchantItem'..i..'Name']
-					local _, _, quality = GetItemInfo(itemName)
+					local quality = GetItemQualityByID(itemName)
 					if quality and quality > 1 then
 						local r, g, b = GetItemQualityColor(quality)
 						button:SetBackdropBorderColor(r, g, b)

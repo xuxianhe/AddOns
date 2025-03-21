@@ -64,7 +64,7 @@ function GSE:ZONE_CHANGED_NEW_AREA()
     else
         GSE.inArena = false
     end
-    if type == "scenario" or difficulty == 167 or difficulty == 152 then
+    if type == "scenario" or difficulty == 167 or difficulty == 152 or difficulty == 208 then
         GSE.inScenario = true
     else
         GSE.inScenario = false
@@ -100,20 +100,259 @@ function GSE:ZONE_CHANGED_NEW_AREA()
     GSE.ReloadSequences()
 end
 
+local function GetSpec()
+    if GSE.GameMode < 7 then
+        return "1"
+    else
+        return tostring(GetSpecialization())
+    end
+end
+
+local function playerSpec()
+    if GSE.GameMode < 3 then
+        return 1
+    else
+        return PlayerUtil.GetCurrentSpecID()
+    end
+end
+
+local SHBT = CreateFrame("Frame", nil, nil, "SecureHandlerBaseTemplate,SecureFrameTemplate")
+
+local function overrideActionButton(savedBind, force)
+    if GSE.isEmpty(GSE.ButtonOverrides) then
+        GSE.ButtonOverrides = {}
+    end
+    local Button = savedBind.Bind
+    if not _G[Button] then
+        return
+    end
+    local Sequence = savedBind.Sequence
+    local state =
+        savedBind.State and savedBind.State or string.sub(Button, 1, 3) == "BT4" and "0" or
+        string.sub(Button, 1, 4) == "CPB_" and "" or
+        string.sub(Button, 1, 4) == "NDui_" and "2" or
+        "1"
+    _G[Button]:SetAttribute("gse-button", Sequence)
+    if
+        (string.sub(Button, 1, 3) == "BT4") or string.sub(Button, 1, 5) == "ElvUI" or
+            (string.sub(Button, 1, 4) == "NDui") or
+            string.sub(Button, 1, 4) == "CPB_"
+     then
+        if _G[Button] and _G[Button].SetState then
+            _G[Button]:SetState(
+                state,
+                "custom",
+                {
+                    func = function(self)
+                        if not InCombatLockdown() then
+                            self:SetAttribute("type", "click")
+                            self:SetAttribute("clickbutton", _G[self:GetAttribute("gse-button")])
+                        end
+                    end,
+                    tooltip = "GSE: " .. Sequence,
+                    texture = "Interface\\Addons\\GSE_GUI\\Assets\\GSE_Logo_Dark_512.blp",
+                    type = "click",
+                    clickbutton = _G[Sequence]
+                }
+            )
+            GSE.ButtonOverrides[Button] = Sequence
+            _G[Button]:SetAttribute("type", "click")
+            _G[Button]:SetAttribute("clickbutton", _G[Sequence])
+
+            SHBT:WrapScript(
+                _G[Button],
+                "OnClick",
+                [[
+                type = self:GetAttribute("type")
+                if type == "custom" then
+                    self:SetAttribute("type", "click")
+                end
+            ]]
+            )
+        end
+    else
+        if not InCombatLockdown() then
+            if (not GSE.ButtonOverrides[Button] or force) then
+                SHBT:WrapScript(
+                    _G[Button],
+                    "OnClick",
+                    [[
+    local parent, slot = self and self:GetParent():GetParent(), self and self:GetID()
+    local page = parent and parent:GetAttribute("actionpage")
+    local action = page and slot and slot > 0 and (slot + page*12 - 12)
+    if action or HasOverrideActionBar() then
+        if HasOverrideActionBar() then
+            _G["OverrideActionBarButton2"]:Click()
+        else
+            local at, id = GetActionInfo(action)
+            if at and id then
+                self:SetAttribute("type", "action")
+                self:SetAttribute('action', action)
+            else
+                self:SetAttribute("type", "click")
+            end
+        end
+    end
+]]
+                )
+                _G[Button]:SetAttribute("type", "click")
+
+                GSE.ButtonOverrides[Button] = Sequence
+
+            --if number and GetBindingByKey(number) and string.upper(GetBindingByKey(number)) == string.upper(Button) then
+            --SetBindingClick(number, Button, _G[Button])
+            --end
+            end
+
+            _G[Button]:SetAttribute("clickbutton", _G[Sequence])
+        end
+    end
+end
+local function LoadOverrides(force)
+    if GSE.isEmpty(GSE.ButtonOverrides) then
+        GSE.ButtonOverrides = {}
+    end
+    if GSE.isEmpty(GSE_C["ActionBarBinds"]) then
+        GSE_C["ActionBarBinds"] = {}
+    end
+    if GSE.isEmpty(GSE_C["ActionBarBinds"]["Specialisations"]) then
+        GSE_C["ActionBarBinds"]["Specialisations"] = {}
+    end
+    if GSE.isEmpty(GSE_C["ActionBarBinds"]["Specialisations"][GetSpec()]) then
+        GSE_C["ActionBarBinds"]["Specialisations"][GetSpec()] = {}
+    end
+    if GSE.isEmpty(GSE_C["ActionBarBinds"]["LoadOuts"]) then
+        GSE_C["ActionBarBinds"]["LoadOuts"] = {}
+    end
+    if GSE.isEmpty(GSE_C["ActionBarBinds"]["LoadOuts"][GetSpec()]) then
+        GSE_C["ActionBarBinds"]["LoadOuts"][GetSpec()] = {}
+    end
+    if not InCombatLockdown() then
+        for k, _ in pairs(GSE.ButtonOverrides) do
+            -- revert all buttons
+            if string.sub(k, 1, 5) == "ElvUI" or string.sub(k, 1, 4) == "CPB_" or string.sub(k, 1, 3) == "BT4" then
+                local state = "1"
+                --_G[Button]:GetAttribute("state"),
+                if string.sub(k, 1, 3) == "BT4" then
+                    state = "0"
+                elseif string.sub(k, 1, 4) == "CPB_" then
+                    state = ""
+                end
+                _G[k]:SetState(state, "action", tonumber(string.match(k, "%d+$")))
+            else
+                _G[k]:SetAttribute("type", "action")
+            end
+        end
+        GSE.ButtonOverrides = {}
+
+        for _, v in pairs(GSE_C["ActionBarBinds"]["Specialisations"][GetSpec()]) do
+            overrideActionButton(v, force)
+        end
+        if C_ClassTalents and C_ClassTalents.GetLastSelectedSavedConfigID then
+            local selected = playerSpec() and tostring(C_ClassTalents.GetLastSelectedSavedConfigID(playerSpec()))
+
+            if
+                selected and GSE_C["ActionBarBinds"]["LoadOuts"][GetSpec()] and
+                    GSE_C["ActionBarBinds"]["LoadOuts"][GetSpec()][selected]
+             then
+                GSE.PrintDebugMessage("changing from " .. tostring(GSE.GetSelectedLoadoutConfigID()), "EVENTS")
+                for k, v in pairs(GSE_C["ActionBarBinds"]["LoadOuts"][GetSpec()][selected]) do
+                    overrideActionButton(v, force)
+                    GSE.ButtonOverrides[v.Sequence] = k
+                end
+            end
+        end
+    end
+end
+
+local function LoadKeyBindings(payload)
+    if GSE.isEmpty(GSE_C) then
+        GSE_C = {}
+    end
+    if GSE.isEmpty(GSE_C["KeyBindings"]) then
+        GSE_C["KeyBindings"] = {}
+    end
+
+    if GSE.isEmpty(GSE_C["KeyBindings"][GetSpec()]) then
+        GSE_C["KeyBindings"][GetSpec()] = {}
+    end
+
+    for k, v in pairs(GSE_C["KeyBindings"][GetSpec()]) do
+        if k ~= "LoadOuts" and not InCombatLockdown() then
+            SetBindingClick(k, v, _G[v])
+        end
+    end
+
+    if payload and not InCombatLockdown() then
+        if C_ClassTalents and C_ClassTalents.GetLastSelectedSavedConfigID then
+            local selected = playerSpec() and tostring(C_ClassTalents.GetLastSelectedSavedConfigID(playerSpec()))
+            if
+                selected and GSE_C["KeyBindings"][GetSpec()]["LoadOuts"] and
+                    GSE_C["KeyBindings"][GetSpec()]["LoadOuts"][selected]
+             then
+                GSE.PrintDebugMessage(
+                    "changing from " .. tostring(payload) .. " " .. tostring(GSE.GetSelectedLoadoutConfigID()),
+                    "EVENTS"
+                )
+                for k, v in pairs(GSE_C["KeyBindings"][GetSpec()]["LoadOuts"][selected]) do
+                    SetBinding(k)
+                    SetBindingClick(k, v, _G[v])
+                end
+            end
+        end
+    end
+end
+function GSE.ReloadOverrides(force)
+    LoadOverrides(force)
+end
+
+function GSE.ReloadKeyBindings()
+    LoadKeyBindings(true)
+end
 function GSE:PLAYER_ENTERING_WORLD()
-    GSE.PerformOneOffEvents()
     GSE.PrintAvailable = true
     GSE.PerformPrint()
     GSE.currentZone = GetRealZoneText()
+    GSE.PlayerEntered = true
+    LoadKeyBindings(GSE.PlayerEntered)
+    GSE.PerformReloadSequences(true)
+
+    LoadOverrides()
     GSE:ZONE_CHANGED_NEW_AREA()
+    if ConsolePort then
+        C_Timer.After(
+            10,
+            function()
+                LoadOverrides()
+            end
+        )
+    end
 end
 
 function GSE:ADDON_LOADED(event, addon)
     if addon == GNOME then
+        local char = UnitFullName("player")
+        local realm = GetRealmName()
+
+        GSE.PerformOneOffEvents()
+        if GSE_C and GSE_C["KeyBindings"] and GSE_C["KeyBindings"][char .. "-" .. realm] then
+            GSE_C["KeyBindings"][char .. "-" .. realm] = nil
+        end
+
+        if GSE.isEmpty(GSESpellCache) then
+            GSESpellCache = {
+                ["enUS"] = {}
+            }
+        end
+
+        if GSE.isEmpty(GSESpellCache[GetLocale()]) then
+            GSESpellCache[GetLocale()] = {}
+        end
+
         GSE.LoadStorage(GSE.Library)
 
-        if GSE.isEmpty(GSE3Storage[GSE.GetCurrentClassID()]) then
-            GSE3Storage[GSE.GetCurrentClassID()] = {}
+        if GSE.isEmpty(GSESequences[GSE.GetCurrentClassID()]) then
+            GSESequences[GSE.GetCurrentClassID()] = {}
         end
         if GSE.isEmpty(GSE.Library[GSE.GetCurrentClassID()]) then
             GSE.Library[GSE.GetCurrentClassID()] = {}
@@ -121,30 +360,25 @@ function GSE:ADDON_LOADED(event, addon)
         if GSE.isEmpty(GSE.Library[0]) then
             GSE.Library[0] = {}
         end
-
+        if GSE.isEmpty(GSEVariables) then
+            GSEVariables = {}
+        end
+        if GSE.isEmpty(GSEMacros) then
+            GSEMacros = {}
+        end
+        if GSE.isEmpty(GSEMacros[char .. "-" .. realm]) then
+            GSEMacros[char .. "-" .. realm] = {}
+        end
         GSE.PrintDebugMessage("I am loaded")
 
         GSE:SendMessage(Statics.CoreLoadedMessage)
 
         -- Register the Sample Macros
-        local seqnames = {}
-        -- table.insert(seqnames, "Assorted Sample Macros")
-        -- GSE.RegisterAddon("Samples", GSE.VersionString, seqnames)
-
-        -- GSE:RegisterMessage(Statics.ReloadMessage, "processReload")
-
-        -- table.insert(seqnames, "GSE2 Macros")
-        -- GSE.RegisterAddon("GSE2Library", GSE.VersionString, seqnames)
-
-        -- GSE:RegisterMessage(Statics.ReloadMessage, "processReload")
-
-        LibStub("AceConfigDialog-3.0"):AddToBlizOptions("GSE", "|cffff0000GSE:|r Advanced Macro Compiler")
         if not GSEOptions.HideLoginMessage then
             GSE.Print(
-                GSEOptions.AuthorColour ..
-                    L["GSE: Advanced Macro Compiler loaded.|r  Type "] ..
-                        GSEOptions.CommandColour .. L["/gse help|r to get started."],
-                GNOME
+                L["Advanced Macro Compiler loaded.|r  Type "] ..
+                    GSEOptions.CommandColour .. L["/gse help|r to get started."],
+                Statics.GSEString
             )
         end
 
@@ -193,6 +427,11 @@ function GSE:ADDON_LOADED(event, addon)
                 hide = true
             }
         end
+
+        if GSEOptions.shownew then
+            GSE:ShowUpdateNotes()
+        end
+        GSE:RegisterEvent("UPDATE_MACROS")
         GSE.WagoAnalytics:Switch("minimapIcon", GSEOptions.showMiniMap.hide)
     end
 end
@@ -204,11 +443,59 @@ function GSE:PLAYER_REGEN_ENABLED(unit, event, addon)
 end
 
 function GSE:PLAYER_LOGOUT()
-    GSE.PrepareLogout()
+    if not GSE.UnsavedOptions["GUI"] then
+        if GSE["MenuFrame"] then
+            if GSE.isEmpty(GSEOptions.frameLocations) then
+                GSEOptions.frameLocations = {}
+            end
+
+            if GSE.isEmpty(GSEOptions.frameLocations.menu) then
+                GSEOptions.frameLocations.menu = {}
+            end
+            GSEOptions.frameLocations.menu.top = GSE.MenuFrame.frame:GetTop()
+            GSEOptions.frameLocations.menu.left = GSE.MenuFrame.frame:GetLeft()
+        end
+        if GSE["GUIVariableFrame"] then
+            if GSE.isEmpty(GSEOptions.frameLocations.variablesframe) then
+                GSEOptions.frameLocations.variablesframe = {}
+            end
+
+            GSEOptions.frameLocations.variablesframe.top = GSE.GUIVariableFrame.frame:GetTop()
+            GSEOptions.frameLocations.variablesframe.left = GSE.GUIVariableFrame.frame:GetLeft()
+        end
+        if GSE["GUIMacroFrame"] then
+            if GSE.isEmpty(GSEOptions.frameLocations.macroframe) then
+                GSEOptions.frameLocations.macroframe = {}
+            end
+            GSEOptions.frameLocations.macroframe.top = GSE.GUIMacroFrame.frame:GetTop()
+            GSEOptions.frameLocations.macroframe.left = GSE.GUIMacroFrame.frame:GetLeft()
+        end
+        if GSE["GUIDebugFrame"] then
+            if GSE.isEmpty(GSEOptions.frameLocations.debug) then
+                GSEOptions.frameLocations.debug = {}
+            end
+            GSEOptions.frameLocations.debug.top = GSE.GUIDebugFrame.frame:GetTop()
+            GSEOptions.frameLocations.debug.left = GSE.GUIDebugFrame.frame:GetLeft()
+        end
+        if GSE["GUIkeybindingframe"] then
+            if GSE.isEmpty(GSEOptions.frameLocations.keybindingframe) then
+                GSEOptions.frameLocations.keybindingframe = {}
+            end
+            GSEOptions.frameLocations.keybindingframe.top = GSE.GUIkeybindingframe.frame:GetTop()
+            GSEOptions.frameLocations.keybindingframe.left = GSE.GUIkeybindingframe.frame:GetLeft()
+        end
+    end
 end
 
 function GSE:PLAYER_SPECIALIZATION_CHANGED()
-    GSE.ReloadSequences()
+    if GSE.isEmpty(GSE_C["KeyBindings"][GetSpec()]) then
+        GSE_C["KeyBindings"][GetSpec()] = {}
+    end
+    if not InCombatLockdown() then
+        LoadKeyBindings(GSE.PlayerEntered)
+        GSE.ReloadSequences()
+        LoadOverrides()
+    end
 end
 
 function GSE:PLAYER_LEVEL_UP()
@@ -224,34 +511,26 @@ function GSE:SPELLS_CHANGED()
 end
 
 function GSE:ACTIVE_TALENT_GROUP_CHANGED()
+    LoadKeyBindings(GSE.PlayerEntered)
+    LoadOverrides()
     GSE.ReloadSequences()
 end
 
 function GSE:PLAYER_PVP_TALENT_UPDATE()
+    LoadKeyBindings(GSE.PlayerEntered)
+    LoadOverrides()
     GSE.ReloadSequences()
 end
 
 function GSE:SPEC_INVOLUNTARILY_CHANGED()
-    GSE.ReloadSequences()
-end
-
-function GSE:PLAYER_TALENT_UPDATE()
-    GSE.ReloadSequences()
+    GSE.ReloadSequences(GSE.PlayerEntered)
+    LoadOverrides()
 end
 
 function GSE:TRAIT_NODE_CHANGED()
+    LoadKeyBindings(GSE.PlayerEntered)
+    LoadOverrides()
     GSE.ReloadSequences()
-end
-function GSE:TRAIT_NODE_CHANGED_PARTIAL()
-    GSE.ReloadSequences()
-end
-function GSE:TRAIT_NODE_ENTRY_UPDATED()
-    GSE.ReloadSequences()
-end
-function GSE:TRAIT_TREE_CHANGED()
-    GSE:UnregisterEvent("TRAIT_TREE_CHANGED")
-    GSE.ReloadSequences()
-    GSE:RegisterEvent("TRAIT_TREE_CHANGED")
 end
 
 function GSE:PLAYER_TARGET_CHANGED()
@@ -262,13 +541,23 @@ function GSE:PLAYER_TARGET_CHANGED()
     GSE:RegisterEvent("PLAYER_TARGET_CHANGED")
 end
 
-function GSE:TRAIT_CONFIG_UPDATED()
+function GSE:TRAIT_CONFIG_UPDATED(_, payload)
     GSE:UnregisterEvent("TRAIT_CONFIG_UPDATED")
+    LoadKeyBindings(GSE.PlayerEntered)
+    LoadOverrides()
     GSE.ReloadSequences()
     GSE:RegisterEvent("TRAIT_CONFIG_UPDATED")
 end
 function GSE:ACTIVE_COMBAT_CONFIG_CHANGED()
+    LoadKeyBindings(GSE.PlayerEntered)
+    LoadOverrides()
     GSE.ReloadSequences()
+end
+
+function GSE:PLAYER_TALENT_UPDATE()
+    LoadKeyBindings(GSE.PlayerEntered)
+    LoadOverrides()
+    GSE.ReloadSequences(GSE.PlayerEntered)
 end
 
 function GSE:GROUP_ROSTER_UPDATE(...)
@@ -294,12 +583,20 @@ function GSE:GROUP_ROSTER_UPDATE(...)
         GSE.SendSpellCache(channel)
     end
     -- Group Team stuff
-    GSE:ZONE_CHANGED_NEW_AREA()
+    local _, _, difficulty, _, _, _, _, _, _ = GetInstanceInfo()
+    -- dont trigger the normal things if in a delve
+    if difficulty ~= 208 then
+        GSE:ZONE_CHANGED_NEW_AREA()
+    end
 end
 
 function GSE:GUILD_ROSTER_UPDATE(...)
     -- Serialisation stuff
     GSE.sendVersionCheck("GUILD")
+end
+
+function GSE:UPDATE_MACROS()
+    GSE.ManageMacros()
 end
 
 GSE:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -319,14 +616,11 @@ if GSE.GameMode > 8 then
     GSE:RegisterEvent("PLAYER_PVP_TALENT_UPDATE")
 end
 
-if GSE.GameMode >= 10 then
+if GSE.GameMode > 10 then
     GSE:RegisterEvent("PLAYER_TALENT_UPDATE")
     GSE:RegisterEvent("SPEC_INVOLUNTARILY_CHANGED")
-    GSE:RegisterEvent("TRAIT_NODE_CHANGED")
-    GSE:RegisterEvent("TRAIT_NODE_CHANGED_PARTIAL")
-    GSE:RegisterEvent("TRAIT_NODE_ENTRY_UPDATED")
-    GSE:RegisterEvent("TRAIT_TREE_CHANGED")
     GSE:RegisterEvent("TRAIT_CONFIG_UPDATED")
+
     GSE:RegisterEvent("ACTIVE_COMBAT_CONFIG_CHANGED")
 end
 
@@ -334,7 +628,6 @@ if GSE.GameMode <= 3 then
     GSE:RegisterEvent("CHARACTER_POINTS_CHANGED")
     GSE:RegisterEvent("SPELLS_CHANGED")
 end
-
 function GSE:OnEnable()
     GSE.StartOOCTimer()
 end
@@ -367,15 +660,17 @@ function GSE:ProcessOOCQueue()
                 if GSE.isEmpty(GSE.Library[v.classid][v.sequencename]) then
                     GSE.AddSequenceToCollection(v.sequencename, v.sequence, v.classid)
                 else
-                    GSE.ReplaceMacro(v.classid, v.sequencename, v.sequence)
+                    GSE.ReplaceSequence(v.classid, v.sequencename, v.sequence)
                     GSE.UpdateSequence(v.sequencename, v.sequence.Macros[GSE.GetActiveSequenceVersion(v.sequencename)])
                 end
-                if v.checkmacro then
-                    GSE.CheckMacroCreated(v.sequencename, v.checkmacro)
-                end
-            elseif v.action == "openviewer" then
-                GSE.CheckGUI()
-                GSE.GUIShowViewer()
+            elseif v.action == "updatevariable" then
+                GSE.UpdateVariable(v.variable, v.name)
+            elseif v.action == "updatemacro" then
+                GSE.UpdateMacro(v.node)
+            elseif v.action == "importmacro" then
+                GSE.ImportMacro(v.node)
+            elseif v.action == "managemacros" then
+                GSE.ManageMacros()
             elseif v.action == "CheckMacroCreated" then
                 GSE.OOCCheckMacroCreated(v.sequencename, v.create)
             elseif v.action == "MergeSequence" then
@@ -400,10 +695,8 @@ function GSE.ToggleOOCQueue()
     end
 end
 
-local loadAddon = C_AddOns and C_AddOns.LoadAddOn or LoadAddOn
-
 function GSE.CheckGUI()
-    local loaded, reason = loadAddon("GSE_GUI")
+    local loaded, reason = C_AddOns.LoadAddOn("GSE_GUI")
     if not loaded then
         if reason == "DISABLED" then
             GSE.PrintDebugMessage("GSE GUI Disabled", "GSE_GUI")

@@ -3,6 +3,9 @@ local addonName = ... ---@type string
 ---@class BetterBags: AceAddon
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
+---@class Context: AceModule
+local context = addon:GetModule('Context')
+
 ---@class Debug: AceModule
 ---@field window DebugWindow
 ---@field enabled boolean
@@ -19,7 +22,8 @@ end
 function debug:OnEnable()
   ---@class DebugWindow: AceModule
   self.window = addon:GetModule('DebugWindow')
-  self.window:Create()
+  local ctx = context:New('DebugWindowEnable')
+  self.window:Create(ctx)
 
   ---@class Events: AceModule
   local events = addon:GetModule('Events')
@@ -116,6 +120,38 @@ end
 
 function debug:Log(category, ...)
   if not self.enabled then return end
-  self.window:AddLogLine(category, debug:Format(...))
+  local ctx = context:New('DebugLog')
+  self.window:AddLogLine(ctx, category, debug:Format(...))
 end
-debug:Enable()
+
+---@param category string
+---@param ctx Context
+function debug:LogContext(category, ctx)
+  if not self.enabled then return end
+  if ctx == nil then
+    error("context is nil")
+  end
+  self:Log(category, ctx:Get('event'))
+  local eventList = ctx:Get('events') --[[@as table<number, string>]]
+  for k, v in ipairs(eventList) do
+    self:Log(category, k, v)
+  end
+end
+
+---@param tag string
+---@param value any
+---@param nocopy? boolean
+function debug:Inspect(tag, value, nocopy)
+  if self.enabled and _G.DevTool then
+    -- DevTool does a JIT expansion of values when inspecting
+    -- a value in the UI. This is a problem because the state
+    -- of the value may change between the time it is inspected
+    -- and the time it is viewed. To avoid this, we make a deep copy
+    -- of the value if it is a table.
+    if type(value) == "table"  and not nocopy then
+      _G.DevTool:AddData(CopyTable(value), tag)
+    else
+      _G.DevTool:AddData(value, tag)
+    end
+  end
+end

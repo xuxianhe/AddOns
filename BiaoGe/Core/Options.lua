@@ -1220,10 +1220,36 @@ BG.Init(function()
             }
             local f = O.CreateCheckButton(name, L["进本自动清空表格*"], biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
+            f:HookScript("OnClick", function()
+                local name = "autoQingKongSaveHistory"
+                if f:GetChecked() then
+                    BG.options["button" .. name]:Show()
+                else
+                    BG.options["button" .. name]:Hide()
+                end
+            end)
 
             -- 删除旧设置
             if BiaoGe.options["showQingKong"] then
                 BiaoGe.options["showQingKong"] = nil
+            end
+        end
+        h = h + 30
+        -- 清空表格不保存历史表格
+        do
+            local name = "autoQingKongSaveHistory"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["自动清空表格时保存表格"],
+                L["进本自动清空表格时，把表格保存至历史表格1。"],
+                " ",
+                L["取消勾选则不会保存表格。"],
+            }
+            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["自动清空表格时保存表格"] .. "*", biaoge, 40, height - h, ontext)
+            BG.options["button" .. name] = f
+            if BiaoGe.options["autoQingKong"] ~= 1 then
+                f:Hide()
             end
         end
         h = h + 30
@@ -1259,7 +1285,6 @@ BG.Init(function()
             BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
             local ontext = {
                 L["清空表格时保留支出金额"],
-                " ",
                 L["如果你们团每次支出的金额都是固定的，可以勾选此项。"],
             }
             local f = O.CreateCheckButton(name, L["清空表格时保留支出金额"] .. "*", biaoge, 40, height - h, ontext)
@@ -1786,6 +1811,19 @@ BG.Init(function()
                 f:Hide()
             end
         end
+        h = h + 30
+        -- 拍卖成功的聊天消息后增加出价记录
+        do
+            local name = "autoAuctionLogLink"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["拍卖成功的聊天消息后面增加[出价记录]"],
+                L["鼠标悬停在[出价记录]时会显示该装备的出价记录。"],
+            }
+            local f = O.CreateCheckButton(name, L["拍卖成功的聊天消息后面增加[出价记录]"] .. "*", autoAuction, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+        end
     end
 
     -- 角色总览设置
@@ -2184,7 +2222,7 @@ BG.Init(function()
             t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
             t:SetPoint("TOPLEFT", 15, height)
             t:SetTextColor(1, 1, 1)
-            t:SetText(AddTexture("QUEST") .. L["角色总览的排序方式："])
+            t:SetText( L["角色总览的排序方式："])
             BG.options["Text" .. name] = t
 
             -- 选项
@@ -2238,7 +2276,7 @@ BG.Init(function()
             t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
             t:SetPoint("TOPLEFT", 15, height)
             t:SetTextColor(1, 1, 1)
-            t:SetText(AddTexture("QUEST") .. L["角色总览的默认显示："])
+            t:SetText( L["角色总览的默认显示："])
             BG.options["Text" .. name] = t
             -- 选项
             do
@@ -2291,7 +2329,7 @@ BG.Init(function()
             t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
             t:SetPoint("TOPLEFT", 15, height)
             t:SetTextColor(1, 1, 1)
-            t:SetText(AddTexture("QUEST") .. L["角色总览的布局方式："])
+            t:SetText( L["角色总览的布局方式："])
             BG.options["Text" .. name] = t
             -- 选项
             do
@@ -2340,6 +2378,32 @@ BG.Init(function()
             t:SetPoint("TOPLEFT", 15, height)
             t:SetTextColor(1, 1, 1)
             t:SetText(L["不显示低于该等级的角色："])
+
+            local edit = CreateFrame("EditBox", nil, roleOverview, "InputBoxTemplate")
+            edit:SetSize(50, 20)
+            edit:SetPoint("LEFT", t, "RIGHT", 10, 0)
+            edit:SetText(BiaoGe.options[name] or 0)
+            edit:SetAutoFocus(false)
+            edit:SetScript("OnTextChanged", function(self)
+                BiaoGe.options[name] = tonumber(self:GetText()) or 0
+            end)
+            edit:SetScript("OnEnterPressed", function(self)
+                self:ClearFocus()
+            end)
+        end
+        height = height - 30
+
+        -- 屏蔽装等
+        do
+            local name = "roleOverviewNotShowiLevel"
+            BG.options[name .. "reset"] = 0
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+
+            local t = roleOverview:CreateFontString()
+            t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+            t:SetPoint("TOPLEFT", 15, height)
+            t:SetTextColor(1, 1, 1)
+            t:SetText(AddTexture("QUEST").. L["不显示低于该装等的角色："])
 
             local edit = CreateFrame("EditBox", nil, roleOverview, "InputBoxTemplate")
             edit:SetSize(50, 20)
@@ -2512,7 +2576,7 @@ BG.Init(function()
                 if not BiaoGe.options[name] then
                     BiaoGe.options[name] = BG.options[name .. "reset"]
                 end
-                if BG.IsWLK then
+                if false then
                     local ontext = {
                         L["一键举报"],
                         L["在目标玩家/聊天频道玩家的右键菜单里增加一键举报脚本按钮。快捷命令：/BGReport。"],

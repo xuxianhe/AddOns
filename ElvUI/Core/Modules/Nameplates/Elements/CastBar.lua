@@ -91,17 +91,24 @@ function NP:Castbar_PostCastStart(unit)
 	-- player or NPCs; if used on other players: the cast target doesn't match their target, can be misleading if they mouseover cast
 	local plate = self.__owner
 	local db = NP:PlateDB(plate)
-	if db.castbar and db.castbar.enable and db.castbar.displayTarget then
-		local frameType = plate.frameType
-		if frameType == 'PLAYER' then
-			if self.curTarget then
-				self.Text:SetText(self.spellName..' > '..self.curTarget)
+	if db.castbar and db.castbar.enable and not db.castbar.hideSpellName then
+		local spellRename = db.castbar.spellRename and E:GetSpellRename(self.spellID)
+		local spellName = spellRename or self.spellName
+
+		if db.castbar.displayTarget then
+			local frameType = plate.frameType
+			if frameType == 'PLAYER' then
+				if self.curTarget then
+					self.Text:SetText(spellName..' > '..self.curTarget)
+				end
+			elseif frameType == 'ENEMY_NPC' or frameType == 'FRIENDLY_NPC' then
+				local target = self.curTarget or UnitName(unit..'target')
+				if target and target ~= '' and target ~= plate.unitName then
+					self.Text:SetText(spellName..' > '..target)
+				end
 			end
-		elseif frameType == 'ENEMY_NPC' or frameType == 'FRIENDLY_NPC' then
-			local target = self.curTarget or UnitName(unit..'target')
-			if target and target ~= '' and target ~= plate.unitName then
-				self.Text:SetText(self.spellName..' > '..target)
-			end
+		elseif spellRename then
+			self.Text:SetText(spellName)
 		end
 	end
 end
@@ -123,10 +130,10 @@ function NP:BuildPip(stage)
 end
 
 function NP:Construct_Castbar(nameplate)
-	local castbar = CreateFrame('StatusBar', nameplate:GetName()..'Castbar', nameplate)
+	local castbar = CreateFrame('StatusBar', '$parentCastbar', nameplate)
 	castbar:SetFrameStrata(nameplate:GetFrameStrata())
 	castbar:SetFrameLevel(5)
-	castbar:CreateBackdrop('Transparent', nil, nil, nil, nil, true, true)
+	castbar:CreateBackdrop('Transparent', nil, nil, nil, nil, true)
 	castbar:SetStatusBarTexture(LSM:Fetch('statusbar', NP.db.statusbar))
 
 	NP.StatusBars[castbar] = true
@@ -213,11 +220,13 @@ function NP:Update_Castbar(nameplate)
 		castbar.timeToHold = db.timeToHold
 		castbar.castTimeFormat = db.castTimeFormat
 		castbar.channelTimeFormat = db.channelTimeFormat
+		castbar.pipColor = NP.db.colors.empoweredCast
 
 		castbar:Size(db.width, db.height)
 		castbar:Point('CENTER', nameplate, 'CENTER', db.xOffset, db.yOffset)
 
-		castbar.pipColor = NP.db.colors.empoweredCast
+		E:SetSmoothing(castbar, db.smoothbars)
+
 		for stage, pip in next, castbar.Pips do
 			UF:CastBar_UpdatePip(castbar, pip, stage)
 		end

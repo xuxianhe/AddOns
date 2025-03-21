@@ -16,7 +16,25 @@ Statics.CastCmds = {
     toy = true
 }
 
-Statics.MacroCommands = {"petattack", "dismount", "shoot", "startattack", "stopattack", "targetenemy"}
+Statics.MacroCommands = {
+    "petattack",
+    "dismount",
+    "shoot",
+    "startattack",
+    "stopattack",
+    "targetenemy",
+    "click",
+    "castrandom",
+    "cancelqueuedspell",
+    "cqs",
+    "assist",
+    "clearfocus",
+    "cleartarget",
+    "focus",
+    "target",
+    "targetfriend",
+    "targetlasttarget"
+}
 
 Statics.CleanStrings = {
     [1] = "/console Sound_EnableSFX 0%;",
@@ -36,7 +54,7 @@ Statics.CleanStrings = {
     [17] = "/console Sound_EnableErrorSpeech 1%;",
     [18] = "/console Sound_EnableErrorSpeech 0%;",
     [19] = [[""]],
-    [20] = "/stopmacro [@playertarget, noexists]",
+    -- [20] = "/stopmacro [@playertarget, noexists]",
     -- [30] = "/use 2",
     -- [31] = "/use [combat] 11",
     -- [32] = "/use [combat] 12",
@@ -64,7 +82,7 @@ Statics.CleanStrings = {
     -- [54] = "/use 5",
     [101] = "\n\n"
 }
-
+Statics.GSEString = "|cFFFFFFFFGS|r|cFF00FFFFE|r"
 Statics.StringReset = "|r"
 Statics.CoreLoadedMessage = "GS-CoreLoaded"
 
@@ -74,30 +92,7 @@ Statics.SystemVariables = {
     end
 }
 
-Statics.SystemVariableDescriptions = {
-    ["GCD"] = L["Returns your current Global Cooldown value accounting for your haste if that stat is present."],
-    ["LID"] = L["Returns the current Loop Index.  If this is the third action in a loop it will return 3."]
-}
-
-if GSE.GameMode ~= 1 then
-    Statics.SystemVariables["HE"] = function()
-        local itemLink = GetInventoryItemLink("player", 2)
-        if not GSE.isEmpty(itemLink) then
-            if GetItemInfo(itemLink) == "Heart of Azeroth" then
-                return "/cast [combat,nochanneling] Heart Essence"
-            else
-                return "-- /cast Heart Essence"
-            end
-        else
-            return "-- /cast Heart Essence"
-        end
-    end
-    Statics.SystemVariableDescriptions["HE"] =
-        L[
-        "Checks to see if you have a Heart of Azeroth equipped and if so will insert '/cast Heart Essence' into the macro.  If not your macro will skip this line."
-    ]
-end
-Statics.SpecIDClassList = {
+GSE.SpecIDClassList = {
     [0] = 0,
     [1] = 1,
     [2] = 2,
@@ -155,7 +150,7 @@ Statics.SpecIDClassList = {
 
 local function determineSpecializationName(specID)
     if GSE.GameMode < 7 then
-        return Statics.SpecIDClassList[specID]
+        return GSE.SpecIDClassList[specID]
     else
         local _, specname = GetSpecializationInfoByID(specID)
         return specname
@@ -163,14 +158,7 @@ local function determineSpecializationName(specID)
 end
 
 local function determineClassName(specID)
-    local specname
-    -- if GSE.GameMode == 1 then
-    --     local ClassTable = C_CreatureInfo.GetClassInfo(specID)
-    --     return ClassTable["className"]
-    -- else
-    specname = GetClassInfo(specID)
-    -- end
-    return specname
+    return C_CreatureInfo.GetClassInfo(specID) and C_CreatureInfo.GetClassInfo(specID).className or nil
 end
 
 function GSE.GetClassName(classID)
@@ -179,7 +167,7 @@ end
 
 Statics.SpecIDList = {}
 
-if GSE.GameMode < 4 then
+if GSE.GameMode <= 4 then
     Statics.SpecIDClassList = {
         [0] = 0,
         [1] = 1,
@@ -303,10 +291,11 @@ Statics.StringFormatEscapes = {
     ["{.-}"] = "" -- Raid target icons
 }
 
-Statics.MacroResetSkeleton = [[
+Statics.MacroResetSkeleton =
+    [[
 if %s then
 	self:SetAttribute('step', 1)
-	self:SetAttribute('loopiter', 1)
+	print("|cFFFFFFFFGS|r|cFF00FFFFE|r Resetting " .. self:GetAttribute("name") .. " to step 1.")
 end
 ]]
 
@@ -334,7 +323,7 @@ Statics.Global = "Global"
 
 Statics.SampleMacros = {}
 Statics.QuestionMark = "INV_MISC_QUESTIONMARK"
-
+Statics.QuestionMarkIconID = 134400
 Statics.ReloadMessage = "Reload"
 Statics.CommPrefix = "GSE"
 
@@ -443,6 +432,8 @@ Statics.ActionsIcons.Pause = "Interface\\Addons\\GSE_GUI\\Assets\\pause.tga"
 Statics.ActionsIcons.Up = "Interface\\Addons\\GSE_GUI\\Assets\\up.tga"
 Statics.ActionsIcons.Down = "Interface\\Addons\\GSE_GUI\\Assets\\down.tga"
 Statics.ActionsIcons.Delete = "Interface\\Addons\\GSE_GUI\\Assets\\delete.tga"
+Statics.ActionsIcons.Key = "Interface\\Addons\\GSE_GUI\\Assets\\2key.png"
+Statics.ActionsIcons.Settings = "Interface\\Addons\\GSE_GUI\\Assets\\cog.png"
 
 Statics.GSE3OnClick =
     [=[
@@ -492,5 +483,33 @@ Statics.TableMetadataFunction = {
         rawset(t, last_k, v)
     end
 }
+Statics.PrintKeyModifiers =
+    [[print("Right alt key " .. tostring(IsRightAltKeyDown()))
+print("Left alt key " .. tostring(IsLeftAltKeyDown()))
+print("Any alt key " .. tostring(IsAltKeyDown()))
+print("Right ctrl key " .. tostring(IsRightControlKeyDown()))
+print("Left ctrl key " .. tostring(IsLeftControlKeyDown()))
+print("Any ctrl key " .. tostring(IsControlKeyDown()))
+print("Right shft key " .. tostring(IsRightShiftKeyDown()))
+print("Left shft key " .. tostring(IsLeftShiftKeyDown()))
+print("Any shft key " .. tostring(IsShiftKeyDown()))
+print("Any mod key " .. tostring(IsModifierKeyDown()))
+print("GetMouseButtonClicked() " .. GetMouseButtonClicked() )
+]]
 
+StaticPopupDialogs["GSE_ConfirmReloadUIDialog"] = {
+    text = L["You need to reload the User Interface to complete this task.  Would you like to do this now?"],
+    button1 = L["Yes"],
+    button2 = L["No"],
+    OnAccept = function()
+        ReloadUI()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3 -- Avoid some UI taint, see https://www.wowace.com/news/376-how-to-avoid-some-ui-taint
+}
+
+Statics.SEQUENCE_UPDATED = "GSE_SEQUENCE_UPDATED"
+Statics.COLLECTION_IMPORTED = "GSE_COLLECTION_IMPORTED"
 GSE.DebugProfile("Statics")

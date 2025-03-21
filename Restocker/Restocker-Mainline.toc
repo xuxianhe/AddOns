@@ -1,11 +1,11 @@
 #
 # Do not edit - this file is generated from TOC_TEMPLATE.TOC
 #
-## Interface: 100105
+## Interface: 100100
 ## Title: Restocker
 ## Author: kvakvs; original author RainForDays
 ## Notes: Restock items automatically from vendors and manage bag/bank balance
-## Version: 2024.5.1-f005d363
+## Version: 2023.6.1-24131de5
 ## DefaultState: enabled
 ## SavedVariablesPerCharacter: RestockerSettings
 

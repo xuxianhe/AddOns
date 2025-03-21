@@ -12,6 +12,18 @@ local LibSerialize = LibStub("LibSerialize")
 local LibDeflate = LibStub:GetLibrary("LibDeflate")
 
 local UnitAura = UnitAura
+if UnitAura == nil then
+  --- Deprecated in 10.2.5
+  UnitAura = function(unitToken, index, filter)
+		local auraData = C_UnitAuras.GetAuraDataByIndex(unitToken, index, filter)
+		if not auraData then
+			return nil;
+		end
+
+		return AuraUtil.UnpackAuraData(auraData)
+	end
+end
+
 -- Unit Aura functions that return info about the first Aura matching the spellName or spellID given on the unit.
 local WA_GetUnitAura = function(unit, spell, filter)
   if filter and not filter:upper():find("FUL") then
@@ -56,7 +68,7 @@ end
 -- Wrapping a unit's name in its class colour is very common in custom Auras
 local WA_ClassColorName = function(unit)
   if unit and UnitExists(unit) then
-    local name = UnitName(unit)
+    local name = WeakAuras.UnitName(unit)
     local _, class = UnitClass(unit)
     if not class then
       return name
@@ -511,8 +523,20 @@ local overridden = {
   WeakAuras = FakeWeakAuras
 }
 
+-- WORKAROUND API which return Mixin'd values need those mixin "rawgettable" in caller's fenv #5071
+local mixins = {
+  ColorMixin = ColorMixin,
+  Vector2DMixin = Vector2DMixin,
+  Vector3DMixin = Vector3DMixin,
+  ItemLocationMixin = ItemLocationMixin,
+  ItemTransmogInfoMixin = ItemTransmogInfoMixin,
+  TransmogPendingInfoMixin = TransmogPendingInfoMixin,
+  TransmogLocationMixin = TransmogLocationMixin,
+  PlayerLocationMixin = PlayerLocationMixin,
+}
+
 local env_getglobal_custom
-local exec_env_custom = setmetatable({},
+local exec_env_custom = setmetatable(CopyTable(mixins),
 {
   __index = function(t, k)
     if k == "_G" then
@@ -535,8 +559,20 @@ local exec_env_custom = setmetatable({},
       return {}
     elseif overridden[k] then
       return overridden[k]
-    else
+    elseif _G[k] then
       return _G[k]
+    elseif k:find(".", 1, true) then
+      local f
+      for i, n in ipairs{strsplit(".", k)} do
+        if i == 1 then
+          f = _G[n]
+        elseif f then
+          f = f[n]
+        else
+          return
+        end
+      end
+      return f
     end
   end,
   __newindex = function(table, key, value)
@@ -558,7 +594,7 @@ local PrivateForBuiltIn = {
 }
 
 local env_getglobal_builtin
-local exec_env_builtin = setmetatable({},
+local exec_env_builtin = setmetatable(CopyTable(mixins),
 {
   __index = function(t, k)
     if k == "_G" then
@@ -608,20 +644,25 @@ local function firstLine(string)
 end
 
 local function CreateFunctionCache(exec_env)
-  local cache = {}
-  cache.Load = function(self, string)
-    if self[string] then
-      return self[string]
+  local cache = {
+    funcs = setmetatable({}, {__mode = "v"})
+  }
+  cache.Load = function(self, string, silent)
+    if self.funcs[string] then
+      return self.funcs[string]
     else
       local loadedFunction, errorString = loadstring(string, firstLine(string))
       if errorString then
-        print(errorString)
-      else
+        if not silent then
+          print(errorString)
+        end
+        return nil, errorString
+      elseif loadedFunction then
         --- @cast loadedFunction -nil
         setfenv(loadedFunction, exec_env)
         local success, func = pcall(assert(loadedFunction))
         if success then
-          self[string] = func
+          self.funcs[string] = func
           return func
         end
       end
@@ -637,8 +678,8 @@ function WeakAuras.LoadFunction(string)
   return function_cache_custom:Load(string)
 end
 
-function Private.LoadFunction(string)
-  return function_cache_builtin:Load(string)
+function Private.LoadFunction(string, silent)
+  return function_cache_builtin:Load(string, silent)
 end
 
 function Private.GetSanitizedGlobal(key)

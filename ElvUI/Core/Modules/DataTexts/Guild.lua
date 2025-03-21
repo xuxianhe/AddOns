@@ -2,12 +2,9 @@ local E, L, V, P, G = unpack(ElvUI)
 local DT = E:GetModule('DataTexts')
 
 local _G = _G
-local ipairs, select, sort, unpack, wipe, ceil = ipairs, select, sort, unpack, wipe, ceil
+local ipairs, select, next, sort, unpack, wipe, ceil = ipairs, select, next, sort, unpack, wipe, ceil
 local format, strfind, strjoin, strsplit, strmatch = format, strfind, strjoin, strsplit, strmatch
 
-local EasyMenu = EasyMenu
-local GetDisplayedInviteType = GetDisplayedInviteType
-local GetGuildFactionInfo = GetGuildFactionInfo
 local GetGuildInfo = GetGuildInfo
 local GetGuildRosterInfo = GetGuildRosterInfo
 local GetGuildRosterMOTD = GetGuildRosterMOTD
@@ -17,21 +14,28 @@ local GetQuestDifficultyColor = GetQuestDifficultyColor
 local C_GuildInfo_GuildRoster = C_GuildInfo.GuildRoster
 local IsInGuild = IsInGuild
 local IsShiftKeyDown = IsShiftKeyDown
-local SetItemRef = SetItemRef
 local ToggleGuildFrame = ToggleGuildFrame
-local ToggleFriendsFrame = ToggleFriendsFrame
 local UnitInParty = UnitInParty
 local UnitInRaid = UnitInRaid
 local IsAltKeyDown = IsAltKeyDown
 
-local InviteUnit = C_PartyInfo.InviteUnit or InviteUnit
-local C_PartyInfo_RequestInviteFromUnit = C_PartyInfo.RequestInviteFromUnit
-local LoadAddOn = (C_AddOns and C_AddOns.LoadAddOn) or LoadAddOn
+local LoadAddOn = C_AddOns.LoadAddOn
 
 local COMBAT_FACTION_CHANGE = COMBAT_FACTION_CHANGE
 local REMOTE_CHAT = REMOTE_CHAT
 local GUILD_MOTD = GUILD_MOTD
 local GUILD = GUILD
+
+local GetAndSortMemberInfo = CommunitiesUtil.GetAndSortMemberInfo
+local GetSubscribedClubs = C_Club.GetSubscribedClubs
+local CLUBTYPE_GUILD = Enum.ClubType.Guild
+
+local TIMERUNNING_ATLAS = '|A:timerunning-glues-icon-small:%s:%s:0:0|a'
+local TIMERUNNING_SMALL = format(TIMERUNNING_ATLAS, 12, 10)
+
+local FACTION_ATLAS = '|A:communities-icon-faction-%s:%s:%s:0:0|a '
+local FACTION_ALLIANCE = format(FACTION_ATLAS, 'alliance', 13, 13)
+local FACTION_HORDE = format(FACTION_ATLAS, 'horde', 13, 13)
 
 local tthead, ttsubh, ttoff = {r=0.4, g=0.78, b=1}, {r=0.75, g=0.9, b=1}, {r=.3,g=1,b=.3}
 local activezone, inactivezone = {r=0.3, g=1.0, b=0.3}, {r=0.65, g=0.65, b=0.65}
@@ -41,13 +45,19 @@ local guildInfoString = '%s'
 local guildInfoString2 = GUILD..': %d/%d'
 local guildMotDString = '%s |cffaaaaaa- |cffffffff%s'
 local levelNameString = '|cff%02x%02x%02x%d|r |cff%02x%02x%02x%s|r'
-local levelNameStatusString = '|cff%02x%02x%02x%d|r %s%s %s'
-local nameRankString = '%s |cff999999-|cffffffff %s'
+local levelNameStatusString = '%s|cff%02x%02x%02x%d|r %s%s%s %s'
+local nameRankString = '%s %s|cff999999-|cffffffff %s'
 local standingString = E:RGBToHex(ttsubh.r, ttsubh.g, ttsubh.b)..'%s:|r |cFFFFFFFF%s/%s (%s%%)'
-local moreMembersOnlineString = strjoin('', '+ %d ', _G.FRIENDS_LIST_ONLINE, '...')
+local moreMembersOnlineString = strjoin('', '+%d ', _G.FRIENDS_LIST_ONLINE, '...')
 local noteString = strjoin('', '|cff999999   ', _G.LABEL_NOTE, ':|r %s')
 local officerNoteString = strjoin('', '|cff999999   ', _G.GUILD_RANK1_DESC, ':|r %s')
-local guildTable, guildMotD = {}, ''
+local clubTable, guildTable, guildMotD = {}, {}, ''
+
+local factionTemp = {}
+local GetGuildFactionInfo = (C_Reputation and C_Reputation.GetGuildFactionData) or function()
+	factionTemp.name, factionTemp.description, factionTemp.reaction, factionTemp.currentReactionThreshold, factionTemp.nextReactionThreshold, factionTemp.currentStanding = _G.GetGuildFactionInfo()
+	return factionTemp
+end
 
 local function sortByRank(a, b)
 	if a and b then
@@ -74,9 +84,10 @@ end
 
 local onlinestatus = {
 	[0] = '',
-	[1] = format('|cffFFFFFF[|r|cffFF9900%s|r|cffFFFFFF]|r', L["AFK"]),
-	[2] = format('|cffFFFFFF[|r|cffFF3333%s|r|cffFFFFFF]|r', L["DND"]),
+	[1] = format(' |cffFFFFFF[|r|cffFF9900%s|r|cffFFFFFF]|r', L["AFK"]),
+	[2] = format(' |cffFFFFFF[|r|cffFF3333%s|r|cffFFFFFF]|r', L["DND"]),
 }
+
 local mobilestatus = {
 	[0] = [[|TInterface\ChatFrame\UI-ChatIcon-ArmoryChat:14:14:0:0:16:16:0:16:0:16:73:177:73|t]],
 	[1] = [[|TInterface\ChatFrame\UI-ChatIcon-ArmoryChat-AwayMobile:14:14:0:0:16:16:0:16:0:16|t]],
@@ -89,6 +100,27 @@ end
 
 local function BuildGuildTable()
 	wipe(guildTable)
+	wipe(clubTable)
+
+	local clubs = E.Retail and GetSubscribedClubs()
+	if clubs then -- use this to get the timerunning flag (and other info?)
+		local guildClubID
+		for _, data in next, clubs do
+			if data.clubType == CLUBTYPE_GUILD then
+				guildClubID = data.clubId
+				break
+			end
+		end
+
+		local members = guildClubID and GetAndSortMemberInfo(guildClubID)
+		if members then
+			for _, data in next, members do
+				if data.guid then
+					clubTable[data.guid] = data
+				end
+			end
+		end
+	end
 
 	local totalMembers = GetNumGuildMembers()
 	for i = 1, totalMembers do
@@ -99,7 +131,8 @@ local function BuildGuildTable()
 		zone = (isMobile and not connected) and REMOTE_CHAT or zone
 
 		if connected or isMobile then
-			guildTable[#guildTable + 1] = {
+			local clubMember = clubTable[guid]
+			local data = {
 				name = E:StripMyRealm(name),	--1
 				rank = rank,					--2
 				level = level,					--3
@@ -113,6 +146,13 @@ local function BuildGuildTable()
 				isMobile = isMobile,			--11
 				guid = guid						--12
 			}
+
+			if clubMember then
+				data.timerunningID = clubMember.timerunningSeasonID
+				data.faction = clubMember.faction
+			end
+
+			guildTable[#guildTable + 1] = data
 		end
 	end
 end
@@ -163,30 +203,6 @@ local menuList = {
 	{ text = _G.CHAT_MSG_WHISPER_INFORM, hasArrow = true, notCheckable=true,}
 }
 
-local function inviteClick(_, name, guid)
-	E.EasyMenu:Hide()
-
-	if not (name and name ~= '') then return end
-
-	if guid then
-		local inviteType = GetDisplayedInviteType(guid)
-		if inviteType == 'INVITE' or inviteType == 'SUGGEST_INVITE' then
-			InviteUnit(name)
-		elseif inviteType == 'REQUEST_INVITE' and E.Retail then
-			C_PartyInfo_RequestInviteFromUnit(name)
-		end
-	else
-		-- if for some reason guid isnt here fallback and just try to invite them
-		-- this is unlikely but having a fallback doesnt hurt
-		InviteUnit(name)
-	end
-end
-
-local function whisperClick(_, playerName)
-	E.EasyMenu:Hide()
-	SetItemRef( 'player:'..playerName, format('|Hplayer:%1$s|h[%1$s]|h',playerName), 'LeftButton' )
-end
-
 local function Click(self, btn)
 	if btn == 'RightButton' and IsInGuild() then
 		local menuCountWhispers = 0
@@ -205,22 +221,18 @@ local function Click(self, btn)
 					name = name..' |cffaaaaaa*|r'
 				elseif not (info.isMobile and info.zone == REMOTE_CHAT) then
 					menuCountInvites = menuCountInvites + 1
-					menuList[2].menuList[menuCountInvites] = {text = name, arg1 = info.name, arg2 = info.guid, notCheckable=true, func = inviteClick}
+					menuList[2].menuList[menuCountInvites] = {text = name, arg1 = info.name, arg2 = info.guid, notCheckable=true, func = DT.InviteFriend}
 				end
 
 				menuCountWhispers = menuCountWhispers + 1
-				menuList[3].menuList[menuCountWhispers] = {text = name, arg1 = info.name, notCheckable=true, func = whisperClick}
+				menuList[3].menuList[menuCountWhispers] = {text = name, arg1 = info.name, notCheckable=true, func = DT.SendWhisper}
 			end
 		end
 
 		E:SetEasyMenuAnchor(E.EasyMenu, self)
-		EasyMenu(menuList, E.EasyMenu, nil, nil, nil, 'MENU')
+		E:ComplicatedMenu(menuList, E.EasyMenu, nil, nil, nil, 'MENU')
 	elseif not E:AlertCombat() then
-		if E.Retail then
-			ToggleGuildFrame()
-		else
-			ToggleFriendsFrame(3)
-		end
+		ToggleGuildFrame()
 	end
 end
 
@@ -230,6 +242,9 @@ local function OnEnter(_, _, noUpdate)
 
 	local shiftDown = IsShiftKeyDown()
 	local total, _, online = GetNumGuildMembers()
+	if not total then total = 0 end
+	if not online then online = 0 end
+
 	if #guildTable == 0 then BuildGuildTable() end
 
 	SortGuildTable(shiftDown)
@@ -246,21 +261,27 @@ local function OnEnter(_, _, noUpdate)
 	end
 
 	if E.Retail then
-		local _, _, standingID, barMin, barMax, barValue = GetGuildFactionInfo()
-		if standingID ~= 8 then -- Not Max Rep
-			barMax = barMax - barMin
-			barValue = barValue - barMin
-			DT.tooltip:AddLine(format(standingString, COMBAT_FACTION_CHANGE, E:ShortValue(barValue), E:ShortValue(barMax), ceil((barValue / barMax) * 100)))
+		local info = GetGuildFactionInfo()
+		if info and info.reaction ~= 8 then -- Not Max Rep
+			local nextReactionThreshold = info.nextReactionThreshold - info.currentReactionThreshold
+			local currentStanding = info.currentStanding - info.currentReactionThreshold
+			DT.tooltip:AddLine(format(standingString, COMBAT_FACTION_CHANGE, E:ShortValue(currentStanding), E:ShortValue(nextReactionThreshold), ceil((currentStanding / nextReactionThreshold) * 100)))
 		end
 	end
 
 	local zonec
 
 	DT.tooltip:AddLine(' ')
+	local limit = db.maxLimit
+	local useLimit = limit and limit > 0
 	for i, info in ipairs(guildTable) do
-		-- if more then 30 guild members are online, we don't Show any more, but inform user there are more
-		if 30 - i < 1 then
-			if online - 30 > 1 then DT.tooltip:AddLine(format(moreMembersOnlineString, online - 30), ttsubh.r, ttsubh.g, ttsubh.b) end
+		-- if more then guild members are online, we don't Show any more, but inform user there are more
+		if useLimit and i > limit then
+			local count = online - limit
+			if count > 1 then
+				DT.tooltip:AddLine(format(moreMembersOnlineString, count), ttsubh.r, ttsubh.g, ttsubh.b)
+			end
+
 			break
 		end
 
@@ -269,12 +290,13 @@ local function OnEnter(_, _, noUpdate)
 		local classc, levelc = E:ClassColor(info.class), GetQuestDifficultyColor(info.level)
 		if not classc then classc = levelc end
 
+		local faction = info.faction == 1 and FACTION_ALLIANCE or info.faction == 0 and FACTION_HORDE or ''
 		if shiftDown then
-			DT.tooltip:AddDoubleLine(format(nameRankString, info.name, info.rank), info.zone, classc.r, classc.g, classc.b, zonec.r, zonec.g, zonec.b)
+			DT.tooltip:AddDoubleLine(format(nameRankString, faction, info.name, info.rank), info.zone, classc.r, classc.g, classc.b, zonec.r, zonec.g, zonec.b)
 			if info.note ~= '' then DT.tooltip:AddLine(format(noteString, info.note), ttsubh.r, ttsubh.g, ttsubh.b, 1) end
 			if info.officerNote ~= '' then DT.tooltip:AddLine(format(officerNoteString, info.officerNote), ttoff.r, ttoff.g, ttoff.b, 1) end
 		else
-			DT.tooltip:AddDoubleLine(format(levelNameStatusString, levelc.r*255, levelc.g*255, levelc.b*255, info.level, strmatch(info.name,'([^%-]+).*'), inGroup(info.name), info.status), info.zone, classc.r,classc.g,classc.b, zonec.r,zonec.g,zonec.b)
+			DT.tooltip:AddDoubleLine(format(levelNameStatusString, faction, levelc.r*255, levelc.g*255, levelc.b*255, info.level, strmatch(info.name,'([^%-]+).*'), inGroup(info.name), info.status, info.timerunningID and TIMERUNNING_SMALL or ''), info.zone, classc.r,classc.g,classc.b, zonec.r,zonec.g,zonec.b)
 		end
 	end
 

@@ -28,9 +28,45 @@ function DB:GetBagPosition(kind)
 end
 
 ---@param kind BagKind
+---@return table
+function DB:GetAnchorPosition(kind)
+  return DB.data.profile.anchorPositions[kind]
+end
+
+---@param kind BagKind
+---@return AnchorState
+function DB:GetAnchorState(kind)
+  return DB.data.profile.anchorState[kind]
+end
+
+---@param kind BagKind
 ---@return BagView
 function DB:GetBagView(kind)
   return DB.data.profile.views[kind]
+end
+
+---@param kind BagKind
+---@return boolean
+function DB:GetMarkRecentItems(kind)
+  return DB.data.profile.newItems[kind].markRecentItems
+end
+
+---@param kind BagKind
+---@param value boolean
+function DB:SetMarkRecentItems(kind, value)
+  DB.data.profile.newItems[kind].markRecentItems = value
+end
+
+---@param kind BagKind
+---@return boolean
+function DB:GetShowNewItemFlash(kind)
+  return DB.data.profile.newItems[kind].showNewItemFlash
+end
+
+---@param kind BagKind
+---@param value boolean
+function DB:SetShowNewItemFlash(kind, value)
+  DB.data.profile.newItems[kind].showNewItemFlash = value
 end
 
 ---@param kind BagKind
@@ -59,6 +95,10 @@ function DB:SetCategoryFilter(kind, filter, value)
   DB.data.profile.categoryFilters[kind][filter] = value
 end
 
+function DB:GetCategoryFilters(kind)
+  return DB.data.profile.categoryFilters[kind]
+end
+
 ---@param show boolean
 function DB:SetShowBagButton(show)
   DB.data.profile.showBagButton = show
@@ -71,7 +111,7 @@ end
 
 ---@param kind BagKind
 ---@param view BagView
----@return table 
+---@return SizeInfo
 function DB:GetBagSizeInfo(kind, view)
   return DB.data.profile.size[view][kind]
 end
@@ -113,18 +153,6 @@ function DB:SetBagViewFrameSize(kind, view, width, height)
   DB.data.profile.size[view][kind].height = height
 end
 
----@param kind BagKind
----@return GridCompactStyle
-function DB:GetBagCompaction(kind)
-  return DB.data.profile.compaction[kind]
-end
-
----@param kind BagKind
----@param style GridCompactStyle
-function DB:SetBagCompaction(kind, style)
-  DB.data.profile.compaction[kind] = style
-end
-
 function DB:GetItemLevelOptions(kind)
   return DB.data.profile.itemLevel[kind]
 end
@@ -145,6 +173,9 @@ function DB:SetFirstTimeMenu(value)
   DB.data.profile.firstTimeMenu = value
 end
 
+---@param kind BagKind
+---@param view BagView
+---@param opacity number
 function DB:SetBagViewSizeOpacity(kind, view, opacity)
   DB.data.profile.size[view][kind].opacity = opacity
 end
@@ -164,6 +195,18 @@ function DB:SetSectionSortType(kind, view, sort)
 end
 
 ---@param kind BagKind
+---@return boolean
+function DB:GetExtraGlowyButtons(kind)
+  return DB.data.profile.extraGlowyButtons[kind]
+end
+
+---@param kind BagKind
+---@param value boolean
+function DB:SetExtraGlowyButtons(kind, value)
+  DB.data.profile.extraGlowyButtons[kind] = value
+end
+
+---@param kind BagKind
 ---@param view BagView
 ---@return ItemSortType
 function DB:GetItemSortType(kind, view)
@@ -180,7 +223,7 @@ end
 ---@param itemID number
 ---@param category string
 function DB:SaveItemToCategory(itemID, category)
-  DB:CreateCategory(category)
+  assert(DB.data.profile.customCategoryFilters[category] ~= nil, "Category does not exist: " .. category)
   DB.data.profile.customCategoryFilters[category].itemList[itemID] = true
   local previousCategory = DB.data.profile.customCategoryIndex[itemID]
   if previousCategory and previousCategory ~= category then
@@ -202,7 +245,7 @@ end
 ---@param category string
 ---@param enabled boolean
 function DB:SetItemCategoryEnabled(kind, category, enabled)
-  DB:CreateCategory(category)
+  assert(DB.data.profile.customCategoryFilters[category] ~= nil, "Category does not exist: " .. category)
   DB.data.profile.customCategoryFilters[category].enabled[kind] = enabled
 end
 
@@ -239,15 +282,19 @@ function DB:GetAllItemCategories()
 end
 
 ---@param category string
----@return CustomCategoryFilter
+---@return CustomCategoryFilter?
 function DB:GetItemCategory(category)
-  return DB.data.profile.customCategoryFilters[category] or {}
+  return DB.data.profile.customCategoryFilters[category]
 end
 
 ---@param category string
----@return CustomCategoryFilter
+---@return CustomCategoryFilter?
 function DB:GetEphemeralItemCategory(category)
-  return DB.data.profile.ephemeralCategoryFilters[category] or {}
+  return DB.data.profile.ephemeralCategoryFilters[category]
+end
+
+function DB:GetAllEphemeralItemCategories()
+  return DB.data.profile.ephemeralCategoryFilters
 end
 
 ---@param category string
@@ -262,25 +309,68 @@ function DB:GetItemCategoryByItemID(itemID)
   return DB.data.profile.customCategoryFilters[DB.data.profile.customCategoryIndex[itemID]] or {}
 end
 
----@param category string
-function DB:CreateCategory(category)
-  DB.data.profile.customCategoryFilters[category] = DB.data.profile.customCategoryFilters[category] or {itemList = {}}
-  DB.data.profile.customCategoryFilters[category].itemList = DB.data.profile.customCategoryFilters[category].itemList or {}
-  DB.data.profile.customCategoryFilters[category].name = category
-  DB.data.profile.customCategoryFilters[category].enabled = DB.data.profile.customCategoryFilters[category].enabled or {
-    [const.BAG_KIND.BACKPACK] = true,
-    [const.BAG_KIND.BANK] = true
-  }
+---@param category CustomCategoryFilter
+function DB:CreateOrUpdateCategory(category)
+  if category.save then
+    DB.data.profile.customCategoryFilters[category.name] = category
+    for itemID, _ in pairs(category.itemList) do
+      DB.data.profile.customCategoryIndex[itemID] = category.name
+    end
+  else
+    DB.data.profile.ephemeralCategoryFilters[category.name] = {
+      name = category.name,
+      enabled = category.enabled,
+      dynamic = category.dynamic,
+      itemList = {},
+    }
+  end
 end
 
 ---@param category string
-function DB:CreateEpemeralCategory(category)
-  DB.data.profile.ephemeralCategoryFilters[category] = DB.data.profile.ephemeralCategoryFilters[category] or {}
-  DB.data.profile.ephemeralCategoryFilters[category].name = category
-  DB.data.profile.ephemeralCategoryFilters[category].enabled = DB.data.profile.ephemeralCategoryFilters[category].enabled or {
-    [const.BAG_KIND.BACKPACK] = true,
-    [const.BAG_KIND.BANK] = true
-  }
+---@return boolean
+function DB:IsSearchCategory(category)
+  return DB.data.profile.searchCategories[category] ~= nil
+end
+
+---@param category string
+---@return CategoryOptions
+function DB:GetCategoryOptions(category)
+  local options = DB.data.profile.categoryOptions[category]
+  if not options then
+    options = {
+      shown = true,
+    }
+    DB.data.profile.categoryOptions[category] = options
+  end
+  return options
+end
+
+---@return boolean
+function DB:GetEnterToMakeCategory()
+  return DB.data.profile.enterToMakeCategory
+end
+
+---@param value boolean
+function DB:SetEnterToMakeCategory(value)
+  DB.data.profile.enterToMakeCategory = value
+end
+
+---@param kind BagKind
+function DB:ClearCustomSectionSort(kind)
+  DB.data.profile.customSectionSort[kind] = {}
+end
+
+---@param kind BagKind
+---@param category string
+---@param sort number
+function DB:SetCustomSectionSort(kind, category, sort)
+  DB.data.profile.customSectionSort[kind][category] = sort
+end
+
+---@param kind BagKind
+---@return table<string, number>
+function DB:GetCustomSectionSort(kind)
+  return DB.data.profile.customSectionSort[kind]
 end
 
 ---@param guid string
@@ -325,6 +415,16 @@ function DB:GetInBagSearch()
   return DB.data.profile.inBagSearch
 end
 
+---@param enabled boolean
+function DB:SetCategorySell(enabled)
+  DB.data.profile.categorySell = enabled
+end
+
+---@return boolean
+function DB:GetCategorySell()
+  return DB.data.profile.categorySell
+end
+
 function DB:GetStackingOptions(kind)
   return DB.data.profile.stacking[kind]
 end
@@ -345,6 +445,10 @@ function DB:SetDontMergePartial(kind, value)
   DB.data.profile.stacking[kind].dontMergePartial = value
 end
 
+function DB:SetDontMergeTransmog(kind, value)
+  DB.data.profile.stacking[kind].dontMergeTransmog = value
+end
+
 function DB:GetShowKeybindWarning()
   return DB.data.profile.showKeybindWarning
 end
@@ -353,7 +457,70 @@ function DB:SetShowKeybindWarning(value)
   DB.data.profile.showKeybindWarning = value
 end
 
+---@param kind BagKind
+---@return boolean
+function DB:GetShowFullSectionNames(kind)
+  return DB.data.profile.showFullSectionNames[kind]
+end
+
+---@param kind BagKind
+---@param value boolean
+function DB:SetShowFullSectionNames(kind, value)
+  DB.data.profile.showFullSectionNames[kind] = value
+end
+
+---@param key string
+function DB:SetTheme(key)
+  DB.data.profile.theme = key
+end
+
+---@return string
+function DB:GetTheme()
+  return DB.data.profile.theme
+end
+
+---@return string
+function DB:GetUpgradeIconProvider()
+  return DB.data.profile.upgradeIconProvider
+end
+
+---@param value string
+function DB:SetUpgradeIconProvider(value)
+  DB.data.profile.upgradeIconProvider = value
+end
+
+---@param kind BagKind
+---@return boolean
+function DB:GetShowAllFreeSpace(kind)
+  return DB.data.profile.showAllFreeSpace[kind]
+end
+
+---@param kind BagKind
+---@param value boolean
+function DB:SetShowAllFreeSpace(kind, value)
+  DB.data.profile.showAllFreeSpace[kind] = value
+end
+
 function DB:Migrate()
+
+  --[[
+    Deletion of the old lockedItems table.
+    Do not remove before Q1'25.
+  ]]--
+  DB.data.profile.lockedItems = {}
+
+  --[[
+    Migration away from multi-view bags and bank to a single view.
+    Do not remove before Q1'25.
+  ]]--
+  if DB:GetBagView(const.BAG_KIND.BACKPACK) ~= const.BAG_VIEW.SECTION_GRID and DB:GetBagView(const.BAG_KIND.BACKPACK) ~= const.BAG_VIEW.SECTION_ALL_BAGS then
+    DB:SetBagView(const.BAG_KIND.BACKPACK, const.BAG_VIEW.SECTION_GRID)
+  end
+
+  if DB:GetBagView(const.BAG_KIND.BANK) ~= const.BAG_VIEW.SECTION_GRID and DB:GetBagView(const.BAG_KIND.BANK) ~= const.BAG_VIEW.SECTION_ALL_BAGS then
+    DB:SetBagView(const.BAG_KIND.BANK, const.BAG_VIEW.SECTION_GRID)
+  end
+
   --[[
     Migration of the custom category filters from single filter to per-bag filter.
     Do not remove before Q4'24.
@@ -365,6 +532,21 @@ function DB:Migrate()
         [const.BAG_KIND.BACKPACK] = value,
         [const.BAG_KIND.BANK] = value
       }
+    end
+  end
+
+  -- Fix the column count and items per row values from a previous bug.
+  -- Do not remove before Q1'25.
+  for _, bagView in pairs(const.BAG_VIEW) do
+    for _, bagKind in pairs(const.BAG_KIND) do
+      if DB.data.profile.size[bagView] then
+        local t = DB.data.profile.size[bagView][bagKind]
+        if t then
+          if t.itemsPerRow ~= nil and t.itemsPerRow > 30 or t.itemsPerRow < 1 then
+            t.itemsPerRow = 7
+          end
+        end
+      end
     end
   end
 end

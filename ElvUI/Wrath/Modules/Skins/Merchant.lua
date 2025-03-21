@@ -98,7 +98,7 @@ function S:MerchantFrame()
 
 	S:HandleFrame(_G.MerchantBuyBackItem, true, nil, -1, 3, 2, -2)
 	_G.MerchantBuyBackItem:Height(46)
-	S:HandlePointXY(_G.MerchantBuyBackItem, 0, -16)
+	_G.MerchantBuyBackItem:PointXY(0, -16)
 
 	_G.MerchantBuyBackItemItemButton:StripTextures()
 	_G.MerchantBuyBackItemItemButton:StyleButton()

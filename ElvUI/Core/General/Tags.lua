@@ -3,7 +3,6 @@ local NP = E:GetModule('NamePlates')
 local ElvUF = E.oUF
 local Tags = ElvUF.Tags
 
-local RangeCheck = E.Libs.RangeCheck
 local Translit = E.Libs.Translit
 local translitMark = '!'
 
@@ -35,20 +34,18 @@ local QuestDifficultyColors = QuestDifficultyColors
 local UnitBattlePetLevel = UnitBattlePetLevel
 local UnitClassification = UnitClassification
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
+local UnitThreatPercentageOfLead = UnitThreatPercentageOfLead
 local UnitExists = UnitExists
 local UnitFactionGroup = UnitFactionGroup
 local UnitGetIncomingHeals = UnitGetIncomingHeals
 local UnitGetTotalAbsorbs = UnitGetTotalAbsorbs
+local UnitGetTotalHealAbsorbs = UnitGetTotalHealAbsorbs
 local UnitGUID = UnitGUID
 local UnitHealthMax = UnitHealthMax
 local UnitIsAFK = UnitIsAFK
 local UnitIsBattlePetCompanion = UnitIsBattlePetCompanion
-local UnitIsConnected = UnitIsConnected
-local UnitIsDead = UnitIsDead
-local UnitIsDeadOrGhost = UnitIsDeadOrGhost
 local UnitIsDND = UnitIsDND
 local UnitIsFeignDeath = UnitIsFeignDeath
-local UnitIsGhost = UnitIsGhost
 local UnitIsPlayer = UnitIsPlayer
 local UnitIsPVP = UnitIsPVP
 local UnitIsPVPFreeForAll = UnitIsPVPFreeForAll
@@ -78,7 +75,7 @@ local SPEC_MONK_BREWMASTER = SPEC_MONK_BREWMASTER
 local PVP = PVP
 
 -- GLOBALS: Hex, _TAGS, _COLORS -- added by oUF
--- GLOBALS: UnitPower, UnitHealth, UnitName, UnitClass -- override during testing groups
+-- GLOBALS: UnitPower, UnitHealth, UnitName, UnitClass, UnitIsDead, UnitIsGhost, UnitIsDeadOrGhost, UnitIsConnected -- override during testing groups
 -- GLOBALS: GetTitleNPC, Abbrev, GetClassPower, GetQuestData, UnitEffectiveLevel, NameHealthColor -- custom ones we made
 
 local RefreshNewTags -- will turn true at EOF
@@ -124,7 +121,7 @@ Tags.SharedEvents.QUEST_LOG_UPDATE = true
 ------------------------------------------------------------------------
 
 Tags.Env.UnitEffectiveLevel = function(unit)
-	if E.Retail or E.Wrath then
+	if E.Retail or E.Cata then
 		return _G.UnitEffectiveLevel(unit)
 	else
 		return UnitLevel(unit)
@@ -206,7 +203,7 @@ Tags.Env.GetClassPower = function(unit)
 
 		if Min > 0 then
 			local power = ElvUF.colors.ClassBars[unitClass]
-			local color = (monk and power[Min]) or (dk and (E.Wrath and ElvUF.colors.class.DEATHKNIGHT or power[spec ~= 5 and spec or 1])) or power
+			local color = (monk and power[Min]) or (dk and (E.Cata and ElvUF.colors.class.DEATHKNIGHT or power[spec ~= 5 and spec or 1])) or power
 			r, g, b = color.r, color.g, color.b
 		end
 	elseif not r then
@@ -236,26 +233,6 @@ end
 ------------------------------------------------------------------------
 --	Looping
 ------------------------------------------------------------------------
-
-for _, vars in ipairs({'',':min',':max'}) do
-	E:AddTag(format('range%s', vars), 0.1, function(unit)
-		if UnitIsConnected(unit) and not UnitIsUnit(unit, 'player') then
-			local minRange, maxRange = RangeCheck:GetRange(unit, true)
-
-			if vars == ':min' then
-				if minRange then
-					return format('%d', minRange)
-				end
-			elseif vars == ':max' then
-				if maxRange then
-					return format('%d', maxRange)
-				end
-			elseif minRange or maxRange then
-				return format('%s - %s', minRange or '??', maxRange or '??')
-			end
-		end
-	end)
-end
 
 for textFormat in pairs(E.GetFormattedTextStyles) do
 	local tagFormat = strlower(gsub(textFormat, '_', '-'))
@@ -356,6 +333,20 @@ for textFormat in pairs(E.GetFormattedTextStyles) do
 end
 
 for textFormat, length in pairs({ veryshort = 5, short = 10, medium = 15, long = 20 }) do
+	E:AddTag(format('health:current:name-%s', textFormat), 'UNIT_HEALTH UNIT_MAXHEALTH UNIT_NAME_UPDATE', function(unit)
+		local status = not UnitIsFeignDeath(unit) and UnitIsDead(unit) and L["Dead"] or UnitIsGhost(unit) and L["Ghost"] or not UnitIsConnected(unit) and L["Offline"]
+		local cur, max = UnitHealth(unit), UnitHealthMax(unit)
+		local name = UnitName(unit)
+
+		if status then
+			return status
+		elseif cur ~= max then
+			return E:GetFormattedText('CURRENT', cur, max, nil, true)
+		elseif name then
+			return E:ShortenString(name, length)
+		end
+	end)
+
 	E:AddTag(format('health:deficit-percent:name-%s', textFormat), 'UNIT_HEALTH UNIT_MAXHEALTH UNIT_NAME_UPDATE', function(unit)
 		local cur, max = UnitHealth(unit), UnitHealthMax(unit)
 		local deficit = max - cur
@@ -421,9 +412,12 @@ for textFormat, length in pairs({ veryshort = 5, short = 10, medium = 15, long =
 	end)
 
 	E:AddTag(format('target:%s:translit', textFormat), 'UNIT_TARGET', function(unit)
-		local targetName = Translit:Transliterate(UnitName(unit..'target'), translitMark)
+		local targetName = UnitName(unit..'target')
 		if targetName then
-			return E:ShortenString(targetName, length)
+			local translitName = Translit:Transliterate(targetName, translitMark)
+			if translitName then
+				return E:ShortenString(translitName, length)
+			end
 		end
 	end)
 end
@@ -433,7 +427,9 @@ end
 ------------------------------------------------------------------------
 
 E:AddTag('classcolor:target', 'UNIT_TARGET', function(unit)
-	return _TAGS.classcolor(unit..'target')
+	if UnitExists(unit..'target') then
+		return _TAGS.classcolor(unit..'target')
+	end
 end)
 
 E:AddTag('target', 'UNIT_TARGET', function(unit)
@@ -486,6 +482,13 @@ E:AddTag('absorbs', 'UNIT_ABSORB_AMOUNT_CHANGED', function(unit)
 	end
 end, not E.Retail)
 
+E:AddTag('healabsorbs', 'UNIT_HEAL_ABSORB_AMOUNT_CHANGED', function(unit)
+	local healAbsorb = UnitGetTotalHealAbsorbs(unit) or 0
+	if healAbsorb ~= 0 then
+		return E:ShortValue(healAbsorb)
+	end
+end, not E.Retail)
+
 E:AddTag('health:percent-with-absorbs', 'UNIT_HEALTH UNIT_MAXHEALTH UNIT_ABSORB_AMOUNT_CHANGED UNIT_CONNECTION PLAYER_FLAGS_CHANGED', function(unit)
 	local status = UnitIsDead(unit) and L["Dead"] or UnitIsGhost(unit) and L["Ghost"] or not UnitIsConnected(unit) and L["Offline"]
 
@@ -502,12 +505,35 @@ E:AddTag('health:percent-with-absorbs', 'UNIT_HEALTH UNIT_MAXHEALTH UNIT_ABSORB_
 	return E:GetFormattedText('PERCENT', healthTotalIncludingAbsorbs, UnitHealthMax(unit))
 end, not E.Retail)
 
+E:AddTag('health:percent-with-absorbs:nostatus', 'UNIT_HEALTH UNIT_MAXHEALTH UNIT_ABSORB_AMOUNT_CHANGED UNIT_CONNECTION PLAYER_FLAGS_CHANGED', function(unit)
+	local absorb = UnitGetTotalAbsorbs(unit) or 0
+	if absorb == 0 then
+		return E:GetFormattedText('PERCENT', UnitHealth(unit), UnitHealthMax(unit))
+	end
+
+	local healthTotalIncludingAbsorbs = UnitHealth(unit) + absorb
+	return E:GetFormattedText('PERCENT', healthTotalIncludingAbsorbs, UnitHealthMax(unit))
+end, not E.Retail)
+
 E:AddTag('health:deficit-percent:name', 'UNIT_HEALTH UNIT_MAXHEALTH UNIT_NAME_UPDATE', function(unit)
 	local currentHealth = UnitHealth(unit)
 	local deficit = UnitHealthMax(unit) - currentHealth
 
 	if deficit > 0 and currentHealth > 0 then
 		return _TAGS['health:percent-nostatus'](unit)
+	else
+		return _TAGS.name(unit)
+	end
+end)
+
+E:AddTag('health:current:name', 'UNIT_HEALTH UNIT_MAXHEALTH UNIT_NAME_UPDATE', function(unit)
+	local status = not UnitIsFeignDeath(unit) and UnitIsDead(unit) and L["Dead"] or UnitIsGhost(unit) and L["Ghost"] or not UnitIsConnected(unit) and L["Offline"]
+	local currentHealth, max = UnitHealth(unit), UnitHealthMax(unit)
+
+	if status then
+		return status
+	elseif currentHealth ~= max then
+		return E:GetFormattedText('CURRENT', currentHealth, max, nil, true)
 	else
 		return _TAGS.name(unit)
 	end
@@ -624,6 +650,13 @@ E:AddTag('realm:dash:translit', 'UNIT_NAME_UPDATE', function(unit)
 		return format('-%s', realm)
 	elseif realm ~= '' then
 		return realm
+	end
+end)
+
+E:AddTag('threat:lead', 'UNIT_THREAT_LIST_UPDATE UNIT_THREAT_SITUATION_UPDATE GROUP_ROSTER_UPDATE', function(unit)
+	local percent = UnitThreatPercentageOfLead('player', unit)
+	if percent and percent > 0 and (IsInGroup() or UnitExists('pet')) then
+		return format('%.0f%%', percent)
 	end
 end)
 
@@ -1273,7 +1306,7 @@ E:AddTag('spec', 'PLAYER_TALENT_UPDATE UNIT_NAME_UPDATE', function(unit)
 	if info then
 		return info.name
 	end
-end, not E.Retail)
+end)
 
 E:AddTag('specialization', 'PLAYER_TALENT_UPDATE UNIT_NAME_UPDATE', function(unit)
 	return _TAGS.spec(unit)
@@ -1286,7 +1319,7 @@ E:AddTag('loyalty', 'UNIT_HAPPINESS PET_UI_UPDATE', function(unit)
 	end
 end, not E.Classic)
 
-if not E.Retail then
+if E.Classic then
 	local GetPetHappiness = GetPetHappiness
 	local GetPetFoodTypes = GetPetFoodTypes
 
@@ -1336,7 +1369,9 @@ if not E.Retail then
 			return GetPetFoodTypes()
 		end
 	end)
+end
 
+if not E.Retail then
 	E:AddTag('pvp:title', 'UNIT_NAME_UPDATE', function(unit)
 		if UnitIsPlayer(unit) then
 			local rank = UnitPVPRank(unit)
@@ -1422,9 +1457,9 @@ E.TagInfo = {
 		['classpower:current-percent:shortvalue'] = { hidden = E.Classic, category = 'Classpower', description = "" },
 		['classpower:current:shortvalue'] = { hidden = E.Classic, category = 'Classpower', description = "" },
 		['classpower:deficit:shortvalue'] = { hidden = E.Classic, category = 'Classpower', description = "" },
-		['holypower'] = { hidden = not E.Retail, category = 'Classpower', description = "Displays the holy power (Paladin)" },
+		['holypower'] = { hidden = E.Classic, category = 'Classpower', description = "Displays the holy power (Paladin)" },
 		['runes'] = { hidden = E.Classic, category = 'Classpower', description = "Displays the runes (Death Knight)" },
-		['soulshards'] = { hidden = not E.Retail, category = 'Classpower', description = "Displays the soulshards (Warlock)" },
+		['soulshards'] = { hidden = E.Classic, category = 'Classpower', description = "Displays the soulshards (Warlock)" },
 	-- Colors
 		['altpowercolor'] = { hidden = not E.Retail, category = 'Colors', description = "Changes the text color to the current alternative power color (Blizzard defined)" },
 		['classificationcolor'] = { category = 'Colors', description = "Changes the text color, depending on the unit's classification" },
@@ -1449,8 +1484,14 @@ E.TagInfo = {
 		['guild'] = { category = 'Guild', description = "Displays the guild name" },
 	-- Health
 		['absorbs'] = { hidden = not E.Retail, category = 'Health', description = 'Displays the amount of absorbs' },
+		['healabsorbs'] = { hidden = not E.Retail, category = 'Health', description = 'Displays the amount of heal absorbs' },
 		['curhp'] = { category = 'Health', description = "Displays the current HP without decimals" },
 		['deficit:name'] = { category = 'Health', description = "Displays the health as a deficit and the name at full health" },
+		['health:current:name-long'] = { category = 'Health', description = "Displays the current health as a shortvalue and then the name of the unit (limited to 20 letters) when at full health" },
+		['health:current:name-medium'] = { category = 'Health', description = "Displays the current health as a shortvalue and then the name of the unit (limited to 15 letters) when at full health" },
+		['health:current:name-short'] = { category = 'Health', description = "Displays the current health as a shortvalue and then the name of the unit (limited to 10 letters) when at full health" },
+		['health:current:name-veryshort'] = { category = 'Health', description = "Displays the current health as a shortvalue and then the name of the unit (limited to 5 letters) when at full health" },
+		['health:current:name'] = { category = 'Health', description = "Displays the current health as a shortvalue and then the full name of the unit when at full health" },
 		['health:current-max-nostatus:shortvalue'] = { category = 'Health', description = "Shortvalue of the unit's current and max health, without status" },
 		['health:current-max-nostatus'] = { category = 'Health', description = "Displays the current and maximum health of the unit, separated by a dash, without status" },
 		['health:current-max-percent-nostatus:shortvalue'] = { category = 'Health', description = "Shortvalue of current and max hp (% when not full hp, without status)" },
@@ -1481,6 +1522,7 @@ E.TagInfo = {
 		['health:max'] = { category = 'Health', description = "Displays the maximum health of the unit" },
 		['health:percent-nostatus'] = { category = 'Health', description = "Displays the unit's current health as a percentage, without status" },
 		['health:percent-with-absorbs'] = { hidden = not E.Retail, category = 'Health', description = "Displays the unit's current health as a percentage with absorb values" },
+		['health:percent-with-absorbs:nostatus'] = { hidden = not E.Retail, category = 'Health', description = "Displays the unit's current health as a percentage with absorb values, without status" },
 		['health:percent'] = { category = 'Health', description = "Displays the current health of the unit as a percentage" },
 		['incomingheals:others'] = { category = 'Health', description = "Displays only incoming heals from other units" },
 		['incomingheals:personal'] = { category = 'Health', description = "Displays only personal incoming heals" },
@@ -1591,9 +1633,6 @@ E.TagInfo = {
 		['quest:full'] = { category = 'Quest', description = "Quest full" },
 		['quest:text'] = { category = 'Quest', description = "Quest text" },
 	-- Range
-		['range'] = { category = 'Range', description = "Displays the range" },
-		['range:min'] = { category = 'Range', description = "Displays the min range" },
-		['range:max'] = { category = 'Range', description = "Displays the max range" },
 		['distance'] = { category = 'Range', description = "Displays the distance" },
 		['nearbyplayers:4'] = { category = 'Range', description = "Displays all players within 4 yards" },
 		['nearbyplayers:8'] = { category = 'Range', description = "Displays all players within 8 yards" },
@@ -1649,6 +1688,7 @@ E.TagInfo = {
 	-- Threat
 		['threat:current'] = { category = 'Threat', description = "Displays the current threat as a value" },
 		['threat:percent'] = { category = 'Threat', description = "Displays the current threat as a percent" },
+		['threat:lead'] = { category = 'Threat', description = "Displays the current threat of lead as a percent" },
 		['threat'] = { category = 'Threat', description = "Displays the current threat situation (Aggro is secure tanking, -- is losing threat and ++ is gaining threat)" },
 }
 

@@ -4,106 +4,81 @@ local S = E:GetModule('Skins')
 local _G = _G
 local hooksecurefunc = hooksecurefunc
 
-local function GetOpacity()
-	return 1 - (_G.BattlefieldMapOptions and _G.BattlefieldMapOptions.opacity or 1)
-end
-
-local function InitializeOptionsDropDown()
-	_G.BattlefieldMapTab:InitializeOptionsDropDown()
-end
-
-local function setBackdropAlpha()
-	if _G.BattlefieldMapFrame.backdrop then
-		_G.BattlefieldMapFrame.backdrop:SetBackdropColor(0, 0, 0, GetOpacity())
+local function SetBackdropAlpha()
+	local frame = _G.BattlefieldMapFrame
+	if frame and frame.backdrop then
+		local options = _G.BattlefieldMapOptions
+		local opacity = 1 - (options and options.opacity or 1)
+		frame.backdrop:SetBackdropColor(0, 0, 0, opacity)
 	end
 end
 
--- alpha stuff
-local oldAlpha = 0
-local function setOldAlpha()
-	_G.BattlefieldMapFrame.BorderFrame.CloseButton:SetAlpha(0.1)
+local function GetCloseButton(frame)
+	if not frame then
+		frame = _G.BattlefieldMapFrame
+	end
 
-	if oldAlpha then
-		_G.BattlefieldMapFrame:SetGlobalAlpha(oldAlpha)
-		oldAlpha = nil
+	local border = frame and frame.BorderFrame
+	return border and border.CloseButton
+end
+
+local function OnLeave()
+	local close = GetCloseButton()
+	if close then
+		close:SetAlpha(0.1)
 	end
 end
 
-local function setRealAlpha()
-	_G.BattlefieldMapFrame.BorderFrame.CloseButton:SetAlpha(1)
-
-	oldAlpha = GetOpacity()
-	_G.BattlefieldMapFrame:SetGlobalAlpha(1)
-end
-
-local function refreshAlpha()
-	oldAlpha = GetOpacity()
+local function OnEnter()
+	local close = GetCloseButton()
+	if close then
+		close:SetAlpha(1)
+	end
 end
 
 function S:Blizzard_BattlefieldMap()
 	if not (E.private.skins.blizzard.enable and E.private.skins.blizzard.bgmap) then return end
 
-	refreshAlpha() -- will need this soon
-
 	local frame = _G.BattlefieldMapFrame
 	frame:StripTextures()
 	frame:CreateBackdrop()
-	frame:EnableMouse(true)
-	frame:SetMovable(true)
-	frame:SetClampedToScreen(true)
 	frame:SetFrameStrata('LOW')
-	frame:SetScript('OnUpdate', _G.MapCanvasMixin.OnUpdate) -- shut off the tab fading in, but keep the canvas updater
-
-	local border = frame.BorderFrame
-	border:StripTextures()
-
-	local close = border.CloseButton
-	close:SetAlpha(0.1)
-	close:SetIgnoreParentAlpha(1)
-	close:SetFrameLevel(close:GetFrameLevel()+1)
-	close:ClearAllPoints()
-	close:Point('TOPRIGHT', 3, 8)
-	S:HandleCloseButton(close)
+	frame:HookScript('OnShow', SetBackdropAlpha)
+	hooksecurefunc(frame, 'SetGlobalAlpha', SetBackdropAlpha)
 
 	local scroll = frame.ScrollContainer
-	frame.backdrop:SetOutside(scroll)
-	frame.backdrop:SetBackdropColor(0, 0, 0, oldAlpha)
+	if scroll then
+		if frame.backdrop then
+			frame.backdrop:SetOutside(scroll)
+		end
+
+		scroll:HookScript('OnLeave', OnLeave)
+		scroll:HookScript('OnEnter', OnEnter)
+	end
 
 	local tab = _G.BattlefieldMapTab
-	local position = {}
+	if tab then
+		tab:SetHeight(24)
+		tab:StripTextures()
+		tab:CreateBackdrop()
 
-	scroll:HookScript('OnMouseUp', function(_, btn)
-		if btn == 'LeftButton' then
-			tab:StopMovingOrSizing()
-			position.x, position.y = tab:GetCenter()
-		elseif btn == 'RightButton' then
-			_G.UIDropDownMenu_Initialize(tab.OptionsDropDown, InitializeOptionsDropDown, 'MENU')
-			_G.ToggleDropDownMenu(1, nil, tab.OptionsDropDown, frame:GetName(), 0, -4)
+		if tab.Text then
+			tab.Text:SetInside(tab)
 		end
+	end
 
-		if _G.OpacityFrame:IsShown() then
-			_G.OpacityFrame:Hide()
-		end
-	end)
+	local close = GetCloseButton(frame)
+	if close then
+		S:HandleCloseButton(close)
 
-	scroll:HookScript('OnMouseDown', function(_, btn)
-		if btn == 'LeftButton' and (_G.BattlefieldMapOptions and not _G.BattlefieldMapOptions.locked) then
-			if _G.BattlefieldMapOptions.position ~= position then
-				_G.BattlefieldMapOptions.position = position
-			end
-
-			tab:StartMoving()
-		end
-	end)
-
-	hooksecurefunc(frame, 'SetGlobalAlpha', setBackdropAlpha)
-	hooksecurefunc(frame, 'RefreshAlpha', refreshAlpha)
-
-	scroll:HookScript('OnLeave', setOldAlpha)
-	scroll:HookScript('OnEnter', setRealAlpha)
-	frame:HookScript('OnShow', setBackdropAlpha)
-	close:HookScript('OnLeave', setOldAlpha)
-	close:HookScript('OnEnter', setRealAlpha)
+		close:SetAlpha(0.25)
+		close:SetIgnoreParentAlpha(1)
+		close:SetFrameLevel(close:GetFrameLevel() + 1)
+		close:ClearAllPoints()
+		close:Point('TOPRIGHT', 3, 5)
+		close:HookScript('OnLeave', OnLeave)
+		close:HookScript('OnEnter', OnEnter)
+	end
 end
 
 S:AddCallbackForAddon('Blizzard_BattlefieldMap')

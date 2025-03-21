@@ -1,7 +1,7 @@
 --[[-----------------------------------------------------------------------------
 EditBox Widget
 -------------------------------------------------------------------------------]]
-local Type, Version = "EditBox-ElvUI", 28
+local Type, Version = "EditBox-ElvUI", 31
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -9,21 +9,38 @@ local tostring, pairs = tostring, pairs
 
 local PlaySound = PlaySound
 local GetMacroInfo = GetMacroInfo
-local GetCursorInfo, ClearCursor, GetSpellInfo = GetCursorInfo, ClearCursor, GetSpellInfo
+local GetCursorInfo, ClearCursor = GetCursorInfo, ClearCursor
 local CreateFrame, UIParent = CreateFrame, UIParent
 
 local OKAY = OKAY
 local _G = _G
 
+local GetSpellInfo
+do	-- backwards compatibility for GetSpellInfo
+	local C_Spell_GetSpellInfo = not _G.GetSpellInfo and C_Spell.GetSpellInfo
+	GetSpellInfo = function(spellID)
+		if not spellID then return end
+
+		if C_Spell_GetSpellInfo then
+			local info = C_Spell_GetSpellInfo(spellID)
+			if info then
+				return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+			end
+		else
+			return _G.GetSpellInfo(spellID)
+		end
+	end
+end
+
 --[[-----------------------------------------------------------------------------
 Support functions
 -------------------------------------------------------------------------------]]
-if not AceGUIEditBoxInsertLink then
+if not AceGUIEditBoxInsertLinkElvUI then
 	-- upgradeable hook
-	hooksecurefunc("ChatEdit_InsertLink", function(...) return _G.AceGUIEditBoxInsertLink(...) end)
+	hooksecurefunc("ChatEdit_InsertLink", function(...) return _G.AceGUIEditBoxInsertLinkElvUI(...) end)
 end
 
-function _G.AceGUIEditBoxInsertLink(text)
+function _G.AceGUIEditBoxInsertLinkElvUI(text)
 	for i = 1, AceGUI:GetWidgetCount(Type) do
 		local editbox = _G["ElvUIAceGUI-3.0EditBox"..i]
 		if editbox and editbox:IsVisible() and editbox:HasFocus() then
@@ -76,19 +93,21 @@ local function EditBox_OnEnterPressed(frame)
 end
 
 local function EditBox_OnReceiveDrag(frame)
-	local self = frame.obj
-	local type, id, info = GetCursorInfo()
-	local name
+	local self, name = frame.obj
+	local type, id, info, spellID = GetCursorInfo()
+
 	if type == "item" then
 		name = info
 	elseif type == "spell" then
-		name = GetSpellInfo(id, info)
+		name = GetSpellInfo(spellID, info)
 	elseif type == "macro" then
 		name = GetMacroInfo(id)
 	end
+
 	if name then
-		self:SetText(name)
-		self:Fire("OnEnterPressed", name)
+		local text = (self.preferSpellID and spellID and tostring(spellID)) or name
+		self:SetText(text)
+		self:Fire("OnEnterPressed", text)
 		ClearCursor()
 		HideButton(self)
 		AceGUI:ClearFocus()

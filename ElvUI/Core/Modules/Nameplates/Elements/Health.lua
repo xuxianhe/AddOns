@@ -61,10 +61,10 @@ function NP:Health_UpdateColor(_, unit)
 end
 
 function NP:Construct_Health(nameplate)
-	local Health = CreateFrame('StatusBar', nameplate:GetName()..'Health', nameplate)
+	local Health = CreateFrame('StatusBar', nameplate.frameName..'Health', nameplate)
 	Health:SetFrameStrata(nameplate:GetFrameStrata())
 	Health:SetFrameLevel(5)
-	Health:CreateBackdrop('Transparent', nil, nil, nil, nil, true, true)
+	Health:CreateBackdrop('Transparent', nil, nil, nil, nil, true)
 	Health:SetStatusBarTexture(LSM:Fetch('statusbar', NP.db.statusbar))
 	Health.considerSelectionInCombatHostile = true
 	Health.UpdateColor = NP.Health_UpdateColor
@@ -74,7 +74,7 @@ function NP:Construct_Health(nameplate)
 	local healthBarTexture = Health:GetStatusBarTexture()
 	Health.barTexture = healthBarTexture
 
-	local healthFlashTexture = Health:CreateTexture(nameplate:GetName()..'FlashTexture', 'OVERLAY')
+	local healthFlashTexture = Health:CreateTexture(nameplate.frameName..'FlashTexture', 'OVERLAY')
 	healthFlashTexture:SetTexture(LSM:Fetch('background', 'ElvUI Blank'))
 	healthFlashTexture:Point('BOTTOMLEFT', healthBarTexture, 'BOTTOMLEFT')
 	healthFlashTexture:Point('TOPRIGHT', healthBarTexture, 'TOPRIGHT')
@@ -117,7 +117,7 @@ function NP:Update_Health(nameplate, skipUpdate)
 		nameplate.Health:Point('LEFT')
 		nameplate.Health:Point('RIGHT')
 
-		E:SetSmoothing(nameplate.Health, NP.db.smoothbars)
+		E:SetSmoothing(nameplate.Health, db.health.smoothbars)
 	elseif nameplate:IsElementEnabled('Health') then
 		nameplate:DisableElement('Health')
 	end
@@ -129,7 +129,7 @@ end
 
 local bars = { 'myBar', 'otherBar', 'absorbBar', 'healAbsorbBar' }
 function NP:Construct_HealthPrediction(nameplate)
-	local HealthPrediction = CreateFrame('Frame', nameplate:GetName()..'HealthPrediction', nameplate)
+	local HealthPrediction = CreateFrame('Frame', nameplate.frameName..'HealthPrediction', nameplate)
 
 	for _, name in ipairs(bars) do
 		local bar = CreateFrame('StatusBar', nil, nameplate.Health.ClipFrame)
@@ -163,7 +163,6 @@ function NP:Construct_HealthPrediction(nameplate)
 	HealthPrediction.healAbsorbBar:SetReverseFill(true)
 
 	HealthPrediction.maxOverflow = 1
-	HealthPrediction.frequentUpdates = true
 
 	return HealthPrediction
 end

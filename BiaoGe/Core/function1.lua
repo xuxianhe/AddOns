@@ -661,3 +661,11 @@ function BG.DeletePlayerData(realmID,player)
     end
 end
 
+--获取副本tbl某个value
+function BG.GetFBinfo(FB, info)
+    for i, v in ipairs(BG.FBtable2) do
+        if FB == v.FB then
+            return v[info]
+        end
+    end
+end

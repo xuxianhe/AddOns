@@ -1,35 +1,28 @@
-local PA = _G.ProjectAzilroka
+local PA, ACL, ACH = unpack(_G.ProjectAzilroka)
 if PA.Classic then return end
 
 local RR = PA:NewModule('ReputationReward', 'AceEvent-3.0', 'AceTimer-3.0', 'AceHook-3.0')
-PA.RR = RR
+_G.ReputationReward, PA.ReputationReward = RR, RR
 
-RR.Title = PA.ACL['|cFF16C3F2Reputation|r|cFFFFFFFFRewards|r']
-RR.Description = PA.ACL['Adds Reputation into Quest Log & Quest Frame.']
-RR.Authors = 'Azilroka'
-RR.isEnabled = false
+RR.Title, RR.Description, RR.Authors, RR.isEnabled = 'Reputation Rewards', ACL['Adds Reputation into Quest Log & Quest Frame.'], 'Azilroka', false
 
 local _G = _G
-local floor = floor
-local pairs = pairs
-local ipairs = ipairs
-local select = select
-local wipe = wipe
-local mod = mod
+local floor, pairs, ipairs, select, wipe, mod = floor, pairs, ipairs, select, wipe, mod
 
-local GetFactionInfo = _G.GetFactionInfo
-local GetFactionInfoByID = _G.GetFactionInfoByID
-local GetNumFactions = _G.GetNumFactions
-local GetNumQuestLogRewardFactions = _G.GetNumQuestLogRewardFactions
-local GetQuestLogRewardFactionInfo = _G.GetQuestLogRewardFactionInfo
-local GetNumQuestLogChoices = _G.GetNumQuestLogChoices
-local GetNumQuestChoices = _G.GetNumQuestChoices
-local UnitAura = _G.UnitAura
-local QuestInfo_GetRewardButton = _G.QuestInfo_GetRewardButton
-local SetItemButtonCount = _G.SetItemButtonCount
-local SetItemButtonTexture = _G.SetItemButtonTexture
-local ExpandFactionHeader = _G.ExpandFactionHeader
-local CollapseFactionHeader = _G.CollapseFactionHeader
+local GetFactionInfo = C_Reputation.GetFactionInfo or GetFactionInfo
+local GetFactionInfoByID = C_Reputation.GetFactionInfoByID or GetFactionInfoByID
+local GetNumFactions = C_Reputation.GetNumFactions or GetNumFactions
+local ExpandFactionHeader = ExpandFactionHeader
+local CollapseFactionHeader = CollapseFactionHeader
+
+local GetNumQuestLogRewardFactions = GetNumQuestLogRewardFactions
+local GetQuestLogRewardFactionInfo = GetQuestLogRewardFactionInfo
+local GetNumQuestLogChoices = GetNumQuestLogChoices
+local GetNumQuestChoices = GetNumQuestChoices
+
+local QuestInfo_GetRewardButton = QuestInfo_GetRewardButton
+local SetItemButtonCount = SetItemButtonCount
+local SetItemButtonTexture = SetItemButtonTexture
 
 local REWARDS_SECTION_OFFSET = 5
 
@@ -141,7 +134,7 @@ function RR:Show()
 				amtBase = amtBase * 1.1
 			end
 
-			local amtBonus = RR:GetBonusReputation(amtBase, factionID)
+			local amtBonus = 0 -- RR:GetBonusReputation(amtBase, factionID)
 
 			RR.ReputationInfo[factionID] = { Name = factionName, Description = factionDescription, Base = amtBase, Bonus = amtBonus, Header = isHeader, FactionID = factionID, Child = RR:GetFactionHeader(factionID), Standing = standingID }
 		end
@@ -213,18 +206,18 @@ function RR:Show()
 end
 
 function RR:GetOptions()
-	local ReputationReward = PA.ACH:Group(RR.Title, RR.Description, nil, nil, function(info) return RR.db[info[#info]] end, function(info, value) RR.db[info[#info]] = value end)
+	local ReputationReward = ACH:Group(RR.Title, RR.Description, nil, nil, function(info) return RR.db[info[#info]] end, function(info, value) RR.db[info[#info]] = value end)
 	PA.Options.args.ReputationReward = ReputationReward
 
-	ReputationReward.args.Description = PA.ACH:Description(RR.Description, 0)
-	ReputationReward.args.Enable = PA.ACH:Toggle(PA.ACL['Enable'], nil, 1, nil, nil, nil, nil, function(info, value) RR.db[info[#info]] = value if (not RR.isEnabled) then RR:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
+	ReputationReward.args.Description = ACH:Description(RR.Description, 0)
+	ReputationReward.args.Enable = ACH:Toggle(ACL['Enable'], nil, 1, nil, nil, nil, nil, function(info, value) RR.db[info[#info]] = value if (not RR.isEnabled) then RR:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
 
-	ReputationReward.args.General = PA.ACH:Group(PA.ACL['General'], nil, 2)
+	ReputationReward.args.General = ACH:Group(ACL['General'], nil, 2)
 	ReputationReward.args.General.inline = true
-	ReputationReward.args.General.args.ShowAll = PA.ACH:Toggle(PA.ACL['Show All Reputation'], nil, 1)
+	ReputationReward.args.General.args.ShowAll = ACH:Toggle(ACL['Show All Reputation'], nil, 1)
 
-	ReputationReward.args.AuthorHeader = PA.ACH:Header(PA.ACL['Authors:'], -2)
-	ReputationReward.args.Authors = PA.ACH:Description(RR.Authors, -1, 'large')
+	ReputationReward.args.AuthorHeader = ACH:Header(ACL['Authors:'], -2)
+	ReputationReward.args.Authors = ACH:Description(RR.Authors, -1, 'large')
 end
 
 function RR:BuildProfile()
@@ -236,8 +229,6 @@ function RR:UpdateSettings()
 end
 
 function RR:Initialize()
-	RR:UpdateSettings()
-
 	if RR.db.Enable ~= true then
 		return
 	end

@@ -174,12 +174,12 @@ function S:CharacterFrame()
 	local CharacterFrame = _G.CharacterFrame
 	S:HandleFrame(CharacterFrame, true, nil, 11, -12, -32, 76)
 
-	S:HandleDropDownBox(_G.PlayerStatFrameRightDropDown, 145)
-	S:HandleDropDownBox(_G.PlayerStatFrameLeftDropDown, 147)
-	S:HandleDropDownBox(_G.PlayerTitleDropDown, 200)
-	_G.PlayerStatFrameRightDropDown:Point('TOP', -2, 24)
-	_G.PlayerStatFrameLeftDropDown:Point('LEFT', -25, 24)
-	_G.PlayerTitleDropDown:Point('TOP', -7, -51)
+	S:HandleDropDownBox(_G.PlayerStatFrameRightDropdown, 145)
+	S:HandleDropDownBox(_G.PlayerStatFrameLeftDropdown, 147)
+	S:HandleDropDownBox(_G.PlayerTitleDropdown, 200)
+	_G.PlayerStatFrameRightDropdown:Point('TOP', -2, 24)
+	_G.PlayerStatFrameLeftDropdown:Point('LEFT', -25, 24)
+	_G.PlayerTitleDropdown:Point('TOP', -7, -51)
 
 	for i = 1, #CHARACTERFRAME_SUBFRAMES do
 		S:HandleTab(_G['CharacterFrameTab'..i])
@@ -424,9 +424,9 @@ function S:CharacterFrame()
 	S:HandleCloseButton(_G.ReputationDetailCloseButton)
 	_G.ReputationDetailCloseButton:Point('TOPRIGHT', 2, 2)
 
-	S:HandleCheckBox(_G.ReputationDetailAtWarCheckBox)
-	S:HandleCheckBox(_G.ReputationDetailInactiveCheckBox)
-	S:HandleCheckBox(_G.ReputationDetailMainScreenCheckBox)
+	S:HandleCheckBox(_G.ReputationDetailAtWarCheckbox)
+	S:HandleCheckBox(_G.ReputationDetailInactiveCheckbox)
+	S:HandleCheckBox(_G.ReputationDetailMainScreenCheckbox)
 
 	-- Skill Frame
 	_G.SkillFrame:StripTextures()
@@ -501,8 +501,8 @@ function S:CharacterFrame()
 		end
 	end
 
-	S:HandleCheckBox(_G.TokenFramePopupInactiveCheckBox)
-	S:HandleCheckBox(_G.TokenFramePopupBackpackCheckBox)
+	S:HandleCheckBox(_G.TokenFramePopupInactiveCheckbox)
+	S:HandleCheckBox(_G.TokenFramePopupBackpackCheckbox)
 
 	S:HandleCloseButton(_G.TokenFramePopupCloseButton, _G.TokenFramePopup)
 

@@ -1479,13 +1479,10 @@ BG.Init(function()
                 GameTooltip:Show()
             end
         end
-        local function OnHyperlinkLeave(self, link)
-            GameTooltip:Hide()
-        end
         local i = 1
         while _G["ChatFrame" .. i] do
             _G["ChatFrame" .. i]:HookScript("OnHyperlinkEnter", OnHyperlinkEnter)
-            _G["ChatFrame" .. i]:HookScript("OnHyperlinkLeave", OnHyperlinkLeave)
+            _G["ChatFrame" .. i]:HookScript("OnHyperlinkLeave", GameTooltip_Hide)
             i = i + 1
         end
     end

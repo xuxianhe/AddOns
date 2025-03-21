@@ -7,14 +7,7 @@ local hooksecurefunc = hooksecurefunc
 local CreateFrame = CreateFrame
 
 -- Credits: siweia (AuroraClassic)
-local function SkinEditBoxes(Frame)
-	S:HandleEditBox(Frame.MinLevel)
-	S:HandleEditBox(Frame.MaxLevel)
-end
-
 local function SkinFilterButton(Button)
-	SkinEditBoxes(Button.LevelRangeFrame)
-
 	S:HandleCloseButton(Button.ClearFiltersButton)
 	S:HandleButton(Button)
 end
@@ -139,7 +132,7 @@ local function HandleSellFrame(frame)
 		S:HandleEditBox(frame.SecondaryPriceInput.MoneyInputFrame.SilverBox)
 	end
 
-	S:HandleDropDownBox(frame.DurationDropDown.DropDown)
+	S:HandleDropDownBox(frame.Duration.Dropdown)
 	S:HandleButton(frame.PostButton)
 
 	if frame.BuyoutModeCheckButton then
@@ -174,7 +167,6 @@ local function HandleTokenSellFrame(frame)
 
 	frame.DummyItemList:StripTextures()
 	frame.DummyItemList:SetTemplate('Transparent')
-	HandleAuctionButtons(frame.DummyRefreshButton)
 	S:HandleScrollBar(frame.DummyItemList.DummyScrollBar)
 end
 
@@ -313,7 +305,10 @@ local function LoadSkin()
 	S:HandleButton(ItemBuyFrame.BidFrame.BidButton)
 	ItemBuyFrame.BidFrame.BidButton:ClearAllPoints()
 	ItemBuyFrame.BidFrame.BidButton:Point('LEFT', ItemBuyFrame.BidFrame.BidAmount, 'RIGHT', 2, -2)
-	S:HandleButton(ItemBuyFrame.BidFrame.BidButton)
+
+	-- Did blizz do a whoopsi with this names?
+	S:HandleEditBox(_G.BidAmountGold)
+	S:HandleEditBox(_G.BidAmountSilver)
 
 	--[[ Item Sell Frame | TAB 2 ]]--
 	local SellFrame = Frame.ItemSellFrame
@@ -379,8 +374,6 @@ local function LoadSkin()
 	HandleSellList(BidsList, true, true)
 	BidsList.ResultsText:SetParent(BidsList.ScrollFrame)
 	S:HandleButton(BidsList.RefreshFrame.RefreshButton)
-	S:HandleEditBox(_G.AuctionHouseFrameAuctionsFrameGold)
-	S:HandleEditBox(_G.AuctionHouseFrameAuctionsFrameSilver)
 	S:HandleButton(AuctionsFrame.BidFrame.BidButton)
 
 	--[[ ProgressBars ]]--

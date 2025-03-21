@@ -31,8 +31,8 @@ function S:FriendsFrame()
 
 	_G.FriendsFrameCloseButton:Point('TOPRIGHT', 0, 2)
 
-	S:HandleDropDownBox(_G.FriendsFrameStatusDropDown, 72)
-	S:HandlePointXY(_G.FriendsFrameStatusDropDown, 266, -55)
+	S:HandleDropDownBox(_G.FriendsFrameStatusDropdown, 72)
+	_G.FriendsFrameStatusDropdown:PointXY(266, -55)
 
 	for i = 1, #_G.FRIENDSFRAME_SUBFRAMES do
 		S:HandleTab(_G['FriendsFrameTab'..i])
@@ -44,7 +44,7 @@ function S:FriendsFrame()
 	_G.FriendsFrameTab2:Point('TOPLEFT', _G.FriendsFrameTab1, 'TOPRIGHT', -19, 0)
 	_G.FriendsFrameTab3:Point('TOPLEFT', _G.FriendsFrameTab2, 'TOPRIGHT', -19, 0)
 	_G.FriendsFrameTab4:Point('TOPLEFT', _G.FriendsFrameTab3, 'TOPRIGHT', -19, 0)
-	_G.FriendsFrameTab5:Point('TOPLEFT', _G.FriendsFrameTab4, 'TOPRIGHT', -19, 0)
+	--_G.FriendsFrameTab5:Point('TOPLEFT', _G.FriendsFrameTab4, 'TOPRIGHT', -19, 0)
 
 	-- Friends List Frame
 	for i = 1, _G.FRIEND_HEADER_TAB_IGNORE do
@@ -77,7 +77,7 @@ function S:FriendsFrame()
 	S:HandleButton(_G.FriendsFrameSendMessageButton)
 	S:HandleButton(_G.FriendsFrameUnsquelchButton)
 
-	S:HandlePointXY(_G.FriendsFrameAddFriendButton, -1, 4)
+	_G.FriendsFrameAddFriendButton:PointXY(-1, 4)
 
 	-- Battle.net
 	local FriendsFrameBattlenetFrame = _G.FriendsFrameBattlenetFrame
@@ -159,7 +159,7 @@ function S:FriendsFrame()
 
 	S:HandleScrollBar(_G.FriendsFriendsScrollFrameScrollBar)
 
-	S:HandleDropDownBox(_G.FriendsFriendsFrameDropDown, 150)
+	S:HandleDropDownBox(_G.FriendsFriendsFrameDropdown, 150)
 
 	-- Ignore List Frame
 	_G.IgnoreListFrame:StripTextures()
@@ -204,8 +204,8 @@ function S:FriendsFrame()
 	S:HandleButton(_G.WhoFrameGroupInviteButton)
 	_G.WhoFrameGroupInviteButton:Point('BOTTOMRIGHT', -6, 4)
 
-	S:HandleDropDownBox(_G.WhoFrameDropDown)
-	_G.WhoFrameDropDown:Point('TOPLEFT', -6, 4)
+	S:HandleDropDownBox(_G.WhoFrameDropdown)
+	_G.WhoFrameDropdown:Point('TOPLEFT', -6, 4)
 
 	S:HandleScrollBar(_G.WhoListScrollFrameScrollBar, 3)
 	_G.WhoListScrollFrameScrollBar:ClearAllPoints()
@@ -482,11 +482,11 @@ function S:FriendsFrame()
 	_G.GuildControlPopupFrame:CreateBackdrop('Transparent')
 	_G.GuildControlPopupFrame.backdrop:Point('TOPLEFT', 3, 0)
 
-	S:HandleDropDownBox(_G.GuildControlPopupFrameDropDown, 185)
-	_G.GuildControlPopupFrameDropDownButton:Size(18)
+	S:HandleDropDownBox(_G.GuildControlPopupFrameDropdown, 185)
+	--_G.GuildControlPopupFrameDropDownButton:Size(18)
 
 	S:HandleCollapseTexture(_G.GuildControlPopupFrameAddRankButton, nil, true)
-	_G.GuildControlPopupFrameAddRankButton:Point('LEFT', _G.GuildControlPopupFrameDropDown, 'RIGHT', -8, 3)
+	_G.GuildControlPopupFrameAddRankButton:Point('LEFT', _G.GuildControlPopupFrameDropdown, 'RIGHT', -8, 3)
 
 	S:HandleCollapseTexture(_G.GuildControlPopupFrameRemoveRankButton, nil, true)
 	_G.GuildControlPopupFrameRemoveRankButton:Point('LEFT', _G.GuildControlPopupFrameAddRankButton, 'RIGHT', 2, 0)
@@ -527,9 +527,11 @@ function S:FriendsFrame()
 
 	S:HandleCloseButton(_G.RaidInfoCloseButton, _G.RaidInfoFrame)
 
-	_G.RaidInfoScrollFrame:StripTextures()
-	S:HandleScrollBar(_G.RaidInfoScrollFrameScrollBar)
-
+	if _G.RaidInfoScrollFrame then
+		_G.RaidInfoScrollFrame:StripTextures()
+		S:HandleScrollBar(_G.RaidInfoScrollFrameScrollBar)
+	end
+		
 	_G.RaidInfoInstanceLabel:SetTemplate()
 	_G.RaidInfoIDLabel:SetTemplate()
 	S:HandleButton(_G.RaidInfoCancelButton)

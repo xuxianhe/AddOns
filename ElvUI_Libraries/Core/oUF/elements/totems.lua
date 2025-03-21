@@ -164,7 +164,7 @@ local function Update(self, event)
 end
 
 local function ForceUpdate(element)
-	Update(element.__owner, 'ForceUpdate')
+	return Update(element.__owner, 'ForceUpdate')
 end
 
 local function Enable(self)
@@ -198,6 +198,7 @@ local function Enable(self)
 		end
 
 		element:Show()
+
 		self:RegisterEvent('PLAYER_TOTEM_UPDATE', Path, true)
 
 		return true
@@ -212,6 +213,7 @@ local function Disable(self)
 		end
 
 		element:Hide()
+
 		self:UnregisterEvent('PLAYER_TOTEM_UPDATE', Path)
 	end
 end

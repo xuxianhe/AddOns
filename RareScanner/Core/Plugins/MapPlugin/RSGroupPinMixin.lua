@@ -29,33 +29,32 @@ function RSGroupPinMixin:OnLoad()
 end
 
 function RSGroupPinMixin:OnAcquired(POI, dataProvider)
-	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI", self:GetMap():GetNumActivePinsByTemplate("RSGroupPinTemplate"));
+	self:UseFrameLevelType("PIN_FRAME_LEVEL_VIGNETTE", self:GetMap():GetNumActivePinsByTemplate("RSGroupPinTemplate"));
 	self.POI = POI
 	self.dataProvider = dataProvider
 	if (POI.TopTexture) then
 		self.TopTexture:SetTexture(POI.TopTexture)
 		self.TopTexture:SetScale(RSConfigDB.GetIconsWorldMapScale())
+		MapPinHighlight_CheckHighlightPin(self:GetHighlightType(), self, self.TopTexture, AREAPOI_HIGHLIGHT_PARAMS);
 	else
 		self.TopTexture:SetTexture(nil)
 	end
 	if (POI.LeftTexture) then
 		self.LeftTexture:SetTexture(POI.LeftTexture)
 		self.LeftTexture:SetScale(RSConfigDB.GetIconsWorldMapScale())
+		MapPinHighlight_CheckHighlightPin(self:GetHighlightType(), self, self.LeftTexture, AREAPOI_HIGHLIGHT_PARAMS);
 	else
 		self.LeftTexture:SetTexture(nil)
 	end
 	if (POI.RightTexture) then
 		self.RightTexture:SetTexture(POI.RightTexture)
 		self.RightTexture:SetScale(RSConfigDB.GetIconsWorldMapScale())
+		MapPinHighlight_CheckHighlightPin(self:GetHighlightType(), self, self.RightTexture, AREAPOI_HIGHLIGHT_PARAMS);
 	else
 		self.RightTexture:SetTexture(nil)
 	end
 	self.IconTexture:SetAtlas(POI.iconAtlas)
 	self:SetPosition(POI.x, POI.y);
-	
-	if (self.SetPassThroughButtons) then
-		self:SetPassThroughButtons("MiddleButton");
-	end
 end
 
 function RSGroupPinMixin:OnMouseEnter()
@@ -107,7 +106,7 @@ function RSGroupPinMixin:ShowOverlay(childPOI)
 		-- Adds the new one
 		for _, coordinates in ipairs (overlay) do
 			local x, y = strsplit("-", coordinates)
-			self:GetMap():AcquirePin("RSOverlayTemplate", tonumber(x), tonumber(y), r, g, b, childPOI);
+			self:GetMap():AcquirePin("RSOverlayTemplate", tonumber(x), tonumber(y), r, g, b, childPOI, self);
 		end
 		
 		-- Adds the new one to the minimap
@@ -115,4 +114,20 @@ function RSGroupPinMixin:ShowOverlay(childPOI)
 			RSMinimap.AddOverlay(childPOI.entityID)
 		end
 	end
+end
+
+
+function RSGroupPinMixin:GetHighlightType() -- override
+	if (RSConfigDB.IsHighlightingReputation()) then
+		local _, bountyFactionID, bountyFrameType = self.dataProvider:GetBountyInfo();
+		if (bountyFrameType == BountyFrameType.ActivityTracker) then
+			for _, childPOI in pairs (self.POI.POIs) do
+				if (childPOI.factionID and RSUtils.Contains(childPOI.factionID, bountyFactionID)) then
+					return MapPinHighlightType.SupertrackedHighlight;
+				end
+			end
+		end
+	end
+
+	return MapPinHighlightType.None;
 end

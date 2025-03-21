@@ -1,24 +1,43 @@
 --[[-----------------------------------------------------------------------------
 MultiLineEditBox Widget (Modified to add Syntax highlighting from FAIAP)
 -------------------------------------------------------------------------------]]
-local Type, Version = "MultiLineEditBox-ElvUI", 32
+local Type, Version = "MultiLineEditBox-ElvUI", 35
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
-local _G, pairs = _G, pairs
-local GetCursorInfo, GetSpellInfo, ClearCursor = GetCursorInfo, GetSpellInfo, ClearCursor
+local _G = _G
+local tostring, pairs = tostring, pairs
+local GetCursorInfo, ClearCursor = GetCursorInfo, ClearCursor
 local CreateFrame, UIParent = CreateFrame, UIParent
+local ACCEPT = ACCEPT
+
+local GetSpellInfo
+do	-- backwards compatibility for GetSpellInfo
+	local C_Spell_GetSpellInfo = not _G.GetSpellInfo and C_Spell.GetSpellInfo
+	GetSpellInfo = function(spellID)
+		if not spellID then return end
+
+		if C_Spell_GetSpellInfo then
+			local info = C_Spell_GetSpellInfo(spellID)
+			if info then
+				return info.name, nil, info.iconID, info.castTime, info.minRange, info.maxRange, info.spellID, info.originalIconID
+			end
+		else
+			return _G.GetSpellInfo(spellID)
+		end
+	end
+end
 
 --[[-----------------------------------------------------------------------------
 Support functions
 -------------------------------------------------------------------------------]]
 
-if not AceGUIMultiLineEditBoxInsertLink then
+if not AceGUIMultiLineEditBoxInsertLinkElvUI then
 	-- upgradeable hook
-	hooksecurefunc("ChatEdit_InsertLink", function(...) return _G.AceGUIMultiLineEditBoxInsertLink(...) end)
+	hooksecurefunc("ChatEdit_InsertLink", function(...) return _G.AceGUIMultiLineEditBoxInsertLinkElvUI(...) end)
 end
 
-function _G.AceGUIMultiLineEditBoxInsertLink(text)
+function _G.AceGUIMultiLineEditBoxInsertLinkElvUI(text)
 	for i = 1, AceGUI:GetWidgetCount(Type) do
 		local editbox = _G[("MultiLineEditBox%uEdit"):format(i)]
 		if editbox and editbox:IsVisible() and editbox:HasFocus() then
@@ -27,7 +46,6 @@ function _G.AceGUIMultiLineEditBoxInsertLink(text)
 		end
 	end
 end
-
 
 local function Layout(self)
 	self:SetHeight(self.numlines * 14 + (self.disablebutton and 19 or 41) + self.labelHeight)
@@ -99,20 +117,24 @@ local function OnMouseUp(self)                                                  
 end
 
 local function OnReceiveDrag(self)                                               -- EditBox / ScrollFrame
-	local type, id, info = GetCursorInfo()
+	local type, _, info, spellID = GetCursorInfo()
 	if type == "spell" then
-		info = GetSpellInfo(id, info)
+		info = GetSpellInfo(spellID, info)
 	elseif type ~= "item" then
 		return
 	end
+
 	ClearCursor()
 	self = self.obj
+
 	local editBox = self.editBox
 	if not editBox:HasFocus() then
 		editBox:SetFocus()
 		editBox:SetCursorPosition(editBox:GetNumLetters())
 	end
-	editBox:Insert(info)
+
+	local text = (self.preferSpellID and spellID and tostring(spellID)) or info
+	editBox:Insert(text)
 	self.button:Enable()
 end
 
@@ -346,7 +368,7 @@ local function Constructor()
 
 	local editBox = CreateFrame("EditBox", ("%s%dEdit"):format(Type, widgetNum), scrollFrame)
 	editBox:SetAllPoints()
-	editBox:SetFontObject(ChatFontNormal)
+	editBox:SetFontObject('GameFontNormal')
 	editBox:SetMultiLine(true)
 	editBox:EnableMouse(true)
 	editBox:SetAutoFocus(false)

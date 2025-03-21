@@ -56,6 +56,7 @@ function BG.Init(func)
     f:SetScript("OnEvent", function(self, event, addonName)
         if addonName ~= AddonName then return end
         self:UnregisterEvent("ADDON_LOADED")
+        self:Hide()
         func()
     end)
 end
@@ -66,6 +67,7 @@ function BG.Init2(func)
     f:SetScript("OnEvent", function(self, event, isLogin, isReload)
         if not (isLogin or isReload) then return end
         self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+        self:Hide()
         func()
     end)
 end
@@ -93,14 +95,22 @@ if ver >= 40000 and ver < 50000 then
     BG.IsCTM = true
 end
 
-if ver >= 40401 then
-    BG.IsNewUI = true
-end
+BG.IsNewUI = true
 
 function BG.IsWLKFB(FB)
     local FB = FB or BG.FB1
     if (FB == "NAXX" and not BG.IsVanilla) or FB == "ULD" or FB == "TOC" or FB == "ICC" then
         return true
+    end
+end
+
+local tbl = { "SW", "BT", "HS", "TK", "SSC", "ZA", "KZ","BWL" }
+function BG.IsTBCFB(FB)
+    local FB = FB or BG.FB1
+    for _, _FB in ipairs(tbl) do
+        if FB == _FB then
+            return true
+        end
     end
 end
 

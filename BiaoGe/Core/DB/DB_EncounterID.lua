@@ -217,6 +217,37 @@ if BG.IsWLK then
         856,
         887,
     }
+
+    -- TBC
+    BG.Loot.encounterID.SW = {
+        724,
+        725,
+        726,
+        727,
+        728,
+        729,
+    }
+    BG.Loot.encounterID.BT = {
+        601,
+        602,
+        603,
+        604,
+        605,
+        606,
+        607,
+        608,
+        609,
+    }
+    BG.Loot.encounterID.BWL = {
+        610,
+        611,
+        612,
+        613,
+        614,
+        615,
+        616,
+        617,
+    }
 elseif BG.IsCTM then
     BG.Loot.encounterID.NAXX = {
         1107,

@@ -8,7 +8,7 @@ local NUM_SLOTS_PER_GUILDBANK_GROUP = 14
 local NUM_GUILDBANK_COLUMNS = 7
 
 local function GuildBankOnShow(frame)
-	if not frame.isSkinned then
+	if not frame.IsSkinned then
 		S:HandleIconSelectionFrame(frame, nil, nil, 'GuildBankPopup')
 	end
 end
@@ -70,7 +70,7 @@ function S:Blizzard_GuildBankUI()
 			local button = column['Button'..x]
 			button:StripTextures()
 			button:StyleButton()
-			button:SetTemplate('Transparent')
+			button:SetTemplate()
 
 			button.icon:SetInside()
 			button.icon:SetTexCoord(unpack(E.TexCoords))

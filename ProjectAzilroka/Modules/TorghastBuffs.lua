@@ -1,29 +1,19 @@
-local PA = _G.ProjectAzilroka
+local PA, ACL, ACH = unpack(_G.ProjectAzilroka)
+if not PA.Retail then return end
+
 local TB = PA:NewModule('TorghastBuffs', 'AceEvent-3.0')
-local LSM = PA.LSM
-PA.TB = TB
+local LSM = PA.Libs.LSM
+_G.TorghastBuffs, PA.TB = TB, TB
 
-TB.Title = PA.ACL['|cFF16C3F2Torghast|r|cFFFFFFFFBuffs|r']
-TB.Description = PA.ACL['Torghast Buffs']
-TB.Authors = 'Azilroka'
-TB.isEnabled = false
-
-_G.TorghastBuffs = TB
+TB.Title, TB.Description, TB.Authors, TB.isEnabled = 'Torghast Buffs', ACL['Torghast Buffs'], 'Azilroka', false
 
 local _G = _G
-local format = format
-local select, unpack = select, unpack
-local strfind = strfind
-local strmatch = strmatch
-local tinsert = tinsert
-local RegisterStateDriver = RegisterStateDriver
-local UnregisterStateDriver = UnregisterStateDriver
-local GetItemQualityColor = GetItemQualityColor
+local format, strfind, tinsert, next = format, strfind, tinsert, next
 
-local CreateFrame = CreateFrame
-local UIParent = UIParent
-local UnitAura = UnitAura
-local CopyTable = CopyTable
+local RegisterStateDriver, UnregisterStateDriver = RegisterStateDriver, UnregisterStateDriver
+local CreateFrame, UIParent, CopyTable = CreateFrame, UIParent, CopyTable
+
+local GetItemQualityColor = C_Item.GetItemQualityColor
 
 local DIRECTION_TO_POINT = { DOWN_RIGHT = 'TOPLEFT', DOWN_LEFT = 'TOPRIGHT', UP_RIGHT = 'BOTTOMLEFT', UP_LEFT = 'BOTTOMRIGHT', RIGHT_DOWN = 'TOPLEFT', RIGHT_UP = 'BOTTOMLEFT', LEFT_DOWN = 'TOPRIGHT', LEFT_UP = 'BOTTOMRIGHT' }
 local DIRECTION_TO_HORIZONTAL_SPACING_MULTIPLIER = { DOWN_RIGHT = 1, DOWN_LEFT = -1, UP_RIGHT = 1, UP_LEFT = -1, RIGHT_DOWN = 1, RIGHT_UP = 1, LEFT_DOWN = -1, LEFT_UP = -1 }
@@ -44,23 +34,17 @@ function TB:MasqueData(texture, highlight)
 end
 
 function TB:CreateIcon(button)
-	button.texture = button:CreateTexture(nil, 'ARTWORK')
-	PA:SetInside(button.texture)
-	button.texture:SetTexCoord(unpack(PA.TexCoords))
+	PA:SetInside(button.Icon)
+	PA:SetInside(button.Highlight)
 
-	button.count = button:CreateFontString(nil, 'OVERLAY')
-
-	button.highlight = button:CreateTexture(nil, 'HIGHLIGHT')
-	button.highlight:SetColorTexture(1, 1, 1, .45)
-	PA:SetInside(button.highlight)
-
+	button.Icon:SetTexCoord(PA:TexCoords())
 	button.unit = button:GetParent().unit
 
 	TB:UpdateIcon(button)
 	button:SetScript('OnAttributeChanged', TB.OnAttributeChanged)
 
 	if TB.MasqueGroup and TB.db.Masque then
-		TB.MasqueGroup:AddButton(button, TB:MasqueData(button.texture, button.highlight))
+		TB.MasqueGroup:AddButton(button, TB:MasqueData(button.Icon, button.Highlight))
 		if button.__MSQ_BaseFrame then button.__MSQ_BaseFrame:SetFrameLevel(2) end --Lower the framelevel to fix issue with buttons created during combat
 		TB.MasqueGroup:ReSkin()
 	else
@@ -69,26 +53,23 @@ function TB:CreateIcon(button)
 end
 
 function TB:UpdateIcon(button)
-	button.count:ClearAllPoints()
-	button.count:Point('BOTTOMRIGHT', TB.db.countXOffset, TB.db.countYOffset)
-	button.count:FontTemplate(LSM:Fetch('font', TB.db.countFont), TB.db.countFontSize, TB.db.countFontOutline)
+	button.Count:SetPoint('BOTTOMRIGHT', TB.db.countXOffset, TB.db.countYOffset)
+	button.Count:SetFont(LSM:Fetch('font', TB.db.countFont), TB.db.countFontSize, TB.db.countFontOutline)
 end
 
 function TB:UpdateAura(button, index)
-	local name, texture, count, _, _, _, _, _, _, spellID = UnitAura(button.unit, index, 'MAW')
-
-	local atlas = _G.C_Spell.GetMawPowerBorderAtlasBySpellID(spellID)
+	local auraData = PA:GetAuraData(button.unit, index, 'MAW')
+	local atlas = _G.C_Spell.GetMawPowerBorderAtlasBySpellID(auraData.spellId)
 	local colorIndex = atlas and (strfind(atlas, 'purple') and 4 or strfind(atlas, 'blue') and 3 or strfind(atlas, 'green') and 2)
 
 	if colorIndex then
-		local r, g, b = GetItemQualityColor(colorIndex)
-		button:SetBackdropBorderColor(r, g, b)
+		button:SetBackdropBorderColor(GetItemQualityColor(colorIndex))
 	else
 		PA:SetTemplate(button)
 	end
 
-	button.count:SetText(count > 1 and counti or "")
-	button.texture:SetTexture(texture)
+	button.Count:SetText(auraData.applications > 1 and auraData.applications or "")
+	button.Icon:SetTexture(auraData.icon)
 end
 
 
@@ -99,8 +80,6 @@ function TB:OnAttributeChanged(attribute, value)
 end
 
 function TB:UpdateHeader(header)
-	header:SetAttribute('consolidateDuration', -1)
-	header:SetAttribute('consolidateTo', 0)
 	header:SetAttribute('template', format('TorghastBuffsTemplate%d', TB.db.size))
 	header:SetAttribute('sortMethod', TB.db.sortMethod)
 	header:SetAttribute('sortDirection', TB.db.sortDir)
@@ -124,20 +103,14 @@ function TB:UpdateHeader(header)
 		header:SetAttribute('wrapYOffset', 0)
 	end
 
-	local index = 1
-	local child = select(index, header:GetChildren())
-	while child do
+	for index, child in next, {header:GetChildren()} do
 		child:Size(TB.db.size, TB.db.size)
 
 		TB:UpdateIcon(child)
 
-		-- Blizzard bug fix, icons arent being hidden when you reduce the amount of maximum buttons
 		if index > (TB.db.maxWraps * TB.db.wrapAfter) and child:IsShown() then
 			child:Hide()
 		end
-
-		index = index + 1
-		child = select(index, header:GetChildren())
 	end
 
 	if TB.MasqueGroup and TB.db.Masque then
@@ -148,14 +121,9 @@ function TB:UpdateHeader(header)
 end
 
 function TB:CreateAuraHeader(unit, unitName)
-	local header = CreateFrame('Frame', 'TorghastBuffs_'..unitName, TB.Holder, 'SecureAuraHeaderTemplate')
-	header:SetClampedToScreen(true)
+	local header = CreateFrame('Frame', 'TorghastBuffs_'..unitName, TB.Holder, 'TorghastBuffsHeaderTemplate')
 	header:SetAttribute('unit', unit)
-	header:SetAttribute('filter', 'MAW')
 	header.unit = unit
-
-	header.unitName = header:CreateFontString()
-	header.unitName:SetPoint('BOTTOM', header, 'TOP')
 
 	TB:UpdateHeader(header)
 
@@ -165,13 +133,13 @@ function TB:CreateAuraHeader(unit, unitName)
 end
 
 function TB:UpdateAllHeaders()
-	for _, header in pairs(TB.Headers) do
+	for _, header in next, TB.Headers do
 		TB:UpdateHeader(header)
 	end
 end
 
 function TB:HandleVisibility()
-	for _, header in pairs(TB.Headers) do
+	for _, header in next, TB.Headers do
 		if IsInJailersTower() then
 			if header.unit == 'player' then
 				RegisterStateDriver(header, 'visibility', '[petbattle] hide; show')
@@ -179,11 +147,12 @@ function TB:HandleVisibility()
 				RegisterStateDriver(header, 'visibility', format('[@%s, exists][group] show; hide', header.unit))
 			end
 
-			header.unitName:SetFont(PA.LSM:Fetch('font', PA.LSM:GetDefault('font')), 12, 'THICKOUTLINE')
+			header.unitName:SetFont(LSM:Fetch('font', LSM:GetDefault('font')), 12, 'THICKOUTLINE')
 
 			if UnitExists(header.unit) then
 				header.unitName:SetText(UnitName(header.unit))
-				local color = RAID_CLASS_COLORS[select(2, UnitClass(header.unit))]
+				local _, classToken = UnitClass(header.unit)
+				local color = RAID_CLASS_COLORS[classToken]
 				header.unitName:SetTextColor(color.r, color.g, color.b)
 			end
 		else
@@ -194,29 +163,27 @@ function TB:HandleVisibility()
 end
 
 function TB:GetOptions()
-	TB:UpdateSettings()
-
-	local TorghastBuffs = PA.ACH:Group(TB.Title, TB.Description, nil, nil, function(info) return TB.db[info[#info]] end, function(info, value) TB.db[info[#info]] = value TB:UpdateAllHeaders() end)
+	local TorghastBuffs = ACH:Group(TB.Title, TB.Description, nil, nil, function(info) return TB.db[info[#info]] end, function(info, value) TB.db[info[#info]] = value TB:UpdateAllHeaders() end)
 	PA.Options.args.TorghastBuffs = TorghastBuffs
 
-	TorghastBuffs.args.Description = PA.ACH:Description(TB.Description, 0)
-	TorghastBuffs.args.Enable = PA.ACH:Toggle(PA.ACL['Enable'], nil, 1, nil, nil, nil, nil, function(info, value) TB.db[info[#info]] = value if (not TB.isEnabled) then TB:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
+	TorghastBuffs.args.Description = ACH:Description(TB.Description, 0)
+	TorghastBuffs.args.Enable = ACH:Toggle(ACL['Enable'], nil, 1, nil, nil, nil, nil, function(info, value) TB.db[info[#info]] = value if (not TB.isEnabled) then TB:Initialize() else _G.StaticPopup_Show('PROJECTAZILROKA_RL') end end)
 
-	TorghastBuffs.args.General = PA.ACH:Group(PA.ACL['General'], nil, 2)
+	TorghastBuffs.args.General = ACH:Group(ACL['General'], nil, 2)
 	TorghastBuffs.args.General.inline = true
 
-	TorghastBuffs.args.General.args.Masque = PA.ACH:Toggle(PA.ACL['Masque Support'], nil, 1)
-	TorghastBuffs.args.General.args.size = PA.ACH:Range(PA.ACL["Size"], PA.ACL["Set the size of the individual auras."], 2, { min = 16, max = 60, step = 2 })
-	TorghastBuffs.args.General.args.growthDirection = PA.ACH:Select(PA.ACL["Growth Direction"], PA.ACL["The direction the auras will grow and then the direction they will grow after they reach the wrap after limit."], 4, PA.GrowthDirection)
-	TorghastBuffs.args.General.args.wrapAfter = PA.ACH:Range(PA.ACL["Wrap After"], PA.ACL["Begin a new row or column after this many auras."], 5, { min = 1, max = 32, step = 1 })
-	TorghastBuffs.args.General.args.maxWraps = PA.ACH:Range(PA.ACL["Max Wraps"], PA.ACL["Limit the number of rows or columns."], 6, { min = 1, max = 32, step = 1 })
-	TorghastBuffs.args.General.args.horizontalSpacing = PA.ACH:Range(PA.ACL["Horizontal Spacing"], nil, 7, { min = 0, max = 50, step = 1 })
-	TorghastBuffs.args.General.args.verticalSpacing = PA.ACH:Range(PA.ACL["Vertical Spacing"], nil, 8, { min = 0, max = 50, step = 1 })
-	TorghastBuffs.args.General.args.sortMethod = PA.ACH:Select(PA.ACL["Sort Method"], PA.ACL["Defines how the group is sorted."], 9, { INDEX = PA.ACL["Index"], NAME = PA.ACL["Name"] })
-	TorghastBuffs.args.General.args.sortDir = PA.ACH:Select(PA.ACL["Sort Direction"], PA.ACL["Defines the sort order of the selected sort method."], 10, { ['+'] = PA.ACL["Ascending"], ['-'] = PA.ACL["Descending"] })
+	TorghastBuffs.args.General.args.Masque = ACH:Toggle(ACL['Masque Support'], nil, 1)
+	TorghastBuffs.args.General.args.size = ACH:Range(ACL["Size"], ACL["Set the size of the individual auras."], 2, { min = 16, max = 60, step = 2 })
+	TorghastBuffs.args.General.args.growthDirection = ACH:Select(ACL["Growth Direction"], ACL["The direction the auras will grow and then the direction they will grow after they reach the wrap after limit."], 4, PA.GrowthDirection)
+	TorghastBuffs.args.General.args.wrapAfter = ACH:Range(ACL["Wrap After"], ACL["Begin a new row or column after this many auras."], 5, { min = 1, max = 32, step = 1 })
+	TorghastBuffs.args.General.args.maxWraps = ACH:Range(ACL["Max Wraps"], ACL["Limit the number of rows or columns."], 6, { min = 1, max = 32, step = 1 })
+	TorghastBuffs.args.General.args.horizontalSpacing = ACH:Range(ACL["Horizontal Spacing"], nil, 7, { min = 0, max = 50, step = 1 })
+	TorghastBuffs.args.General.args.verticalSpacing = ACH:Range(ACL["Vertical Spacing"], nil, 8, { min = 0, max = 50, step = 1 })
+	TorghastBuffs.args.General.args.sortMethod = ACH:Select(ACL["Sort Method"], ACL["Defines how the group is sorted."], 9, { INDEX = ACL["Index"], NAME = ACL["Name"] })
+	TorghastBuffs.args.General.args.sortDir = ACH:Select(ACL["Sort Direction"], ACL["Defines the sort order of the selected sort method."], 10, { ['+'] = ACL["Ascending"], ['-'] = ACL["Descending"] })
 
-	TorghastBuffs.args.AuthorHeader = PA.ACH:Header(PA.ACL['Authors:'], -2)
-	TorghastBuffs.args.Authors = PA.ACH:Description(TB.Authors, -1, 'large')
+	TorghastBuffs.args.AuthorHeader = ACH:Header(ACL['Authors:'], -2)
+	TorghastBuffs.args.Authors = ACH:Description(TB.Authors, -1, 'large')
 end
 
 function TB:BuildProfile()
@@ -244,8 +211,6 @@ function TB:UpdateSettings()
 end
 
 function TB:Initialize()
-	TB:UpdateSettings()
-
 	if TB.db.Enable ~= true then
 		return
 	end

@@ -4,13 +4,17 @@ local ElvUF = E.oUF
 
 local wipe = wipe
 local format = format
+
+local UnitName = UnitName
 local GetInstanceInfo = GetInstanceInfo
 local GetBattlefieldScore = GetBattlefieldScore
 local GetArenaOpponentSpec = GetArenaOpponentSpec
 local GetNumArenaOpponentSpecs = GetNumArenaOpponentSpecs
 local GetNumBattlefieldScores = GetNumBattlefieldScores
 local GetSpecializationInfoByID = GetSpecializationInfoByID
-local UnitName = UnitName
+local GetSpecializationInfoForClassID = GetSpecializationInfoForClassID
+local GetNumSpecializationsForClassID = GetNumSpecializationsForClassID
+
 local UNKNOWN = UNKNOWN
 
 local Healers, HealerSpecs = {}, {}
@@ -23,16 +27,17 @@ NP.PVPRole = {
 	TankSpecs = TankSpecs
 }
 
-for i = 1, _G.MAX_CLASSES do
-	local _, _, classID = GetClassInfo(i)
-	if classID then
-		for specIndex = 1, GetNumSpecializationsForClassID(classID) do
-			local _, name, _, _, role = GetSpecializationInfoForClassID(classID, specIndex)
-			if role == 'HEALER' then
-				HealerSpecs[name] = true
-			elseif role == 'TANK' then
-				TankSpecs[name] = true
-			end
+for classID in next, E.ClassInfoByID do
+	for specIndex = 1, GetNumSpecializationsForClassID(classID) do
+		local _, mName, _, _, role = GetSpecializationInfoForClassID(classID, specIndex, 2)
+		local _, fName = GetSpecializationInfoForClassID(classID, specIndex, 3)
+
+		if role == 'HEALER' then
+			HealerSpecs[mName] = true
+			HealerSpecs[fName] = true
+		elseif role == 'TANK' then
+			TankSpecs[mName] = true
+			TankSpecs[fName] = true
 		end
 	end
 end

@@ -18,9 +18,12 @@ function S:Blizzard_TimeManager()
 	local TimeManagerFrame = _G.TimeManagerFrame
 	S:HandlePortraitFrame(TimeManagerFrame)
 
-	S:HandleDropDownBox(_G.TimeManagerAlarmHourDropDown, 80)
-	S:HandleDropDownBox(_G.TimeManagerAlarmMinuteDropDown, 80)
-	S:HandleDropDownBox(_G.TimeManagerAlarmAMPMDropDown, 80)
+	local Alarm = _G.TimeManagerAlarmTimeFrame
+	if Alarm then
+		S:HandleDropDownBox(Alarm.HourDropdown, 80)
+		S:HandleDropDownBox(Alarm.MinuteDropdown, 80)
+		S:HandleDropDownBox(Alarm.AMPMDropdown, 80)
+	end
 
 	S:HandleEditBox(_G.TimeManagerAlarmMessageEditBox)
 	S:HandleCheckBox(_G.TimeManagerAlarmEnabledButton)
@@ -33,7 +36,7 @@ function S:Blizzard_TimeManager()
 	TimeManagerStopwatchCheck:GetNormalTexture():SetTexCoord(unpack(E.TexCoords))
 	TimeManagerStopwatchCheck:GetNormalTexture():SetInside()
 
-	local hover = TimeManagerStopwatchCheck:CreateTexture() -- hover
+	local hover = TimeManagerStopwatchCheck:CreateTexture()
 	hover:SetColorTexture(1,1,1,0.3)
 	hover:Point('TOPLEFT',TimeManagerStopwatchCheck,2,-2)
 	hover:Point('BOTTOMRIGHT',TimeManagerStopwatchCheck,-2,2)

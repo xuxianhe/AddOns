@@ -12,7 +12,7 @@
             <Anchor point="LEFT"/>
           </Anchors>
           <Size>
-            <AbsDimension x="30" y="20"/>
+            <AbsDimension x="50" y="20"/>
           </Size>
         </FontString>
         <FontString inherits="GameFontNormalLarge" parentKey="Category">
@@ -25,6 +25,24 @@
           <Color r="0.8" g="0.8" b="0.8" />
           <Size>
             <AbsDimension y="20"/>
+          </Size>
+        </FontString>
+      </Layer>
+    </Layers>
+  </Button>
+  <Button name="BetterBagsItemBrowserButton" virtual="true"> 
+    <Size>
+      <AbsDimension y="20"/>
+    </Size>
+    <Layers>
+      <Layer level="OVERLAY">
+        <FontString name="$parentTitle" inherits="GameFontHighlightLarge" parentKey="Title">
+          <Color r="1" g="1" b="1" />
+          <Anchors>
+            <Anchor point="LEFT"/>
+          </Anchors>
+          <Size>
+            <AbsDimension x="200" y="20"/>
           </Size>
         </FontString>
       </Layer>

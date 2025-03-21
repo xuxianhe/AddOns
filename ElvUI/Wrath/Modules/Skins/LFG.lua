@@ -246,7 +246,7 @@ function S:LookingForGroupFrames()
 		end
 	end)
 
-	S:HandleDropDownBox(_G.LFDQueueFrameTypeDropDown)
+	S:HandleDropDownBox(_G.LFDQueueFrameTypeDropdown)
 
 	-- Skin Reward Items (This works for all frames, LFD, Raid, Scenario)
 	hooksecurefunc('LFGRewardsFrame_SetItemButton', SkinItemButton)
@@ -266,15 +266,17 @@ function S:LookingForGroupFrames()
 	S:HandleTrimScrollBar(_G.LFDQueueFrameSpecific.ScrollBar)
 
 	local RoleDialog = _G.LFGListCreateRoleDialog
-	RoleDialog:StripTextures()
-	RoleDialog:SetTemplate('Transparent')
-	S:HandleButton(RoleDialog.SignUpButton)
-	S:HandleButton(RoleDialog.CancelButton)
+	if RoleDialog then
+		RoleDialog:StripTextures()
+		RoleDialog:SetTemplate('Transparent')
+		S:HandleButton(RoleDialog.SignUpButton)
+		S:HandleButton(RoleDialog.CancelButton)
 
-	S:HandleCheckBox(RoleDialog.DamagerButton.CheckButton)
-	S:HandleCheckBox(RoleDialog.TankButton.CheckButton)
-	S:HandleCheckBox(RoleDialog.HealerButton.CheckButton)
-
+		S:HandleCheckBox(RoleDialog.DamagerButton.CheckButton)
+		S:HandleCheckBox(RoleDialog.TankButton.CheckButton)
+		S:HandleCheckBox(RoleDialog.HealerButton.CheckButton)
+	end
+		
 	-- LFGListFrame
 	local LFGListFrame = _G.LFGListFrame
 	LFGListFrame.CategorySelection.Inset:StripTextures()
@@ -304,8 +306,8 @@ function S:LookingForGroupFrames()
 	S:HandleEditBox(LFGListFrame.EntryCreation.VoiceChat.EditBox)
 	S:HandleEditBox(LFGListFrame.EntryCreation.Name)
 
-	S:HandleDropDownBox(_G.LFGListEntryCreationActivityDropDown)
-	S:HandleDropDownBox(_G.LFGListEntryCreationGroupDropDown)
+	S:HandleDropDownBox(_G.LFGListEntryCreationActivityDropdown)
+	S:HandleDropDownBox(_G.LFGListEntryCreationGroupDropdown)
 	S:HandleDropDownBox(_G.LFGListEntryCreationPlayStyleDropdown)
 
 	S:HandleCheckBox(LFGListFrame.EntryCreation.ItemLevel.CheckButton)

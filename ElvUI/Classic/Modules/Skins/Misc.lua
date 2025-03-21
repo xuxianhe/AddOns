@@ -3,7 +3,6 @@ local S = E:GetModule('Skins')
 
 local _G = _G
 local next, unpack = next, unpack
-local pairs = pairs
 
 local hooksecurefunc = hooksecurefunc
 local UnitIsUnit = UnitIsUnit
@@ -23,7 +22,6 @@ end
 
 function S:BlizzardMiscFrames()
 	if not (E.private.skins.blizzard.enable and E.private.skins.blizzard.misc) then return end
-
 
 	for _, frame in next, { _G.AutoCompleteBox, _G.ReadyCheckFrame } do
 		frame:StripTextures()
@@ -55,9 +53,9 @@ function S:BlizzardMiscFrames()
 
 	S:HandleButton(_G.StaticPopup1ExtraButton)
 
-	if not E:IsAddOnEnabled('ConsolePortUI_Menu') then
+	if not E:IsAddOnEnabled('ConsolePort_Menu') then
 		-- reskin all esc/menu buttons
-		for _, Button in pairs({_G.GameMenuFrame:GetChildren()}) do
+		for _, Button in next, { _G.GameMenuFrame:GetChildren() } do
 			if Button.IsObjectType and Button:IsObjectType('Button') then
 				S:HandleButton(Button)
 			end
@@ -77,7 +75,7 @@ function S:BlizzardMiscFrames()
 	-- since we cant hook `CinematicFrame_OnShow` or `CinematicFrame_OnEvent` directly
 	-- we can just hook onto this function so that we can get the correct `self`
 	-- this is called through `CinematicFrame_OnShow` so the result would still happen where we want
-	hooksecurefunc('CinematicFrame_OnDisplaySizeChanged', function(s)
+	hooksecurefunc('CinematicFrame_UpdateLettboxForAspectRatio', function(s)
 		if s and s.closeDialog and not s.closeDialog.template then
 			s.closeDialog:StripTextures()
 			s.closeDialog:SetTemplate('Transparent')
@@ -104,11 +102,26 @@ function S:BlizzardMiscFrames()
 		end
 	end)
 
-	for _, frame in next, { _G.ChatMenu.NineSlice, _G.EmoteMenu.NineSlice, _G.LanguageMenu.NineSlice, _G.VoiceMacroMenu.NineSlice } do
-		if frame == _G.ChatMenu then
-			frame:HookScript('OnShow', function(menu) menu:SetTemplate('Transparent', true) menu:SetBackdropColor(unpack(E.media.backdropfadecolor)) menu:ClearAllPoints() menu:Point('BOTTOMLEFT', _G.ChatFrame1, 'TOPLEFT', 0, 30) end)
-		else
-			frame:HookScript('OnShow', function(menu) menu:SetTemplate('Transparent', true) menu:SetBackdropColor(unpack(E.media.backdropfadecolor)) end)
+	do
+		local menuBackdrop = function(s)
+			s:SetTemplate('Transparent')
+		end
+
+		local chatMenuBackdrop = function(s)
+			s:SetTemplate('Transparent')
+
+			s:ClearAllPoints()
+			s:Point('BOTTOMLEFT', _G.ChatFrame1, 'TOPLEFT', 0, 30)
+		end
+
+		for index, menu in next, { _G.ChatMenu, _G.EmoteMenu, _G.LanguageMenu, _G.VoiceMacroMenu } do
+			menu:StripTextures()
+
+			if index == 1 then -- ChatMenu
+				menu:HookScript('OnShow', chatMenuBackdrop)
+			else
+				menu:HookScript('OnShow', menuBackdrop)
+			end
 		end
 	end
 
@@ -190,8 +203,7 @@ function S:BlizzardMiscFrames()
 	S:HandleButton(_G.StackSplitOkayButton)
 	S:HandleButton(_G.StackSplitCancelButton)
 
-	local buttons = {StackSplitFrame.LeftButton, StackSplitFrame.RightButton}
-	for _, btn in pairs(buttons) do
+	for _, btn in next, { StackSplitFrame.LeftButton, StackSplitFrame.RightButton } do
 		btn:Size(14, 18)
 
 		btn:ClearAllPoints()

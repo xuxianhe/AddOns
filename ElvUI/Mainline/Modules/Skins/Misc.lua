@@ -64,18 +64,41 @@ function S:BlizzardMiscFrames()
 	S:HandleButton(_G.StaticPopup1ExtraButton)
 
 	-- reskin all esc/menu buttons
-	if not E:IsAddOnEnabled('ConsolePortUI_Menu') then
-		for _, Button in next, { _G.GameMenuFrame:GetChildren() } do
-			if Button.IsObjectType and Button:IsObjectType('Button') then
-				S:HandleButton(Button)
+	if not E:IsAddOnEnabled('ConsolePort_Menu') then
+		local GameMenuFrame = _G.GameMenuFrame
+		GameMenuFrame:StripTextures()
+		GameMenuFrame:CreateBackdrop('Transparent')
+
+		GameMenuFrame.Header:StripTextures()
+		GameMenuFrame.Header:ClearAllPoints()
+		GameMenuFrame.Header:Point('TOP', GameMenuFrame, 0, 7)
+
+		local function ClearedHooks(button, script)
+			if script == 'OnEnter' then
+				button:HookScript('OnEnter', S.SetModifiedBackdrop)
+			elseif script == 'OnLeave' then
+				button:HookScript('OnLeave', S.SetOriginalBackdrop)
+			elseif script == 'OnDisable' then
+				button:HookScript('OnDisable', S.SetDisabledBackdrop)
 			end
 		end
 
-		_G.GameMenuFrame:StripTextures()
-		_G.GameMenuFrame:SetTemplate('Transparent')
-		_G.GameMenuFrame.Header:StripTextures()
-		_G.GameMenuFrame.Header:ClearAllPoints()
-		_G.GameMenuFrame.Header:Point('TOP', _G.GameMenuFrame, 0, 7)
+		hooksecurefunc(GameMenuFrame, 'InitButtons', function(menu)
+			if not menu.buttonPool then return end
+
+			for button in menu.buttonPool:EnumerateActive() do
+				if not button.IsSkinned then
+					S:HandleButton(button, nil, nil, nil, true)
+					button.backdrop:SetInside(nil, 1, 1)
+					hooksecurefunc(button, 'SetScript', ClearedHooks)
+				end
+			end
+
+			if menu.ElvUI and not menu.ElvUI.IsSkinned then
+				S:HandleButton(menu.ElvUI, nil, nil, nil, true)
+				menu.ElvUI.backdrop:SetInside(nil, 1, 1)
+			end
+		end)
 	end
 
 	-- since we cant hook `CinematicFrame_OnShow` or `CinematicFrame_OnEvent` directly
@@ -224,87 +247,7 @@ function S:BlizzardMiscFrames()
 	_G.OpacityFrame:SetTemplate('Transparent')
 
 	--DropDownMenu
-	hooksecurefunc('UIDropDownMenu_CreateFrames', function(level, index)
-		local listFrame = _G['DropDownList'..level]
-		local listFrameName = listFrame:GetName()
-		local expandArrow = _G[listFrameName..'Button'..index..'ExpandArrow']
-		if expandArrow then
-			local normTex = expandArrow:GetNormalTexture()
-			expandArrow:SetNormalTexture(E.Media.Textures.ArrowUp)
-			normTex:SetVertexColor(unpack(E.media.rgbvaluecolor))
-			normTex:SetRotation(S.ArrowRotation.right)
-			expandArrow:Size(12)
-		end
-
-		local Backdrop = _G[listFrameName..'Backdrop']
-		if Backdrop and not Backdrop.template then
-			Backdrop:StripTextures()
-			Backdrop:SetTemplate('Transparent')
-		end
-
-		local menuBackdrop = _G[listFrameName..'MenuBackdrop']
-		if menuBackdrop and not menuBackdrop.template then
-			menuBackdrop.NineSlice:SetTemplate('Transparent')
-		end
-	end)
-
-	hooksecurefunc('UIDropDownMenu_SetIconImage', function(icon, texture)
-		if texture:find('Divider') then
-			local r, g, b = unpack(E.media.rgbvaluecolor)
-			icon:SetColorTexture(r, g, b, 0.45)
-			icon:Height(1)
-		end
-	end)
-
-	hooksecurefunc('ToggleDropDownMenu', function(level)
-		if not level then
-			level = 1
-		end
-
-		local r, g, b = unpack(E.media.rgbvaluecolor)
-
-		for i = 1, _G.UIDROPDOWNMENU_MAXBUTTONS do
-			local button = _G['DropDownList'..level..'Button'..i]
-			local check = _G['DropDownList'..level..'Button'..i..'Check']
-			local uncheck = _G['DropDownList'..level..'Button'..i..'UnCheck']
-			local highlight = _G['DropDownList'..level..'Button'..i..'Highlight']
-			local text = _G['DropDownList'..level..'Button'..i..'NormalText']
-
-			highlight:SetTexture(E.Media.Textures.Highlight)
-			highlight:SetBlendMode('BLEND')
-			highlight:SetDrawLayer('BACKGROUND')
-			highlight:SetVertexColor(r, g, b)
-
-			if not button.backdrop then
-				button:CreateBackdrop()
-			end
-
-			if not button.notCheckable then
-				S:HandlePointXY(text, 15)
-				uncheck:SetTexture()
-
-				if E.private.skins.checkBoxSkin then
-					check:SetTexture(E.media.normTex)
-					check:SetVertexColor(r, g, b, 1)
-					check:Size(10)
-					check:SetDesaturated(false)
-					button.backdrop:SetOutside(check)
-				else
-					check:SetTexture([[Interface\Buttons\UI-CheckBox-Check]])
-					check:SetVertexColor(r, g, b, 1)
-					check:Size(20)
-					check:SetDesaturated(true)
-					button.backdrop:SetInside(check, 4, 4)
-				end
-
-				button.backdrop:Show()
-				check:SetTexCoord(0, 1, 0, 1)
-			else
-				button.backdrop:Hide()
-				check:Size(16)
-			end
-		end
-	end)
+	S:SkinDropDownMenu('DropDownList')
 
 	local SideDressUpFrame = _G.SideDressUpFrame
 	S:HandleCloseButton(_G.SideDressUpFrameCloseButton)

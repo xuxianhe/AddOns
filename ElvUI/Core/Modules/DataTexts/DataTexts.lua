@@ -12,11 +12,9 @@ local tinsert, ipairs, pairs, wipe, sort, gsub = tinsert, ipairs, pairs, wipe, s
 local tostring, strfind, strsplit = tostring, strfind, strsplit
 local hooksecurefunc = hooksecurefunc
 
+local GetCurrencyListInfo = GetCurrencyListInfo
 local CloseDropDownMenus = CloseDropDownMenus
 local CreateFrame = CreateFrame
-local EasyMenu = EasyMenu
-local GetCurrencyInfo = GetCurrencyInfo
-local GetCurrencyListInfo = GetCurrencyListInfo
 local GetNumSpecializations = GetNumSpecializations
 local GetSpecializationInfo = GetSpecializationInfo
 local InCombatLockdown = InCombatLockdown
@@ -33,11 +31,20 @@ local C_CurrencyInfo_GetCurrencyListInfo = C_CurrencyInfo.GetCurrencyListInfo
 local C_CurrencyInfo_GetCurrencyListLink = C_CurrencyInfo.GetCurrencyListLink
 local GetBackpackCurrencyInfo = GetBackpackCurrencyInfo or C_CurrencyInfo.GetBackpackCurrencyInfo
 local GetCurrencyListSize = GetCurrencyListSize or C_CurrencyInfo.GetCurrencyListSize
+local C_PartyInfo_RequestInviteFromUnit = C_PartyInfo.RequestInviteFromUnit
+local InviteUnit = C_PartyInfo.InviteUnit
+
+local GetDisplayedInviteType = GetDisplayedInviteType
+local ChatFrame_SendBNetTell = ChatFrame_SendBNetTell
+local BNRequestInviteFriend = BNRequestInviteFriend
+local BNInviteFriend = BNInviteFriend
+local SetItemRef = SetItemRef
 
 local MISCELLANEOUS = MISCELLANEOUS
 local LFG_TYPE_DUNGEON = LFG_TYPE_DUNGEON
 local expansion = _G['EXPANSION_NAME'..GetExpansionLevel()]
 local QuickList = {}
+local Collapsed = {}
 
 local iconString = '|T%s:16:16:0:0:64:64:4:60:4:60|t'
 
@@ -74,7 +81,7 @@ function DT:QuickDTMode(_, key, active)
 		if active == 1 and MouseIsOver(DT.SelectedDatatext) then
 			DT.OnLeave(DT.SelectedDatatext)
 			E:SetEasyMenuAnchor(E.EasyMenu, DT.SelectedDatatext)
-			EasyMenu(QuickList, E.EasyMenu, nil, nil, nil, 'MENU')
+			E:ComplicatedMenu(QuickList, E.EasyMenu, nil, nil, nil, 'MENU')
 		elseif _G.DropDownList1:IsShown() and not _G.DropDownList1:IsMouseOver() then
 			CloseDropDownMenus()
 		end
@@ -167,15 +174,15 @@ end
 
 function DT:ReleasePanel(givenName)
 	local panel = DT.PanelPool.InUse[givenName]
-	if panel then
-		DT:EmptyPanel(panel)
-		DT.PanelPool.Free[givenName] = panel
-		DT.PanelPool.InUse[givenName] = nil
-		DT.RegisteredPanels[givenName] = nil
+	if not panel then return end
 
-		if E.db.movers then
-			E.db.movers[panel.moverName] = nil
-		end
+	DT:EmptyPanel(panel)
+	DT.PanelPool.Free[givenName] = panel
+	DT.PanelPool.InUse[givenName] = nil
+	DT.RegisteredPanels[givenName] = nil
+
+	if E.db.movers then
+		E.db.movers[panel.moverName] = nil
 	end
 end
 
@@ -569,7 +576,7 @@ function DT:UpdatePanelInfo(panelName, panel, ...)
 		dt.watchModKey = nil
 		dt.name = nil
 
-		E:StopFlash(dt)
+		E:StopFlash(dt, 1)
 
 		dt.text:FontTemplate(font, fontSize, fontOutline)
 		dt.text:SetJustifyH(db.textJustify or 'CENTER')
@@ -644,6 +651,8 @@ end
 
 function DT:UpdatePanelAttributes(name, db, fromLoad)
 	local Panel = DT.PanelPool.InUse[name]
+	if not Panel then return end
+
 	DT.OnLeave(Panel)
 
 	Panel.db = db
@@ -737,26 +746,66 @@ do
 
 		DT:SortMenuList(QuickList)
 	end
+
+	function DT:InviteFriend(name, guid)
+		if not (name and name ~= '') then return end
+		local isBNet = type(name) == 'number'
+
+		if guid then
+			local inviteType = GetDisplayedInviteType(guid)
+			if inviteType == 'INVITE' or inviteType == 'SUGGEST_INVITE' then
+				if isBNet then
+					BNInviteFriend(name)
+				else
+					InviteUnit(name)
+				end
+			elseif inviteType == 'REQUEST_INVITE' then
+				if isBNet then
+					BNRequestInviteFriend(name)
+				elseif E.Retail then
+					C_PartyInfo_RequestInviteFromUnit(name)
+				end
+			end
+		else
+			-- if for some reason guid isnt here fallback and just try to invite them
+			-- this is unlikely but having a fallback doesnt hurt
+			if isBNet then
+				BNInviteFriend(name)
+			else
+				InviteUnit(name)
+			end
+		end
+	end
+
+	function DT:SendWhisper(name, battleNet)
+		if battleNet then
+			ChatFrame_SendBNetTell(name)
+		else
+			SetItemRef( 'player:'..name, format('|Hplayer:%1$s|h[%1$s]|h',name), 'LeftButton' )
+		end
+	end
 end
 
 function DT:PopulateData(currencyOnly)
-	local Collapsed = {}
 	local listSize, i = GetCurrencyListSize(), 1
 
 	local headerIndex
 	while listSize >= i do
 		local info = DT:CurrencyListInfo(i)
-		if E.Retail and info.isHeader and not info.isHeaderExpanded then
-			C_CurrencyInfo_ExpandCurrencyList(i, true)
-			Collapsed[info.name] = true
-		end
+
 		if info.isHeader then
+			if E.Retail and not info.isHeaderExpanded then
+				C_CurrencyInfo_ExpandCurrencyList(i, true)
+				Collapsed[info.name] = true
+
+				listSize = GetCurrencyListSize()
+			end
+
 			G.datatexts.settings.Currencies.tooltipData[i] = { info.name, nil, nil, (info.name == expansion or info.name == MISCELLANEOUS) or strfind(info.name, LFG_TYPE_DUNGEON) }
 			E.global.datatexts.settings.Currencies.tooltipData[i] = { info.name, nil, nil, E.global.datatexts.settings.Currencies.headers }
 
 			headerIndex = i
-		end
-		if info.name and not info.isHeader then
+		elseif info.name then
 			local currencyLink = E.Retail and C_CurrencyInfo_GetCurrencyListLink(i)
 			local currencyID = currencyLink and C_CurrencyInfo_GetCurrencyIDFromLink(currencyLink)
 			if currencyID then
@@ -783,9 +832,9 @@ function DT:PopulateData(currencyOnly)
 				C_CurrencyInfo_ExpandCurrencyList(k, false)
 			end
 		end
-	end
 
-	wipe(Collapsed)
+		wipe(Collapsed)
+	end
 
 	if E.Retail and not currencyOnly then
 		for index = 1, GetNumSpecializations() do
@@ -801,7 +850,7 @@ end
 
 function DT:CURRENCY_DISPLAY_UPDATE(_, currencyID)
 	if currencyID and not DT.CurrencyList[tostring(currencyID)] then
-		local name = DT:CurrencyInfo(currencyID)
+		local _, name = DT:CurrencyInfo(currencyID)
 		if name then
 			DT:PopulateData(true)
 		end
@@ -811,7 +860,7 @@ end
 function DT:CurrencyListInfo(index)
 	local info = E.Retail and C_CurrencyInfo_GetCurrencyListInfo(index) or {}
 
-	if E.Wrath then
+	if E.Cata then
 		info.name, info.isHeader, info.isHeaderExpanded, info.isUnused, info.isWatched, info.quantity, info.iconFileID, info.maxQuantity, info.weeklyMax, info.earnedThisWeek, info.isTradeable, info.itemID = GetCurrencyListInfo(index)
 	end
 
@@ -819,11 +868,7 @@ function DT:CurrencyListInfo(index)
 end
 
 function DT:CurrencyInfo(id)
-	local info = E.Retail and C_CurrencyInfo_GetCurrencyInfo(id) or {}
-
-	if E.Wrath then
-		info.name, info.quantity, info.iconFileID, info.earnedThisWeek, info.weeklyMax, info.maxQuantity, info.isDiscovered = GetCurrencyInfo(id)
-	end
+	local info = C_CurrencyInfo_GetCurrencyInfo(id) or {}
 
 	return info, info and info.name, format(iconString, info and info.iconFileID or '136012')
 end
@@ -831,7 +876,7 @@ end
 function DT:BackpackCurrencyInfo(index)
 	local info = E.Retail and GetBackpackCurrencyInfo(index) or {}
 
-	if E.Wrath then
+	if E.Cata then
 		info.name, info.quantity, info.iconFileID, info.currencyTypesID = GetBackpackCurrencyInfo(index)
 	end
 
@@ -862,25 +907,37 @@ function DT:BuildTables()
 	db.serverID[E.serverID][E.myrealm] = true
 end
 
+function DT:CloseMenus()
+	if E.Retail then
+		local manager = _G.Menu.GetManager()
+		if manager then
+			manager:CloseMenus()
+		end
+	else
+		CloseDropDownMenus()
+	end
+end
+
 function DT:Initialize()
 	DT.Initialized = true
-	DT.db = E.db.datatexts
 
 	DT:BuildTables()
 
 	E.EasyMenu:SetClampedToScreen(true)
 	E.EasyMenu:EnableMouse(true)
 	E.EasyMenu.MenuSetItem = function(dt, value)
-		local panelDB = dt.battlePanel and DT.db.battlePanel or DT.db.panels
-
-		panelDB[dt.parentName][dt.pointIndex] = value
-		DT:UpdatePanelInfo(dt.parentName, dt.parent)
+		local panelDB = (dt and dt.battlePanel) and DT.db.battlePanel or DT.db.panels
+		if panelDB then
+			panelDB[dt.parentName][dt.pointIndex] = value
+			DT:UpdatePanelInfo(dt.parentName, dt.parent)
+		end
 
 		DT.SelectedDatatext = nil
-		CloseDropDownMenus()
+
+		DT:CloseMenus()
 	end
 	E.EasyMenu.MenuGetItem = function(dt, value)
-		local panelDB = dt.battlePanel and DT.db.battlePanel or DT.db.panels
+		local panelDB = (dt and dt.battlePanel) and DT.db.battlePanel or DT.db.panels
 		return dt and (panelDB[dt.parentName] and panelDB[dt.parentName][dt.pointIndex] == value)
 	end
 
@@ -895,7 +952,7 @@ function DT:Initialize()
 	_G.DataTextTooltipTextLeft1:FontTemplate(font, textSize, fontOutline)
 	_G.DataTextTooltipTextRight1:FontTemplate(font, textSize, fontOutline)
 
-	if E.Retail or E.Wrath then
+	if E.Retail or E.Cata then
 		DT:RegisterCustomCurrencyDT() -- Register all the user created currency datatexts from the 'CustomCurrency' DT.
 
 		if E.Retail then

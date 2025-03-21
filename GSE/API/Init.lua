@@ -13,12 +13,11 @@ GSE.Static = {}
 
 GSE.WagoAnalytics = LibStub("WagoAnalytics"):Register("kGr0YY6y")
 
-local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
-GSE.VersionString = GetAddOnMetadata("GSE", "Version")
+GSE.VersionString = C_AddOns.GetAddOnMetadata("GSE", "Version")
 
 --[==[@debug@
 if GSE.VersionString:find("version") then
-    GSE.VersionString = "3.1.01-development"
+    GSE.VersionString = "3.2.00-development"
     GSE.Developer = true
 end
 --@end-debug@]==]
@@ -32,10 +31,13 @@ GSE.OutputQueue = {}
 GSE.DebugOutput = ""
 GSE.SequenceDebugOutput = ""
 GSE.GUI = {}
+GSE.V = {}
+GSE.BooleanVariables = {}
+GSE.PlayerEntered = false
 GSE.WagoAnalytics:Switch("Patron", GSE.Patron)
 local L = GSE.L
 local Statics = GSE.Static
-local GNOME = "GSE"
+local GNOME = "|cFFFFFFFFGS|r|cFF00FFFFE|r"
 
 -- Initialisation Functions
 --- Checks for nil or empty variables.
@@ -75,7 +77,7 @@ function GSE.ParseVersion(version)
     if GSE.isEmpty(numbers) and type(version) == "number" then
         returnVal = version
     else
-        if table.getn(numbers) > 1 then
+        if #numbers > 1 then
             returnVal = (tonumber(numbers[1]) * 1000) + (tonumber(numbers[2]) * 100) + (tonumber(numbers[3]))
         else
             returnVal = tonumber(version)
@@ -137,23 +139,18 @@ function GSE.PrintDebugMessage(message, module)
         DebugModules[module] = false
     else
         DebugModules[module] = GSEOptions.DebugModules[module]
-        if GSEOptions.debug then
-            Debug = GSEOptions.debug
-        end
+        Debug = GSEOptions.debug
         if GSEOptions.AuthorColour then
             AuthorColour = GSEOptions.AuthorColour
             CommandColour = GSEOptions.CommandColour
         end
     end
     if module == Statics.SequenceDebug then
-        determinationOutputDestination(
-            message,
-            CommandColour .. GNOME .. ":|r " .. AuthorColour .. L["<SEQUENCEDEBUG> |r "]
-        )
+        determinationOutputDestination(message, GNOME .. ":|r " .. AuthorColour .. L["<SEQUENCEDEBUG> |r "])
     elseif Debug and module ~= Statics.SequenceDebug and DebugModules[module] == true then
         determinationOutputDestination(
-            CommandColour ..
-                (GSE.isEmpty(module) and GNOME or module) .. ":|r " .. AuthorColour .. L["<DEBUG> |r "] .. message
+            (GSE.isEmpty(module) and GNOME or GNOME .. ": " .. CommandColour .. module) ..
+                "|r " .. AuthorColour .. L["<DEBUG> |r "] .. message
         )
     end
 end

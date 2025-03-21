@@ -5,11 +5,10 @@ local LibStub = _G.LibStub
 local _G = _G
 local hooksecurefunc = hooksecurefunc
 local tinsert, xpcall, next, ipairs, pairs = tinsert, xpcall, next, ipairs, pairs
-local unpack, assert, type, strfind = unpack, assert, type, strfind
+local unpack, assert, type, gsub, rad, strfind = unpack, assert, type, gsub, rad, strfind
 
 local CreateFrame = CreateFrame
-
-local IsAddOnLoaded = (C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 
 local ITEM_QUALITY_COLORS = ITEM_QUALITY_COLORS
 
@@ -81,7 +80,7 @@ do
 	end
 
 	function S:HandleCategoriesButtons(button, strip)
-		if button.isSkinned then return end
+		if button.IsSkinned then return end
 
 		if button.SetNormalTexture then button:SetNormalTexture(E.ClearTexture) end
 		if button.SetHighlightTexture then button:SetHighlightTexture(E.ClearTexture) end
@@ -102,20 +101,20 @@ do
 		button:HookScript('OnEnter', HighlightOnEnter)
 		button:HookScript('OnLeave', HighlightOnLeave)
 
-		button.isSkinned = true
+		button.IsSkinned = true
 	end
 end
 
 do
 	local NavBarCheck = {
 		EncounterJournal = function()
-			return E.private.skins.blizzard.encounterjournal
+			return S.db.blizzard.encounterjournal
 		end,
 		WorldMapFrame = function()
-			return E.private.skins.blizzard.worldmap
+			return S.db.blizzard.worldmap
 		end,
 		HelpFrameKnowledgebase = function()
-			return E.private.skins.blizzard.help
+			return S.db.blizzard.help
 		end
 	}
 
@@ -125,13 +124,8 @@ do
 		end
 	end
 
-	function S:HandleNavBarButtons()
-		local func = NavBarCheck[self:GetParent():GetName()]
-		if func and not func() then return end
-
-		local total = #self.navList
-		local button = self.navList[total]
-		if button and not button.isSkinned then
+	function S:SkinNavBarButton(button, index)
+		if button and not button.IsSkinned then
 			S:HandleButton(button, true)
 			button:GetFontString():SetTextColor(1, 1, 1)
 
@@ -148,12 +142,26 @@ do
 			end
 
 			-- setting the xoffset will cause a taint, use the hook below instead to lock the xoffset to 1
-			if total > 1 then
+			if index > 1 then
 				NavButtonXOffset(button, button:GetPoint())
 				hooksecurefunc(button, 'SetPoint', NavButtonXOffset)
 			end
 
-			button.isSkinned = true
+			button.IsSkinned = true
+		end
+	end
+
+	function S:HandleNavBarButtons(data)
+		local func = NavBarCheck[self:GetParent():GetName()]
+		if func and not func() then return end
+
+		if not data then -- init call
+			for index, nav in next, self.navList do
+				S:SkinNavBarButton(nav, index)
+			end
+		else
+			local lastIndex = #self.navList
+			S:SkinNavBarButton(self.navList[lastIndex], lastIndex)
 		end
 	end
 end
@@ -180,11 +188,6 @@ function S:HandleButtonHighlight(frame, r, g, b)
 	if not b then b = 0.9 end
 
 	frame.highlightGradient:SetVertexColor(r, g, b, 0.3)
-end
-
-function S:HandlePointXY(frame, x, y)
-	local a, b, c, d, e = frame:GetPoint()
-	frame:SetPoint(a, b, c, x or d, y or e)
 end
 
 function S:HandleFrame(frame, setBackdrop, template, x1, y1, x2, y2)
@@ -247,15 +250,17 @@ function S:HandlePortraitFrame(frame, createBackdrop, noStrip)
 	local name = frame and frame.GetName and frame:GetName()
 
 	local insetFrame = name and _G[name..'Inset'] or frame.Inset
-	local portraitFrame = name and _G[name..'Portrait'] or frame.Portrait or frame.portrait
+	local portraitFrame = name and _G[name..'Portrait'] or frame.Portrait
 	local portraitFrameOverlay = name and _G[name..'PortraitOverlay'] or frame.PortraitOverlay
 	local artFrameOverlay = name and _G[name..'ArtOverlayFrame'] or frame.ArtOverlayFrame
+	local portraitFrameAlt = frame.portrait  -- blizzard uses the same global name on two frames
 
 	if not noStrip then
 		frame:StripTextures()
 
 		if portraitFrame then portraitFrame:SetAlpha(0) end
 		if portraitFrameOverlay then portraitFrameOverlay:SetAlpha(0) end
+		if portraitFrameAlt then portraitFrameAlt:SetAlpha(0) end
 		if artFrameOverlay then artFrameOverlay:SetAlpha(0) end
 
 		if insetFrame then
@@ -426,10 +431,10 @@ do -- DropDownMenu library support
 end
 
 do -- WIM replaces Blizzard globals we need to rehook
-	local hooked = {}
+	S.DropDownMenu_Hooks = {}
 
-	local function SkinMenu(name)
-		local backdrop = _G[name]
+	function S:DropDownMenu_SkinMenu(prefix, name)
+		local backdrop = prefix and _G[name]
 		if not backdrop then return end
 
 		if backdrop.NineSlice then
@@ -441,100 +446,115 @@ do -- WIM replaces Blizzard globals we need to rehook
 		end
 	end
 
+	function S:DropDownMenu_CreateFrames(prefix, level, index)
+		local listFrame = prefix and level and _G[prefix..level]
+		if not listFrame then return end
+
+		local listName = listFrame:GetName()
+		if not listName then return end
+
+		local expandArrow = _G[listName..'Button'..index..'ExpandArrow']
+		if expandArrow then
+			expandArrow:SetNormalTexture(E.Media.Textures.ArrowUp)
+			expandArrow:Size(12)
+
+			local normTex = expandArrow:GetNormalTexture()
+			if normTex then
+				normTex:SetVertexColor(unpack(E.media.rgbvaluecolor))
+				normTex:SetRotation(S.ArrowRotation.right)
+			end
+		end
+
+		S:DropDownMenu_SkinMenu(prefix, listName..'Backdrop')
+		S:DropDownMenu_SkinMenu(prefix, listName..'MenuBackdrop')
+	end
+
+	function S:DropDownMenu_SetIconImage(prefix, icon, texture)
+		if not (prefix and icon and texture) or not strfind(texture, 'Divider') then return end
+
+		local r, g, b = unpack(E.media.rgbvaluecolor)
+		icon:SetColorTexture(r, g, b, 0.45)
+		icon:Height(1)
+	end
+
+	function S:DropDownMenu_Toggle(prefix, level, textX, textY)
+		if not prefix then return end
+
+		if not level then level = 1 end
+		local r, g, b = unpack(E.media.rgbvaluecolor)
+
+		for i = 1, _G.UIDROPDOWNMENU_MAXBUTTONS do
+			local indexName = level..'Button'..i
+
+			local name = prefix..indexName
+			local button = _G[name]
+			if not button then -- fallback to blizzards
+				name = 'DropDownList'..indexName
+				button = _G[name]
+			end
+
+			if not button then return end -- bail out
+
+			local highlight = _G[name..'Highlight']
+			if highlight then
+				highlight:SetTexture(E.Media.Textures.Highlight)
+				highlight:SetBlendMode('BLEND')
+				highlight:SetDrawLayer('BACKGROUND')
+				highlight:SetVertexColor(r, g, b)
+			end
+
+			if not button.backdrop then
+				button:CreateBackdrop()
+			end
+
+			local check = _G[name..'Check']
+			if not button.notCheckable then
+				local text = _G[name..'NormalText']
+				if text then
+					text:PointXY(textX or 5, textY)
+				end
+
+				local uncheck = _G[name..'UnCheck']
+				if uncheck then
+					uncheck:SetTexture()
+				end
+
+				if check then
+					if S.db.checkBoxSkin then
+						check:SetTexture(E.media.normTex)
+						check:SetVertexColor(r, g, b, 1)
+						check:Size(10)
+						check:SetDesaturated(false)
+						button.backdrop:SetOutside(check)
+					else
+						check:SetTexture([[Interface\Buttons\UI-CheckBox-Check]])
+						check:SetVertexColor(r, g, b, 1)
+						check:Size(20)
+						check:SetDesaturated(true)
+						button.backdrop:SetInside(check, 4, 4)
+					end
+
+					check:SetTexCoord(0, 1, 0, 1)
+				end
+
+				button.backdrop:Show()
+			else
+				if check then
+					check:Size(16)
+				end
+
+				button.backdrop:Hide()
+			end
+		end
+	end
+
 	function S:SkinDropDownMenu(prefix, textX, textY)
-		if hooked[prefix] then return end
+		if S.DropDownMenu_Hooks[prefix] then return end
+		S.DropDownMenu_Hooks[prefix] = true
 
-		hooksecurefunc('UIDropDownMenu_CreateFrames', function(level, index)
-			local listFrame = _G[prefix..level]
-			local listFrameName = listFrame:GetName()
-			local expandArrow = _G[listFrameName..'Button'..index..'ExpandArrow']
-			if expandArrow then
-				expandArrow:SetNormalTexture(E.Media.Textures.ArrowUp)
-				expandArrow:Size(12)
-
-				local normTex = expandArrow:GetNormalTexture()
-				if normTex then
-					normTex:SetVertexColor(unpack(E.media.rgbvaluecolor))
-					normTex:SetRotation(S.ArrowRotation.right)
-				end
-			end
-
-			SkinMenu(listFrameName..'Backdrop')
-			SkinMenu(listFrameName..'MenuBackdrop')
-		end)
-
-		hooksecurefunc('UIDropDownMenu_SetIconImage', function(icon, texture)
-			if texture:find('Divider') then
-				local r, g, b = unpack(E.media.rgbvaluecolor)
-				icon:SetColorTexture(r, g, b, 0.45)
-				icon:Height(1)
-			end
-		end)
-
-		hooksecurefunc('ToggleDropDownMenu', function(level)
-			if not level then level = 1 end
-			local r, g, b = unpack(E.media.rgbvaluecolor)
-
-			for i = 1, _G.UIDROPDOWNMENU_MAXBUTTONS do
-				local name = prefix..level..'Button'..i
-				local button = _G[name]
-				if not button then -- fallback to blizzards
-					name = 'DropDownList'..level..'Button'..i
-					button = _G[name]
-				end
-
-				local highlight = _G[name..'Highlight']
-				if highlight then
-					highlight:SetTexture(E.Media.Textures.Highlight)
-					highlight:SetBlendMode('BLEND')
-					highlight:SetDrawLayer('BACKGROUND')
-					highlight:SetVertexColor(r, g, b)
-				end
-
-				if not button.backdrop then
-					button:CreateBackdrop()
-				end
-
-				local check = _G[name..'Check']
-				if not button.notCheckable then
-					local text = _G[name..'NormalText']
-					if text then
-						S:HandlePointXY(text, textX or 5, textY)
-					end
-
-					local uncheck = _G[name..'UnCheck']
-					if uncheck then
-						uncheck:SetTexture()
-					end
-
-					if check then
-						if E.private.skins.checkBoxSkin then
-							check:SetTexture(E.media.normTex)
-							check:SetVertexColor(r, g, b, 1)
-							check:Size(10)
-							check:SetDesaturated(false)
-							button.backdrop:SetOutside(check)
-						else
-							check:SetTexture([[Interface\Buttons\UI-CheckBox-Check]])
-							check:SetVertexColor(r, g, b, 1)
-							check:Size(20)
-							check:SetDesaturated(true)
-							button.backdrop:SetInside(check, 4, 4)
-						end
-
-						check:SetTexCoord(0, 1, 0, 1)
-					end
-
-					button.backdrop:Show()
-				else
-					if check then
-						check:Size(16)
-					end
-
-					button.backdrop:Hide()
-				end
-			end
-		end)
+		hooksecurefunc('UIDropDownMenu_CreateFrames', function(level, index) S:DropDownMenu_CreateFrames(prefix, level, index) end)
+		hooksecurefunc('UIDropDownMenu_SetIconImage', function(icon, texture) S:DropDownMenu_SetIconImage(prefix, icon, texture) end)
+		hooksecurefunc('ToggleDropDownMenu', function(level) S:DropDownMenu_Toggle(prefix, level, textX, textY) end)
 	end
 end
 
@@ -708,7 +728,7 @@ do
 		for _, name in next, keys do
 			local button = frame[name]
 			if button then
-				if not button.isSkinned then
+				if not button.IsSkinned then
 					S:HandleButton(button)
 					button:Size(22)
 
@@ -733,17 +753,90 @@ do
 	end
 
 	function S:HandleModelSceneControlButtons(frame)
-		if not frame.isSkinned then
-			frame.isSkinned = true
+		if not frame.IsSkinned then
+			frame.IsSkinned = true
+
 			hooksecurefunc(frame, 'UpdateLayout', UpdateLayout)
 		end
 	end
 end
 
-function S:HandleButton(button, strip, isDecline, noStyle, createBackdrop, template, noGlossTex, overrideTex, frameLevel, regionsKill, regionsZero)
+do
+	local arrowDegree = { up = 0, down = 180, left = 90, right = -90 }
+	function S:SetupArrow(tex, direction)
+		if not tex then return end
+
+		tex:SetTexture(E.Media.Textures.ArrowUp)
+		tex:SetRotation(rad(arrowDegree[direction]))
+	end
+end
+
+do
+	local overlays = {}
+
+	local function OverlayHide(button)
+		local overlay = overlays[button]
+		if not overlay then return end
+
+		overlay:Hide()
+	end
+
+	local function OverlayShow(button)
+		local overlay = overlays[button]
+		if not overlay then return end
+
+		overlay:ClearAllPoints()
+		overlay:SetPoint(button:GetPoint())
+		overlay:Show()
+	end
+
+	local function OverlayOnEnter(button)
+		local overlay = overlays[button]
+		if not overlay then return end
+
+		overlay.text:SetTextColor(1, 1, 1)
+		S:SetBackdropBorderColor(overlay, 'OnEnter')
+	end
+
+	local function OverlayOnLeave(button)
+		local overlay = overlays[button]
+		if not overlay then return end
+
+		overlay.text:SetTextColor(1, 0.81, 0)
+		S:SetBackdropBorderColor(overlay, 'OnLeave')
+	end
+
+	function S:OverlayButton(button, name, width, height, text, textLayer, level, strata)
+		if overlays[button] then return end -- already exists
+
+		local overlay = CreateFrame('Frame', 'ElvUI_OverlayButton_'..name, E.UIParent)
+		overlay:Size(width or 120, height or 22) -- dont use GetSize it can taint the owner
+		overlay:SetTemplate(nil, true)
+		overlay:SetPoint(button:GetPoint())
+		overlay:SetFrameLevel(level or 10)
+		overlay:SetFrameStrata(strata or 'MEDIUM')
+		overlay:Hide()
+
+		local txt = overlay:CreateFontString(nil, textLayer or 'OVERLAY')
+		txt:SetPoint('CENTER')
+		txt:FontTemplate()
+		txt:SetText(text)
+		txt:SetTextColor(1, 0.81, 0)
+		overlay.text = txt
+
+		button:HookScript('OnEnter', OverlayOnEnter)
+		button:HookScript('OnLeave', OverlayOnLeave)
+		button:HookScript('OnHide', OverlayHide)
+		button:HookScript('OnShow', OverlayShow)
+
+		overlays[button] = overlay
+	end
+end
+
+function S:HandleButton(button, strip, isDecline, noStyle, createBackdrop, template, noGlossTex, overrideTex, frameLevel, regionsKill, regionsZero, isFilterButton, filterDirection)
 	assert(button, 'doesn\'t exist!')
 
-	if button.isSkinned then return end
+	if button.IsSkinned then return end
 
 	if button.SetNormalTexture and not overrideTex then button:SetNormalTexture(E.ClearTexture) end
 	if button.SetHighlightTexture then button:SetHighlightTexture(E.ClearTexture) end
@@ -751,6 +844,7 @@ function S:HandleButton(button, strip, isDecline, noStyle, createBackdrop, templ
 	if button.SetDisabledTexture then button:SetDisabledTexture(E.ClearTexture) end
 
 	if strip then button:StripTextures() end
+	if button.Texture then button.Texture:SetAlpha(0) end
 
 	S:HandleBlizzardRegions(button, nil, regionsKill, regionsZero)
 
@@ -779,7 +873,18 @@ function S:HandleButton(button, strip, isDecline, noStyle, createBackdrop, templ
 		button:HookScript('OnDisable', S.SetDisabledBackdrop)
 	end
 
-	button.isSkinned = true
+	if isFilterButton then
+		local arrow = button:CreateTexture(nil, 'ARTWORK')
+		arrow:Size(10)
+		arrow:ClearAllPoints()
+		arrow:Point('RIGHT', -1, 0)
+
+		if filterDirection then
+			S:SetupArrow(arrow, filterDirection)
+		end
+	end
+
+	button.IsSkinned = true
 end
 
 do
@@ -935,7 +1040,7 @@ do
 		end
 	end
 
-	function S:HandleTrimScrollBar(frame)
+	function S:HandleTrimScrollBar(frame, ignoreUpdates)
 		assert(frame, 'doesn\'t exist.')
 
 		frame:StripTextures()
@@ -956,16 +1061,19 @@ do
 		if thumb then
 			thumb:DisableDrawLayer('ARTWORK')
 			thumb:DisableDrawLayer('BACKGROUND')
-			thumb:CreateBackdrop('Transparent')
-			thumb.backdrop:SetFrameLevel(thumb:GetFrameLevel()+1)
+
+			if not thumb.backdrop then
+				thumb:CreateBackdrop('Transparent', nil, ignoreUpdates)
+
+				thumb:HookScript('OnEnter', ThumbOnEnter)
+				thumb:HookScript('OnLeave', ThumbOnLeave)
+				thumb:HookScript('OnMouseUp', ThumbOnMouseUp)
+				thumb:HookScript('OnMouseDown', ThumbOnMouseDown)
+			end
 
 			local r, g, b = unpack(E.media.rgbvaluecolor)
 			thumb.backdrop:SetBackdropColor(r, g, b, .25)
-
-			thumb:HookScript('OnEnter', ThumbOnEnter)
-			thumb:HookScript('OnLeave', ThumbOnLeave)
-			thumb:HookScript('OnMouseUp', ThumbOnMouseUp)
-			thumb:HookScript('OnMouseDown', ThumbOnMouseDown)
+			thumb.backdrop:SetFrameLevel(thumb:GetFrameLevel() + 1)
 		end
 	end
 end
@@ -1010,7 +1118,7 @@ do --Tab Regions
 end
 
 function S:HandleRotateButton(btn)
-	if btn.isSkinned then return end
+	if btn.IsSkinned then return end
 
 	btn:SetTemplate()
 	btn:Size(btn:GetWidth() - 14, btn:GetHeight() - 14)
@@ -1028,7 +1136,7 @@ function S:HandleRotateButton(btn)
 	highlightTex:SetAllPoints(normTex)
 	highlightTex:SetColorTexture(1, 1, 1, 0.3)
 
-	btn.isSkinned = true
+	btn.IsSkinned = true
 end
 
 do
@@ -1047,7 +1155,7 @@ do
 	function S:HandleMaxMinFrame(frame)
 		assert(frame, 'doesn\'t exist.')
 
-		if frame.isSkinned then return end
+		if frame.IsSkinned then return end
 
 		frame:StripTextures(true)
 
@@ -1071,7 +1179,7 @@ do
 			end
 		end
 
-		frame.isSkinned = true
+		frame.IsSkinned = true
 	end
 end
 
@@ -1107,43 +1215,61 @@ function S:HandleEditBox(frame, template)
 	end
 end
 
-function S:HandleDropDownBox(frame, width, pos, template)
+function S:HandleDropDownBox(frame, width, template, old)
 	assert(frame, 'doesn\'t exist!')
-
-	local frameName = frame.GetName and frame:GetName()
-	local button = frame.Button or frameName and (_G[frameName..'Button'] or _G[frameName..'_Button'])
-	local text = frameName and _G[frameName..'Text'] or frame.Text
-	local icon = frame.Icon
 
 	if not width then
 		width = 155
 	end
 
 	frame:Width(width)
-	frame:StripTextures()
-	frame:CreateBackdrop(template)
-	frame:SetFrameLevel(frame:GetFrameLevel() + 2)
-	frame.backdrop:Point('TOPLEFT', 20, -2)
-	frame.backdrop:Point('BOTTOMRIGHT', button, 'BOTTOMRIGHT', 2, -2)
+	frame:StripTextures(true)
 
-	button:ClearAllPoints()
+	if not frame.backdrop then
+		frame:CreateBackdrop(template)
+		frame:SetFrameLevel(frame:GetFrameLevel() + 2)
+	end
 
-	if pos then
-		button:Point('TOPRIGHT', frame.Right, -20, -21)
+	if not old then
+		if frame.Arrow then -- most dropdowns
+			frame.Arrow:SetAlpha(0)
+		end
+
+		if frame.Button then -- Classic Anniversary LFG dropdown
+			frame.Button:SetAlpha(0)
+		end
+
+		frame.backdrop:Point('TOPLEFT', 0, -2)
+		frame.backdrop:Point('BOTTOMRIGHT', 0, 2)
+
+		local tex = frame:CreateTexture(nil, 'ARTWORK')
+		tex:SetTexture(E.Media.Textures.ArrowUp)
+		tex:SetRotation(3.14)
+		tex:Point('RIGHT', frame.backdrop, -3, 0)
+		tex:Size(14)
 	else
+		local frameName = frame.GetName and frame:GetName()
+		local button = frame.Button or frameName and (_G[frameName..'Button'] or _G[frameName..'_Button'])
+		local text = frameName and _G[frameName..'Text'] or frame.Text
+		local icon = frame.Icon
+
+		frame.backdrop:Point('TOPLEFT', 20, -2)
+		frame.backdrop:Point('BOTTOMRIGHT', button, 'BOTTOMRIGHT', 2, -2)
+
+		button:ClearAllPoints()
 		button:Point('RIGHT', frame, 'RIGHT', -10, 3)
-	end
 
-	button.SetPoint = E.noop
-	S:HandleNextPrevButton(button, 'down')
+		button.SetPoint = E.noop
+		S:HandleNextPrevButton(button, 'down')
 
-	if text then
-		text:ClearAllPoints()
-		text:Point('RIGHT', button, 'LEFT', -2, 0)
-	end
+		if text then
+			text:ClearAllPoints()
+			text:Point('RIGHT', button, 'LEFT', -2, 0)
+		end
 
-	if icon then
-		icon:Point('LEFT', 23, 0)
+		if icon then
+			icon:Point('LEFT', 23, 0)
+		end
 	end
 end
 
@@ -1165,17 +1291,17 @@ do
 	local function checkHighlightTexture(checkbox, texture) if texture ~= E.ClearTexture then checkbox:SetHighlightTexture(E.ClearTexture) end end
 	local function checkCheckedTexture(checkbox, texture)
 		if texture == E.Media.Textures.Melli or texture == check then return end
-		checkbox:SetCheckedTexture(E.private.skins.checkBoxSkin and E.Media.Textures.Melli or check)
+		checkbox:SetCheckedTexture(S.db.checkBoxSkin and E.Media.Textures.Melli or check)
 	end
 	local function checkOnDisable(checkbox)
 		if not checkbox.SetDisabledTexture then return end
-		checkbox:SetDisabledTexture(checkbox:GetChecked() and (E.private.skins.checkBoxSkin and E.Media.Textures.Melli or disabled) or '')
+		checkbox:SetDisabledTexture(checkbox:GetChecked() and (S.db.checkBoxSkin and E.Media.Textures.Melli or disabled) or '')
 	end
 
 	function S:HandleCheckBox(frame, noBackdrop, noReplaceTextures, frameLevel, template)
 		assert(frame, 'doesn\'t exist.')
 
-		if frame.isSkinned then return end
+		if frame.IsSkinned then return end
 
 		frame:StripTextures()
 
@@ -1188,7 +1314,7 @@ do
 
 		if not noReplaceTextures then
 			if frame.SetCheckedTexture then
-				if E.private.skins.checkBoxSkin then
+				if S.db.checkBoxSkin then
 					frame:SetCheckedTexture(E.Media.Textures.Melli)
 
 					local checkedTexture = frame:GetCheckedTexture()
@@ -1204,7 +1330,7 @@ do
 			end
 
 			if frame.SetDisabledTexture then
-				if E.private.skins.checkBoxSkin then
+				if S.db.checkBoxSkin then
 					frame:SetDisabledTexture(E.Media.Textures.Melli)
 
 					local disabledTexture = frame:GetDisabledTexture()
@@ -1227,7 +1353,7 @@ do
 			hooksecurefunc(frame, 'SetHighlightTexture', checkHighlightTexture)
 		end
 
-		frame.isSkinned = true
+		frame.IsSkinned = true
 	end
 end
 
@@ -1240,7 +1366,7 @@ do
 	local function buttonHighlightTexture(frame, texture) if texture ~= E.ClearTexture then frame:SetHighlightTexture(E.ClearTexture) end end
 
 	function S:HandleRadioButton(Button)
-		if Button.isSkinned then return end
+		if Button.IsSkinned then return end
 
 		local InsideMask = Button:CreateMaskTexture()
 		InsideMask:SetTexture(background, 'CLAMPTOBLACKADDITIVE', 'CLAMPTOBLACKADDITIVE')
@@ -1285,8 +1411,16 @@ do
 		hooksecurefunc(Button, 'SetDisabledTexture', buttonDisabledTexture)
 		hooksecurefunc(Button, 'SetHighlightTexture', buttonHighlightTexture)
 
-		Button.isSkinned = true
+		Button.IsSkinned = true
 	end
+end
+
+function S:ReplaceIconString(text)
+	if not text then text = self:GetText() end
+	if not text or text == '' then return end
+
+	local newText, count = gsub(text, '|T([^:]-):[%d+:]+|t', '|T%1:14:14:0:0:64:64:5:59:5:59|t')
+	if count > 0 then self:SetFormattedText('%s', newText) end
 end
 
 function S:HandleIcon(icon, backdrop)
@@ -1298,7 +1432,7 @@ function S:HandleIcon(icon, backdrop)
 end
 
 function S:HandleItemButton(b, setInside)
-	if b.isSkinned then return end
+	if b.IsSkinned then return end
 
 	local name = b:GetName()
 	local icon = b.icon or b.Icon or b.IconTexture or b.iconTexture or (name and (_G[name..'IconTexture'] or _G[name..'Icon']))
@@ -1324,7 +1458,7 @@ function S:HandleItemButton(b, setInside)
 		end
 	end
 
-	b.isSkinned = true
+	b.IsSkinned = true
 end
 
 do
@@ -1332,7 +1466,7 @@ do
 	local closeOnLeave = function(btn) if btn.Texture then btn.Texture:SetVertexColor(1, 1, 1) end end
 
 	function S:HandleCloseButton(f, point, x, y)
-		if f.isSkinned then return end
+		if f.IsSkinned then return end
 
 		f:StripTextures()
 
@@ -1350,11 +1484,11 @@ do
 			f:Point('TOPRIGHT', point, 'TOPRIGHT', x or 2, y or 2)
 		end
 
-		f.isSkinned = true
+		f.IsSkinned = true
 	end
 
 	function S:HandleNextPrevButton(btn, arrowDir, color, noBackdrop, stripTexts, frameLevel, buttonSize)
-		if btn.isSkinned then return end
+		if btn.IsSkinned then return end
 
 		if not arrowDir then
 			arrowDir = 'down'
@@ -1427,7 +1561,7 @@ do
 			Normal:SetVertexColor(1, 1, 1)
 		end
 
-		btn.isSkinned = true
+		btn.IsSkinned = true
 	end
 end
 
@@ -1504,7 +1638,6 @@ function S:HandleStepSlider(frame, minimal)
 	end
 end
 
--- TODO: Update the function for BFA/Shadowlands
 function S:HandleFollowerAbilities(followerList)
 	local followerTab = followerList and followerList.followerTab
 	local abilityFrame = followerTab.AbilitiesFrame
@@ -1684,7 +1817,7 @@ do
 	end
 
 	function S:HandleFollowerListOnUpdateData(frame)
-		if frame == 'GarrisonLandingPageFollowerList' and (not E.private.skins.blizzard.orderhall or not E.private.skins.blizzard.garrison) then
+		if frame == 'GarrisonLandingPageFollowerList' and (not S.db.blizzard.orderhall or not S.db.blizzard.garrison) then
 			return -- Only hook this frame if both Garrison and Orderhall skins are enabled because it's shared.
 		end
 
@@ -1802,7 +1935,7 @@ do
 	function S:HandleIconSelectionFrame(frame, numIcons, buttonNameTemplate, nameOverride, dontOffset)
 		assert(frame, 'doesn\'t exist!')
 
-		if frame.isSkinned then return end
+		if frame.IsSkinned then return end
 
 		if not dontOffset then -- place it off to the side of parent with correct offsets
 			frame:HookScript('OnShow', selectionOffset)
@@ -1811,10 +1944,10 @@ do
 
 		local borderBox = frame.BorderBox or _G.BorderBox -- it's a sub frame only on retail, on wrath it's a global?
 		local frameName = nameOverride or frame:GetName() -- we need override in case Blizzard fucks up the naming (guild bank)
-		local scrollFrame = frame.ScrollFrame or _G[frameName..'ScrollFrame']
-		local editBox = (borderBox and borderBox.IconSelectorEditBox) or frame.EditBox or _G[frameName..'EditBox']
-		local cancel = frame.CancelButton or (borderBox and borderBox.CancelButton) or _G[frameName..'Cancel']
-		local okay = frame.OkayButton or (borderBox and borderBox.OkayButton) or _G[frameName..'Okay']
+		local scrollFrame = frame.ScrollFrame or (frameName and _G[frameName..'ScrollFrame'])
+		local editBox = (borderBox and borderBox.IconSelectorEditBox) or frame.EditBox or (frameName and _G[frameName..'EditBox'])
+		local cancel = frame.CancelButton or (borderBox and borderBox.CancelButton) or (frameName and _G[frameName..'Cancel'])
+		local okay = frame.OkayButton or (borderBox and borderBox.OkayButton) or (frameName and _G[frameName..'Okay'])
 
 		frame:StripTextures()
 		frame:SetTemplate('Transparent')
@@ -1822,7 +1955,7 @@ do
 		if borderBox then
 			borderBox:StripTextures()
 
-			local dropdown = borderBox.IconTypeDropDown and borderBox.IconTypeDropDown.DropDownMenu
+			local dropdown = borderBox.IconTypeDropdown or (borderBox.IconTypeDropDown and borderBox.IconTypeDropDown.DropDownMenu)
 			if dropdown then
 				S:HandleDropDownBox(dropdown)
 			end
@@ -1848,9 +1981,11 @@ do
 		end
 
 		if numIcons then
-			scrollFrame:StripTextures()
-			scrollFrame:Height(scrollFrame:GetHeight() + 10)
-			S:HandleScrollBar(scrollFrame.ScrollBar)
+			if scrollFrame then
+				scrollFrame:StripTextures()
+				scrollFrame:Height(scrollFrame:GetHeight() + 10)
+				S:HandleScrollBar(scrollFrame.ScrollBar)
+			end
 
 			for i = 1, numIcons do
 				local button = _G[buttonNameTemplate..i]
@@ -1866,7 +2001,7 @@ do
 			end
 		end
 
-		frame.isSkinned = true
+		frame.IsSkinned = true
 	end
 end
 
@@ -2133,7 +2268,6 @@ end
 
 function S:Initialize()
 	S.Initialized = true
-	S.db = E.private.skins
 
 	for index, func in next, S.nonAddonsToLoad do
 		xpcall(func, errorhandler)
@@ -2148,7 +2282,7 @@ function S:Initialize()
 	end
 
 	-- Early Skin Handling (populated before ElvUI is loaded from the Ace3 file)
-	if E.private.skins.ace3Enable and S.EarlyAceWidgets then
+	if S.db.ace3Enable and S.EarlyAceWidgets then
 		for _, n in next, S.EarlyAceWidgets do
 			if n.SetLayout then
 				S:Ace3_RegisterAsContainer(n)
@@ -2161,7 +2295,7 @@ function S:Initialize()
 		end
 	end
 
-	if E.private.skins.libDropdown and S.EarlyDropdowns then
+	if S.db.libDropdown and S.EarlyDropdowns then
 		for _, n in next, S.EarlyDropdowns do
 			if n == 'LibDropDownMenu_List' then
 				S:SkinDropDownMenu(n, 15)
@@ -2171,7 +2305,7 @@ function S:Initialize()
 		end
 	end
 
-	if E.Retail then
+	if E.Retail and S.db.blizzard.enable and S.db.blizzard.misc then
 		S:RegisterEvent('PLAYER_ENTERING_WORLD', 'UpdateAllWidgets')
 		S:RegisterEvent('UPDATE_ALL_UI_WIDGETS', 'UpdateAllWidgets')
 	end

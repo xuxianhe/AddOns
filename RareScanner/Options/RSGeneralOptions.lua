@@ -6,7 +6,7 @@ local ADDON_NAME, private = ...
 local LibStub = _G.LibStub
 local RareScanner = LibStub("AceAddon-3.0"):GetAddon("RareScanner")
 local AL = LibStub("AceLocale-3.0"):GetLocale("RareScanner", false)
-local LibDialog = LibStub("LibDialog-1.0")
+local LibDialog = LibStub("LibDialog-1.0RS")
 
 local RSGeneralOptions = private.NewLib("RareScannerGeneralOptions")
 
@@ -95,7 +95,7 @@ function RSGeneralOptions.GetGeneralOptions()
 					type = "range",
 					name = AL["RESCAN_TIMER"],
 					desc = AL["RESCAN_TIMER_DESC"],
-					min	= 3,
+					min	= 1,
 					max	= 60,
 					step = 1,
 					bigStep = 1,
@@ -127,8 +127,41 @@ function RSGeneralOptions.GetGeneralOptions()
 					end,
 					width = "full",
 				},
-				scanInstances = {
+				scanEvents = {
 					order = 3,
+					name = AL["ENABLE_SCAN_EVENTS"],
+					desc = AL["ENABLE_SCAN_EVENTS_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsScanningForEvents() end,
+					set = function(_, value)
+						RSConfigDB.SetScanningForEvents(value)
+					end,
+					width = "full",
+				},
+				scanChatAlerts = {
+					order = 4,
+					name = AL["ENABLE_SCAN_CHAT"],
+					desc = AL["ENABLE_SCAN_CHAT_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsScanningChatAlerts() end,
+					set = function(_, value)
+						RSConfigDB.SetScanningChatAlerts(value)
+					end,
+					width = "full",
+				},
+				scanGarrison = {
+					order = 5,
+					name = AL["ENABLE_SCAN_GARRISON_CHEST"],
+					desc = AL["ENABLE_SCAN_GARRISON_CHEST_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsShowingGarrisonCache() end,
+					set = function(_, value)
+						RSConfigDB.SetShowingGarrisonCache(value)
+					end,
+					width = "full",
+				},
+				scanInstances = {
+					order = 6,
 					name = AL["ENABLE_SCAN_IN_INSTANCE"],
 					desc = AL["ENABLE_SCAN_IN_INSTANCE_DESC"],
 					type = "toggle",
@@ -139,7 +172,7 @@ function RSGeneralOptions.GetGeneralOptions()
 					width = "full",
 				},
 				scanOnTaxi = {
-					order = 4,
+					order = 7,
 					name = AL["ENABLE_SCAN_ON_TAXI"],
 					desc = AL["ENABLE_SCAN_ON_TAXI_DESC"],
 					type = "toggle",
@@ -149,8 +182,41 @@ function RSGeneralOptions.GetGeneralOptions()
 					end,
 					width = "full",
 				},
+				scanOnRacingQuest = {
+					order = 8,
+					name = AL["ENABLE_SCAN_ON_RACING_QUEST"],
+					desc = AL["ENABLE_SCAN_ON_RACING_QUEST_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsScanningWhileOnRacingQuest() end,
+					set = function(_, value)
+						RSConfigDB.SetScanningWhileOnRacingQuest(value)
+					end,
+					width = "full",
+				},
+				scanOnPetBattle = {
+					order = 9,
+					name = AL["ENABLE_SCAN_ON_PET_BATTLE"],
+					desc = AL["ENABLE_SCAN_ON_PET_BATTLE_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsScanningWhileOnPetBattle() end,
+					set = function(_, value)
+						RSConfigDB.SetScanningWhileOnPetBattle(value)
+					end,
+					width = "full",
+				},
+				scanWorldMapVignettes = {
+					order = 10,
+					name = AL["ENABLE_SCAN_WORLDMAP_VIGNETTES"],
+					desc = AL["ENABLE_SCAN_WORLDMAP_VIGNETTES_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsScanningWorldMapVignettes() end,
+					set = function(_, value)
+						RSConfigDB.SetScanningWorldMapVignettes(value)
+					end,
+					width = "full",
+				},
 				scanTargetUnit = {
-					order = 5,
+					order = 11,
 					name = AL["ENABLE_SCAN_TARGET_UNIT"],
 					desc = AL["ENABLE_SCAN_TARGET_UNIT_DESC"],
 					type = "toggle",
@@ -160,12 +226,50 @@ function RSGeneralOptions.GetGeneralOptions()
 							LibDialog:Spawn(RSConstants.TARGET_UNIT_WARNING)
 						else
 							RSConfigDB.SetScanningTargetUnit(value)
+            	
+			            	-- Unmutes the dialog sound
+							if (RSConfigDB.IsMutingTargetUnitSound()) then
+								UnmuteSoundFile(RSConstants.ERROR_SOUND_CLOSE_ID)
+								UnmuteSoundFile(RSConstants.ERROR_SOUND_OPEN_ID)
+							end
+							RSConfigDB.SetMutingTargetUnitSound(value)
 						end
 					end,
 					width = "full",
 				},
+				muteTargetUnit = {
+					order = 12,
+					name = AL["MUTE_TARGET_UNIT_SOUND"],
+					desc = AL["MUTE_TARGET_UNIT_SOUND_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsMutingTargetUnitSound() end,
+					set = function(_, value)
+						RSConfigDB.SetMutingTargetUnitSound(value)
+							
+						if (value) then
+							MuteSoundFile(RSConstants.ERROR_SOUND_CLOSE_ID)
+							MuteSoundFile(RSConstants.ERROR_SOUND_OPEN_ID)
+						else
+							UnmuteSoundFile(RSConstants.ERROR_SOUND_CLOSE_ID)
+							UnmuteSoundFile(RSConstants.ERROR_SOUND_OPEN_ID)
+						end
+					end,
+					width = "full",
+					disabled = function() return not RSConfigDB.IsScanningTargetUnit() end,
+				},
+				ignoreCompletedEntities = {
+					order = 13,
+					name = AL["IGNORE_SCAN_COMPLETED_ENTITIES"],
+					desc = AL["IGNORE_SCAN_COMPLETED_ENTITIES_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsIgnoringCompletedEntities() end,
+					set = function(_, value)
+						RSConfigDB.SetIgnoringCompletedEntities(value)
+					end,
+					width = "full",
+				},
 				showMaker = {
-					order = 6,
+					order = 14,
 					name = AL["ENABLE_MARKER"],
 					desc = AL["ENABLE_MARKER_DESC"],
 					type = "toggle",
@@ -176,7 +280,7 @@ function RSGeneralOptions.GetGeneralOptions()
 					width = "full",
 				},
 				marker = {
-					order = 7,
+					order = 15,
 					type = "select",
 					dialogControl = 'RS_Markers',
 					name = AL["MARKER"],
@@ -189,13 +293,44 @@ function RSGeneralOptions.GetGeneralOptions()
 					width = "normal",
 					disabled = function() return not RSConfigDB.IsDisplayingMarkerOnTarget() end,
 				},
+				separatorWaypoints = {
+					order = 16,
+					type = "header",
+					name = AL["INGAME_WAYPOINTS"],
+				},
+				enableWaypointsSupport = {
+					order = 17,
+					name = AL["ENABLE_WAYPOINTS_SUPPORT"],
+					desc = AL["ENABLE_WAYPOINTS_SUPPORT_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsWaypointsSupportEnabled() end,
+					set = function(_, value)
+						RSConfigDB.SetWaypointsSupportEnabled(value)
+						if (not value) then
+							RSConfigDB.SetAddingWaypointsAutomatically(false)
+						end
+					end,
+					width = "full",
+				},
+				autoWaypoints = {
+					order = 18,
+					name = AL["ENABLE_AUTO_WAYPOINTS"],
+					desc = AL["ENABLE_AUTO_WAYPOINTS_DESC"],
+					type = "toggle",
+					get = function() return RSConfigDB.IsAddingWaypointsAutomatically() end,
+					set = function(_, value)
+						RSConfigDB.SetAddingWaypointsAutomatically(value)
+					end,
+					width = "full",
+					disabled = function() return not RSConfigDB.IsWaypointsSupportEnabled() end,
+				},
 				separatorTomtomWaypoints = {
-					order = 8,
+					order = 19,
 					type = "header",
 					name = AL["TOMTOM_WAYPOINTS"],
 				},
 				enableTomtomSupport = {
-					order = 9,
+					order = 20,
 					name = AL["ENABLE_TOMTOM_SUPPORT"],
 					desc = AL["ENABLE_TOMTOM_SUPPORT_DESC"],
 					type = "toggle",
@@ -210,7 +345,7 @@ function RSGeneralOptions.GetGeneralOptions()
 					disabled = function() return not TomTom end,
 				},
 				autoTomtomWaypoints = {
-					order = 10,
+					order = 21,
 					name = AL["ENABLE_AUTO_TOMTOM_WAYPOINTS"],
 					desc = AL["ENABLE_AUTO_TOMTOM_WAYPOINTS_DESC"],
 					type = "toggle",

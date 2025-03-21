@@ -2,21 +2,6 @@ local GSE = GSE
 local L = GSE.L
 local Statics = GSE.Static
 
-GSE.GUIEditFrame = {}
-
-StaticPopupDialogs["GSE_ConfirmReloadUIDialog"] = {
-    text = L["You need to reload the User Interface to complete this task.  Would you like to do this now?"],
-    button1 = L["Yes"],
-    button2 = L["No"],
-    OnAccept = function()
-        ReloadUI()
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3 -- Avoid some UI taint, see https://www.wowace.com/news/376-how-to-avoid-some-ui-taint
-}
-
 StaticPopupDialogs["GS-DebugOutput"] = {
     text = "Dump of GS Debug messages",
     button1 = L["Update"],
@@ -76,7 +61,7 @@ StaticPopupDialogs["GSE_UPDATE_AVAILABLE"] = {
 StaticPopupDialogs["GSE_SEQUENCEHELP"] = {
     text = L["Copy this link and open it in a Browser."],
     hasEditBox = 1,
-    url = "https://wowlazymacros.com",
+    url = "https://discord.gg/gseunited",
     OnShow = function(self)
         self.editBox:SetAutoFocus(false)
         self.editBox.width = self.editBox:GetWidth()
@@ -111,19 +96,6 @@ StaticPopupDialogs["GSE_SEQUENCEHELP"] = {
         self:HighlightText()
     end,
     showAlert = 1
-}
-
-StaticPopupDialogs["GSE-SampleMacroDialog"] = {
-    text = L["There are No Macros Loaded for this class.  Would you like to load the Sample Macro?"],
-    button1 = L["Load"],
-    button2 = L["Close"],
-    OnAccept = function(self, data)
-        GSE.LoadSampleMacros(GSE.GetCurrentClassID())
-    end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    preferredIndex = 3 -- Avoid some UI taint, see https://www.wowace.com/news/376-how-to-avoid-some-ui-taint
 }
 
 StaticPopupDialogs["GSE-MacroImportSuccess"] = {

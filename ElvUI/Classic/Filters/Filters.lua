@@ -3,6 +3,9 @@ local E, L, V, P, G = unpack(ElvUI)
 local List = E.Filters.List
 local Aura = E.Filters.Aura
 
+-- This used to be standalone and is now merged into G.unitframe.aurafilters.Whitelist
+G.unitframe.aurafilters.PlayerBuffs = nil
+
 -- These are debuffs that are some form of CC
 G.unitframe.aurafilters.CCDebuffs = {
 	type = 'Whitelist',
@@ -236,10 +239,50 @@ G.unitframe.aurafilters.TurtleBuffs = {
 	},
 }
 
---Default whitelist for player buffs, still WIP
-G.unitframe.aurafilters.PlayerBuffs = {
+-- Buffs that we don't really need to see
+G.unitframe.aurafilters.Blacklist = {
+	type = 'Blacklist',
+	spells = {
+	-- Seasonal
+		[362859] = List(), -- Adventure Awaits: Quest experience increased by 100%.
+		[458841] = List(), -- Sweltering Heat: Perma roleplay text while in Molten Core. (Heat level 1)
+		[458842] = List(), -- Blistering Heat: Perma roleplay text while in Molten Core. (Heat level 2)
+		[458843] = List(), -- Blistering Heat: Perma roleplay text while in Molten Core. (Heat level 3)
+		[446720] = List(), -- Stinky: Perma roleplay text after eating Sunken Temple food.
+	-- Druid
+	-- Hunter
+	-- Mage
+	-- Paladin
+	-- Priest
+	-- Rogue
+	-- Shaman
+	-- Warlock
+	-- Warrior
+	-- Racial
+	},
+}
+
+-- A list of important buffs that we always want to see
+G.unitframe.aurafilters.Whitelist = {
 	type = 'Whitelist',
 	spells = {
+	-- General
+		[349981] = List(), -- Supercharged Chronoboon Displacer (Suspended World Buffs)
+	-- Consumables
+		[3169]	= List(), -- Limited Invulnerability Potion
+		[6615]	= List(), -- Free Action Potion
+	-- Racial
+		[20554]	= List(), -- Berserking (Mana)
+		[26296]	= List(), -- Berserking (Rage)
+		[26297]	= List(), -- Berserking (Energy)
+		[7744]	= List(), -- Will of the Forsaken
+		[20572]	= List(), -- Blood Fury (Physical)
+		[33697]	= List(), -- Blood Fury (Both)
+		[33702]	= List(), -- Blood Fury (Spell)
+		[6346]	= List(), -- Fear Ward
+		[20594]	= List(), -- Stoneform
+	-- All Classes
+		[19753]	= List(), -- Divine Intervention
 	-- Druid
 		[29166]	= List(), -- Innervate
 		[22812]	= List(), -- Barkskin
@@ -384,62 +427,6 @@ G.unitframe.aurafilters.PlayerBuffs = {
 		[14202]	= List(), -- Enrage (Rank 3)
 		[14203]	= List(), -- Enrage (Rank 4)
 		[14204]	= List(), -- Enrage (Rank 5)
-	-- Consumables
-		[3169]	= List(), -- Limited Invulnerability Potion
-		[6615]	= List(), -- Free Action Potion
-	-- Racial
-		[20554]	= List(), -- Berserking (Mana)
-		[26296]	= List(), -- Berserking (Rage)
-		[26297]	= List(), -- Berserking (Energy)
-		[7744]	= List(), -- Will of the Forsaken
-		[20572]	= List(), -- Blood Fury (Physical)
-		[33697]	= List(), -- Blood Fury (Both)
-		[33702]	= List(), -- Blood Fury (Spell)
-		[6346]	= List(), -- Fear Ward
-		[20594]	= List(), -- Stoneform
-	-- All Classes
-		[19753]	= List(), -- Divine Intervention
-	},
-}
-
--- Buffs that we don't really need to see
-G.unitframe.aurafilters.Blacklist = {
-	type = 'Blacklist',
-	spells = {
-	-- Seasonal
-		[362859] = List(), -- Adventure Awaits: Quest experience increased by 100%.
-	-- Druid
-	-- Hunter
-	-- Mage
-	-- Paladin
-	-- Priest
-	-- Rogue
-	-- Shaman
-	-- Warlock
-	-- Warrior
-	-- Racial
-	},
-}
-
---[[
-	This should be a list of important buffs that we always want to see when they are active
-	bloodlust, paladin hand spells, raid cooldowns, etc..
-]]
-G.unitframe.aurafilters.Whitelist = {
-	type = 'Whitelist',
-	spells = {
-	-- General
-	[349981] = List() -- Supercharged Chronoboon Displacer (Suspended World Buffs)
-	-- Druid
-	-- Hunter
-	-- Mage
-	-- Paladin
-	-- Priest
-	-- Rogue
-	-- Shaman
-	-- Warlock
-	-- Warrior
-	-- Racial
 	},
 }
 
@@ -661,13 +648,33 @@ if E.ClassicSOD then
 	RaidDebuffs[438732] = List(2) -- Toxic Ventilation
 	RaidDebuffs[438735] = List(2) -- High Voltage!
 	RaidDebuffs[438720] = List(2) -- Freezing
+	----------------------------------------------------------
+	---------------------- Sunken Temple ---------------------
+	----------------------------------------------------------
+	-- Atal'alarion
+	RaidDebuffs[437617] = List(2) -- Demolishing Smash
+	-- Festering Rotslime
+	RaidDebuffs[438142] = List(3) -- Gunk
+	-- Atal'ai Defenders
+	RaidDebuffs[446354] = List(2) -- Shield Slam
+	RaidDebuffs[446373] = List(2) -- Corrupted Slam
+	-- Dreamscythe and Weaver
+	RaidDebuffs[442622] = List(2) -- Acid Breath
+	-- Jammal'an and Ogom
+	RaidDebuffs[437868] = List(3) -- Agonizing Weakness
+	RaidDebuffs[437847] = List(6) -- Mortal Lash
+	-- Morphaz and Hazzas
+	RaidDebuffs[445158] = List(2) -- Lucid Dreaming
+	RaidDebuffs[445555] = List(3) -- On Fire!!
+	-- Shade of Eranikus
+	RaidDebuffs[437390] = List(6) -- Lethargic Poison
+	RaidDebuffs[437324] = List(2) -- Deep Slumber
+	-- Avatar of Hakkar
+	RaidDebuffs[444255] = List(6) -- Corrupted Blood
+	RaidDebuffs[444165] = List(5) -- Skeletal
 end
 
---[[
-	RAID BUFFS:
-	Buffs that are provided by NPCs in raid or other PvE content.
-	This can be buffs put on other enemies or on players.
-]]
+-- Buffs applied by bosses, adds or trash
 G.unitframe.aurafilters.RaidBuffsElvUI = {
 	type = 'Whitelist',
 	spells = {
@@ -724,6 +731,19 @@ if E.ClassicSOD then
 	RaidBuffs[436837] = List(2) -- Widget Fortress
 	-- Mekgineer Thermaplugg
 	RaidBuffs[438715] = List(2) -- Furnace Surge
+	----------------------------------------------------------
+	---------------------- Sunken Temple ---------------------
+	----------------------------------------------------------
+	-- Atal'ai Defenders
+	RaidBuffs[446356] = List(2) -- Improved Blocking
+	-- Dreamscythe and Weaver
+	RaidBuffs[443302] = List(6) -- Emerald Ward
+	-- Jammal'an and Ogom
+	RaidBuffs[437791] = List(6) -- Ritual Leader
+	-- Shade of Eranikus
+	RaidBuffs[437410] = List(6) -- Deep Slumber
+	-- Avatar of Hakkar
+	RaidBuffs[443917] = List(2) -- Tides of Blood
 end
 
 G.unitframe.aurawatch = {
@@ -901,6 +921,10 @@ G.unitframe.ChannelTicks = {
 }
 
 if E.ClassicSOD then
+	-- Mage
+	G.unitframe.ChannelTicks[401417] = 3 -- Regeneration
+	G.unitframe.ChannelTicks[412510] = 3 -- Mass Regeneration
+	-- Priest
 	G.unitframe.ChannelTicks[402261] = 3 -- Penance (DPS)
 	G.unitframe.ChannelTicks[402277] = 3 -- Penance (Healing)
 	G.unitframe.ChannelTicks[413259] = 5 -- Mind Sear (Rune)

@@ -427,7 +427,9 @@ function BG.HopeUI(FB)
                                     else
                                         nn = n - 2
                                     end
-                                    BG.HopeFrame[FB]["nandu" .. nn]["boss" .. b]["zhuangbei" .. i]:SetFocus()
+                                    if BG.HopeFrame[FB]["nandu" .. nn] then
+                                        BG.HopeFrame[FB]["nandu" .. nn]["boss" .. b]["zhuangbei" .. i]:SetFocus()
+                                    end
                                 end
                             elseif enter == "LEFT" or enter == "RIGHT" then -- 左←右→
                                 local nn
@@ -436,7 +438,9 @@ function BG.HopeUI(FB)
                                 else
                                     nn = n - 1
                                 end
-                                BG.HopeFrame[FB]["nandu" .. nn]["boss" .. b]["zhuangbei" .. i]:SetFocus()
+                                if BG.HopeFrame[FB]["nandu" .. nn] then
+                                    BG.HopeFrame[FB]["nandu" .. nn]["boss" .. b]["zhuangbei" .. i]:SetFocus()
+                                end
                             end
                         end
                     end)

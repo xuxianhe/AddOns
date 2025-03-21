@@ -7,12 +7,68 @@ local RSNpcDB = private.NewLib("RareScannerNpcDB")
 
 -- RareScanner database libraries
 local RSMapDB = private.ImportLib("RareScannerMapDB")
+local RSProfessionDB = private.ImportLib("RareScannerProfessionDB")
 
 -- RareScanner libraries
 local RSConstants = private.ImportLib("RareScannerConstants")
 local RSLogger = private.ImportLib("RareScannerLogger")
 local RSUtils = private.ImportLib("RareScannerUtils")
 local RSTooltipScanners = private.ImportLib("RareScannerTooltipScanners")
+
+---============================================================================
+-- Killed NPCs database
+---============================================================================
+
+function RSNpcDB.InitNpcKilledDB()
+	if (not private.dbchar.rares_killed) then
+		private.dbchar.rares_killed = {}
+	end
+end
+
+function RSNpcDB.IsNpcKilled(npcID)
+	if (npcID and private.dbchar.rares_killed[npcID]) then
+		return true;
+	end
+
+	return false
+end
+
+function RSNpcDB.GetAllNpcsKilledRespawnTimes()
+	return private.dbchar.rares_killed
+end
+
+function RSNpcDB.GetNpcKilledRespawnTime(npcID)
+	if (RSNpcDB.IsNpcKilled(npcID)) then
+		return private.dbchar.rares_killed[npcID]
+	end
+
+	return 0
+end
+
+function RSNpcDB.SetNpcKilled(npcID, respawnTime)
+	if (npcID) then
+		if (not respawnTime) then
+			private.dbchar.rares_killed[npcID] = RSConstants.ETERNAL_DEATH
+		else
+			private.dbchar.rares_killed[npcID] = respawnTime
+		end
+		
+		if (RSConstants.DEBUG_MODE) then
+			local npcInfo = RSNpcDB.GetInternalNpcInfo(npcID)
+			if (npcInfo and npcInfo.questID) then
+				for _, id in ipairs(npcInfo.questID) do
+					RSLogger:PrintDebugMessage(string.format("SetNpcKilled[%s]: Con questID [%s]", npcID, id))
+				end
+			end
+		end
+	end
+end
+
+function RSNpcDB.DeleteNpcKilled(npcID)
+	if (npcID) then
+		private.dbchar.rares_killed[npcID] = nil
+	end
+end
 
 ---============================================================================
 -- Custom NPC database
@@ -111,6 +167,9 @@ function RSNpcDB.SetCustomNpcInfo(npcID, info)
 	
 	-- Merge internal database with custom
 	private.NPC_INFO[npcIDnumber] = private.dbglobal.custom_npcs[npcIDnumber]
+	
+	-- Just in case is tagged as dead for whatever reason
+	RSNpcDB.DeleteNpcKilled(npcIDnumber)
 end
 
 function RSNpcDB.SetCustomNpcGroup(npcID, group)
@@ -127,6 +186,7 @@ function RSNpcDB.DeleteCustomNpcInfo(npcID)
 	
 	private.dbglobal.custom_npcs[tonumber(npcID)] = nil
 	private.NPC_INFO[tonumber(npcID)] = nil
+	private.dbglobal.rares_found[tonumber(npcID)] = nil
 	
 	RSNpcDB.DeleteCustomNpcLoot(npcID)
 end
@@ -264,26 +324,47 @@ function RSNpcDB.GetAllInternalNpcInfo()
 	return private.NPC_INFO
 end
 
-function RSNpcDB.GetNpcIDsByMapID(mapID, onlyCustom)
+function RSNpcDB.GetNpcIDsByMapID(mapID, onlyCustom, onlyWithoutVignette)
 	local npcIDs = {}
 	for npcID, npcInfo in pairs((onlyCustom and RSNpcDB.GetAllCustomNpcInfo() or RSNpcDB.GetAllInternalNpcInfo())) do
 		if (RSNpcDB.IsInternalNpcMultiZone(npcID)) then
 			-- First check if there is a matching mapID in the database
 			for internalMapID, _ in pairs (npcInfo.zoneID) do
 				if (internalMapID == mapID) then
-					tinsert(npcIDs,npcID)
+					if (not onlyWithoutVignette) then
+						tinsert(npcIDs,npcID)
+					elseif (npcInfo.noVignette == nil or npcInfo.noVignette) then
+						tinsert(npcIDs,npcID)
+					end
 				end
 			end
 			
 			-- Then check if there is a matching subMapID in the database
 			for internalMapID, _ in pairs (npcInfo.zoneID) do
 				if (RSMapDB.IsMapInParentMap(mapID, internalMapID)) then
-					tinsert(npcIDs,npcID)
+					if (not onlyWithoutVignette) then
+						tinsert(npcIDs,npcID)
+					elseif (npcInfo.noVignette == nil or npcInfo.noVignette) then
+						tinsert(npcIDs,npcID)
+					end
 				end
 			end
 		elseif (RSNpcDB.IsInternalNpcMonoZone(npcID)) then
-			if (npcInfo.zoneID == mapID or (npcInfo.noVignette and npcInfo.zoneID == 0)) then
-				tinsert(npcIDs,npcID)
+			if (npcInfo.zoneID == mapID) then
+				if (not onlyWithoutVignette) then
+					tinsert(npcIDs,npcID)
+				elseif (npcInfo.noVignette == nil or npcInfo.noVignette) then
+					tinsert(npcIDs,npcID)
+				end
+			end
+			
+			-- Then check if there is a matching subMapID in the database
+			if (RSMapDB.IsMapInParentMap(mapID, npcInfo.zoneID)) then
+				if (not onlyWithoutVignette) then
+					tinsert(npcIDs,npcID)
+				elseif (npcInfo.noVignette == nil or npcInfo.noVignette) then
+					tinsert(npcIDs,npcID)
+				end
 			end
 		end
 	end
@@ -611,6 +692,48 @@ function RSNpcDB.RemoveNpcLootFound(npcID)
 end
 
 ---============================================================================
+-- NPC quest IDs database
+----- Stores NPC hidden quest IDs
+---============================================================================
+
+function RSNpcDB.InitNpcQuestIdFoundDB()
+	if (RSConstants.DEBUG_MODE and not private.dbglobal.npc_quest_ids) then
+		private.dbglobal.npc_quest_ids = {}
+	end
+end
+
+function RSNpcDB.ResetNpcQuestIdFoundDB()
+	if (private.dbglobal.npc_quest_ids) then
+		if (RSConstants.DEBUG_MODE) then
+			private.dbglobal.npc_quest_ids = {}
+		else
+			private.dbglobal.npc_quest_ids = nil
+		end
+	end
+end
+
+function RSNpcDB.SetNpcQuestIdFound(npcID, questID)
+	if (npcID and questID) then
+		private.dbglobal.npc_quest_ids[npcID] = { questID }
+		RSLogger:PrintDebugMessage(string.format("NPC [%s]. Calculado questID [%s]", npcID, questID))
+	end
+end
+
+function RSNpcDB.GetNpcQuestIdFound(npcID)
+	if (npcID and private.dbglobal.npc_quest_ids[npcID]) then
+		return private.dbglobal.npc_quest_ids[npcID]
+	end
+
+	return nil
+end
+
+function RSNpcDB.RemoveNpcQuestIdFound(npcID)
+	if (npcID) then
+		private.dbglobal.npc_quest_ids[npcID] = nil
+	end
+end
+
+---============================================================================
 -- NPC names database
 ----- Stores names of NPCs included with the addon
 ---============================================================================
@@ -647,6 +770,34 @@ function RSNpcDB.GetNpcName(npcID, refresh)
 	return nil
 end
 
+function RSNpcDB.GetActiveNpcIDsWithNamesByMapID(mapID)
+	local npcIDs =  RSNpcDB.GetNpcIDsByMapID(mapID)
+	local npcIDsWithNames = nil
+	
+	if (RSUtils.GetTableLength(npcIDs)) then
+		npcIDsWithNames = {}
+		for _, npcID in ipairs(npcIDs) do
+			local npcInfo = RSNpcDB.GetInternalNpcInfo(npcID)
+			if (npcInfo and npcInfo.prof and not RSProfessionDB.HasPlayerProfession(npcInfo.prof)) then
+				-- Wrong profession
+			elseif (RSNpcDB.IsDisabledEvent(npcID)) then
+				-- World event disabled
+			else
+				local npcName = RSNpcDB.GetNpcName(npcID)
+				if (npcName) then
+					npcIDsWithNames[npcID] = string.format("%s (%s)", npcName, npcID)
+				else
+					npcIDsWithNames[npcID] = tostring(npcID)
+				end
+			end
+		end
+		
+		return npcIDsWithNames
+	end
+	
+	return npcIDsWithNames
+end
+
 function RSNpcDB.GetNpcId(name, mapID)
 	if (name and mapID) then
 		for npcID, npcName in pairs(RSNpcDB.GetAllNpcNames()) do
@@ -657,4 +808,34 @@ function RSNpcDB.GetNpcId(name, mapID)
 	end
 	
 	return nil
+end
+
+---============================================================================
+-- NPCs with multi spawn spots
+---============================================================================
+
+function RSNpcDB.IsMultiZoneSpawn(npcID)
+	if (RSUtils.Contains(RSConstants.NPCS_WITH_MULTIPLE_SPAWNS, npcID)) then
+		return true
+	elseif (RSNpcDB.GetCustomNpcInfo(npcID)) then
+		return true
+	end
+	
+	return false
+end
+
+---============================================================================
+-- NPCs with pre-events
+----- Obtains the latest npcID in a chain of pre-events
+---============================================================================
+
+function RSNpcDB.GetFinalNpcID(npcPreEventID)
+	local npcID = tonumber(npcPreEventID)
+	
+	-- NPC with pre-event
+	while (RSConstants.NPCS_WITH_PRE_EVENT[npcID]) do
+		npcID = RSConstants.NPCS_WITH_PRE_EVENT[npcID]
+	end
+	
+	return npcID
 end

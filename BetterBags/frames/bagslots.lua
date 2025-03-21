@@ -32,8 +32,14 @@ local debug = addon:GetModule('Debug')
 ---@class Animations: AceModule
 local animations = addon:GetModule('Animations')
 
+---@class Themes: AceModule
+local themes = addon:GetModule('Themes')
+
 ---@class Database: AceModule
 local database = addon:GetModule('Database')
+
+---@class Context: AceModule
+local context = addon:GetModule('Context')
 
 ---@class bagSlots
 ---@field frame Frame
@@ -43,15 +49,19 @@ local database = addon:GetModule('Database')
 ---@field fadeOutGroup AnimationGroup
 BagSlots.bagSlotProto = {}
 
-function BagSlots.bagSlotProto:Draw()
+---@param ctx Context
+function BagSlots.bagSlotProto:Draw(ctx)
   debug:Log('BagSlots', "Bag Slots Draw called")
   for _, cell in ipairs(self.content.cells) do
-    cell:Draw(const.BAG_KIND.UNDEFINED, const.BAG_VIEW.UNDEFINED, false)
+    ---@cast cell +BagButton
+    cell:Draw(ctx)
   end
-  local w, h = self.content:Draw()
+  local w, h = self.content:Draw({
+    cells = self.content.cells,
+    maxWidthPerRow = 1024,
+  })
   self.frame:SetWidth(w + const.OFFSETS.BAG_LEFT_INSET + -const.OFFSETS.BAG_RIGHT_INSET + 4)
   self.frame:SetHeight(h + 42)
-  events:SendMessage('bags/FullRefreshAll')
 end
 
 function BagSlots.bagSlotProto:SetShown(shown)
@@ -62,13 +72,27 @@ function BagSlots.bagSlotProto:SetShown(shown)
   end
 end
 
-function BagSlots.bagSlotProto:Show()
+---@param callback? fun()
+function BagSlots.bagSlotProto:Show(callback)
   PlaySound(SOUNDKIT.GUILD_BANK_OPEN_BAG)
+  if callback then
+    self.fadeInGroup.callback = function()
+      self.fadeInGroup.callback = nil
+      callback()
+    end
+  end
   self.fadeInGroup:Play()
 end
 
-function BagSlots.bagSlotProto:Hide()
+---@param callback? fun()
+function BagSlots.bagSlotProto:Hide(callback)
   PlaySound(SOUNDKIT.GUILD_BANK_OPEN_BAG)
+  if callback then
+    self.fadeOutGroup.callback = function()
+      self.fadeOutGroup.callback = nil
+      callback()
+    end
+  end
   self.fadeOutGroup:Play()
 end
 
@@ -76,18 +100,20 @@ function BagSlots.bagSlotProto:IsShown()
   return self.frame:IsShown()
 end
 
+---@param ctx Context
 ---@param kind BagKind
 ---@return bagSlots
-function BagSlots:CreatePanel(kind)
+function BagSlots:CreatePanel(ctx, kind)
   ---@class bagSlots
   local b = {}
   setmetatable(b, {__index = BagSlots.bagSlotProto})
   local name = kind == const.BAG_KIND.BACKPACK and "Backpack" or "Bank"
   ---@class Frame: BackdropTemplate
-  local f = CreateFrame("Frame", name .. "BagSlots", UIParent, "BetterBagsBagSlotPanelTemplate")
+  local f = CreateFrame("Frame", name .. "BagSlots", UIParent)
   b.frame = f
 
-  b.frame:SetTitle(L:G("Equipped Bags"))
+  themes:RegisterFlatWindow(f, L:G("Equipped Bags"))
+
   b.content = grid:Create(b.frame)
   b.content:GetContainer():SetPoint("TOPLEFT", b.frame, "TOPLEFT", const.OFFSETS.BAG_LEFT_INSET + 4, -30)
   b.content:GetContainer():SetPoint("BOTTOMRIGHT", b.frame, "BOTTOMRIGHT", const.OFFSETS.BAG_RIGHT_INSET, 12)
@@ -97,26 +123,29 @@ function BagSlots:CreatePanel(kind)
 
   local bags = kind == const.BAG_KIND.BACKPACK and const.BACKPACK_ONLY_BAGS_LIST or const.BANK_ONLY_BAGS_LIST
   for i, bag in pairs(bags) do
-    local iframe = bagButton:Create()
-    iframe:SetBag(bag)
+    local iframe = bagButton:Create(ctx)
+    iframe:SetBag(ctx, bag)
     b.content:AddCell(tostring(i), iframe)
   end
 
   b.fadeInGroup, b.fadeOutGroup = animations:AttachFadeAndSlideTop(b.frame)
-  b.fadeInGroup:HookScript("OnFinished", function()
+
+  addon.HookScript(b.fadeInGroup, "OnFinished", function(ectx)
     if database:GetBagView(kind) == const.BAG_VIEW.SECTION_ALL_BAGS then
       return
     end
     database:SetPreviousView(kind, database:GetBagView(kind))
     database:SetBagView(kind, const.BAG_VIEW.SECTION_ALL_BAGS)
-    events:SendMessage('bags/FullRefreshAll')
+    events:SendMessage(ectx, 'bags/FullRefreshAll')
   end)
-  b.fadeOutGroup:HookScript("OnFinished", function()
+
+  addon.HookScript(b.fadeOutGroup, "OnFinished", function(ectx)
     database:SetBagView(kind, database:GetPreviousView(kind))
-    events:SendMessage('bags/FullRefreshAll')
+    events:SendMessage(ectx, 'bags/FullRefreshAll')
   end)
-  events:RegisterEvent('BAG_CONTAINER_UPDATE', function() b:Draw() end)
-  events:RegisterEvent('PLAYERBANKBAGSLOTS_CHANGED', function() b:Draw() end)
+
+  events:RegisterEvent('BAG_CONTAINER_UPDATE', function(ectx) b:Draw(ectx) end)
+  events:RegisterEvent('PLAYERBANKBAGSLOTS_CHANGED', function(ectx) b:Draw(ectx) end)
   b.kind = kind
   b.frame:Hide()
   return b

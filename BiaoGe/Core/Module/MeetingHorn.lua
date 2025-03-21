@@ -296,7 +296,7 @@ BG.Init2(function()
     end
 
     -- 进入DD语音房间
-    if BG.IsWLK then
+    --[[     if BG.IsWLK then
         local Browser = MeetingHorn.MainPanel.Browser
 
         local function OnShow(...)
@@ -376,118 +376,122 @@ BG.Init2(function()
         else
             hooksecurefunc("UnitPopup_ShowMenu", OnShow)
         end
-    end
+    end ]]
 
     -- 密语模板
     do
         local lastfocus
 
         local Browser = MeetingHorn.MainPanel.Browser
-
-        local bt = CreateFrame("Button", nil, Browser, "UIPanelButtonTemplate")
-        bt:SetSize(120, 22)
-        if BG.IsVanilla_60 then
-            bt:SetPoint("RIGHT", Browser.ApplyLeaderBtn, "LEFT", 0, 0)
-        elseif ver >= 200 then
-            bt:SetPoint("RIGHT", Browser.ApplyLeaderBtn, "LEFT", 0, 0)
-        else
-            -- bt:SetPoint("RIGHT", Browser.RechargeBtn, "LEFT", -10, 0)
-            bt:SetPoint("BOTTOMRIGHT", MeetingHorn.MainPanel, "BOTTOMRIGHT", -4, 4)
-        end
-        bt:SetText(L["密语模板"])
-        bt:SetFrameLevel(10)
-        BG.MeetingHorn.WhisperButton = bt
-        if BiaoGe.options["MeetingHorn_whisper"] ~= 1 then
-            bt:Hide()
-        else
-            local BannerPlugin = MeetingHorn:GetModule('BannerPlugin', 'AceEvent-3.0', 'AceComm-3.0', 'LibCommSocket-3.0')
-            if BannerPlugin and BannerPlugin.clickableFrame then
-                BannerPlugin.clickableFrame:HookScript("OnShow", function(self)
-                    self:Hide()
-                end)
-            end
-        end
-        if IsAddOnLoaded("NDui_Plus") then
-            local B = unpack(NDui)
-            B.Reskin(bt)
-        end
-
-        bt:SetScript("OnClick", function(self)
-            if BG.MeetingHorn.WhisperFrame:IsVisible() then
-                BG.MeetingHorn.WhisperFrame:Hide()
-                BiaoGe.MeetingHornWhisper.WhisperFrame = nil
+        -- 按钮
+        do
+            local bt = CreateFrame("Button", nil, Browser, "UIPanelButtonTemplate")
+            bt:SetSize(120, 22)
+            if BG.IsVanilla_60 then
+                bt:SetPoint("RIGHT", Browser.ApplyLeaderBtn, "LEFT", 0, 0)
+            elseif ver >= 200 then
+                bt:SetPoint("RIGHT", Browser.ApplyLeaderBtn, "LEFT", 0, 0)
             else
-                BG.MeetingHorn.WhisperFrame:Show()
-                BiaoGe.MeetingHornWhisper.WhisperFrame = true
+                -- bt:SetPoint("RIGHT", Browser.RechargeBtn, "LEFT", -10, 0)
+                bt:SetPoint("BOTTOMRIGHT", MeetingHorn.MainPanel, "BOTTOMRIGHT", -4, 4)
             end
-            BG.PlaySound(1)
-        end)
+            bt:SetText(L["密语模板"])
+            bt:SetFrameLevel(10)
+            BG.MeetingHorn.WhisperButton = bt
+            if BiaoGe.options["MeetingHorn_whisper"] ~= 1 then
+                bt:Hide()
+            else
+                local BannerPlugin = MeetingHorn:GetModule('BannerPlugin', 'AceEvent-3.0', 'AceComm-3.0', 'LibCommSocket-3.0')
+                if BannerPlugin and BannerPlugin.clickableFrame then
+                    BannerPlugin.clickableFrame:HookScript("OnShow", function(self)
+                        self:Hide()
+                    end)
+                end
+            end
+            if IsAddOnLoaded("NDui_Plus") then
+                local B = unpack(NDui)
+                B.Reskin(bt)
+            end
+
+            bt:SetScript("OnClick", function(self)
+                if BG.MeetingHorn.WhisperFrame:IsVisible() then
+                    BG.MeetingHorn.WhisperFrame:Hide()
+                    BiaoGe.MeetingHornWhisper.WhisperFrame = nil
+                else
+                    BG.MeetingHorn.WhisperFrame:Show()
+                    BiaoGe.MeetingHornWhisper.WhisperFrame = true
+                end
+                BG.PlaySound(1)
+            end)
+        end
 
         -- 背景框
         local f = CreateFrame("Frame", nil, BG.MeetingHorn.WhisperButton, "BackdropTemplate")
-        f:SetBackdrop({
-            bgFile = "Interface/ChatFrame/ChatFrameBackground",
-            edgeFile = "Interface/ChatFrame/ChatFrameBackground",
-            edgeSize = 2,
-        })
-        f:SetBackdropColor(0, 0, 0, 0.8)
-        f:SetBackdropBorderColor(0, 0, 0, 0.8)
-        f.width = 200
-        if BG.IsVanilla then
-            f.height = 160
-        else
-            f.height = 224
-        end
-        f:SetPoint("TOPLEFT", MeetingHorn.MainPanel, "BOTTOMRIGHT", 0, f.height)
-        f:SetPoint("BOTTOMRIGHT", MeetingHorn.MainPanel, "BOTTOMRIGHT", f.width, 0)
-        f:EnableMouse(true)
-        BG.MeetingHorn.WhisperFrame = f
-        if not BiaoGe.MeetingHornWhisper.WhisperFrame then
-            f:Hide()
-        end
-        f:SetScript("OnMouseDown", function(self, enter)
-            if lastfocus then
-                lastfocus:ClearFocus()
-            end
-        end)
-        f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-        f.CloseButton:SetPoint("TOPRIGHT", 3, 3)
-        f.CloseButton:HookScript("OnClick", function()
-            BiaoGe.MeetingHornWhisper.WhisperFrame = nil
-            BG.PlaySound(1)
-        end)
-
-        -- 标题
-        local t = f:CreateFontString()
-        t:SetPoint("TOP", 0, -5)
-        t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
-        t:SetTextColor(RGB("FFFFFF"))
-        t:SetText(L["< 密语模板 >"])
-
-        -- 提示
-        local bt = CreateFrame("Button", nil, f)
-        bt:SetSize(30, 30)
-        bt:SetPoint("TOPLEFT", 3, 3)
-        local tex = bt:CreateTexture()
-        tex:SetAllPoints()
-        tex:SetTexture(616343)
-        bt:SetHighlightTexture(616343)
-        bt:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
-            GameTooltip:ClearLines()
-            GameTooltip:AddLine(L["密语模板"], 1, 1, 1)
+        do
+            f:SetBackdrop({
+                bgFile = "Interface/ChatFrame/ChatFrameBackground",
+                edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+                edgeSize = 2,
+            })
+            f:SetBackdropColor(0, 0, 0, 0.8)
+            f:SetBackdropBorderColor(0, 0, 0, 0.8)
+            f.width = 200
             if BG.IsVanilla then
-                GameTooltip:AddLine(L["预设装等、自定义文本，当你点击集结号活动密语时会自动添加该内容。"], 1, 0.82, 0, true)
+                f.height = 160
             else
-                GameTooltip:AddLine(L["预设成就、装等、自定义文本，当你点击集结号活动密语时会自动添加该内容。"], 1, 0.82, 0, true)
+                f.height = 224
             end
-            GameTooltip:AddLine(L["按住SHIFT+点击密语时不会添加。"], 1, 0.82, 0, true)
-            GameTooltip:AddLine(L["聊天频道玩家的右键菜单里增加密语模板按钮。"], 1, 0.82, 0, true)
-            GameTooltip:AddLine(L["聊天输入框的右键菜单里增加密语模板按钮。"], 1, 0.82, 0, true)
-            GameTooltip:AddLine(L["集结号活动的右键菜单里增加邀请按钮。"], 1, 0.82, 0, true)
-            GameTooltip:Show()
-        end)
-        BG.GameTooltip_Hide(bt)
+            f:SetPoint("TOPLEFT", MeetingHorn.MainPanel, "BOTTOMRIGHT", 0, f.height)
+            f:SetPoint("BOTTOMRIGHT", MeetingHorn.MainPanel, "BOTTOMRIGHT", f.width, 0)
+            f:EnableMouse(true)
+            BG.MeetingHorn.WhisperFrame = f
+            if not BiaoGe.MeetingHornWhisper.WhisperFrame then
+                f:Hide()
+            end
+            f:SetScript("OnMouseDown", function(self, enter)
+                if lastfocus then
+                    lastfocus:ClearFocus()
+                end
+            end)
+            f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+            f.CloseButton:SetPoint("TOPRIGHT", 3, 3)
+            f.CloseButton:HookScript("OnClick", function()
+                BiaoGe.MeetingHornWhisper.WhisperFrame = nil
+                BG.PlaySound(1)
+            end)
+
+            -- 标题
+            local t = f:CreateFontString()
+            t:SetPoint("TOP", 0, -5)
+            t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+            t:SetTextColor(RGB("FFFFFF"))
+            t:SetText(L["< 密语模板 >"])
+
+            -- 提示
+            local bt = CreateFrame("Button", nil, f)
+            bt:SetSize(30, 30)
+            bt:SetPoint("TOPLEFT", 3, 3)
+            local tex = bt:CreateTexture()
+            tex:SetAllPoints()
+            tex:SetTexture(616343)
+            bt:SetHighlightTexture(616343)
+            bt:SetScript("OnEnter", function(self)
+                GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
+                GameTooltip:ClearLines()
+                GameTooltip:AddLine(L["密语模板"], 1, 1, 1)
+                if BG.IsVanilla then
+                    GameTooltip:AddLine(L["预设装等、自定义文本，当你点击集结号活动密语时会自动添加该内容。"], 1, 0.82, 0, true)
+                else
+                    GameTooltip:AddLine(L["预设成就、装等、自定义文本，当你点击集结号活动密语时会自动添加该内容。"], 1, 0.82, 0, true)
+                end
+                GameTooltip:AddLine(L["按住SHIFT+点击密语时不会添加。"], 1, 0.82, 0, true)
+                GameTooltip:AddLine(L["聊天频道玩家的右键菜单里增加密语模板按钮。"], 1, 0.82, 0, true)
+                GameTooltip:AddLine(L["聊天输入框的右键菜单里增加密语模板按钮。"], 1, 0.82, 0, true)
+                GameTooltip:AddLine(L["集结号活动的右键菜单里增加邀请按钮。"], 1, 0.82, 0, true)
+                GameTooltip:Show()
+            end)
+            BG.GameTooltip_Hide(bt)
+        end
 
         -- 成就
         local AchievementTitle, AchievementTitleID, AchievementEdit, AchievementCheckButton
@@ -1058,7 +1062,7 @@ BG.Init2(function()
 
             -- 输入框右键菜单
             local edit = ChatEdit_ChooseBoxForSend()
-            if edit then
+            if edit and edit.GetObjectType and edit:GetObjectType() == "EditBox" then
                 local dropDown = LibBG:Create_UIDropDownMenu(nil, edit)
                 edit:HookScript("OnMouseUp", function(self, button)
                     if BiaoGe.options["MeetingHorn_whisper"] ~= 1 then return end
@@ -1199,7 +1203,7 @@ BG.Init2(function()
         end
 
         -- 右键菜单
-        local function OnShow(...)
+--[[         local function OnShow(...)
             if BiaoGe.options["MeetingHorn_starRaidLeader"] ~= 1 then return end
             if (UIDROPDOWNMENU_MENU_LEVEL > 1) then return end
             local arg1, arg2, arg3, arg4, arg5 = ...
@@ -1245,7 +1249,7 @@ BG.Init2(function()
             hooksecurefunc(UnitPopupManager, "OpenMenu", OnShow)
         else
             hooksecurefunc("UnitPopup_ShowMenu", OnShow)
-        end
+        end ]]
 
         -- 鼠标悬停
         local CD

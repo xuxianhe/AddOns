@@ -5,14 +5,26 @@ local L = GSE.L
 
 local GNOME = "Storage"
 
---- Delete a sequence starting with the macro and then the sequence from the library
+--- Delete a sequence from the library
 function GSE.DeleteSequence(classid, sequenceName)
-    GSE.DeleteMacroStub(sequenceName)
     GSE.Library[tonumber(classid)][sequenceName] = nil
-    GSE3Storage[tonumber(classid)][sequenceName] = nil
+    GSESequences[tonumber(classid)][sequenceName] = nil
 end
 
-function GSE.CloneSequence(orig, keepcomments)
+local missingVariables = {}
+local function manageMissingVariable(varname)
+    if not missingVariables[varname] then
+        GSE.Print(L["Missing Variable "] .. varname, "GSE " .. Statics.DebugModules["API"])
+        missingVariables[varname] = 0
+    end
+    missingVariables[varname] = missingVariables[varname] + 1
+    if missingVariables[varname] > 100 then
+        GSE.Print(L["Missing Variable "] .. varname, "GSE " .. Statics.DebugModules["API"])
+        missingVariables[varname] = 0
+    end
+end
+
+function GSE.CloneSequence(orig)
     local orig_type = type(orig)
     local copy
     if orig_type == "table" then
@@ -24,11 +36,7 @@ function GSE.CloneSequence(orig, keepcomments)
     else -- number, string, boolean, etc
         copy = orig
     end
-    -- if not GSE.isEmpty(keepcomments) then
-    --     for k,v in ipairs(copy.Macros) do
-    --         -- TODO Strip COmments
-    --     end
-    -- end
+
     return copy
 end
 
@@ -53,27 +61,29 @@ function GSE.PerformMergeAction(action, classid, sequenceName, newSequence)
 end
 
 --- Replace a current version of a Macro
-function GSE.ReplaceMacro(classid, sequenceName, sequence)
-    GSE3Storage[classid][sequenceName] = GSE.EncodeMessage({sequenceName, sequence})
+function GSE.ReplaceSequence(classid, sequenceName, sequence)
+    GSESequences[classid][sequenceName] = GSE.EncodeMessage({sequenceName, sequence})
     GSE.Library[classid][sequenceName] = sequence
+    GSE:SendMessage(Statics.SEQUENCE_UPDATED, sequenceName)
 end
 
 --- Load the GSEStorage into a new table.
 function GSE.LoadStorage(destination)
+    GSE.LoadVariables()
     if GSE.isEmpty(destination) then
         destination = {}
     end
-    if GSE.isEmpty(GSE3Storage) then
-        GSE3Storage = {}
+    if GSE.isEmpty(GSESequences) then
+        GSESequences = {}
         for iind = 0, 13 do
-            GSE3Storage[iind] = {}
+            GSESequences[iind] = {}
         end
     end
     for k = 0, 13 do
         if GSE.isEmpty(destination[k]) then
             destination[k] = {}
         end
-        local v = GSE3Storage[k]
+        local v = GSESequences[k]
         for i, j in pairs(v) do
             local status, err =
                 pcall(
@@ -93,6 +103,31 @@ function GSE.LoadStorage(destination)
     end
 end
 
+--- Load the GSEVariables
+function GSE.LoadVariables()
+    if GSE.isEmpty(GSEVariables) then
+        GSEVariables = {}
+    end
+    for k, v in pairs(GSEVariables) do
+        local status, err =
+            pcall(
+            function()
+                local localsuccess, uncompressedVersion = GSE.DecodeMessage(v)
+                GSE.V[k] = loadstring("return " .. uncompressedVersion.funct)()
+                if type(GSE.V[k]()) == "boolean" then
+                    GSE.BooleanVariables["GSE.V['" .. k .. "']()"] = "GSE.V['" .. k .. "']()"
+                end
+            end
+        )
+        if err then
+            GSE.Print(
+                "There was an error processing " ..
+                    k .. ", You will need to correct errors in this variable from another source.",
+                err
+            )
+        end
+    end
+end
 --- Load a collection of Sequences
 function GSE.ImportCompressedMacroCollection(Sequences)
     for _, v in ipairs(Sequences) do
@@ -147,26 +182,24 @@ function GSE.ReloadSequences()
         GSE.PerformReloadSequences()
         GSE.UnsavedOptions.ReloadQueued = true
     end
+    GSE.ManageMacros()
 end
 
-function GSE.PerformReloadSequences()
+function GSE.PerformReloadSequences(force)
     GSE.PrintDebugMessage("Reloading Sequences", Statics.DebugModules["Storage"])
-
+    local func = GSE.UpdateSequence
+    if force then
+        func = GSE.OOCUpdateSequence
+    end
     for name, sequence in pairs(GSE.Library[GSE.GetCurrentClassID()]) do
-        -- check that the macro exists.  This will cause an issue if people are calling macros that are in GSE but there is no macro stub made.
-        local sequenceIndex = GetMacroIndexByName(name)
-        if sequenceIndex > 0 then
-            GSE.UpdateSequence(name, sequence.Macros[GSE.GetActiveSequenceVersion(name)])
+        if not sequence.MetaData.Disabled then
+            func(name, sequence.Macros[GSE.GetActiveSequenceVersion(name)])
         end
     end
-    if GSEOptions.CreateGlobalButtons then
-        if not GSE.isEmpty(GSE.Library[0]) then
-            for name, sequence in pairs(GSE.Library[0]) do
-                -- check that the macro exists.  This will cause an issue if people are calling macros that are in GSE but there is no macro stub made.
-                local sequenceIndex = GetMacroIndexByName(name)
-                if sequenceIndex > 0 then
-                    GSE.UpdateSequence(name, sequence.Macros[GSE.GetActiveSequenceVersion(name)])
-                end
+    if not GSE.isEmpty(GSE.Library[0]) then
+        for name, sequence in pairs(GSE.Library[0]) do
+            if GSE.isEmpty(sequence.MetaData.Disabled) then
+                func(name, sequence.Macros[GSE.GetActiveSequenceVersion(name)])
             end
         end
     end
@@ -175,19 +208,12 @@ function GSE.PerformReloadSequences()
     table.insert(GSE.OOCQueue, vals)
 end
 
-function GSE.PrepareLogout(deletenonlocalmacros)
-    GSE.CleanMacroLibrary(deletenonlocalmacros)
-    if GSEOptions.deleteOrphansOnLogout and GSE.Utils then
-        GSE.CleanOrphanSequences()
-    end
-end
-
 --- This function is used to clean the local sequence library
 function GSE.CleanMacroLibrary(forcedelete)
     -- Clean out the sequences database except for the current version
     if forcedelete then
-        GSE3Storage[GSE.GetCurrentClassID()] = nil
-        GSE3Storage[GSE.GetCurrentClassID()] = {}
+        GSESequences[GSE.GetCurrentClassID()] = nil
+        GSESequences[GSE.GetCurrentClassID()] = {}
         GSE.Library[GSE.GetCurrentClassID()] = nil
         GSE.Library[GSE.GetCurrentClassID()] = {}
     end
@@ -197,11 +223,9 @@ end
 function GSE.ResetButtons()
     for k, _ in pairs(GSE.UsedSequences) do
         local gsebutton = _G[k]
-        if gsebutton:GetAttribute("combatreset") == true then
-            gsebutton:SetAttribute("step", 1)
-            GSE.UpdateIcon(gsebutton, true)
-            GSE.UsedSequences[k] = nil
-        end
+        gsebutton:SetAttribute("step", 1)
+        GSE.UpdateIcon(gsebutton, true)
+        GSE.UsedSequences[k] = nil
     end
 end
 
@@ -235,7 +259,7 @@ function GSE.OOCUpdateSequence(name, sequence)
     end
 
     local compiledTemplate = GSE.CompileTemplate(sequence)
-    local actionCount = table.getn(compiledTemplate)
+    local actionCount = #compiledTemplate
     if actionCount > 255 then
         GSE.Print(
             string.format(
@@ -249,12 +273,27 @@ function GSE.OOCUpdateSequence(name, sequence)
         )
     end
     GSE.CreateGSE3Button(compiledTemplate, name, combatReset)
+    if GSE.GUI and not GSE.isEmpty(GSE.GUIEditFrame) then
+        if not GSE.isEmpty(GSE.GUIEditFrame.IsVisible) then
+            if GSE.GUIEditFrame:IsVisible() then
+                GSE.GUIEditFrame:SetStatusText(name .. " " .. L["Saved"])
+                C_Timer.After(
+                    5,
+                    function()
+                        GSE.GUIEditFrame:SetStatusText("")
+                    end
+                )
+                GSE.ShowSequences()
+            end
+        end
+    end
 end
 
 --- Return whether to store the macro in Personal Character Macros or Account Macros
 function GSE.SetMacroLocation()
     local numAccountMacros, numCharacterMacros = GetNumMacros()
-    local returnval = 1
+    local returnval
+    returnval = 1
     if numCharacterMacros >= MAX_CHARACTER_MACROS - 1 and GSEOptions.overflowPersonalMacros then
         returnval = nil
     end
@@ -287,25 +326,6 @@ function GSE.CreateMacroString(macroname)
 
     returnVal = returnVal .. macroname
     return returnVal
-end
-
-function GSE.UpdateMacroString()
-    local maxmacros = MAX_ACCOUNT_MACROS + MAX_CHARACTER_MACROS + 2
-    for macid = 1, maxmacros do
-        local mname, _, _ = GetMacroInfo(macid)
-        if not GSE.isEmpty(mname) then
-            if not GSE.isEmpty(GSE.Library[GSE.GetCurrentClassID()][mname]) then
-                EditMacro(macid, nil, nil, GSE.CreateMacroString(mname))
-                GSE.PrintDebugMessage(string.format("Updating macro %s to %s", mname, GSE.CreateMacroString(mname)))
-            end
-            if not GSE.isEmpty(GSE.Library[0]) then
-                if not GSE.isEmpty(GSE.Library[0][mname]) then
-                    EditMacro(macid, nil, nil, GSE.CreateMacroString(mname))
-                    GSE.PrintDebugMessage(string.format("Updating macro %s to %s", mname, GSE.CreateMacroString(mname)))
-                end
-            end
-        end
-    end
 end
 
 --- Add a Create Macro to the Out of Combat Queue
@@ -370,7 +390,7 @@ function GSE.GetSequenceNames(Library)
                 if j.DisableEditor then
                     disable = 1
                 end
-                local keyLabel = k .. "," .. i .. "," .. disable
+                local keyLabel = k .. "," .. j.MetaData.SpecID .. "," .. i .. "," .. disable
                 if k == GSE.GetCurrentClassID() and GSEOptions.filterList["Class"] then
                     keyset[keyLabel] = i
                 elseif k == GSE.GetCurrentClassID() and not GSEOptions.filterList["Class"] then
@@ -388,7 +408,7 @@ function GSE.GetSequenceNames(Library)
                     if j.DisableEditor then
                         disable = 1
                     end
-                    local keyLabel = k .. "," .. i .. "," .. disable
+                    local keyLabel = k .. "," .. j.MetaData.SpecID .. "," .. i .. "," .. disable
                     keyset[keyLabel] = i
                 end
             end
@@ -443,45 +463,164 @@ function GSE.GetMacroIcon(classid, sequenceIndex)
     end
 end
 
-function GSE.UpdateIcon(self, reset)
-    local step = self:GetAttribute("step") or 1
-    local gsebutton = self:GetName()
-    local executionseq = GSE.SequencesExec[gsebutton]
-    local commandline, foundSpell, notSpell = executionseq[step], false, ""
-    for cmd, etc in gmatch(commandline or "", "/(%w+)%s+([^\n]+)") do
-        if Statics.CastCmds[strlower(cmd)] or strlower(cmd) == "castsequence" then
-            local spell, target = SecureCmdOptionParse(etc)
-            if not reset and GSE.Utils then
-                GSE.TraceSequence(gsebutton, step, spell)
-            end
-            if spell then
-                local GetSpellInfo = C_Spell.GetSpellInfo and C_Spell.GetSpellInfo or GetSpellInfo
-                if GetSpellInfo(spell) then
-                    SetMacroSpell(gsebutton, spell, target)
-                    foundSpell = true
-                    break
-                elseif notSpell == "" then
-                    notSpell = spell
-                end
-            end
+function GSE.GetSpellsFromString(str)
+    local spellinfo = {}
+    if string.sub(str, 14) == "/click GSE.Pau" then
+        spellinfo.name = "GSE Pause"
+        spellinfo.iconID = Statics.ActionsIcons.Pause
+    else
+        for cmd, oetc in gmatch(str or "", "/(%w+)%s+([^\n]+)") do
             if strlower(cmd) == "castsequence" then
-                local index, csitem, csspell = QueryCastSequence(etc)
-                if not GSE.isEmpty(csitem) then
-                    SetMacroSpell(gsebutton, csitem, target)
-                    foundSpell = true
+                local returnspells = {}
+                local processed = {}
+                for _, y in ipairs(GSE.split(oetc, ";")) do
+                    for _, v in ipairs(GSE.SplitCastSequence(y)) do
+                        local _, _, etc = GSE.GetConditionalsFromString(v)
+                        local elements = GSE.split(etc, ",")
+
+                        for _, v1 in ipairs(elements) do
+                            local spellstuff = C_Spell.GetSpellInfo(string.trim(v1))
+                            if spellstuff and spellstuff.name and not processed[v1] then
+                                table.insert(returnspells, spellstuff)
+                                processed[v1] = true
+                            end
+                        end
+                    end
                 end
-                if not GSE.isEmpty(csspell) then
-                    SetMacroSpell(gsebutton, csspell, target)
-                    foundSpell = true
+                return returnspells
+            elseif Statics.CastCmds[strlower(cmd)] then
+                local _, _, etc = GSE.GetConditionalsFromString("/" .. cmd .. " " .. oetc)
+                if string.sub(etc, 1, 1) == "/" then
+                    etc = oetc
+                end
+                if cmd and etc and strlower(cmd) == "use" and tonumber(etc) and tonumber(etc) <= 16 then
+                    -- we have a trinket
+                else
+                    local spell, _ = SecureCmdOptionParse(etc)
+                    if spell then
+                        spellinfo = C_Spell.GetSpellInfo(spell)
+                    end
                 end
             end
         end
     end
-    if not foundSpell then
-        SetMacroItem(gsebutton, notSpell)
+    if spellinfo and spellinfo.name then
+        return spellinfo
+    end
+end
+
+function GSE.UpdateIcon(self, reseticon)
+    local step = self:GetAttribute("step") or 1
+    local gsebutton = self:GetName()
+    if not reseticon and self:GetAttribute("combatreset") == true then
+        GSE.UsedSequences[gsebutton] = true
+    end
+    local mods = self:GetAttribute("localmods") or nil
+    local executionseq = GSE.SequencesExec[gsebutton]
+    local foundSpell = executionseq[step].spell
+    local spellinfo = {}
+    spellinfo.iconID = Statics.QuestionMarkIconID
+
+    local reset = self:GetAttribute("combatreset") and self:GetAttribute("combatreset") or false
+    if reseticon == true then
+        spellinfo.name = gsebutton
+        spellinfo.iconID = "Interface\\Addons\\GSE_GUI\\Assets\\GSE_Logo_Dark_512.blp"
+        foundSpell = gsebutton
+    elseif executionseq[step].type == "macro" and executionseq[step].macrotext then
+        spellinfo = GSE.GetSpellsFromString(executionseq[step].macrotext)
+        if spellinfo and #spellinfo > 1 then
+            spellinfo = spellinfo[1]
+        end
+        if spellinfo and spellinfo.name then
+            foundSpell = spellinfo.name
+        end
+    elseif executionseq[step].type == "macro" then
+        local mname, micon = GetMacroInfo(executionseq[step].macro)
+        if mname then
+            spellinfo.name = mname
+            spellinfo.iconID = micon
+            foundSpell = spellinfo.name
+        end
+    elseif executionseq[step].type == "item" then
+        local mname, _, _, _, _, _, _, _, _, micon = C_Item.GetItemInfo(executionseq[step].item)
+        if mname then
+            spellinfo.name = mname
+            spellinfo.iconID = micon
+            foundSpell = spellinfo.name
+        end
+    elseif executionseq[step].type == "spell" then
+        spellinfo = C_Spell.GetSpellInfo(executionseq[step].spell)
+        foundSpell = spellinfo.name
+    end
+    if executionseq[step].Icon then
+        if not spellinfo then
+            spellinfo = {}
+        end
+        spellinfo.iconID = executionseq[step].Icon
+    end
+    if mods then
+        local modlist = {}
+        for _, j in ipairs(strsplittable("|", mods)) do
+            local a, b = string.split("=", j)
+            if a == "MOUSEBUTTON" then
+                modlist[a] = b
+            else
+                modlist[a] = b == "true" and true or false
+            end
+        end
+        if WeakAuras then
+            WeakAuras.ScanEvents("GSE_MODS_VISIBLE", gsebutton, modlist)
+        end
+    end
+    if spellinfo and spellinfo.iconID then
+        if WeakAuras then
+            WeakAuras.ScanEvents("GSE_SEQUENCE_ICON_UPDATE", gsebutton, spellinfo)
+        end
+
+        if GSE.ButtonOverrides then
+            for k, v in pairs(GSE.ButtonOverrides) do
+                if v == gsebutton and _G[k] then
+                    if
+                        string.sub(k, 1, 5) == "ElvUI" or string.sub(k, 1, 4) == "CPB_" or string.sub(k, 1, 3) == "BT4" or
+                            string.sub(k, 1, 4) == "NDui"
+                     then
+                        _G[k].icon:SetTexture(spellinfo.iconID)
+                    else
+                        if GSE.GameMode == 11 then
+                            local parent, slot = _G[k] and _G[k]:GetParent():GetParent(), _G[k] and _G[k]:GetID()
+                            local page = parent and parent:GetAttribute("actionpage")
+                            local action = page and slot and slot > 0 and (slot + page * 12 - 12)
+                            if action then
+                                local at = GetActionInfo(action)
+                                if GSE.isEmpty(at) then
+                                    _G[k].icon:SetTexture(spellinfo.iconID)
+
+                                    _G[k].icon:Show()
+                                    _G[k].TextOverlayContainer.Count:SetText(gsebutton)
+                                    _G[k].TextOverlayContainer.Count:SetTextScale(0.6)
+                                end
+                            end
+                        else
+                            if _G[k] then
+                                if not InCombatLockdown() then
+                                    _G[k]:Show()
+                                end
+                                _G[k].icon:SetTexture(spellinfo.iconID)
+                                _G[k].icon:Show()
+                            -- _G[k].TextOverlayContainer.Count:SetText(gsebutton)
+                            -- _G[k].TextOverlayContainer.Count:SetTextScale(0.6)
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
     if not reset then
         GSE.UsedSequences[gsebutton] = true
+    end
+    if GSE.Utils then
+        GSE.TraceSequence(gsebutton, step, foundSpell)
     end
     GSE.WagoAnalytics:Switch(gsebutton .. "_" .. GSE.GetCurrentClassID(), true)
 end
@@ -560,10 +699,10 @@ function GSE.DecompressSequenceFromString(importstring)
     local returnstr = ""
     local seqName = ""
     if
-        (decompresssuccess) and (table.getn(actiontable) == 2) and (type(actiontable[1]) == "string") and
+        (decompresssuccess) and (#actiontable == 2) and (type(actiontable[1]) == "string") and
             (type(actiontable[2]) == "table")
      then
-        seqName = string.upper(actiontable[1])
+        seqName = actiontable[1]
         returnstr = GSE.Dump(actiontable[2])
     end
     return returnstr, seqName, decompresssuccess
@@ -587,48 +726,48 @@ local function buildAction(action, metaData, variables)
         -- we have a loop within a loop
         return GSE.processAction(action, metaData, variables)
     else
-        if GSE.GetRequireTarget() then
-            -- See #20 prevent target hopping
-            table.insert(action, 1, "/stopmacro [@playertarget, noexists]")
+        if GSE.isEmpty(action.type) then
+            action.type = "spell"
         end
+        local spelllist = {}
+        for k, v in pairs(action) do
+            local value = v
+            if k == "Disabled" or type(value) == "boolean" or k == "Type" or k == "Interval" then
+                -- we dont want to do anything here
+            else
+                if string.sub(value, 1, 1) == "=" then
+                    xpcall(
+                        function()
+                            local tempval = loadstring("return " .. string.sub(value, 2, string.len(value)))()
+                            if tempval then
+                                value = tostring(tempval)
+                            else
+                                GSE.Print(L["There was an error processing "] .. value, Statics.DebugModules["API"])
+                            end
+                        end,
+                        function(err)
+                            manageMissingVariable(string.sub(value, 2, string.len(value)))
+                        end
+                    )
+                end
 
-        for k, v in ipairs(action) do
-            action[k] = GSE.TranslateString(v, "STRING", nil, true)
-        end
-
-        if not GSE.isEmpty(metaData) then
-            if metaData.Ring1 or (metaData.Ring1 == nil and GSE.GetUse11()) then
-                table.insert(action, "/use [combat,nochanneling] 11")
-            end
-            if metaData.Ring2 or (metaData.Ring2 == nil and GSE.GetUse12()) then
-                table.insert(action, "/use [combat,nochanneling] 12")
-            end
-            if metaData.Trinket1 or (metaData.Trinket1 == nil and GSE.GetUse13()) then
-                table.insert(action, "/use [combat,nochanneling] 13")
-            end
-            if metaData.Trinket2 or (metaData.Trinket2 == nil and GSE.GetUse14()) then
-                table.insert(action, "/use [combat,nochanneling] 14")
-            end
-            if metaData.Neck or (metaData.Neck == nil and GSE.GetUse2()) then
-                table.insert(action, "/use [combat,nochanneling] 2")
-            end
-            if metaData.Head or (metaData.Head == nil and GSE.GetUse1()) then
-                table.insert(action, "/use [combat,nochanneling] 1")
-            end
-            if metaData.Belt or (metaData.Belt == nil and GSE.GetUse6()) then
-                table.insert(action, "/use [combat,nochanneling] 6")
+                if k == "spell" then
+                    spelllist[k] = GSE.GetSpellId(value, Statics.TranslatorMode.String)
+                elseif k == "macro" then
+                    if string.sub(GSE.UnEscapeString(value), 1, 1) == "/" then
+                        -- we have a line of macrotext
+                        spelllist["macrotext"] =
+                            GSE.UnEscapeString(GSE.CompileMacroText(value, Statics.TranslatorMode.String))
+                    else
+                        spelllist[k] = value
+                    end
+                    spelllist["unit"] = nil
+                else
+                    spelllist[k] = value
+                end
             end
         end
-        if GSEOptions.hideUIErrors then
-            table.insert(action, "/script UIErrorsFrame:Hide();")
-        -- Potentially change this to UIErrorsFrame:Hide()
-        end
-        if GSEOptions.clearUIErrors then
-            -- Potentially change this to UIErrorsFrame:Clear()
-            table.insert(action, "/run UIErrorsFrame:Clear()")
-        end
-
-        return GSE.SafeConcat(action, "\n")
+        return spelllist
     end
 end
 
@@ -636,8 +775,8 @@ local function processRepeats(actionList)
     local inserts = {}
     local removes = {}
     for k, v in ipairs(actionList) do
-        if type(v) == "table" then
-            table.insert(inserts, {Action = v.Action, Interval = v.Interval, Start = k})
+        if type(v) == "table" and v.Action and v.Interval then
+            table.insert(inserts, {Action = v.Action, Interval = v.Interval + 1, Start = k})
             table.insert(removes, k)
         end
     end
@@ -670,21 +809,9 @@ function GSE.processAction(action, metaData, variables)
     if action.Type == Statics.Actions.Loop then
         local actionList = {}
         -- setup the interation
-        for id, v in ipairs(action) do
+        for _, v in ipairs(action) do
             local builtaction = GSE.processAction(v, metaData, variables)
-            if type(builtaction) == "table" and GSE.isEmpty(builtaction.Interval) then
-                for _, j in ipairs(builtaction) do
-                    table.insert(actionList, j)
-                end
-            elseif type(builtaction) == "table" and builtaction.Interval then
-                builtaction.Action = GSE.ProcessLoopVariables(builtaction.Action, id)
-                table.insert(actionList, builtaction)
-            else
-                if builtaction then
-                    builtaction = GSE.ProcessLoopVariables(builtaction, id)
-                end
-                table.insert(actionList, builtaction)
-            end
+            table.insert(actionList, builtaction)
         end
         local returnActions = {}
         local loop = tonumber(action.Repeat)
@@ -696,7 +823,7 @@ function GSE.processAction(action, metaData, variables)
                 local limit = 1
                 local step = 1
                 local looplimit = 0
-                for x = 1, table.getn(actionList) do
+                for x = 1, #actionList do
                     looplimit = looplimit + x
                 end
                 if action.StepFunction == Statics.Priority then
@@ -734,29 +861,12 @@ function GSE.processAction(action, metaData, variables)
                 end
             end
         end
-
         -- process repeats for the block
-        return processRepeats(returnActions)
+        return processRepeats(GSE.FlattenTable(returnActions))
     elseif action.Type == Statics.Actions.Pause then
         local PauseActions = {}
         local clicks = action.Clicks and action.Clicks or 0
-        if not GSE.isEmpty(action.Variable) then
-            if action.Variable == "GCD" then
-                clicks = GSE.GetGCD() * 1000 / GSE.GetClickRate()
-            else
-                local funcline = GSE.RemoveComments(variables[action.Variable])
-
-                funcline = string.sub(table.concat(funcline, "\n"), 11)
-                funcline = funcline:sub(1, -4)
-                funcline = loadstring(funcline)
-                local value
-                if funcline ~= nil then
-                    value = funcline
-                    value = value()
-                end
-                clicks = tonumber(value) / GSE.GetClickRate()
-            end
-        elseif not GSE.isEmpty(action.MS) then
+        if not GSE.isEmpty(action.MS) then
             if action.MS == "GCD" or action.MS == "~~GCD~~" then
                 clicks = GSE.GetGCD() * 1000 / GSE.GetClickRate()
             else
@@ -766,12 +876,46 @@ function GSE.processAction(action, metaData, variables)
         end
         if clicks > 1 then
             for loop = 1, clicks do
-                table.insert(PauseActions, "/click GSE.Pause")
+                table.insert(PauseActions, {["type"] = "click"})
                 GSE.PrintDebugMessage(loop, "Storage1")
             end
         end
         -- print(#PauseActions, GSE.Dump(action))
         return PauseActions
+    elseif action.Type == Statics.Actions.If then
+        -- process repeats for the block
+        if GSE.isEmpty(action.Variable) then
+            GSE.Print(L["If Blocks Require a variable."], L["Macro Compile Error"])
+            return
+        end
+        local funct = action.Variable
+        if string.sub(funct, 1, 1) == "=" then
+            funct = string.sub(funct, 2, string.len(funct))
+        end
+
+        local val = loadstring("return " .. funct)()
+
+        local actions
+        if val then
+            actions = action[1]
+        else
+            if action[2] then
+                actions = action[2]
+            else
+                return
+            end
+        end
+
+        local actionList = {}
+        for _, v in ipairs(actions) do
+            local builtaction = GSE.processAction(v, metaData, variables)
+            table.insert(actionList, builtaction)
+        end
+
+        return actionList
+    elseif action.Type == Statics.Actions.Action then
+        local builtstuff = buildAction(action, metaData)
+        return builtstuff
     elseif action.Type == Statics.Actions.Repeat then
         if GSE.isEmpty(action.Interval) then
             if not GSE.isEmpty(action.Repeat) then
@@ -786,57 +930,6 @@ function GSE.processAction(action, metaData, variables)
             ["Interval"] = action.Interval
         }
         return returnAction
-    elseif action.Type == Statics.Actions.If then
-        if GSE.isEmpty(action.Variable) then
-            GSE.Print(L["If Blocks Require a variable."], L["Macro Compile Error"])
-            return
-        end
-
-        local funcline = GSE.RemoveComments(variables[action.Variable])
-
-        funcline = string.sub(funcline, 11)
-        funcline = funcline:sub(1, -4)
-        funcline = loadstring(funcline)
-        local value
-        if funcline ~= nil then
-            value = funcline
-            value = value()
-        end
-
-        local actions
-        if type(value) == "boolean" then
-            if value == true then
-                actions = action[1]
-            else
-                actions = action[2]
-            end
-        else
-            GSE.Print(
-                string.format(
-                    L["Boolean not found.  There is a problem with %s not returning true or false."],
-                    action.Variable
-                ),
-                L["Macro Compile Error"]
-            )
-            return
-        end
-
-        local actionList = {}
-        for _, v in ipairs(actions) do
-            local builtaction = GSE.processAction(v, metaData, variables)
-            if type(builtaction) == "table" and GSE.isEmpty(builtaction.Interval) then
-                for _, j in ipairs(builtaction) do
-                    table.insert(actionList, j)
-                end
-            else
-                table.insert(actionList, builtaction)
-            end
-        end
-
-        -- process repeats for the block
-        return processRepeats(actionList)
-    elseif action.Type == Statics.Actions.Action then
-        return buildAction(action, metaData)
     end
 end
 
@@ -886,63 +979,147 @@ function GSE.CompileTemplate(macro)
         ["Repeat"] = "1"
     }
     for _, action in ipairs(template.Actions) do
-        table.insert(actions, GSE.TranslateSequence(action, Statics.TranslatorMode.String, true))
+        table.insert(actions, action)
     end
     local compiledMacro = GSE.processAction(actions, template.InbuiltVariables, template.Variables)
 
-    local variables = {}
+    return processRepeats(GSE.FlattenTable(compiledMacro)), template
+end
 
-    for k, v in pairs(template.Variables) do
-        if type(v) == "table" then
-            for i, j in ipairs(v) do
-                template.Variables[k][i] = GSE.TranslateString(j, Statics.TranslatorMode.String, nil, true)
-            end
-            variables[k] = GSE.RemoveComments(template.Variables[k])
+local function PCallCreateGSE3Button(spelllist, name, combatReset)
+    if GSE.isEmpty(spelllist) then
+        GSE.Print("Macro missing for " .. name)
+        return
+    end
+
+    for k, v in ipairs(spelllist) do
+        if v.type == "macro" then
+            spelllist[k].unit = nil
         end
     end
 
-    return GSE.UnEscapeTable(GSE.ProcessVariables(compiledMacro, variables)), template
-end
-
-local function PCallCreateGSE3Button(macro, name, combatReset)
-    if GSE.isEmpty(macro) then
-        print("Macro missing for ", name)
-        return
-    end
     if GSE.isEmpty(combatReset) then
         combatReset = false
     end
 
     -- name = name .. "T"
-    GSE.SequencesExec[name] = macro
-
+    GSE.SequencesExec[name] = spelllist
+    local gsebutton = _G[name]
+    local buttoncreate = GSE.isEmpty(gsebutton)
     -- if button already exists no need to recreate it.  Maybe able to create this in combat.
-    if GSE.isEmpty(_G[name]) then
-        local gsebutton = CreateFrame("Button", name, nil, "SecureActionButtonTemplate,SecureHandlerBaseTemplate")
-        gsebutton:SetAttribute("type", "macro")
+    if buttoncreate then
+        gsebutton = CreateFrame("Button", name, nil, "SecureActionButtonTemplate,SecureHandlerBaseTemplate")
+        gsebutton:SetAttribute("type", "spell")
         gsebutton:SetAttribute("step", 1)
+        gsebutton:SetAttribute("name", name)
         gsebutton.UpdateIcon = GSE.UpdateIcon
         gsebutton:RegisterForClicks("AnyUp", "AnyDown")
-        gsebutton:SetAttribute("combatreset", combatReset)
 
-        local stepfunction =
-            (GSEOptions.DebugPrintModConditionsOnKeyPress and Statics.PrintKeyModifiers or "") ..
-            GSE.GetMacroResetImplementation() .. Statics.GSE3OnClick
-        gsebutton:WrapScript(gsebutton, "OnClick", stepfunction)
+        gsebutton:SetAttribute("combatreset", combatReset)
     end
-    _G[name]:Execute(
-        "name, macros = self:GetName(), newtable([=======[" ..
-            strjoin("]=======],[=======[", unpack(macro)) .. "]=======])"
-    )
+
+    for k, v in pairs(spelllist[1]) do
+        if k == "macrotext" then
+            gsebutton:SetAttribute("macro", nil)
+            gsebutton:SetAttribute("unit", nil)
+        elseif k == "macro" then
+            gsebutton:SetAttribute("macrotext", nil)
+            gsebutton:SetAttribute("unit", nil)
+        end
+        gsebutton:SetAttribute(k, v)
+    end
+
+    gsebutton:SetAttribute("stepped", false)
+    local steps = {}
+
+    for k, v in ipairs(spelllist) do
+        local line
+        steps[k] = {}
+        for i, j in pairs(v) do
+            line = i .. "=" .. j
+            tinsert(steps[k], line)
+        end
+    end
+
+    local compressedsteps = {}
+    for _, v in ipairs(steps) do
+        table.insert(compressedsteps, string.join("|", unpack(v)))
+    end
+
+    local executestring =
+        "compressedspelllist = newtable([=======[" ..
+        string.join("]=======],[=======[", unpack(compressedsteps)) ..
+            "]=======])" ..
+                [==[
+
+spelllist = newtable()
+for k,v in ipairs(compressedspelllist) do
+    tinsert(spelllist, newtable())
+
+    for _,j in ipairs(newtable(strsplit("|",v))) do
+        local a,b = strsplit("=",j)
+        spelllist[k][a] = b
+    end
+end
+]==]
+
+    gsebutton:Execute(executestring)
     if combatReset then
         _G[name]:SetAttribute("step", 1)
+    end
+
+    local clickexecution =
+        GSE.GetMacroResetImplementation() ..
+        [=[
+    local mods = "RALT=" .. tostring(IsRightAltKeyDown()) .. "|" ..
+    "LALT=".. tostring(IsLeftAltKeyDown()) .. "|" ..
+    "AALT=" .. tostring(IsAltKeyDown()) .. "|" ..
+    "RCTRL=" .. tostring(IsRightControlKeyDown()) .. "|" ..
+    "LCTRL=" .. tostring(IsLeftControlKeyDown()) .. "|" ..
+    "ACTRL=" .. tostring(IsControlKeyDown()) .. "|" ..
+    "RSHIFT=" .. tostring(IsRightShiftKeyDown()) .. "|" ..
+    "LSHIFT=" .. tostring(IsLeftShiftKeyDown()) .. "|" ..
+    "ASHIFT=" .. tostring(IsShiftKeyDown()) .. "|" ..
+    "AMOD=" .. tostring(IsModifierKeyDown()) .. "|" ..
+    "MOUSEBUTTON=" .. GetMouseButtonClicked()
+    self:SetAttribute('localmods', mods)
+    local step = self:GetAttribute('step')
+    step = tonumber(step)
+    if self:GetAttribute('stepped') then
+        self:SetAttribute('stepped', false)
+    else
+        for k,v in pairs(spelllist[step]) do
+            if k == "macrotext" then
+                self:SetAttribute("macro", nil )
+                self:SetAttribute("unit", nil )
+            elseif k == "macro" then
+                self:SetAttribute("macrotext", nil )
+                self:SetAttribute("unit", nil )
+            elseif k == "Icon" then
+                -- skip
+            end
+            self:SetAttribute(k, v )
+        end
+
+        step = step % #spelllist + 1
+        self:SetAttribute('stepped', true)
+        self:SetAttribute('step', step)
+        self:CallMethod('UpdateIcon')
+    end
+    ]=]
+
+    if GSEOptions.DebugPrintModConditionsOnKeyPress then
+        clickexecution = Statics.PrintKeyModifiers .. clickexecution
+    end
+    if buttoncreate then
+        gsebutton:WrapScript(gsebutton, "OnClick", clickexecution)
     end
     GSE.UpdateIcon(_G[name], true)
 end
 
 --- Build GSE3 Executable Buttons
-function GSE.CreateGSE3Button(macro, name, combatReset)
-    local status, err = pcall(PCallCreateGSE3Button, macro, name, combatReset)
+function GSE.CreateGSE3Button(spelllist, name, combatReset)
+    local status, err = pcall(PCallCreateGSE3Button, spelllist, name, combatReset)
     if err or not status then
         GSE.Print(
             string.format(
@@ -952,7 +1129,237 @@ function GSE.CreateGSE3Button(macro, name, combatReset)
             ),
             "BROKEN MACRO"
         )
+        print(err)
     end
+end
+
+function GSE.UpdateVariable(variable, name, status)
+    local compressedvariable = GSE.EncodeMessage(variable)
+    GSEVariables[name] = compressedvariable
+    local actualfunct, error = loadstring("return " .. variable.funct)
+    if error then
+        print(error)
+    end
+    if type(actualfunct) == "function" then
+        GSE.V[name] = actualfunct()
+    end
+    if GSE.V[name] and type(GSE.V[name]()) == "boolean" then
+        GSE.BooleanVariables["GSE.V['" .. name .. "']()"] = "GSE.V['" .. name .. "']()"
+    end
+    if GSE.GUI and GSE.GUIVariableFrame then
+        if GSE.GUIVariableFrame:IsVisible() then
+            GSE.GUIVariableFrame:SetStatusText(name .. " " .. L["Saved"])
+            C_Timer.After(
+                5,
+                function()
+                    GSE.GUIVariableFrame:SetStatusText("")
+                end
+            )
+            GSE.ShowVariables()
+        end
+    end
+end
+
+function GSE.UpdateMacro(node, category)
+    if not InCombatLockdown() then
+        GSE:UnregisterEvent("UPDATE_MACROS")
+        local slot = GetMacroIndexByName(node.name)
+        if slot > 0 then
+            EditMacro(slot, node.name, node.icon, node.text)
+        else
+            node.value = CreateMacro(node.name, node.icon, node.text, category)
+            if category then
+                local char, realm = UnitFullName("player")
+                GSEMacros[char .. "-" .. realm][node.name] = node
+            else
+                GSEMacros[node.name] = node
+            end
+        end
+        GSE:RegisterEvent("UPDATE_MACROS")
+        if GSE.GUI and GSE.GUIMacroFrame then
+            if GSE.GUIMacroFrame:IsVisible() then
+                GSE.GUIMacroFrame:SetStatusText(node.name .. " " .. L["Saved"])
+                C_Timer.After(
+                    5,
+                    function()
+                        GSE.GUIMacroFrame:SetStatusText("")
+                    end
+                )
+                GSE.ShowMacros()
+            end
+        end
+    end
+    return node
+end
+
+function GSE.ImportMacro(node)
+    local characterMacro = false
+    local source = GSEMacros
+    if node.category == "p" then
+        characterMacro = true
+        local char, realm = UnitFullName("player")
+        if GSE.isEmpty(GSEMacros[char .. "-" .. realm]) then
+            GSEMacros[char .. "-" .. realm] = {}
+        end
+        source = GSEMacros[char .. "-" .. realm]
+    end
+    node.category = nil
+
+    source[node.name] = GSE.UpdateMacro(node, characterMacro)
+    GSE.Print(L["Macro"] .. " " .. node.name .. L[" was imported."], L["Macros"])
+    GSE.ManageMacros()
+    if GSE.GUI and GSE.GUIMacroFrame then
+        if GSE.GUIMacroFrame:IsVisible() then
+            GSE.ShowMacros()
+        end
+    end
+end
+
+function GSE.CompileMacroText(text, mode)
+    if GSE.isEmpty(mode) then
+        mode = Statics.TranslatorMode.ID
+    end
+    local lines = GSE.SplitMeIntoLines(text)
+    for k, v in ipairs(lines) do
+        local value = GSE.UnEscapeString(v)
+        if mode == Statics.TranslatorMode.String then
+            if string.sub(value, 1, 1) == "=" then
+                local functionresult, error = loadstring("return " .. string.sub(value, 2, string.len(value)))
+
+                if error then
+                    GSE.Print(L["There was an error processing "] .. v, L["Variables"])
+                    GSE.Print(error, L["Variables"])
+                end
+                if functionresult and type(functionresult) == "function" then
+                    if pcall(functionresult) then
+                        value = functionresult()
+                    else
+                        value = ""
+                    end
+                end
+            end
+            if value and string.len(value) > 2 and string.sub(value, 1, 2) == "--" then
+                lines[k] = "" -- strip the comments
+            else
+                if value then
+                    lines[k] = GSE.TranslateString(value, mode, false)
+                else
+                    lines[k] = ""
+                end
+            end
+        else
+            lines[k] = GSE.TranslateString(value, mode, false)
+        end
+    end
+    local finallines = {}
+    for _, v in ipairs(lines) do
+        if not GSE.isEmpty(v) then
+            table.insert(finallines, v)
+        end
+    end
+    return table.concat(finallines, "\n")
+end
+
+function GSE.ManageMacros()
+    for k, v in pairs(GSEMacros) do
+        if v.Managed then
+            local macroIndex = GetMacroIndexByName(k)
+            if macroIndex ~= v.value then
+                v.value = macroIndex
+                GSEMacros[k].value = macroIndex
+            end
+            local node = {
+                ["name"] = k,
+                ["value"] = v.value,
+                ["icon"] = v.icon,
+                ["text"] = GSE.CompileMacroText(
+                    (v.managedMacro and v.managedMacro or v.text),
+                    Statics.TranslatorMode.String
+                )
+            }
+            GSE.UpdateMacro(node)
+        else
+            local slot = GetMacroIndexByName(k)
+            if slot then
+                local mname, micon, mbody = GetMacroInfo(slot)
+                if mname then
+                    GSEMacros[mname] = {
+                        ["name"] = mname,
+                        ["value"] = slot,
+                        ["icon"] = micon,
+                        ["text"] = mbody,
+                        ["manageMacro"] = mbody
+                    }
+                else
+                    GSEMacros[k] = nil
+                end
+            else
+                if type(GSEMacros[k]) ~= "table" then
+                    GSEMacros[k] = nil
+                end
+            end
+        end
+    end
+    local char, realm = UnitFullName("player")
+    if GSE.isEmpty(realm) then
+        realm = string.gsub(GetRealmName(), "%s*", "")
+    end
+
+    if GSEMacros[char .. "-" .. realm] then
+        for k, v in pairs(GSEMacros[char .. "-" .. realm]) do
+            if k == "value" then
+                GSEMacros[char .. "-" .. realm][k] = nil
+            else
+                if v.Managed then
+                    local macroIndex = GetMacroIndexByName(k)
+                    if macroIndex ~= v.value then
+                        v.value = macroIndex
+                        GSEMacros[char .. "-" .. realm][k].value = macroIndex
+                    end
+                    local node = {
+                        ["name"] = k,
+                        ["value"] = v.value,
+                        ["icon"] = v.icon,
+                        ["text"] = GSE.CompileMacroText(
+                            (v.managedMacro and v.managedMacro or v.text),
+                            Statics.TranslatorMode.String
+                        )
+                    }
+                    GSE.UpdateMacro(node)
+                else
+                    local slot = GetMacroIndexByName(k)
+                    if slot then
+                        local mname, micon, mbody = GetMacroInfo(slot)
+                        if mname then
+                            GSEMacros[char .. "-" .. realm][mname] = {
+                                ["name"] = mname,
+                                ["value"] = slot,
+                                ["icon"] = micon,
+                                ["text"] = mbody,
+                                ["manageMacro"] = mbody
+                            }
+                        else
+                            GSEMacros[char .. "-" .. realm][k] = nil
+                        end
+                    else
+                        if type(GSEMacros[char .. "-" .. realm][k]) ~= "table" then
+                            GSEMacros[char .. "-" .. realm][k] = nil
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if GSE.GUI and GSE.GUIMacroFrame then
+        if GSE.GUIMacroFrame:IsVisible() then
+            GSE.ShowMacros()
+        end
+    end
+end
+
+function GSE.CheckVariable(vartext)
+    local actualfunct, error = loadstring("return " .. vartext)
+    return actualfunct, error
 end
 
 GSE.DebugProfile("Storage")
