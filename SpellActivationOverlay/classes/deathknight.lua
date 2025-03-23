@@ -1,8 +1,6 @@
 local AddonName, SAO = ...
 
 local bloodBoil = 48721;
-local boneShield = 49222;
-local darkTransformation = 63560;
 local deathCoil = 47541;
 local frostStrike = 49143;
 local howlingBlast = 49184;
@@ -14,26 +12,10 @@ local runeTap = 48982;
 local function useRuneStrike()
     SAO:CreateEffect(
         "rune_strike",
-        SAO.WRATH,
+        SAO.WRATH + SAO.CATA,
         runeStrike, -- Rune Strike (ability)
         "counter",
         { useName = false }
-    );
-end
-
-local function useBoneShield()
-    SAO:CreateEffect(
-        "bone_shield",
-        SAO.CATA,
-        boneShield,
-        "aura",
-        {
-            talent = boneShield,
-            requireTalent = true,
-            actionUsable = true,
-            combatOnly = true,
-            button = { stacks = -1, spellID = boneShield },
-        }
     );
 end
 
@@ -85,19 +67,6 @@ local function useCrimsonScourge()
     );
 end
 
-local function useDarkTransformation()
-    SAO:CreateEffect(
-        "dark_transformation",
-        SAO.CATA,
-        93426, -- Dark Transformation proc for Native SHOW event
-        "native",
-        {
-            overlay = { texture = "dark_transformation", position = "Top" },
-            button = darkTransformation,
-        }
-    );
-end
-
 local function useSuddenDoom()
     SAO:CreateEffect(
         "sudden_doom",
@@ -127,21 +96,12 @@ local function useWotn()
 end
 
 local function registerClass(self)
-    -- Counters
     useRuneStrike();
-
-    -- Blood
-    useBoneShield();
-    useWotn();
-    useCrimsonScourge();
-
-    -- Frost
     useRime();
     useKillingMachine();
-
-    -- Unholy
-    useDarkTransformation();
+    useCrimsonScourge();
     useSuddenDoom();
+    useWotn();
 end
 
 SAO.Class["DEATHKNIGHT"] = {

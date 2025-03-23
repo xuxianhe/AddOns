@@ -1,5 +1,4 @@
 local AddonName, SAO = ...
-local ShortAddonName = strlower(AddonName):sub(0,8) == "necrosis" and "Necrosis" or "SAO"
 
 -- This script file is not a 'component' per se, but its functions are used across components
 
@@ -17,42 +16,27 @@ local GetTalentInfo = GetTalentInfo
 local GetTime = GetTime
 local UnitAura = UnitAura
 
-local GetAuraDataBySpellName = C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName
-local GetPlayerAuraBySpellID = C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID
-
---[[
-    Logging functions
-]]
-
 function SAO.Error(self, prefix, msg, ...)
-    print(WrapTextInColor("**"..ShortAddonName.."** -"..prefix.."- "..msg, RED_FONT_COLOR), ...);
+    print(WrapTextInColor("**SAO** -"..prefix.."- "..msg, RED_FONT_COLOR), ...);
 end
 
 function SAO.Warn(self, prefix, msg, ...)
-    print(WrapTextInColor("!"..ShortAddonName.."!  -"..prefix.."- "..msg, WARNING_FONT_COLOR), ...);
+    print(WrapTextInColor("!SAO!  -"..prefix.."- "..msg, WARNING_FONT_COLOR), ...);
 end
 
 function SAO.Info(self, prefix, msg, ...)
-    print(WrapTextInColor(ShortAddonName.." -"..prefix.."- "..msg, LIGHTBLUE_FONT_COLOR), ...);
-end
-
-function SAO:HasDebug()
-    return SpellActivationOverlayDB and SpellActivationOverlayDB.debug;
+    print(WrapTextInColor("SAO -"..prefix.."- "..msg, LIGHTBLUE_FONT_COLOR), ...);
 end
 
 function SAO.Debug(self, prefix, msg, ...)
     if SpellActivationOverlayDB and SpellActivationOverlayDB.debug then
-        print(WrapTextInColorCode("["..ShortAddonName.."@"..GetTime().."] -"..prefix.."- "..msg, "FFFFFFAA"), ...);
+        print(WrapTextInColorCode("[SAO@"..GetTime().."] -"..prefix.."- "..msg, "FFFFFFAA"), ...);
     end
-end
-
-function SAO:HasTrace(prefix)
-    return SpellActivationOverlayDB and SpellActivationOverlayDB.trace and SpellActivationOverlayDB.trace[prefix];
 end
 
 function SAO.Trace(self, prefix, msg, ...)
     if SpellActivationOverlayDB and SpellActivationOverlayDB.trace and SpellActivationOverlayDB.trace[prefix] then
-        print(WrapTextInColorCode("{"..ShortAddonName.."@"..GetTime().."} -"..prefix.."- "..msg, "FFAAFFCC"), ...);
+        print(WrapTextInColorCode("{SAO@"..GetTime().."} -"..prefix.."- "..msg, "FFAAFFCC"), ...);
     end
 end
 
@@ -64,10 +48,6 @@ function SAO.TraceThrottled(self, key, prefix, ...)
         timeOfLastTrace[key] = GetTime();
     end
 end
-
---[[
-    Global Cooldown
-]]
 
 -- Get the Global Cooldown duration
 function SAO.GetGCD(self)
@@ -86,14 +66,10 @@ function SAO.GetGCD(self)
     end
 end
 
---[[
-    Label builders
-]]
-
 -- Utility function to write a formatted 'number of stacks' text, translated with the client's locale
 -- SAO:NbStacks(4) -- "4 Stacks"
 -- SAO:NbStacks(7,9) -- "7-9 Stacks"
-function SAO:NbStacks(minStacks, maxStacks)
+function SAO.NbStacks(self, minStacks, maxStacks)
     if maxStacks then
         return string.format(CALENDAR_TOOLTIP_DATE_RANGE, tostring(minStacks), string.format(STACKS, maxStacks));
     end
@@ -101,153 +77,14 @@ function SAO:NbStacks(minStacks, maxStacks)
 end
 
 -- Simple function telling something was updated recently
-function SAO:RecentlyUpdated()
+function SAO.RecentlyUpdated(self)
     return WrapTextInColor(KBASE_RECENTLY_UPDATED, GREEN_FONT_COLOR);
 end
-
--- Execute text to tell enemy HP is below a certain threshold
-function SAO:ExecuteBelow(threshold)
-    return string.format(string.format(HEALTH_COST_PCT, "<%s%"), threshold);
-end
-
-local function tr(translations)
-    local locale = GetLocale();
-    return translations[locale] or translations[locale:sub(1,2)] or translations["en"];
-end
-
--- Get the "Heating Up" localized buff name
-function SAO:translateHeatingUp()
-    local heatingUpTranslations = {
-        ["en"] = "Heating Up",
-        ["de"] = "Aufwärmen",
-        ["fr"] = "Réchauffement",
-        ["es"] = "Calentamiento",
-        ["ru"] = "Разогрев",
-        ["it"] = "Riscaldamento",
-        ["pt"] = "Aquecendo",
-        ["ko"] = "열기",
-        ["zh"] = "热力迸发",
-    };
-    return tr(heatingUpTranslations);
-end
-
--- Get the "Debuff" localized text
-function SAO:translateDebuff()
-    local debuffTranslations = {
-        ["en"] = "Debuff",
-        ["de"] = "Schwächung",
-        ["fr"] = "Affaiblissement",
-        ["es"] = "Perjuicio",
-        ["ru"] = "Отрицательный эффект",
-        ["it"] = "Penalità",
-        ["pt"] = "Penalidade",
-        ["ko"] = "약화",
-        ["zh"] = "负面",
-        ["zhTW"] = "減益",
-    };
-    return tr(debuffTranslations);
-end
-
--- Get the "Responsive Mode" localized text
-function SAO:responsiveMode()
-    local responsiveTranslations = {
-        ["en"] = "Responsive mode (decreases performance)",
-        ["de"] = "Responsiver Modus (verringert die Leistung)",
-        ["fr"] = "Mode réactif (diminue les performances)",
-        ["es"] = "Modo de respuesta (disminuye el rendimiento)",
-        ["ru"] = "Отзывчивый режим (снижает производительность)",
-        ["it"] = "Modalità reattiva (riduce le prestazioni)",
-        ["pt"] = "Modo responsivo (diminui o desempenho)",
-        ["ko"] = "반응형 모드(성능 저하)",
-        ["zh"] = "响应模式（降低性能）",
-    };
-    return tr(responsiveTranslations);
-end
-
--- Get the "Unsupported class" localized text
-function SAO:unsupportedClass()
-    local unsupportedClassTranslations = {
-        ["en"] = "Unsupported Class",
-        ["de"] = "Nicht unterstützte Klasse",
-        ["fr"] = "Classe non prise en charge",
-        ["es"] = "Clase no compatible",
-        ["ru"] = "Неподдерживаемый класс",
-        ["it"] = "Classe non supportata",
-        ["pt"] = "Classe sem suporte",
-        ["ko"] = "지원되지 않는 클래스",
-        ["zh"] = "不支持的类",
-    };
-    return tr(unsupportedClassTranslations);
-end
-
--- Get the "because of {reason}" localized text
-function SAO:becauseOf(reason)
-    local becauseOfTranslations = {
-        ["en"] = "because of %s",
-        ["de"] = "wegen %s",
-        ["fr"] = "à cause de %s",
-        ["es"] = "por %s",
-        ["ru"] = "из-за %s",
-        ["it"] = "a causa di %s",
-        ["pt"] = "por causa de %s",
-        ["ko"] = "%s 때문에",
-        ["zh"] = "因为 %s",
-    };
-    return string.format(tr(becauseOfTranslations), reason);
-end
-
--- Get the "Open {x}" localized text
-function SAO:openIt(x)
-    local openItTranslations = {
-        ["en"] = "Open %s",
-        ["de"] = "Öffnen %s",
-        ["fr"] = "Ouvrir %s",
-        ["es"] = "Abrir %s",
-        ["ru"] = "Открыть %s",
-        ["it"] = "Aprire %s",
-        ["pt"] = "Abrir %s",
-        ["ko"] = "열기 %s",
-        ["zh"] = "打开 %s",
-    };
-    return string.format(tr(openItTranslations), x);
-end
-
--- Get the "Disabled when {addon} is installed" localized text
-function SAO:disableWhenInstalled(addon)
-    local disableWhenInstalledTranslations = {
-        ["en"] = "Disable when %s is installed",
-        ["de"] = "Deaktivieren, wenn %s installiert ist",
-        ["fr"] = "Désactiver lorsque %s est installé",
-        ["es"] = "Desactivar cuando %s está instalado",
-        ["ru"] = "Отключить при установке %s",
-        ["it"] = "Disattivare quando è installato %s",
-        ["pt"] = "Desativar quando %s estiver instalado",
-        ["ko"] = "%s가 설치되어 있으면 사용 안 함",
-        ["zh"] = "安装 %s 时禁用",
-    };
-    return string.format(tr(disableWhenInstalledTranslations), addon);
-end
-
---[[
-    Addon mode
-]]
-
-function SAO:IsResponsiveMode()
-    return SpellActivationOverlayDB and SpellActivationOverlayDB.responsiveMode == true;
-end
-
---[[
-    Time utility functions
-]]
 
 -- Utility function to assume times are identical or almost identical
 function SAO.IsTimeAlmostEqual(self, t1, t2, delta)
 	return t1-delta < t2 and t2 < t1+delta;
 end
-
---[[
-    Aura utility functions
-]]
 
 -- Factorize API calls to get player buff or debuff or whatever
 local function PlayerAura(index, filter)
@@ -273,7 +110,7 @@ local function FindPlayerAuraBy(condition)
 end
 
 -- Utility aura function, one of the many that Blizzard could've done better years ago...
-local function FindPlayerAuraByID(self, id)
+function SAO.FindPlayerAuraByID(self, id)
     local index, filter = FindPlayerAuraBy(function(_id, _name) return _id == id end);
     if index then
         return PlayerAura(index, filter);
@@ -281,71 +118,12 @@ local function FindPlayerAuraByID(self, id)
 end
 
 -- Utility aura function, similar to AuraUtil.FindAuraByName
-local function FindPlayerAuraByName(self, name)
+function SAO.FindPlayerAuraByName(self, name)
     local index, filter = FindPlayerAuraBy(function(_id, _name) return _name == name end);
     if index then
         return PlayerAura(index, filter);
     end
 end
-
-function SAO:HasPlayerAuraBySpellID(id)
-    if GetPlayerAuraBySpellID then
-        return GetPlayerAuraBySpellID(id) ~= nil;
-    else
-        return FindPlayerAuraByID(id) ~= nil;
-    end
-end
-
-function SAO:GetPlayerAuraStacksBySpellID(id)
-    if GetPlayerAuraBySpellID then
-        local aura = GetPlayerAuraBySpellID(id);
-        if aura then
-            return aura.applications;
-        end
-    else
-        local exists, _, count = FindPlayerAuraByID(id);
-        if exists then
-            return count;
-        end
-    end
-    return nil;
-end
-
-function SAO:GetPlayerAuraDurationExpirationTimBySpellIdOrName(spellIdOrName)
-    if type(spellIdOrName) == 'string' then
-        if GetAuraDataBySpellName then
-            local aura = GetAuraDataBySpellName("player", spellIdOrName, "HELPFUL");
-            if not aura then
-                aura = GetAuraDataBySpellName("player", spellIdOrName, "HARMFUL");
-            end
-            if aura then
-                return aura.duration, aura.expirationTime;
-            end
-        else
-            local exists, _, _, _, duration, expirationTime = FindPlayerAuraByName(spellIdOrName);
-            if exists then
-                return duration, expirationTime;
-            end
-        end
-    elseif type(spellIdOrName) == 'number' and not self:IsFakeSpell(spellIdOrName) then -- Don't look for fake spells
-        if GetPlayerAuraBySpellID then
-            local aura = GetPlayerAuraBySpellID(spellIdOrName);
-            if aura then
-                return aura.duration, aura.expirationTime;
-            end
-        else
-            local exists, _, _, _, duration, expirationTime = FindPlayerAuraByID(spellIdOrName);
-            if exists then
-                return duration, expirationTime;
-            end
-        end
-    end
-    return nil, nil;
-end
-
---[[
-    Spell utility functions
-]]
 
 --[[
     Utility function to know how many talent points the player has spent on a specific talent
@@ -408,23 +186,6 @@ function SAO.GetHomonymSpellIDs(self, spell)
     end
 
     return homonyms;
-end
-
---[[
-    Hash utility functions
-]]
-
--- Computes a hash string based on a hash numerical value
-function SAO:HashNameFromHashNumber(hash)
-    return self.Hash:new(hash):toString();
-end
-
--- Computes a hash string based only from a number of stacks
--- Used for legacy code
-function SAO:HashNameFromStacks(stacks)
-    local hash = self.Hash:new();
-    hash:setAuraStacks(stacks);
-    return hash:toString();
 end
 
 --[[

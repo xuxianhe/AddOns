@@ -18,8 +18,6 @@ local default = {
   desaturate = false,
   iconSource = -1,
   progressSource = {-1, "" },
-  adjustedMax = "",
-  adjustedMin = "",
   inverse = false,
   width = 64,
   height = 64,
@@ -88,7 +86,7 @@ local properties = {
     setter = "SetCooldownEdge",
     type = "bool",
   },
-  cooldownTextDisabled = {
+  cooldownText = {
     display = { L["Cooldown"], L["Hide Timer Text"]},
     setter = "SetHideCountdownNumbers",
     type = "bool",
@@ -156,15 +154,10 @@ local function GetTexCoord(region, texWidth, aspectRatio, xOffset, yOffset)
   return unpack(region.currentCoord)
 end
 
-local function AnchorSubRegion(self, subRegion, anchorType, anchorPoint, selfPoint, anchorXOffset, anchorYOffset)
-  if type(anchorPoint) == "string" and anchorPoint:sub(1, 4) == "sub." then
-    Private.regionPrototype.AnchorSubRegion(self, subRegion, anchorType, anchorPoint, selfPoint, anchorXOffset, anchorYOffset)
-    return
-  end
-
+local function AnchorSubRegion(self, subRegion, anchorType, selfPoint, anchorPoint, anchorXOffset, anchorYOffset)
   if anchorType == "area" then
     Private.regionPrototype.AnchorSubRegion(selfPoint == "region" and self or self.icon,
-                    subRegion, anchorType, anchorPoint, selfPoint, anchorXOffset, anchorYOffset)
+                    subRegion, anchorType, selfPoint, anchorPoint, anchorXOffset, anchorYOffset)
   else
     subRegion:ClearAllPoints()
     anchorPoint = anchorPoint or "CENTER"
@@ -402,10 +395,9 @@ local function modify(parent, region, data)
       end);
       region.tooltipFrame:SetScript("OnLeave", Private.HideTooltip);
     end
-    region.tooltipFrame:EnableMouseMotion(true);
-    region.tooltipFrame:SetMouseClickEnabled(false);
+    region.tooltipFrame:EnableMouse(true);
   elseif region.tooltipFrame then
-    region.tooltipFrame:EnableMouseMotion(false);
+    region.tooltipFrame:EnableMouse(false);
   end
 
   function region:SetInverse(inverse)

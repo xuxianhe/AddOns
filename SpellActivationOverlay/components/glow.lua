@@ -4,7 +4,6 @@ local Module = "glow"
 -- Optimize frequent calls
 local ActionButton_HideOverlayGlow = ActionButton_HideOverlayGlow
 local ActionButton_ShowOverlayGlow = ActionButton_ShowOverlayGlow
-local GetNumShapeshiftForms = GetNumShapeshiftForms
 local GetSpellInfo = GetSpellInfo
 local HasAction = HasAction
 
@@ -35,45 +34,24 @@ SAO.RegisteredGlowSpellIDs = {}
 -- This helps fill or re-fill RegisteredGlowSpellIDs when e.g. a new spell rank is learned
 SAO.RegisteredGlowSpellNames = {}
 
--- Register a glow ID
--- Each ID is either a numeric value (spellID) or a string (spellName)
-function SAO.RegisterGlowID(self, glowID)
-    if (type(glowID) == "number") then
-        self.RegisteredGlowSpellIDs[glowID] = true;
-        self:AwakeButtonsBySpellID(glowID);
-    elseif (type(glowID) == "string") then
-        if (not SAO.RegisteredGlowSpellNames[glowID]) then
-            SAO.RegisteredGlowSpellNames[glowID] = true;
-            local glowSpellIDs = self:GetSpellIDsByName(glowID);
-            for _, glowSpellID in ipairs(glowSpellIDs) do
-                self.RegisteredGlowSpellIDs[glowSpellID] = true;
-                self:AwakeButtonsBySpellID(glowSpellID);
-            end
-        end
-    end
-end
-
 -- Register a list of glow ID
 -- Each ID is either a numeric value (spellID) or a string (spellName)
 function SAO.RegisterGlowIDs(self, glowIDs)
     for _, glowID in ipairs(glowIDs or {}) do
-        self:RegisterGlowID(glowID);
+        if (type(glowID) == "number") then
+            self.RegisteredGlowSpellIDs[glowID] = true;
+            self:AwakeButtonsBySpellID(glowID);
+        elseif (type(glowID) == "string") then
+            if (not SAO.RegisteredGlowSpellNames[glowID]) then
+                SAO.RegisteredGlowSpellNames[glowID] = true;
+                local glowSpellIDs = self:GetSpellIDsByName(glowID);
+                for _, glowSpellID in ipairs(glowSpellIDs) do
+                    self.RegisteredGlowSpellIDs[glowSpellID] = true;
+                    self:AwakeButtonsBySpellID(glowSpellID);
+                end
+            end
+        end
     end
-end
-
-local function EnableGlow(frame, glowID, reason)
-    if SAO.Shutdown:IsAddonDisabled() then
-        return;
-    end
-    if frame:IsShown() then -- Invisible frames might cause issues; worse case scenario they will be visible soon and the player will have to wait for next proc
-        SAO:Debug(Module, "Enabling Glow for button "..tostring(frame.GetName and frame:GetName() or "").." with glow id "..tostring(glowID).." due to "..reason);
-        frame:EnableGlow();
-    end
-end
-
-local function DisableGlow(frame, glowID, reason)
-    SAO:Debug(Module, "Disabling Glow for button "..tostring(frame.GetName and frame:GetName() or "").." with glow id "..tostring(glowID).." due to "..reason);
-    frame:DisableGlow();
 end
 
 -- An action button has been updated
@@ -140,31 +118,19 @@ function SAO.UpdateActionButton(self, button, forceRefresh)
 
     if (not wasGlowing and mustGlow) then
         if (not SpellActivationOverlayDB or not SpellActivationOverlayDB.glow or SpellActivationOverlayDB.glow.enabled) then
-            EnableGlow(button, newGlowID, "action button update");
+            SAO:Debug(Module, "Enabling Glow for button "..tostring(newGlowID).." due to action button update");
+            button:EnableGlow();
         end
     elseif (wasGlowing and not mustGlow) then
-        DisableGlow(button, newGlowID, "action button update");
+        SAO:Debug(Module, "Disabling Glow for button "..tostring(newGlowID).." due to action button update");
+        button:DisableGlow();
     end
 end
 
 -- Grab all action button activity that allows us to know which button has which spell
-local LBG = LibStub("LibButtonGlow-1.0", false);
 function HookActionButton_Update(button)
     if (button:GetParent() == OverrideActionBar) then
-        -- Act on all buttons but the ones from OverrideActionBar
-
-        if not button.saoAnalyzed then
-            button.saoAnalyzed = true;
-            -- Set the "statehidden" attribute upon init, to avoid game client issues with conflicting action slots
-            local useOverrideActionBar = ((HasVehicleActionBar() and UnitVehicleSkin("player") and UnitVehicleSkin("player") ~= "")
-                or (HasOverrideActionBar() and GetOverrideBarSkin() and GetOverrideBarSkin() ~= 0)); -- Test copied from ActionBarController.lua:99
-            if not useOverrideActionBar then
-                -- Set "statehidden" to true
-                -- Don't worry, it should be reset to false next time the player enters a vehicle
-                button:SetAttribute("statehidden", true);
-            end
-        end
-
+        -- Act on all buttons but the ones from OverrideActionBar, whatever that is
         return;
     end
 
@@ -177,48 +143,26 @@ function HookActionButton_Update(button)
     end
     if (not button.EnableGlow) then
         button.EnableGlow = function(button)
-            LBG.ShowOverlayGlow(button);
-            -- ActionButton_ShowOverlayGlow(button); -- native API taints buttons
+            ActionButton_ShowOverlayGlow(button);
         end
     end
     if (not button.DisableGlow) then
         button.DisableGlow = function(button)
-            LBG.HideOverlayGlow(button);
-            -- ActionButton_HideOverlayGlow(button); -- native API taints buttons
+            ActionButton_HideOverlayGlow(button);
         end
     end
     SAO:UpdateActionButton(button);
 end
 hooksecurefunc("ActionButton_Update", HookActionButton_Update);
 
--- Grab buttons in the stance bar
-function HookStanceBar_UpdateState()
-    local numForms = GetNumShapeshiftForms();
-    for i=1, numForms do
-        if i > NUM_STANCE_SLOTS then
-            break;
-        end
-        local button = StanceBarFrame.StanceButtons[i];
-        button.stanceForm = i;
-        if (not button.GetGlowID) then
-            button.GetGlowID = function(button)
-                return select(4, GetShapeshiftFormInfo(button.stanceForm));
-            end
-        end
-        if (not button.EnableGlow) then
-            button.EnableGlow = function(button)
-                ActionButton_ShowOverlayGlow(button);
-            end
-        end
-        if (not button.DisableGlow) then
-            button.DisableGlow = function(button)
-                ActionButton_HideOverlayGlow(button);
-            end
-        end
-        SAO:UpdateActionButton(button);
+-- Also look for specific events for bar swaps when e.g. entering/leaving stealth
+-- Not sure if it is really necessary, but in theory it will do nothing at worst
+function HookActionButton_OnEvent(self, event)
+    if (event == "ACTIONBAR_PAGE_CHANGED" or event == "UPDATE_BONUS_ACTIONBAR") then
+        HookActionButton_Update(self);
     end
 end
-hooksecurefunc("StanceBar_UpdateState", HookStanceBar_UpdateState);
+hooksecurefunc("ActionButton_OnEvent", HookActionButton_OnEvent);
 
 -- Awake dormant buttons associated to a spellID
 function SAO.AwakeButtonsBySpellID(self, spellID)
@@ -241,54 +185,16 @@ function SAO.AddGlowNumber(self, spellID, glowID)
         self.GlowingSpells[glowID] = { [spellID] = true };
         for _, frame in pairs(actionButtons or {}) do
             if (not SpellActivationOverlayDB or not SpellActivationOverlayDB.glow or SpellActivationOverlayDB.glow.enabled) then
-                EnableGlow(frame, frame.GetGlowID and frame:GetGlowID(), "direct activation");
+                SAO:Debug(Module, "Enabling Glow for button "..tostring(frame.GetGlowID and frame:GetGlowID()).." due to direct activation");
+                frame:EnableGlow();
             end
         end
     end
-end
-
--- Find a glowing option in the options table
--- First try to find from optionIndex, otherwise fallback to legacy options
-local function isGlowingOptionEnabled(glowingOptions, glowID, hashData)
-    if not glowingOptions then
-        return true; -- Enabled by default, in case there is not an option for it
-    end
-
-    local optionIndex = hashData and hashData.optionIndex;
-    local legacyAllowed = hashData == nil or hashData.legacyGlowingOption;
-
-    if type(glowID) == "number" then
-        if optionIndex and type(glowingOptions[optionIndex]) == 'table' and type(glowingOptions[optionIndex][glowID]) == 'boolean' then
-            return glowingOptions[optionIndex][glowID];
-        elseif legacyAllowed and type(glowingOptions[glowID]) == "boolean" then
-            return glowingOptions[glowID];
-        end
-    else
-        local glowSpellName = (type(glowID) == "number") and GetSpellInfo(glowID) or glowID;
-
-        if optionIndex and type(glowingOptions[optionIndex]) == 'table' then
-            for optionSpellID, optionEnabled in pairs(glowingOptions[optionIndex]) do
-                if (GetSpellInfo(optionSpellID) == glowSpellName) then
-                    return optionEnabled;
-                end
-            end
-        end
-
-        if legacyAllowed then
-            for optionSpellID, optionEnabled in pairs(glowingOptions) do
-                if (type(optionSpellID) == 'number' and GetSpellInfo(optionSpellID) == glowSpellName) then
-                    return optionEnabled;
-                end
-            end
-        end
-    end
-
-    return true; -- Enabled by default, in case there is not an option for it
 end
 
 -- Add a glow effect for action buttons matching one of the given glow IDs
 -- Each glow ID may be a spell identifier (number) or spell name (string)
-function SAO.AddGlow(self, spellID, glowIDs, hashData)
+function SAO.AddGlow(self, spellID, glowIDs)
     if (glowIDs == nil) then
         return;
     end
@@ -298,7 +204,20 @@ function SAO.AddGlow(self, spellID, glowIDs, hashData)
     for _, glowID in ipairs(glowIDs) do
 
         -- Find if the glow option is enabled
-        local glowEnabled = isGlowingOptionEnabled(glowingOptions, glowID, hashData);
+        local glowEnabled = true; -- Enabled by default, in case there is not an option for it
+        if (glowingOptions) then
+            if (type(glowID) == "number" and type(glowingOptions[glowID]) == "boolean") then
+                glowEnabled = glowingOptions[glowID];
+            else
+                local glowSpellName = (type(glowID) == "number") and GetSpellInfo(glowID) or glowID;
+                for optionSpellID, optionEnabled in pairs(glowingOptions) do
+                    if (GetSpellInfo(optionSpellID) == glowSpellName) then
+                        glowEnabled = optionEnabled;
+                        break;
+                    end
+                end
+            end
+        end
 
         -- Let it glow
         if (glowEnabled) then
@@ -344,7 +263,8 @@ function SAO.RemoveGlow(self, spellID)
             self.GlowingSpells[glowSpellID] = nil;
             local actionButtons = self.ActionButtons[glowSpellID];
             for _, frame in pairs(actionButtons or {}) do
-                DisableGlow(frame, frame.GetGlowID and frame:GetGlowID(), "direct deactivation");
+                SAO:Debug(Module, "Disabling Glow for button "..tostring(frame.GetGlowID and frame:GetGlowID()).." due to direct deactivation");
+                frame:DisableGlow();
             end
         end
     end

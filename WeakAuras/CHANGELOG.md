@@ -1,32 +1,49 @@
-# [5.19.5-16-ge9c64666](https://github.com/WeakAuras/WeakAuras2/tree/e9c646666787850364f44c932836730bb333d1c1) (2025-03-20)
+# [5.12.9](https://github.com/WeakAuras/WeakAuras2/tree/5.12.9) (2024-04-29)
 
-[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.19.5...e9c646666787850364f44c932836730bb333d1c1)
+[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.12.8...5.12.9)
 
-InfusOnWoW (12):
+## Highlights
 
-- Fix lua error on showing fake states with ticks
-- Fix "Automatic Progress" of Sub Elements attached to an Empty Base
+ - Added "Parent Frame" as option to "Glow Frame Type"
+- Cataclysm bug fixes 
+
+## Commits
+
+Boneshock (1):
+
+- add Location trigger (#4917)
+
+InfusOnWoW (8):
+
 - Update Atlas File List from wago.tools
-- Load: Add a guild name option
-- Health trigger: Add aborb at end reversed mode
-- StopMotion: Fix up/down buttons for start/end percent
-- Tweak spell cache building
-- Formatters: Add a pad option to various formatters
-- Ticks: Update Ticks on UpdateProgress not on Update
-- Fix string Conditions not unsetting if string left empty default
-- Item Equipped: Add exact match to load options/fix name matching
-- Sub Regions: Fix progress not updating on trigger deactivation
+- Fix tracking specific charges being affeced by paused evoker spells
+- Weapon Enchant Trigger: Fix trigger stack check and missing condition
+- Add missing order increment
+- Fix AddFakeInformation for TSU auras to not overwrite progressType
+- Shape shift Trigger: Add note for incompatibility with SoD's Gladiator rune
+- Remove dead code
+- Update Atlas File List from wago.tools
 
-Stanzilla (1):
+Lynn (1):
+
+- Added "Parent Frame" as option to "Glow Frame Type" (#5025)
+
+Stanzilla (4):
 
 - Update WeakAurasModelPaths from wago.tools
+- Update WeakAurasModelPaths from wago.tools
+- Update WeakAurasModelPaths from wago.tools
+- Mark model paths script as executeable
 
 emptyrivers (1):
 
-- RENOWN_LEVEL_LABEL globalstring changed with 11.1
+- only use whisper comms if target is on the actually same server (#5019)
 
-mrbuds (2):
+mrbuds (5):
 
-- Update bug report url
-- BossMod triggers: bar timers doesn't require to be enable in addon settings anymore, add an option to still filter matching add settings
+- Cataclysm: add class & spec load option
+- FontString:SetJustifyV error with "CENTER" on cataclysm beta
+- Types (#5013)
+- Cataclysm: remove "Resilience" from "Character Stats" trigger
+- Classic: fix talent not checked on changing talent group
 

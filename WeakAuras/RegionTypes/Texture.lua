@@ -30,11 +30,6 @@ Private.regionPrototype.AddAlphaToDefault(default);
 local screenWidth, screenHeight = math.ceil(GetScreenWidth() / 20) * 20, math.ceil(GetScreenHeight() / 20) * 20;
 
 local properties = {
-  texture = {
-    display = L["Texture"],
-    setter = "SetTexture",
-    type = "texture",
-  },
   color = {
     display = L["Color"],
     setter = "Color",
@@ -88,7 +83,9 @@ local function create(parent)
   region:SetResizable(true);
   region:SetResizeBounds(1, 1)
 
-  local texture = Private.TextureBase.create(region)
+  local texture = region:CreateTexture();
+  texture:SetSnapToPixelGrid(false)
+  texture:SetTexelSnappingBias(0)
   region.texture = texture;
   texture:SetAllPoints(region);
 
@@ -97,40 +94,74 @@ local function create(parent)
   return region;
 end
 
+local SQRT2 = sqrt(2)
+local function GetRotatedPoints(degrees, scaleForFullRotate)
+  local angle = rad(135 - degrees);
+  local factor = scaleForFullRotate and 1 or SQRT2
+  local vx = math.cos(angle) / factor
+  local vy = math.sin(angle) / factor
+
+  return 0.5+vx,0.5-vy , 0.5-vy,0.5-vx , 0.5+vy,0.5+vx , 0.5-vx,0.5+vy
+end
+
 local function modify(parent, region, data)
   Private.regionPrototype.modify(parent, region, data);
+  Private.SetTextureOrAtlas(region.texture, data.texture, data.textureWrapMode, data.textureWrapMode);
+  region.texture:SetDesaturated(data.desaturate)
   region:SetWidth(data.width);
   region:SetHeight(data.height);
   region.width = data.width;
   region.height = data.height;
   region.scalex = 1;
   region.scaley = 1;
+  region.texture:SetBlendMode(data.blendMode);
 
-  Private.TextureBase.modify(region.texture, {
-    canRotate = data.rotate,
-    desaturate = data.desaturate,
-    blendMode = data.blendMode,
-    mirror = data.mirror,
-    rotation = data.rotation,
-    textureWrapMode = data.textureWrapMode
-  })
+  region.mirror = data.mirror
+
+  local function DoTexCoord()
+    local mirror_h, mirror_v = region.mirror_h, region.mirror_v;
+    if(region.mirror) then
+      mirror_h = not mirror_h;
+    end
+    local ulx,uly , llx,lly , urx,ury , lrx,lry
+      = GetRotatedPoints(region.effectiveRotation, data.rotate and not region.texture.IsAtlas)
+    if(mirror_h) then
+      if(mirror_v) then
+        region.texture:SetTexCoord(lrx,lry , urx,ury , llx,lly , ulx,uly);
+      else
+        region.texture:SetTexCoord(urx,ury , lrx,lry , ulx,uly , llx,lly);
+      end
+    else
+      if(mirror_v) then
+        region.texture:SetTexCoord(llx,lly , ulx,uly , lrx,lry , urx,ury);
+      else
+        region.texture:SetTexCoord(ulx,uly , llx,lly , urx,ury , lrx,lry);
+      end
+    end
+  end
+
+  region.rotation = data.rotation
+  region.effectiveRotation = region.rotation
 
   function region:Scale(scalex, scaley)
     region.scalex = scalex;
     region.scaley = scaley;
-    local mirror_h, mirror_v
     if(scalex < 0) then
-      mirror_h = true
+      region.mirror_h = true;
       scalex = scalex * -1;
+    else
+      region.mirror_h = nil;
     end
     region:SetWidth(region.width * scalex);
     if(scaley < 0) then
       scaley = scaley * -1;
-      mirror_v = true
+      region.mirror_v = true;
+    else
+      region.mirror_v = nil;
     end
     region:SetHeight(region.height * scaley);
 
-    region.texture:SetMirrorFromScale(mirror_h, mirror_v)
+    DoTexCoord();
   end
 
   function region:SetRegionWidth(width)
@@ -144,21 +175,20 @@ local function modify(parent, region, data)
   end
 
   function region:SetMirror(mirror)
-    self.texture:SetMirror(mirror)
+    region.mirror = mirror
+    DoTexCoord()
   end
 
   function region:Update()
-    if self.state.texture then
-      self.texture:SetTexture(self.state.texture)
+    if region.state.texture then
+      local oldIsAtlas = region.texture.IsAtlas
+      Private.SetTextureOrAtlas(region.texture, region.state.texture, data.textureWrapMode, data.textureWrapMode)
+      if region.texture.IsAtlas ~= oldIsAtlas then
+        DoTexCoord()
+      end
     end
-    self:UpdateProgress()
+    region:UpdateProgress()
   end
-
-  function region:SetTexture(texture)
-    self.texture:SetTexture(texture)
-  end
-
-  region.texture:SetTexture(data.texture)
 
   function region:Color(r, g, b, a)
     region.color_r = r;
@@ -190,22 +220,29 @@ local function modify(parent, region, data)
   region:Color(data.color[1], data.color[2], data.color[3], data.color[4]);
 
   function region:SetDesaturated(b)
-    self.texture:SetDesaturated(b)
+    region.texture:SetDesaturated(b);
   end
 
   --- @type fun(degrees: number?)
   function region:SetAnimRotation(degrees)
-    self.texture:SetAnimRotation(degrees)
+    region.animRotation = degrees
+    region:UpdateEffectiveRotation()
   end
 
   --- @type fun(degrees: number)
   function region:SetRotation(degrees)
-    self.texture:SetRotation(degrees)
+    region.rotation = degrees
+    region:UpdateEffectiveRotation()
+  end
+
+  function region:UpdateEffectiveRotation()
+    region.effectiveRotation = region.animRotation or region.rotation
+    DoTexCoord()
   end
 
   --- @type fun(): number
   function region:GetBaseRotation()
-    return self.texture:GetBaseRotation()
+    return region.rotation
   end
   region:SetRotation(data.rotation)
 

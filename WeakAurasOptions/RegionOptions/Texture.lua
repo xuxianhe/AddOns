@@ -5,6 +5,11 @@ local AddonName = ...
 local OptionsPrivate = select(2, ...)
 
 local L = WeakAuras.L
+local GetAtlasInfo = C_Texture and C_Texture.GetAtlasInfo or GetAtlasInfo
+
+local function IsAtlas(input)
+  return type(input) == "string" and GetAtlasInfo(input) ~= nil
+end
 
 local function createOptions(id, data)
   local options = {
@@ -82,14 +87,14 @@ local function createOptions(id, data)
       name = L["Texture Wrap"],
       order = 7,
       values = OptionsPrivate.Private.texture_wrap_types,
-      hidden = OptionsPrivate.Private.TextureBase.IsAtlas(data.texture)
+      hidden = IsAtlas(data.texture)
     },
     rotate = {
       type = "toggle",
       width = WeakAuras.normalWidth,
       name = L["Allow Full Rotation"],
       order = 8,
-      hidden = OptionsPrivate.Private.TextureBase.IsAtlas(data.texture)
+      hidden = IsAtlas(data.texture)
     },
     rotation = {
       type = "range",
