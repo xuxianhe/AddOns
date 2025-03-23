@@ -5,12 +5,11 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Gathering = TSM.TaskList:NewPackage("Gathering") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local ObjectPool = TSM.LibTSMUtil:IncludeClassType("ObjectPool")
+local Gathering = TSM.TaskList:NewPackage("Gathering")
+local L = TSM.Include("Locale").GetTable()
+local TempTable = TSM.Include("Util.TempTable")
+local ObjectPool = TSM.Include("Util.ObjectPool")
 local private = {
-	settings = nil,
 	activeTasks = {},
 	query = nil,
 	sourceTasks = {},
@@ -45,9 +44,7 @@ local SOURCE_CLASS_CONSTRUCTORS = {
 -- Module Functions
 -- ============================================================================
 
-function Gathering.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
-		:AddKey("factionrealm", "gatheringContext", "crafter")
+function Gathering.OnInitialize()
 	for _, source in ipairs(ITEM_SOURCES) do
 		private.sourceTasks[source] = SOURCE_CLASS_CONSTRUCTORS[source]()
 		private.sourceTasks[source]:Acquire(private.SourceProfessionTaskDone, L["Gathering"])
@@ -103,7 +100,7 @@ function private.PopulateTasks()
 			end
 		end
 		if sourceInfo.craftProfit or sourceInfo.craftNoProfit then
-			local craftString = TSM.Crafting.GetMostProfitableCraftStringByItem(itemString, private.settings.crafter)
+			local craftString = TSM.Crafting.GetMostProfitableCraftStringByItem(itemString, TSM.db.factionrealm.gatheringContext.crafter)
 			assert(craftString)
 			local profession = TSM.Crafting.GetProfession(craftString)
 			if not private.professionTasks[profession] then
@@ -127,8 +124,8 @@ function private.PopulateTasks()
 	end
 	TempTable.Release(alts)
 
-	if private.settings.crafter ~= "" then
-		private.sourceTasks.sendMail:SetTarget(private.settings.crafter)
+	if TSM.db.factionrealm.gatheringContext.crafter ~= "" then
+		private.sourceTasks.sendMail:SetTarget(TSM.db.factionrealm.gatheringContext.crafter)
 	end
 	for _, task in pairs(private.sourceTasks) do
 		if task:HasItems() then

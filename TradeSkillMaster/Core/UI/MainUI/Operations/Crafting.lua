@@ -5,14 +5,11 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Crafting = TSM.MainUI.Operations:NewPackage("Crafting") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local Operation = TSM.LibTSMTypes:Include("Operation")
-local CraftingOperation = TSM.LibTSMSystem:Include("CraftingOperation")
-local UIElements = TSM.LibTSMUI:Include("Util.UIElements")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
+local Crafting = TSM.MainUI.Operations:NewPackage("Crafting")
+local L = TSM.Include("Locale").GetTable()
+local UIElements = TSM.Include("UI.UIElements")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
-	settings = nil,
 	currentOperationName = nil,
 }
 local CRAFT_VALUE_VALIDATE_CONTEXT = {
@@ -23,14 +20,6 @@ local CRAFT_VALUE_VALIDATE_CONTEXT = {
 local RESTOCK_QUANTITY_VALIDATE_CONTEXT = {
 	isNumber = true,
 }
-local SETTING_TOOLTIPS = {
-	minRestock = L["This is the minimum number of items to add to your Crafting queue before any items are added to your Crafting queue. For example, if this is set to 10 and the operation would only add 3 items to the crafting queue, the items would not be added."],
-	maxRestock = L["This is the maximum number of items you want to have in stock. If you already have more than this number, no more will be added to your Crafting queue."],
-	minProfitToggle = L["If enabled, items would need to satisfy a minimum profit before being added to your crafting queue."],
-	minProfitValue = L["If enabled, items would need to satisfy a minimum profit before being added to your crafting queue."],
-	craftPriceMethodToggle = L["Enabling this allows overriding the default craft value method used to calculate profit of items associated with this operation."],
-	craftPriceMethodValue = L["The craft value method to use for this operation."],
-}
 
 
 
@@ -38,10 +27,8 @@ local SETTING_TOOLTIPS = {
 -- Module Functions
 -- ============================================================================
 
-function Crafting.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
-		:AddKey("global", "craftingOptions", "defaultCraftPriceMethod")
-	RESTOCK_QUANTITY_VALIDATE_CONTEXT.minValue, RESTOCK_QUANTITY_VALIDATE_CONTEXT.maxValue = CraftingOperation.GetRestockRange()
+function Crafting.OnInitialize()
+	RESTOCK_QUANTITY_VALIDATE_CONTEXT.minValue, RESTOCK_QUANTITY_VALIDATE_CONTEXT.maxValue = TSM.Operations.Crafting.GetRestockRange()
 	TSM.MainUI.Operations.RegisterModule("Crafting", private.GetCraftingOperationSettings)
 end
 
@@ -54,36 +41,36 @@ end
 function private.GetCraftingOperationSettings(operationName)
 	UIUtils.AnalyticsRecordPathChange("main", "operations", "crafting")
 	private.currentOperationName = operationName
-	local operation = Operation.GetSettings("Crafting", private.currentOperationName)
+	local operation = TSM.Operations.GetSettings("Crafting", private.currentOperationName)
 	local frame = UIElements.New("ScrollFrame", "settings")
 		:SetPadding(8, 8, 8, 0)
 		:AddChild(TSM.MainUI.Operations.CreateExpandableSection("Crafting", "restockQuantity", L["Restock Options"], L["Adjust how crafted items are restocked."])
-			:AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("minRestock", L["Minimum restock quantity"], RESTOCK_QUANTITY_VALIDATE_CONTEXT, nil, nil, SETTING_TOOLTIPS.minRestock)
+			:AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("minRestock", L["Minimum restock quantity"], RESTOCK_QUANTITY_VALIDATE_CONTEXT)
 				:SetMargin(0, 0, 0, 12)
 			)
-			:AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("maxRestock", L["Maximum restock quantity"], RESTOCK_QUANTITY_VALIDATE_CONTEXT, nil, nil, SETTING_TOOLTIPS.maxRestock)
+			:AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("maxRestock", L["Maximum restock quantity"], RESTOCK_QUANTITY_VALIDATE_CONTEXT)
 				:SetMargin(0, 0, 0, 12)
 			)
 			:AddChild(TSM.MainUI.Operations.CreateLinkedSettingLine("minProfit", L["Set min profit"], nil, "minProfitToggle")
+				:SetLayout("VERTICAL")
 				:SetHeight(42)
 				:AddChild(UIElements.New("ToggleYesNo", "toggle")
 					:SetHeight(18)
 					:SetValue(operation.minProfit ~= "")
-					:SetDisabled(Operation.HasRelationship("Crafting", private.currentOperationName, "minProfit"))
+					:SetDisabled(TSM.Operations.HasRelationship("Crafting", private.currentOperationName, "minProfit"))
 					:SetScript("OnValueChanged", private.MinProfitToggleOnValueChanged)
-					:SetTooltip(SETTING_TOOLTIPS.minProfitToggle)
 				)
 			)
 		)
 		:AddChild(TSM.MainUI.Operations.CreateExpandableSection("Crafting", "priceSettings", L["Crafting Value"], L["Adjust how TSM values crafted items when calculating profit."])
 			:AddChild(TSM.MainUI.Operations.CreateLinkedSettingLine("craftPriceMethod", L["Override default craft value"], nil, "craftPriceMethodToggle")
+				:SetLayout("VERTICAL")
 				:SetHeight(42)
 				:AddChild(UIElements.New("ToggleYesNo", "toggle")
 					:SetHeight(18)
 					:SetValue(operation.craftPriceMethod ~= "")
-					:SetDisabled(Operation.HasRelationship("Crafting", private.currentOperationName, "craftPriceMethod"))
+					:SetDisabled(TSM.Operations.HasRelationship("Crafting", private.currentOperationName, "craftPriceMethod"))
 					:SetScript("OnValueChanged", private.CraftPriceToggleOnValueChanged)
-					:SetTooltip(SETTING_TOOLTIPS.craftPriceMethodToggle)
 				)
 			)
 		)
@@ -91,11 +78,11 @@ function private.GetCraftingOperationSettings(operationName)
 
 	if operation.minProfit ~= "" then
 		frame:GetElement("restockQuantity.content.minProfitToggle"):SetMargin(0, 0, 0, 12)
-		frame:GetElement("restockQuantity"):AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("minProfit", L["Min profit amount"], nil, nil, nil, SETTING_TOOLTIPS.minProfitValue))
+		frame:GetElement("restockQuantity"):AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("minProfit", L["Min profit amount"]))
 	end
 	if operation.craftPriceMethod ~= "" then
 		frame:GetElement("priceSettings.content.craftPriceMethodToggle"):SetMargin(0, 0, 0, 12)
-		frame:GetElement("priceSettings"):AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("craftPriceMethod", L["Craft Value"], CRAFT_VALUE_VALIDATE_CONTEXT, private.settings.defaultCraftPriceMethod, nil, SETTING_TOOLTIPS.craftPriceMethodValue))
+		frame:GetElement("priceSettings"):AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("craftPriceMethod", L["Craft Value"], CRAFT_VALUE_VALIDATE_CONTEXT, TSM.db.global.craftingOptions.defaultCraftPriceMethod))
 	end
 
 	return frame
@@ -108,16 +95,13 @@ end
 -- ============================================================================
 
 function private.MinProfitToggleOnValueChanged(toggle, value)
-	local operation = Operation.GetSettings("Crafting", private.currentOperationName)
-	if value then
-		Operation.Reset("Crafting", private.currentOperationName, "minProfit")
-	else
-		operation.minProfit = ""
-	end
+	local operation = TSM.Operations.GetSettings("Crafting", private.currentOperationName)
+	local defaultValue = TSM.Operations.GetSettingDefault("Crafting", "minProfit")
+	operation.minProfit = value and defaultValue or ""
 	local settingsFrame = toggle:GetParentElement():GetParentElement()
 	if value then
 		settingsFrame:GetElement("minProfitToggle"):SetMargin(0, 0, 0, 12)
-		settingsFrame:GetParentElement():AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("minProfit", L["Min profit amount"], nil, nil, nil, SETTING_TOOLTIPS.minProfitValue))
+		settingsFrame:GetParentElement():AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("minProfit", L["Min profit amount"]))
 	else
 		settingsFrame:GetElement("minProfitToggle"):SetMargin(0, 0, 0, 0)
 		settingsFrame:RemoveChild(settingsFrame:GetElement("minProfit"))
@@ -126,12 +110,12 @@ function private.MinProfitToggleOnValueChanged(toggle, value)
 end
 
 function private.CraftPriceToggleOnValueChanged(toggle, value)
-	local operation = Operation.GetSettings("Crafting", private.currentOperationName)
-	operation.craftPriceMethod = value and private.settings.defaultCraftPriceMethod or ""
+	local operation = TSM.Operations.GetSettings("Crafting", private.currentOperationName)
+	operation.craftPriceMethod = value and TSM.db.global.craftingOptions.defaultCraftPriceMethod or ""
 	local settingsFrame = toggle:GetParentElement():GetParentElement()
 	if value then
 		settingsFrame:GetElement("craftPriceMethodToggle"):SetMargin(0, 0, 0, 12)
-		settingsFrame:GetParentElement():AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("craftPriceMethod", L["Craft Value"], CRAFT_VALUE_VALIDATE_CONTEXT, private.settings.defaultCraftPriceMethod, nil, SETTING_TOOLTIPS.craftPriceMethodValue))
+		settingsFrame:GetParentElement():AddChild(TSM.MainUI.Operations.CreateLinkedPriceInput("craftPriceMethod", L["Craft Value"], CRAFT_VALUE_VALIDATE_CONTEXT, TSM.db.global.craftingOptions.defaultCraftPriceMethod))
 	else
 		settingsFrame:GetElement("craftPriceMethodToggle"):SetMargin(0, 0, 0, 0)
 		settingsFrame:RemoveChild(settingsFrame:GetElement("craftPriceMethod"))

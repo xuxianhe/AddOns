@@ -206,6 +206,13 @@ local function cd(spellId, count)
 	elseif stage == 2 then
 		coilCount = coilCount - 1 -- there's no before the first coil phase like in p3
 	end
+	if not timers[stage] then
+		mod:Error("Invalid stage ".. tostring(stage))
+		return 0
+	elseif not timers[stage][spellId] then
+		mod:Error("Invalid spellId ".. tostring(spellId))
+		return 0
+	end
 	return timers[stage][spellId][coilCount] and timers[stage][spellId][coilCount][count]
 end
 
@@ -998,7 +1005,7 @@ do
 		self:Message(args.spellId, "cyan", CL.onboss:format(CL.shield))
 		self:PlaySound(args.spellId, "warning") -- immune
 
-		self:CDBar(1214369, self:Mythic() and 8.6 or 9.6) -- TOTAL DESTRUCTION!!!
+		self:CDBar(1214369, self:Mythic() and 8.6 or 9.6, L.total_destruction) -- TOTAL DESTRUCTION!!!
 	end
 	function mod:ArmageddonClassPlatingRemoved(args)
 		if args.amount == 0 then
@@ -1012,7 +1019,7 @@ function mod:TotalDestruction(args)
 	self:StopBar(L.total_destruction)
 	self:Message(args.spellId, "yellow", CL.casting:format(L.total_destruction))
 	self:PlaySound(args.spellId, "alert")
-	self:CastBar(args.spellId, self:Mythic() and 27.6 or 33)
+	self:CastBar(args.spellId, self:Mythic() and 27.6 or 33, L.total_destruction)
 end
 
 function mod:TotalDestructionRemoved(args)

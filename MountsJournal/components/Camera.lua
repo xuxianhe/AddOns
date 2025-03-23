@@ -1,4 +1,5 @@
-local mounts, journal, math = MountsJournal, MountsJournalFrame, math
+local _, ns = ...
+local mounts, journal, math = ns.mounts, ns.journal, math
 
 
 journal:on("SET_ACTIVE_CAMERA", function(self, activeCamera)
@@ -263,4 +264,8 @@ journal:on("SET_ACTIVE_CAMERA", function(self, activeCamera)
 		self.xOffset = 0
 		self.yOffset = 80
 	end
+
+	self:off("JOURNAL_RESIZED.ACTIVE_CAMERA"):on("JOURNAL_RESIZED.ACTIVE_CAMERA", function()
+		activeCamera:setMaxOffsets()
+	end)
 end)

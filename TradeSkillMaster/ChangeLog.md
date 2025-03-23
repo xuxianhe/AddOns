@@ -1,5 +1,6 @@
-## v4.14.14 Changes
+## v4.13.22 Changes
 
-* [Classic] Fixed error opening professions from previous version
+* [Cata] Updated for 4.4.0
+* [Classic] Updated for 1.15.2
 
 [Known Issues](https://support.tradeskillmaster.com/en_US/known_issues)

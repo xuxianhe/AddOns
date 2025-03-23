@@ -5,10 +5,10 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local MainUI = TSM:NewPackage("MainUI") ---@type AddonPackage
-local UIElements = TSM.LibTSMUI:Include("Util.UIElements")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
-local AppHelper = TSM.LibTSMApp:Include("Service.AppHelper")
+local MainUI = TSM:NewPackage("MainUI")
+local Settings = TSM.Include("Service.Settings")
+local UIElements = TSM.Include("UI.UIElements")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
 	settings = nil,
 	topLevelPages = {},
@@ -22,13 +22,9 @@ local MIN_FRAME_SIZE = { width = 720, height = 588 }
 -- Module Functions
 -- ============================================================================
 
-function MainUI.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function MainUI.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("global", "mainUIContext", "frame")
-		:AddKey("global", "coreOptions", "regionWide")
-		:AddKey("global", "appearanceOptions", "showTotalMoney")
-		:AddKey("global", "internalData", "warbankMoney")
-		:AddKey("sync", "internalData", "money")
 end
 
 function MainUI.OnDisable()
@@ -69,8 +65,8 @@ function private.CreateMainFrame()
 		:SetSettingsContext(private.settings, "frame")
 		:SetMinResize(MIN_FRAME_SIZE.width, MIN_FRAME_SIZE.height)
 		:SetStrata("HIGH")
-		:AddPlayerGold(private.settings)
-		:AddAppStatusIcon(AppHelper.GetRegion(), AppHelper.GetLastSync(), TSM.AuctionDB.GetAppDataUpdateTimes())
+		:AddPlayerGold()
+		:AddAppStatusIcon()
 		:SetScript("OnHide", private.BaseFrameOnHide)
 	for _, info in ipairs(private.topLevelPages) do
 		frame:AddNavButton(info.name, info.callback)

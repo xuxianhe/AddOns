@@ -5,13 +5,14 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local TaskListUI = TSM.UI:NewPackage("TaskListUI") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local Event = TSM.LibTSMWoW:Include("Service.Event")
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local ChatMessage = TSM.LibTSMService:Include("UI.ChatMessage")
-local UIElements = TSM.LibTSMUI:Include("Util.UIElements")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
+local TaskListUI = TSM.UI:NewPackage("TaskListUI")
+local L = TSM.Include("Locale").GetTable()
+local Event = TSM.Include("Util.Event")
+local TempTable = TSM.Include("Util.TempTable")
+local Log = TSM.Include("Util.Log")
+local Settings = TSM.Include("Service.Settings")
+local UIElements = TSM.Include("UI.UIElements")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
 	settings = nil,
 	frame = nil,
@@ -28,11 +29,10 @@ local private = {
 -- Module Functions
 -- ============================================================================
 
-function TaskListUI.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function TaskListUI.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("global", "taskListUIContext", "frame")
 		:AddKey("global", "taskListUIContext", "isOpen")
-		:AddKey("global", "appearanceOptions", "taskListBackgroundLock")
 	TSM.TaskList.SetUpdateCallback(private.OnTaskListUpdate)
 	if not private.settings.isOpen then
 		private.didAutoShow = true
@@ -54,7 +54,7 @@ function TaskListUI.Toggle()
 		private.frame:Hide()
 	else
 		if TSM.TaskList.GetNumTasks() == 0 then
-			ChatMessage.PrintUser(L["Your task list is currently empty."])
+			Log.PrintUser(L["Your task list is currently empty."])
 			return
 		end
 		private.settings.isOpen = true
@@ -77,8 +77,8 @@ end
 
 function TaskListUI.UpdateFrame()
 	local mouseOver = private.frame:_GetBaseFrame():IsMouseOver() and true or false
-	private.frame:SetRoundedBackgroundColor((mouseOver or private.settings.taskListBackgroundLock) and "FRAME_BG%50" or nil)
-	private.frame:SetBorderColor((mouseOver or private.settings.taskListBackgroundLock) and "ACTIVE_BG%50" or nil, 2)
+	private.frame:SetRoundedBackgroundColor((mouseOver or TSM.db.global.appearanceOptions.taskListBackgroundLock) and "FRAME_BG%50" or nil)
+	private.frame:SetBorderColor((mouseOver or TSM.db.global.appearanceOptions.taskListBackgroundLock) and "ACTIVE_BG%50" or nil, 2)
 	private.frame:Draw()
 end
 
@@ -283,7 +283,7 @@ function private.BaseFrameOnHide(frame)
 end
 
 function private.CloseBtnOnClick(button)
-	ChatMessage.PrintUser(L["Hiding the TSM Task List UI. Type '/tsm tasklist' to reopen it."])
+	Log.PrintUser(L["Hiding the TSM Task List UI. Type '/tsm tasklist' to reopen it."])
 	private.settings.isOpen = false
 	TaskListUI.Toggle()
 end

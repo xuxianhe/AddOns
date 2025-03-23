@@ -7,10 +7,6 @@ local RSEventDB = private.NewLib("RareScannerEventDB")
 
 -- RareScanner database libraries
 local RSMapDB = private.ImportLib("RareScannerMapDB")
-local RSProfessionDB = private.ImportLib("RareScannerProfessionDB")
-
--- Locales
-local AL = LibStub("AceLocale-3.0"):GetLocale("RareScanner");
 
 -- RareScanner libraries
 local RSLogger = private.ImportLib("RareScannerLogger")
@@ -107,7 +103,7 @@ function RSEventDB.GetInternalEventInfo(eventID)
 	return nil
 end
 
-function RSEventDB.GetInternalEventInfoByMapID(eventID, mapID)
+local function GetInternalEventInfoByMapID(eventID, mapID)
 	if (eventID and mapID) then
 		if (RSEventDB.IsInternalEventMultiZone(eventID)) then
 			for internalMapID, eventInfo in pairs (RSEventDB.GetInternalEventInfo(eventID).zoneID) do
@@ -126,7 +122,7 @@ end
 
 function RSEventDB.GetInternalEventCoordinates(eventID, mapID)
 	if (eventID and mapID) then
-		local eventInfo = RSEventDB.GetInternalEventInfoByMapID(eventID, mapID)
+		local eventInfo = GetInternalEventInfoByMapID(eventID, mapID)
 		if (eventInfo) then
 			return RSUtils.Lpad(eventInfo.x, 4, '0'), RSUtils.Lpad(eventInfo.y, 4, '0')
 		end
@@ -137,7 +133,7 @@ end
 
 function RSEventDB.GetInternalEventOverlay(eventID, mapID)
 	if (eventID and mapID) then
-		local eventInfo = RSEventDB.GetInternalEventInfoByMapID(eventID, mapID)
+		local eventInfo = GetInternalEventInfoByMapID(eventID, mapID)
 		if (eventInfo) then
 			return eventInfo.overlay
 		end
@@ -248,10 +244,6 @@ function RSEventDB.InitEventNamesDB()
 	end
 end
 
-function RSEventDB.GetAllEventNames()
-	return private.dbglobal.event_names[GetLocale()]
-end
-
 function RSEventDB.SetEventName(eventID, name)
 	if (eventID and name) then
 		private.dbglobal.event_names[GetLocale()][eventID] = name
@@ -266,11 +258,6 @@ function RSEventDB.GetEventName(eventID)
 			local eventName = private.dbglobal.rare_names[GetLocale()][eventID]
 			RSEventDB.SetEventName(eventID, eventName)
 			return eventName
-		elseif (AL[string.format("EVENT_%s", eventID)] ~= string.format("EVENT_%s", eventID)) then
-			return AL[string.format("EVENT_%s", eventID)]
-		elseif (RSUtils.Contains(RSConstants.EVENTS_SCRAP_HEAP, eventID)) then
-			private.dbglobal.object_names[GetLocale()][eventID] = AL["EVENTS_SCRAP_HEAP"]
-			return AL["EVENTS_SCRAP_HEAP"]
 		end
 	end
 
@@ -284,10 +271,7 @@ function RSEventDB.GetActiveEventIDsWithNamesByMapID(mapID)
 	if (RSUtils.GetTableLength(eventIDs)) then
 		eventIDsWithNames = {}
 		for _, eventID in ipairs(eventIDs) do
-			local eventInfo = RSEventDB.GetInternalEventInfo(eventID)
-			if (eventInfo and eventInfo.prof and not RSProfessionDB.HasPlayerProfession(eventInfo.prof)) then
-				-- Wrong profession
-			elseif (RSEventDB.IsDisabledEvent(eventID)) then
+			if (RSEventDB.IsDisabledEvent(eventID)) then
 				-- World event disabled
 			else
 				local eventName = RSEventDB.GetEventName(eventID)

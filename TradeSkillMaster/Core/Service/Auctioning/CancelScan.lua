@@ -5,32 +5,23 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local CancelScan = TSM.Auctioning:NewPackage("CancelScan") ---@type AddonPackage
-local ClientInfo = TSM.LibTSMWoW:Include("Util.ClientInfo")
-local L = TSM.Locale.GetTable()
-local Database = TSM.LibTSMUtil:Include("Database")
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local ItemString = TSM.LibTSMTypes:Include("Item.ItemString")
-local Log = TSM.LibTSMUtil:Include("Util.Log")
-local AuctioningOperation = TSM.LibTSMSystem:Include("AuctioningOperation")
-local Group = TSM.LibTSMTypes:Include("Group")
-local GroupOperation = TSM.LibTSMTypes:Include("GroupOperation")
-local ChatMessage = TSM.LibTSMService:Include("UI.ChatMessage")
-local Threading = TSM.LibTSMTypes:Include("Threading")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
-local Auction = TSM.LibTSMService:Include("Auction")
-local AuctionHouseWrapper = TSM.LibTSMWoW:Include("API.AuctionHouseWrapper")
+local CancelScan = TSM.Auctioning:NewPackage("CancelScan")
+local Environment = TSM.Include("Environment")
+local L = TSM.Include("Locale").GetTable()
+local Database = TSM.Include("Util.Database")
+local TempTable = TSM.Include("Util.TempTable")
+local ItemString = TSM.Include("Util.ItemString")
+local Log = TSM.Include("Util.Log")
+local Threading = TSM.Include("Service.Threading")
+local ItemInfo = TSM.Include("Service.ItemInfo")
+local AuctionTracking = TSM.Include("Service.AuctionTracking")
+local AuctionHouseWrapper = TSM.Include("Service.AuctionHouseWrapper")
 local private = {
-	settings = nil,
 	scanThreadId = nil,
 	queueDB = nil,
-	currentRowQuery = nil,
-	statusQuery = nil,
 	itemList = {},
 	usedAuctionIndex = {},
 	subRowsTemp = {},
-	listedAuctionTemp = {},
-	scanResultTemp = {},
 }
 
 
@@ -39,10 +30,8 @@ local private = {
 -- Module Functions
 -- ============================================================================
 
-function CancelScan.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
-		:AddKey("global", "auctioningOptions", "cancelWithBid")
-		:AddKey("global", "auctioningOptions", "disableInvalidMsg")
+function CancelScan.OnInitialize()
+	-- initialize thread
 	private.scanThreadId = Threading.New("CANCEL_SCAN", private.ScanThread)
 	private.queueDB = Database.NewSchema("AUCTIONING_CANCEL_QUEUE")
 		:AddNumberField("auctionId")
@@ -61,47 +50,45 @@ function CancelScan.OnInitialize(settingsDB)
 		:AddIndex("auctionId")
 		:AddIndex("itemString")
 		:Commit()
-	-- Create our queries
-	private.currentRowQuery = private.queueDB:NewQuery()
-		:Custom(private.NextProcessRowQueryHelper)
-		:OrderBy("auctionId", false)
-	private.statusQuery = private.queueDB:NewQuery()
 end
 
 function CancelScan.Prepare()
 	return private.scanThreadId
 end
 
-function CancelScan.CurrentRowPublisher()
-	return private.currentRowQuery:Publisher()
-		:MapToValue(private.currentRowQuery)
-		:MapWithMethod("GetFirstResult")
+function CancelScan.GetCurrentRow()
+	return private.queueDB:NewQuery()
+		:Custom(private.NextProcessRowQueryHelper)
+		:OrderBy("auctionId", false)
+		:GetFirstResultAndRelease()
 end
 
-function CancelScan.StatusQueryPublisher()
-	return private.statusQuery:Publisher()
-		:MapToValue(private.statusQuery)
-		:MapWithFunction(private.StatusQueryToQueueStatus)
+function CancelScan.GetStatus()
+	return TSM.Auctioning.Util.GetQueueStatus(private.queueDB:NewQuery())
 end
 
 function CancelScan.DoProcess()
-	local cancelRow = private.currentRowQuery:GetFirstResult()
+	local cancelRow = CancelScan.GetCurrentRow()
 	local cancelItemString = cancelRow:GetField("itemString")
-	local query = private.NewAuctionsQuery(cancelItemString, cancelItemString)
+	local query = AuctionTracking.CreateQueryUnsoldItem(cancelItemString)
 		:Equal("stackSize", cancelRow:GetField("stackSize"))
+		:VirtualField("autoBaseItemString", "string", TSM.Groups.TranslateItemString, "itemString")
+		:Equal("autoBaseItemString", cancelItemString)
 		:Custom(private.ProcessQueryHelper, cancelRow)
+		:OrderBy("auctionId", false)
 		:Select("auctionId", "autoBaseItemString", "currentBid", "buyout")
-	if not private.settings.cancelWithBid then
+	if not TSM.db.global.auctioningOptions.cancelWithBid then
 		query:Equal("highBidder", "")
 	end
 	local auctionId, itemString, currentBid, buyout = query:GetFirstResultAndRelease()
 	if auctionId then
-		local usedAuctionIndex = ClientInfo.IsRetail() and auctionId or (itemString..buyout..currentBid..auctionId)
+		local usedAuctionIndex = Environment.IsRetail() and auctionId or (itemString..buyout..currentBid..auctionId)
 		private.usedAuctionIndex[usedAuctionIndex] = true
 		local result = AuctionHouseWrapper.CancelAuction(auctionId)
 		local isRowDone = cancelRow:GetField("numProcessed") + 1 == cancelRow:GetField("numStacks")
 		cancelRow:SetField("numProcessed", cancelRow:GetField("numProcessed") + 1)
 			:Update()
+		cancelRow:Release()
 		if result and isRowDone then
 			-- update the log
 			TSM.Auctioning.Log.UpdateRowByIndex(auctionId, "state", "CANCELLED")
@@ -112,15 +99,17 @@ function CancelScan.DoProcess()
 	-- we couldn't find this item, so mark this cancel as failed and we'll try again later
 	cancelRow:SetField("numProcessed", cancelRow:GetField("numProcessed") + 1)
 		:Update()
+	cancelRow:Release()
 	return false, false
 end
 
 function CancelScan.DoSkip()
-	local cancelRow = private.currentRowQuery:GetFirstResult()
+	local cancelRow = CancelScan.GetCurrentRow()
 	local auctionId = cancelRow:GetField("auctionId")
 	cancelRow:SetField("numProcessed", cancelRow:GetField("numProcessed") + 1)
 		:SetField("numConfirmed", cancelRow:GetField("numConfirmed") + 1)
 		:Update()
+	cancelRow:Release()
 	-- update the log
 	TSM.Auctioning.Log.UpdateRowByIndex(auctionId, "state", "SKIPPED")
 end
@@ -178,11 +167,10 @@ function private.ScanThread(auctionScan, groupList)
 	-- generate the list of items we want to scan for
 	wipe(private.itemList)
 	local processedItems = TempTable.Acquire()
-	local query = Auction.NewIndexQuery()
-		:Equal("isSold", false)
-		:VirtualField("autoBaseItemString", "string", Group.TranslateItemString, "itemString")
+	local query = AuctionTracking.CreateQueryUnsold()
+		:VirtualField("autoBaseItemString", "string", TSM.Groups.TranslateItemString, "itemString")
 		:Select("autoBaseItemString")
-	if not private.settings.cancelWithBid then
+	if not TSM.db.global.auctioningOptions.cancelWithBid then
 		query:Equal("highBidder", "")
 	end
 	for _, itemString in query:Iterator() do
@@ -205,7 +193,7 @@ function private.ScanThread(auctionScan, groupList)
 		query2:AddCustomFilter(private.QueryBuyoutFilter)
 	end
 	if not auctionScan:ScanQueriesThreaded() then
-		ChatMessage.PrintUser(L["TSM failed to scan some auctions. Please rerun the scan."])
+		Log.PrintUser(L["TSM failed to scan some auctions. Please rerun the scan."])
 	end
 end
 
@@ -216,13 +204,13 @@ end
 -- ============================================================================
 
 function private.CanCancelItem(itemString, groupList)
-	local groupPath = Group.GetPathByItem(itemString)
+	local groupPath = TSM.Groups.GetPathByItem(itemString)
 	if not groupPath or not tContains(groupList, groupPath) then
 		return false
 	end
 
 	local hasValidOperation, hasInvalidOperation = false, false
-	for _, operationName, operationSettings in GroupOperation.OperationIterator(groupPath, "Auctioning") do
+	for _, operationName, operationSettings in TSM.Operations.GroupOperationIterator("Auctioning", groupPath) do
 		local isValid = private.IsOperationValid(itemString, operationName, operationSettings)
 		if isValid == true then
 			hasValidOperation = true
@@ -237,42 +225,42 @@ function private.CanCancelItem(itemString, groupList)
 end
 
 function private.IsOperationValid(itemString, operationName, operationSettings)
-	local errType, errArg, errArg2 = AuctioningOperation.ValidateForCanceling(itemString, operationSettings)
-	if not errType then
-		return true
-	end
-	TSM.Auctioning.Log.AddEntry(itemString, operationName, errType, "", 0, 0)
-	if errType == AuctioningOperation.RESULT.INVALID.ITEM_GROUP then
-		if not private.settings.disableInvalidMsg then
-			private.PrintInvalidGroupError(itemString, errType, errArg, errArg2)
-		end
-		return false
-	elseif errType == AuctioningOperation.RESULT.WONT_CANCEL.DISABLED then
-		-- Ignore this operation
+	if not operationSettings.cancelUndercut and not operationSettings.cancelRepost then
+		-- canceling is disabled, so ignore this operation
+		TSM.Auctioning.Log.AddEntry(itemString, operationName, "cancelDisabled", "", 0, 0)
 		return nil
-	else
-		error("Unknown error: "..tostring(errType))
 	end
-end
 
-function private.PrintInvalidGroupError(itemString, errType, errArg, errArg2)
-	local itemLink = ItemInfo.GetLink(itemString)
-	if errType == AuctioningOperation.RESULT.INVALID.ITEM_GROUP.MIN_PRICE then
-		ChatMessage.PrintfUser(L["Did not cancel %s because your minimum price (%s) is invalid. Check your settings."], itemLink, errArg)
-	elseif errType == AuctioningOperation.RESULT.INVALID.ITEM_GROUP.MAX_PRICE then
-		ChatMessage.PrintfUser(L["Did not cancel %s because your maximum price (%s) is invalid. Check your settings."], itemLink, errArg)
-	elseif errType == AuctioningOperation.RESULT.INVALID.ITEM_GROUP.NORMAL_PRICE then
-		ChatMessage.PrintfUser(L["Did not cancel %s because your normal price (%s) is invalid. Check your settings."], itemLink, errArg)
-	elseif errType == AuctioningOperation.RESULT.INVALID.ITEM_GROUP.CANCEL_REPOST_THRESHOLD then
-		ChatMessage.PrintfUser(L["Did not cancel %s because your cancel to repost threshold (%s) is invalid. Check your settings."], itemLink, errArg)
-	elseif errType == AuctioningOperation.RESULT.INVALID.ITEM_GROUP.UNDERCUT then
-		ChatMessage.PrintfUser(L["Did not cancel %s because your undercut (%s) is invalid. Check your settings."], itemLink, errArg)
-	elseif errType == AuctioningOperation.RESULT.INVALID.ITEM_GROUP.MAX_BELOW_MIN then
-		ChatMessage.PrintfUser(L["Did not cancel %s because your maximum price (%s) is lower than your minimum price (%s). Check your settings."], itemLink, errArg, errArg2)
-	elseif errType == AuctioningOperation.RESULT.INVALID.ITEM_GROUP.NORMAL_BELOW_MIN then
-		ChatMessage.PrintfUser(L["Did not cancel %s because your normal price (%s) is lower than your minimum price (%s). Check your settings."], itemLink, errArg, errArg2)
+	local errMsg = nil
+	local minPrice = TSM.Auctioning.Util.GetPrice("minPrice", operationSettings, itemString)
+	local normalPrice = TSM.Auctioning.Util.GetPrice("normalPrice", operationSettings, itemString)
+	local maxPrice = TSM.Auctioning.Util.GetPrice("maxPrice", operationSettings, itemString)
+	local undercut = TSM.Auctioning.Util.GetPrice("undercut", operationSettings, itemString)
+	local cancelRepostThreshold = TSM.Auctioning.Util.GetPrice("cancelRepostThreshold", operationSettings, itemString)
+	if not minPrice then
+		errMsg = format(L["Did not cancel %s because your minimum price (%s) is invalid. Check your settings."], ItemInfo.GetLink(itemString), operationSettings.minPrice)
+	elseif not maxPrice then
+		errMsg = format(L["Did not cancel %s because your maximum price (%s) is invalid. Check your settings."], ItemInfo.GetLink(itemString), operationSettings.maxPrice)
+	elseif not normalPrice then
+		errMsg = format(L["Did not cancel %s because your normal price (%s) is invalid. Check your settings."], ItemInfo.GetLink(itemString), operationSettings.normalPrice)
+	elseif operationSettings.cancelRepost and not cancelRepostThreshold then
+		errMsg = format(L["Did not cancel %s because your cancel to repost threshold (%s) is invalid. Check your settings."], ItemInfo.GetLink(itemString), operationSettings.cancelRepostThreshold)
+	elseif not undercut then
+		errMsg = format(L["Did not cancel %s because your undercut (%s) is invalid. Check your settings."], ItemInfo.GetLink(itemString), operationSettings.undercut)
+	elseif maxPrice < minPrice then
+		errMsg = format(L["Did not cancel %s because your maximum price (%s) is lower than your minimum price (%s). Check your settings."], ItemInfo.GetLink(itemString), operationSettings.maxPrice, operationSettings.minPrice)
+	elseif normalPrice < minPrice then
+		errMsg = format(L["Did not cancel %s because your normal price (%s) is lower than your minimum price (%s). Check your settings."], ItemInfo.GetLink(itemString), operationSettings.normalPrice, operationSettings.minPrice)
+	end
+
+	if errMsg then
+		if not TSM.db.global.auctioningOptions.disableInvalidMsg then
+			Log.PrintUser(errMsg)
+		end
+		TSM.Auctioning.Log.AddEntry(itemString, operationName, "invalidItemGroup", "", 0, 0)
+		return false
 	else
-		error("Unknown error type: "..tostring(errType))
+		return true
 	end
 end
 
@@ -281,32 +269,18 @@ function private.QueryBuyoutFilter(_, row)
 	return (itemBuyout and itemBuyout == 0) or (minItemBuyout and minItemBuyout == 0)
 end
 
-function private.NewAuctionsQuery(itemString, autoBaseItemString)
-	local itemStringField = nil
-	if itemString == ItemString.GetBaseFast(itemString) then
-		itemStringField = "baseItemString"
-	elseif ItemString.IsLevel(itemString) then
-		itemStringField = "levelItemString"
-	else
-		itemStringField = "itemString"
-	end
-	return Auction.NewIndexQuery()
-		:Equal("isSold", false)
-		:Equal(itemStringField, itemString)
-		:VirtualField("autoBaseItemString", "string", Group.TranslateItemString, "itemString")
-		:Equal("autoBaseItemString", autoBaseItemString)
-		:OrderBy("auctionId", false)
-end
-
 function private.AuctionScanOnQueryDone(_, query)
 	TSM.Auctioning.Log.SetQueryUpdatesPaused(true)
 	for itemString in query:ItemIterator() do
-		local groupPath = Group.GetPathByItem(itemString)
+		local groupPath = TSM.Groups.GetPathByItem(itemString)
 		if groupPath then
 			local baseItemString = ItemString.GetBaseFast(itemString)
 			local levelItemString = ItemString.ToLevel(itemString)
 			local isLevelItemString = itemString == levelItemString and itemString ~= baseItemString
-			local auctionsDBQuery = private.NewAuctionsQuery(isLevelItemString and baseItemString or itemString, itemString)
+			local auctionsDBQuery = AuctionTracking.CreateQueryUnsoldItem(isLevelItemString and baseItemString or itemString)
+				:VirtualField("autoBaseItemString", "string", TSM.Groups.TranslateItemString, "itemString")
+				:Equal("autoBaseItemString", itemString)
+				:OrderBy("auctionId", false)
 			for _, auctionsDBRow in auctionsDBQuery:IteratorAndRelease() do
 				private.GenerateCancels(auctionsDBRow, itemString, groupPath, query)
 			end
@@ -319,75 +293,145 @@ end
 
 function private.GenerateCancels(auctionsDBRow, itemString, groupPath, query)
 	local isHandled = false
-	for _, operationName, operationSettings in GroupOperation.OperationIterator(groupPath, "Auctioning") do
+	for _, operationName, operationSettings in TSM.Operations.GroupOperationIterator("Auctioning", groupPath) do
 		if not isHandled and private.IsOperationValid(itemString, operationName, operationSettings) then
 			assert(not next(private.subRowsTemp))
 			TSM.Auctioning.Util.GetFilteredSubRows(query, itemString, operationSettings, private.subRowsTemp)
-			assert(not next(private.listedAuctionTemp))
-			private.GetListedAuction(auctionsDBRow, private.listedAuctionTemp)
-			local handled, result, seller = private.GenerateCancel(private.listedAuctionTemp, itemString, operationName, operationSettings, private.subRowsTemp)
-			local itemBuyout = private.listedAuctionTemp.itemBuyout
-			local auctionId = private.listedAuctionTemp.auctionId or 0
-			wipe(private.listedAuctionTemp)
+			local handled, logReason, itemBuyout, seller, auctionId = private.GenerateCancel(auctionsDBRow, itemString, operationName, operationSettings, private.subRowsTemp)
 			wipe(private.subRowsTemp)
-			if result then
+			if logReason then
 				seller = seller or ""
-				TSM.Auctioning.Log.AddEntry(itemString, operationName, result, seller, itemBuyout, auctionId)
+				auctionId = auctionId or 0
+				TSM.Auctioning.Log.AddEntry(itemString, operationName, logReason, seller, itemBuyout, auctionId)
 			end
 			isHandled = isHandled or handled
 		end
 	end
 end
 
-function private.GetListedAuction(auctionsDBRow, resultTbl)
+function private.GenerateCancel(auctionsDBRow, itemString, operationName, operationSettings, subRows)
 	local auctionId, stackSize, currentBid, buyout, highBidder, duration = auctionsDBRow:GetFields("auctionId", "stackSize", "currentBid", "buyout", "highBidder", "duration")
-	resultTbl.auctionId = auctionId
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.AH_STACKS) then
-		resultTbl.itemBuyout = floor(buyout / stackSize)
-		resultTbl.itemBid = floor(currentBid / stackSize)
-	else
-		resultTbl.itemBuyout = buyout
-		resultTbl.itemBid = currentBid
+	local itemBuyout = Environment.HasFeature(Environment.FEATURES.AH_STACKS) and floor(buyout / stackSize) or buyout
+	local itemBid = Environment.HasFeature(Environment.FEATURES.AH_STACKS) and floor(currentBid / stackSize) or currentBid
+	if Environment.HasFeature(Environment.FEATURES.AH_STACKS) and operationSettings.matchStackSize and stackSize ~= TSM.Auctioning.Util.GetPrice("stackSize", operationSettings, itemString) then
+		return false
+	elseif not TSM.db.global.auctioningOptions.cancelWithBid and highBidder ~= "" then
+		-- Don't cancel an auction if it has a bid and we're set to not cancel those
+		return true, "cancelBid", itemBuyout, nil, auctionId
+	elseif not Environment.HasFeature(Environment.FEATURES.AH_STACKS) and C_AuctionHouse.GetCancelCost(auctionId) > GetMoney() then
+		return true, "cancelNoMoney", itemBuyout, nil, auctionId
 	end
-	resultTbl.stackSize = stackSize
-	resultTbl.duration = duration
-	resultTbl.hasBid = highBidder ~= "" and not private.settings.cancelWithBid
-	resultTbl.canAffordCancel = not ClientInfo.HasFeature(ClientInfo.FEATURES.C_AUCTION_HOUSE) or C_AuctionHouse.GetCancelCost(auctionId) <= GetMoney()
-end
 
-function private.GenerateCancel(listedAuction, itemString, operationName, operationSettings, subRows)
 	local lowestAuction = TempTable.Acquire()
 	if not TSM.Auctioning.Util.GetLowestAuction(subRows, itemString, operationSettings, lowestAuction) then
 		TempTable.Release(lowestAuction)
 		lowestAuction = nil
 	end
-	assert(not next(private.scanResultTemp))
-	TSM.Auctioning.Util.GetCancelScanResult(subRows, itemString, operationSettings, lowestAuction, private.scanResultTemp)
-	local handled, result = AuctioningOperation.MakeCancelDecision(itemString, operationSettings, lowestAuction, listedAuction, private.scanResultTemp)
-	wipe(private.scanResultTemp)
-	local seller = lowestAuction and lowestAuction.seller or nil
-	if lowestAuction then
+	local minPrice = TSM.Auctioning.Util.GetPrice("minPrice", operationSettings, itemString)
+	local normalPrice = TSM.Auctioning.Util.GetPrice("normalPrice", operationSettings, itemString)
+	local maxPrice = TSM.Auctioning.Util.GetPrice("maxPrice", operationSettings, itemString)
+	local resetPrice = TSM.Auctioning.Util.GetPrice("priceReset", operationSettings, itemString)
+	local cancelRepostThreshold = TSM.Auctioning.Util.GetPrice("cancelRepostThreshold", operationSettings, itemString)
+	local undercut = TSM.Auctioning.Util.GetPrice("undercut", operationSettings, itemString)
+	local aboveMax = TSM.Auctioning.Util.GetPrice("aboveMax", operationSettings, itemString)
+
+	if not lowestAuction then
+		-- all auctions which are posted (including ours) have been ignored, so check if we should cancel to repost higher
+		if operationSettings.cancelRepost and normalPrice - itemBuyout > cancelRepostThreshold then
+			private.AddToQueue(itemString, operationName, itemBid, itemBuyout, stackSize, duration, auctionId)
+			return true, "cancelRepost", itemBuyout, nil, auctionId
+		else
+			return false, "cancelNotUndercut", itemBuyout
+		end
+	elseif lowestAuction.hasInvalidSeller then
+		Log.PrintfUser(L["The seller name of the lowest auction for %s was not given by the server. Skipping this item."], ItemInfo.GetLink(itemString))
 		TempTable.Release(lowestAuction)
+		return false, "invalidSeller", itemBuyout
 	end
-	if result == AuctioningOperation.RESULT.INVALID.SELLER then
-		ChatMessage.PrintfUser(L["The seller name of the lowest auction for %s was not given by the server. Skipping this item."], ItemInfo.GetLink(itemString))
-	elseif result == AuctioningOperation.RESULT.CANCELING or result == AuctioningOperation.RESULT.CANCELING_EXCESS then
-		private.AddToQueue(itemString, operationName, listedAuction)
+
+	local shouldCancel, logReason = false, nil
+	local playerLowestItemBuyout, playerLowestAuctionId = TSM.Auctioning.Util.GetPlayerLowestBuyout(subRows, itemString, operationSettings)
+	local secondLowestBuyout = TSM.Auctioning.Util.GetNextLowestItemBuyout(subRows, itemString, lowestAuction, operationSettings)
+	local nonPlayerLowestAuctionId = Environment.IsRetail() and playerLowestItemBuyout and TSM.Auctioning.Util.GetLowestNonPlayerAuctionId(subRows, itemString, operationSettings, playerLowestItemBuyout)
+	if itemBuyout < minPrice and not lowestAuction.isBlacklist then
+		-- this auction is below the min price
+		if operationSettings.cancelRepost and resetPrice and itemBuyout < (resetPrice - cancelRepostThreshold) then
+			-- canceling to post at reset price
+			shouldCancel = true
+			logReason = "cancelReset"
+		else
+			logReason = "cancelBelowMin"
+		end
+	elseif lowestAuction.buyout < minPrice and not lowestAuction.isBlacklist then
+		-- lowest buyout is below min price, so do nothing
+		logReason = "cancelBelowMin"
+	elseif operationSettings.cancelUndercut and playerLowestItemBuyout and ((itemBuyout - undercut) > playerLowestItemBuyout or (Environment.IsRetail() and (itemBuyout - undercut) == playerLowestItemBuyout and auctionId ~= playerLowestAuctionId and auctionId < (nonPlayerLowestAuctionId or 0))) then
+		-- we've undercut this auction
+		shouldCancel = true
+		logReason = "cancelPlayerUndercut"
+	elseif TSM.Auctioning.Util.IsPlayerOnlySeller(subRows, itemString, operationSettings) then
+		-- we are the only auction
+		if operationSettings.cancelRepost and (normalPrice - itemBuyout) > cancelRepostThreshold then
+			-- we can repost higher
+			shouldCancel = true
+			logReason = "cancelRepost"
+		else
+			logReason = "cancelAtNormal"
+		end
+	elseif lowestAuction.isPlayer and secondLowestBuyout and secondLowestBuyout > maxPrice then
+		-- we are posted at the aboveMax price with no competition under our max price
+		if operationSettings.cancelRepost and operationSettings.aboveMax ~= "none" and (aboveMax - itemBuyout) > cancelRepostThreshold then
+			-- we can repost higher
+			shouldCancel = true
+			logReason = "cancelRepost"
+		else
+			logReason = "cancelAtAboveMax"
+		end
+	elseif lowestAuction.isPlayer then
+		-- we are the loewst auction
+		if operationSettings.cancelRepost and secondLowestBuyout and ((secondLowestBuyout - undercut) - lowestAuction.buyout) > cancelRepostThreshold then
+			-- we can repost higher
+			shouldCancel = true
+			logReason = "cancelRepost"
+		else
+			logReason = "cancelNotUndercut"
+		end
+	elseif not operationSettings.cancelUndercut then
+		-- we're undercut but not canceling undercut auctions
+	elseif lowestAuction.isWhitelist and itemBuyout == lowestAuction.buyout then
+		-- at whitelisted player price
+		logReason = "cancelAtWhitelist"
+	elseif not lowestAuction.isWhitelist then
+		-- we've been undercut by somebody not on our whitelist
+		shouldCancel = true
+		logReason = "cancelUndercut"
+	elseif itemBuyout ~= lowestAuction.buyout or itemBid ~= lowestAuction.bid then
+		-- somebody on our whitelist undercut us (or their bid is lower)
+		shouldCancel = true
+		logReason = "cancelWhitelistUndercut"
+	else
+		error("Should not get here")
 	end
-	return handled, result, seller
+
+	local seller = lowestAuction.seller
+	TempTable.Release(lowestAuction)
+	if shouldCancel then
+		private.AddToQueue(itemString, operationName, itemBid, itemBuyout, stackSize, duration, auctionId)
+	end
+	return shouldCancel, logReason, itemBuyout, seller, shouldCancel and auctionId or nil
 end
 
-function private.AddToQueue(itemString, operationName, listedAuction)
+function private.AddToQueue(itemString, operationName, itemBid, itemBuyout, stackSize, duration, auctionId)
 	private.queueDB:NewRow()
-		:SetField("auctionId", listedAuction.auctionId)
+		:SetField("auctionId", auctionId)
 		:SetField("itemString", itemString)
 		:SetField("operationName", operationName)
-		:SetField("bid", listedAuction.itemBid * listedAuction.stackSize)
-		:SetField("buyout", listedAuction.itemBuyout * listedAuction.stackSize)
-		:SetField("itemBid", listedAuction.itemBid)
-		:SetField("itemBuyout", listedAuction.itemBuyout)
-		:SetField("stackSize", listedAuction.stackSize)
-		:SetField("duration", listedAuction.duration)
+		:SetField("bid", itemBid * stackSize)
+		:SetField("buyout", itemBuyout * stackSize)
+		:SetField("itemBid", itemBid)
+		:SetField("itemBuyout", itemBuyout)
+		:SetField("stackSize", stackSize)
+		:SetField("duration", duration)
 		:SetField("numStacks", 1)
 		:SetField("numProcessed", 0)
 		:SetField("numConfirmed", 0)
@@ -396,7 +440,7 @@ function private.AddToQueue(itemString, operationName, listedAuction)
 end
 
 function private.ProcessQueryHelper(row, cancelRow)
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.AH_STACKS) then
+	if Environment.HasFeature(Environment.FEATURES.AH_STACKS) then
 		local auctionId, itemString, stackSize, currentBid, buyout = row:GetFields("auctionId", "autoBaseItemString", "stackSize", "currentBid", "buyout")
 		local itemBid = floor(currentBid / stackSize)
 		local itemBuyout = floor(buyout / stackSize)
@@ -413,8 +457,4 @@ end
 
 function private.NextProcessRowQueryHelper(row)
 	return row:GetField("numProcessed") < row:GetField("numStacks")
-end
-
-function private.StatusQueryToQueueStatus(query)
-	return TempTable.Acquire(TSM.Auctioning.Util.GetQueueStatus(query))
 end

@@ -1,13 +1,12 @@
-## Interface: 100105
-## Interface-Classic: 11403
-## Interface-BCC: 20504
-## Interface-WOTLKC: 30401
+## Interface: 110007
+## Interface-Classic: 11505
+## Interface-CATA: 40401
 ## Title: Lib: Recipes
 ## Notes: Library providing mappings between trade skill recipes, spells and created items
 ## Author: Warmexx [Neighbours]
-## Version: @project-version@
+## Version: v36-release
 ## LoadOnDemand: 1
-## X-Date: @project-date-iso@
+## X-Date: 2024-12-30T20:14:11Z
 ## X-Donate: PayPal:warmexx AT wow-neighbours DOT com
 ## X-Website: https://github.com/warmexx/librecipes-3-0
 ## X-Category: Library

@@ -1,5 +1,5 @@
-local addon = ...
-local util = MountsJournalUtil
+local addon, ns = ...
+local util = ns.util
 local mapValidTypes = {
 	[Enum.UIMapType.World] = true,
 	[Enum.UIMapType.Continent] = true,
@@ -33,7 +33,10 @@ function MJNavBarMixin:onLoad()
 		OnClick = function() self:setDefMap() end,
 	}
 	NavBar_Initialize(self, "MJNavButtonTemplate", homeData, self.home, self.overflow)
-	self.overflow:SetScript("OnClick", function(btn) self:dropDownToggleClick(btn) end)
+	self.home:SetPoint("LEFT", 3, 0)
+	self.overflow:SetPoint("LEFT", 3, 0)
+	self.overflow:SetScript("OnMouseDown", function(btn) self:dropDownToggleClick(btn) end)
+	self.overflow:SetScript("OnClick", nil)
 	self.overflow.listFunc = function(self)
 		local navBar = self:GetParent()
 		local list = {}
@@ -48,6 +51,8 @@ function MJNavBarMixin:onLoad()
 		return list
 	end
 	self:setDefMap()
+
+	self:on("JOURNAL_RESIZED", self.refresh)
 end
 
 
@@ -119,7 +124,7 @@ end
 
 
 function MJNavBarMixin:setMapID(mapID)
-	if mapID == self.mapID then return end
+	if not mapID or mapID == self.mapID then return end
 	self.mapID = mapID
 	self:refresh()
 	self:event("MAP_CHANGE")

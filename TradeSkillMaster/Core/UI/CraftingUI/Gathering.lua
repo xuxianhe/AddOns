@@ -5,14 +5,15 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Gathering = TSM.UI.CraftingUI:NewPackage("Gathering") ---@type AddonPackage
-local ClientInfo = TSM.LibTSMWoW:Include("Util.ClientInfo")
-local L = TSM.Locale.GetTable()
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local Table = TSM.LibTSMUtil:Include("Lua.Table")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
-local UIElements = TSM.LibTSMUI:Include("Util.UIElements")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
+local Gathering = TSM.UI.CraftingUI:NewPackage("Gathering")
+local Environment = TSM.Include("Environment")
+local L = TSM.Include("Locale").GetTable()
+local TempTable = TSM.Include("Util.TempTable")
+local Table = TSM.Include("Util.Table")
+local ItemInfo = TSM.Include("Service.ItemInfo")
+local Settings = TSM.Include("Service.Settings")
+local UIElements = TSM.Include("UI.UIElements")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
 	settings = nil,
 	frame = nil,
@@ -42,13 +43,13 @@ local SOURCE_TEXT_LIST = {
 	L["AH (Disenchanting)"],
 	L["AH (Crafting)"],
 }
-if not ClientInfo.HasFeature(ClientInfo.FEATURES.GUILD_BANK) then
+if not Environment.HasFeature(Environment.FEATURES.GUILD_BANK) then
 	Table.RemoveByValue(SOURCE_LIST, "guildBank")
 	Table.RemoveByValue(SOURCE_LIST, "altGuildBank")
 	Table.RemoveByValue(SOURCE_TEXT_LIST, L["Guild Bank"])
 	Table.RemoveByValue(SOURCE_TEXT_LIST, L["Alt Guild Bank"])
 end
-if ClientInfo.IsRetail() then
+if Environment.IsRetail() then
 	Table.RemoveByValue(SOURCE_LIST, "bank")
 	Table.RemoveByValue(SOURCE_TEXT_LIST, L["Bank"])
 end
@@ -60,8 +61,8 @@ assert(#SOURCE_LIST == #SOURCE_TEXT_LIST)
 -- Module Functions
 -- ============================================================================
 
-function Gathering.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function Gathering.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("global", "craftingUIContext", "gatheringDividedContainer")
 		:AddKey("global", "craftingUIContext", "gatheringScrollingTable")
 		:AddKey("profile", "gatheringOptions", "sources")
@@ -101,7 +102,7 @@ function private.GetGatheringFrame()
 				:SetTextColor("INDICATOR")
 				:SetText(L["Crafter"])
 			)
-			:AddChild(UIElements.New("ListDropdown", "crafterDropdown")
+			:AddChild(UIElements.New("SelectionDropdown", "crafterDropdown")
 				:SetHeight(24)
 				:SetMargin(0, 0, 0, 8)
 				:SetHintText(L["Select crafter"])
@@ -147,12 +148,48 @@ function private.GetGatheringFrame()
 				:SetJustifyH("CENTER")
 				:SetText(L["Materials to Gather"])
 			)
-			:AddChild(UIElements.New("GatheringScrollTable", "table")
-				:SetSettings(private.settings, "gatheringScrollingTable")
+			:AddChild(UIElements.New("QueryScrollingTable", "table")
+				:SetSettingsContext(private.settings, "gatheringScrollingTable")
+				:GetScrollingTableInfo()
+					:NewColumn("name")
+						:SetTitle(NAME)
+						:SetFont("ITEM_BODY3")
+						:SetJustifyH("LEFT")
+						:SetIconSize(12)
+						:SetTextInfo("itemString", UIUtils.GetDisplayItemName)
+						:SetIconInfo("itemString", ItemInfo.GetTexture)
+						:SetTooltipInfo("itemString")
+						:SetSortInfo("name")
+						:DisableHiding()
+						:Commit()
+					:NewColumn("sources")
+						:SetTitle(L["Sources"])
+						:SetFont("BODY_BODY3")
+						:SetJustifyH("LEFT")
+						:SetTextInfo("sourcesStr", private.MatsGetSourcesStrText)
+						:SetSortInfo("sourcesStr")
+						:Commit()
+					:NewColumn("have")
+						:SetTitle(L["Have"])
+						:SetFont("TABLE_TABLE1")
+						:SetJustifyH("RIGHT")
+						:SetTextInfo("numHave")
+						:SetSortInfo("numHave")
+						:Commit()
+					:NewColumn("need")
+						:SetTitle(NEED)
+						:SetFont("TABLE_TABLE1")
+						:SetJustifyH("RIGHT")
+						:SetTextInfo("numNeed")
+						:SetSortInfo("numNeed")
+						:Commit()
+					:Commit()
 				:SetQuery(TSM.Crafting.Gathering.CreateQuery()
 					:VirtualField("name", "string", ItemInfo.GetName, "itemString", "?")
-					:VirtualField("sourcesDisplayStr", "string", private.GetSourcesDisplayStr, "sourcesStr")
+					:OrderBy("name", true)
 				)
+				:SetSelectionDisabled(true)
+				:SetAutoReleaseQuery(true)
 			)
 			:AddChild(UIElements.New("HorizontalLine", "headerTopLine"))
 			:AddChild(UIElements.New("ActionButton", "openTaskListBtn")
@@ -167,7 +204,7 @@ function private.GetGatheringFrame()
 	return frame
 end
 
-function private.GetSourcesDisplayStr(str)
+function private.MatsGetSourcesStrText(str)
 	str = gsub(str, "/[^,]+", "")
 	for i = 1, #SOURCE_LIST do
 		str = gsub(str, SOURCE_LIST[i], SOURCE_TEXT_LIST[i])
@@ -198,11 +235,11 @@ function private.CreateSourceRows(frame)
 end
 
 function private.UpdateSourceRows(setupFrame)
-	if not ClientInfo.HasFeature(ClientInfo.FEATURES.GUILD_BANK) then
+	if not Environment.HasFeature(Environment.FEATURES.GUILD_BANK) then
 		Table.RemoveByValue(private.settings.sources, "guildBank")
 		Table.RemoveByValue(private.settings.sources, "altGuildBank")
 	end
-	if ClientInfo.IsRetail() then
+	if Environment.IsRetail() then
 		Table.RemoveByValue(private.settings.sources, "bank")
 	end
 	local texts = TempTable.Acquire()

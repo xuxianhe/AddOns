@@ -5,16 +5,15 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Auctions = TSM.Accounting:NewPackage("Auctions") ---@type AddonPackage
-local SmartMap = TSM.LibTSMUtil:IncludeClassType("SmartMap")
-local Database = TSM.LibTSMUtil:Include("Database")
-local CSV = TSM.LibTSMUtil:Include("Format.CSV")
-local String = TSM.LibTSMUtil:Include("Lua.String")
-local Log = TSM.LibTSMUtil:Include("Util.Log")
-local ItemString = TSM.LibTSMTypes:Include("Item.ItemString")
-local SessionInfo = TSM.LibTSMWoW:Include("Util.SessionInfo")
-local CustomString = TSM.LibTSMTypes:Include("CustomString")
-local Group = TSM.LibTSMTypes:Include("Group")
+local Auctions = TSM.Accounting:NewPackage("Auctions")
+local Database = TSM.Include("Util.Database")
+local CSV = TSM.Include("Util.CSV")
+local String = TSM.Include("Util.String")
+local Log = TSM.Include("Util.Log")
+local ItemString = TSM.Include("Util.ItemString")
+local Wow = TSM.Include("Util.Wow")
+local CustomPrice = TSM.Include("Service.CustomPrice")
+local Settings = TSM.Include("Service.Settings")
 local private = {
 	settings = nil,
 	db = nil,
@@ -22,8 +21,6 @@ local private = {
 	dataChanged = false,
 	statsQuery = nil,
 	statsTemp = {},
-	filteredItemStringSmartMap = nil,
-	filteredItemMode = "specific",
 }
 local COMBINE_TIME_THRESHOLD = 300 -- group expenses within 5 minutes together
 local REMOVE_OLD_THRESHOLD = 180 * 24 * 60 * 60 -- remove records over 6 months old
@@ -36,8 +33,8 @@ local CSV_KEYS = { "itemString", "stackSize", "quantity", "player", "time" }
 -- Module Functions
 -- ============================================================================
 
-function Auctions.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function Auctions.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("realm", "internalData", "csvCancelled")
 		:AddKey("realm", "internalData", "saveTimeCancels")
 		:AddKey("realm", "internalData", "csvExpired")
@@ -66,19 +63,21 @@ function Auctions.OnInitialize(settingsDB)
 		:Equal("baseItemString", Database.BoundQueryParam())
 		:GreaterThanOrEqual("time", Database.BoundQueryParam())
 
-	private.filteredItemStringSmartMap = SmartMap.New("string", "string", private.FilteredItemStringLookup)
-
 	private.db:BulkInsertStart()
-	for _, csvCancelled, realm in private.settings:AccessibleValueIterator("csvCancelled") do
-		local saveTimeCancels = private.settings:GetForScopeKey("saveTimeCancels", realm)
-		private.LoadData("cancel", csvCancelled, saveTimeCancels, realm == SessionInfo.GetRealmName())
+	for _, csvCancelled, realm, isConnected in private.settings:AccessibleValueIterator("csvCancelled") do
+		if isConnected or private.settings.regionWide then
+			local saveTimeCancels = private.settings:GetForScopeKey("saveTimeCancels", realm)
+			private.LoadData("cancel", csvCancelled, saveTimeCancels, realm == Wow.GetRealmName())
+		end
 	end
-	for _, csvExpired, realm in private.settings:AccessibleValueIterator("csvExpired") do
-		local saveTimeExpires = private.settings:GetForScopeKey("saveTimeExpires", realm)
-		private.LoadData("expire", csvExpired, saveTimeExpires, realm == SessionInfo.GetRealmName())
+	for _, csvExpired, realm, isConnected in private.settings:AccessibleValueIterator("csvExpired") do
+		if isConnected or private.settings.regionWide then
+			local saveTimeExpires = private.settings:GetForScopeKey("saveTimeExpires", realm)
+			private.LoadData("expire", csvExpired, saveTimeExpires, realm == Wow.GetRealmName())
+		end
 	end
 	private.db:BulkInsertEnd()
-	CustomString.InvalidateCache("NumExpires")
+	CustomPrice.OnSourceChange("NumExpires")
 end
 
 function Auctions.OnDisable()
@@ -150,18 +149,6 @@ end
 
 function Auctions.CreateQuery()
 	return private.db:NewQuery()
-		:VirtualSmartMapField("filteredItemString", private.filteredItemStringSmartMap, "itemString")
-		:LeftJoin(Group.GetItemDBForJoin(), "filteredItemString", "itemString")
-end
-
-function Auctions.AddSmartMap(query)
-	query:VirtualSmartMapField("filteredItemString", private.filteredItemStringSmartMap, "itemString")
-		:LeftJoin(Group.GetItemDBForJoin(), "filteredItemString", "itemString")
-end
-
-function Auctions.UpdateSmartMap(itemStringFilter)
-	private.filteredItemMode = itemStringFilter
-	private.filteredItemStringSmartMap:Invalidate()
 end
 
 function Auctions.RemoveOldData(days)
@@ -172,7 +159,7 @@ function Auctions.RemoveOldData(days)
 		:Equal("isCurrentRealm", true)
 		:DeleteAndRelease()
 	private.db:SetQueryUpdatesPaused(false)
-	CustomString.InvalidateCache("NumExpires")
+	CustomPrice.OnSourceChange("NumExpires")
 	return numRecords
 end
 
@@ -265,18 +252,6 @@ function private.InsertRecord(recordType, itemString, stackSize, timestamp)
 	end
 
 	if recordType == "expire" then
-		CustomString.InvalidateCache("NumExpires", itemString)
-	end
-end
-
-function private.FilteredItemStringLookup(itemString)
-	if private.filteredItemMode == "level" then
-		return ItemString.ToLevel(itemString)
-	elseif private.filteredItemMode == "base" then
-		return ItemString.GetBase(itemString)
-	elseif private.filteredItemMode == "specific" then
-		return itemString
-	else
-		error("Invalid item mode: "..tostring(private.filteredItemMode))
+		CustomPrice.OnSourceChange("NumExpires", itemString)
 	end
 end

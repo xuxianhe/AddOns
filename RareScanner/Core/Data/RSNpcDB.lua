@@ -7,7 +7,6 @@ local RSNpcDB = private.NewLib("RareScannerNpcDB")
 
 -- RareScanner database libraries
 local RSMapDB = private.ImportLib("RareScannerMapDB")
-local RSProfessionDB = private.ImportLib("RareScannerProfessionDB")
 
 -- RareScanner libraries
 local RSConstants = private.ImportLib("RareScannerConstants")
@@ -186,7 +185,6 @@ function RSNpcDB.DeleteCustomNpcInfo(npcID)
 	
 	private.dbglobal.custom_npcs[tonumber(npcID)] = nil
 	private.NPC_INFO[tonumber(npcID)] = nil
-	private.dbglobal.rares_found[tonumber(npcID)] = nil
 	
 	RSNpcDB.DeleteCustomNpcLoot(npcID)
 end
@@ -324,47 +322,31 @@ function RSNpcDB.GetAllInternalNpcInfo()
 	return private.NPC_INFO
 end
 
-function RSNpcDB.GetNpcIDsByMapID(mapID, onlyCustom, onlyWithoutVignette)
+function RSNpcDB.GetNpcIDsByMapID(mapID, onlyCustom)
 	local npcIDs = {}
 	for npcID, npcInfo in pairs((onlyCustom and RSNpcDB.GetAllCustomNpcInfo() or RSNpcDB.GetAllInternalNpcInfo())) do
 		if (RSNpcDB.IsInternalNpcMultiZone(npcID)) then
 			-- First check if there is a matching mapID in the database
 			for internalMapID, _ in pairs (npcInfo.zoneID) do
 				if (internalMapID == mapID) then
-					if (not onlyWithoutVignette) then
-						tinsert(npcIDs,npcID)
-					elseif (npcInfo.noVignette == nil or npcInfo.noVignette) then
-						tinsert(npcIDs,npcID)
-					end
+					tinsert(npcIDs,npcID)
 				end
 			end
 			
 			-- Then check if there is a matching subMapID in the database
 			for internalMapID, _ in pairs (npcInfo.zoneID) do
 				if (RSMapDB.IsMapInParentMap(mapID, internalMapID)) then
-					if (not onlyWithoutVignette) then
-						tinsert(npcIDs,npcID)
-					elseif (npcInfo.noVignette == nil or npcInfo.noVignette) then
-						tinsert(npcIDs,npcID)
-					end
+					tinsert(npcIDs,npcID)
 				end
 			end
 		elseif (RSNpcDB.IsInternalNpcMonoZone(npcID)) then
-			if (npcInfo.zoneID == mapID) then
-				if (not onlyWithoutVignette) then
-					tinsert(npcIDs,npcID)
-				elseif (npcInfo.noVignette == nil or npcInfo.noVignette) then
-					tinsert(npcIDs,npcID)
-				end
+			if (npcInfo.zoneID == mapID or (npcInfo.noVignette and npcInfo.zoneID == 0)) then
+				tinsert(npcIDs,npcID)
 			end
 			
 			-- Then check if there is a matching subMapID in the database
 			if (RSMapDB.IsMapInParentMap(mapID, npcInfo.zoneID)) then
-				if (not onlyWithoutVignette) then
-					tinsert(npcIDs,npcID)
-				elseif (npcInfo.noVignette == nil or npcInfo.noVignette) then
-					tinsert(npcIDs,npcID)
-				end
+				tinsert(npcIDs,npcID)
 			end
 		end
 	end
@@ -770,17 +752,14 @@ function RSNpcDB.GetNpcName(npcID, refresh)
 	return nil
 end
 
-function RSNpcDB.GetActiveNpcIDsWithNamesByMapID(mapID)
-	local npcIDs =  RSNpcDB.GetNpcIDsByMapID(mapID)
+function RSNpcDB.GetActiveNpcIDsWithNamesByMapID(mapID, onlyCustom)
+	local npcIDs =  RSNpcDB.GetNpcIDsByMapID(mapID, onlyCustom)
 	local npcIDsWithNames = nil
 	
 	if (RSUtils.GetTableLength(npcIDs)) then
 		npcIDsWithNames = {}
 		for _, npcID in ipairs(npcIDs) do
-			local npcInfo = RSNpcDB.GetInternalNpcInfo(npcID)
-			if (npcInfo and npcInfo.prof and not RSProfessionDB.HasPlayerProfession(npcInfo.prof)) then
-				-- Wrong profession
-			elseif (RSNpcDB.IsDisabledEvent(npcID)) then
+			if (RSNpcDB.IsDisabledEvent(npcID)) then
 				-- World event disabled
 			else
 				local npcName = RSNpcDB.GetNpcName(npcID)
@@ -808,20 +787,6 @@ function RSNpcDB.GetNpcId(name, mapID)
 	end
 	
 	return nil
-end
-
----============================================================================
--- NPCs with multi spawn spots
----============================================================================
-
-function RSNpcDB.IsMultiZoneSpawn(npcID)
-	if (RSUtils.Contains(RSConstants.NPCS_WITH_MULTIPLE_SPAWNS, npcID)) then
-		return true
-	elseif (RSNpcDB.GetCustomNpcInfo(npcID)) then
-		return true
-	end
-	
-	return false
 end
 
 ---============================================================================

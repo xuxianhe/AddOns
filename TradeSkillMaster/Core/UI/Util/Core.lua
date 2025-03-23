@@ -5,10 +5,11 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Util = TSM.UI:NewPackage("Util") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local Color = TSM.LibTSMUtil:IncludeClassType("Color")
-local Theme = TSM.LibTSMService:Include("UI.Theme")
+local Util = TSM.UI:NewPackage("Util")
+local L = TSM.Include("Locale").GetTable()
+local Color = TSM.Include("Util.Color")
+local Theme = TSM.Include("Util.Theme")
+local Settings = TSM.Include("Service.Settings")
 local private = {
 	settings = nil,
 }
@@ -99,8 +100,8 @@ local THEME_COLOR_SETS = {
 -- Module Functions
 -- ============================================================================
 
-function Util.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function Util.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("global", "appearanceOptions", "colorSet")
 		:AddKey("global", "appearanceOptions", "customColorSet")
 

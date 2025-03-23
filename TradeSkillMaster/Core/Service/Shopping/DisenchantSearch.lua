@@ -5,15 +5,13 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local DisenchantSearch = TSM.Shopping:NewPackage("DisenchantSearch") ---@type AddonPackage
-local CustomString = TSM.LibTSMTypes:Include("CustomString")
-local L = TSM.Locale.GetTable()
-local ChatMessage = TSM.LibTSMService:Include("UI.ChatMessage")
-local Threading = TSM.LibTSMTypes:Include("Threading")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
-local AuctionSearchContext = TSM.LibTSMService:IncludeClassType("AuctionSearchContext")
+local DisenchantSearch = TSM.Shopping:NewPackage("DisenchantSearch")
+local L = TSM.Include("Locale").GetTable()
+local Log = TSM.Include("Util.Log")
+local Threading = TSM.Include("Service.Threading")
+local ItemInfo = TSM.Include("Service.ItemInfo")
+local CustomPrice = TSM.Include("Service.CustomPrice")
 local private = {
-	settings = nil,
 	itemList = {},
 	scanThreadId = nil,
 	searchContext = nil,
@@ -25,13 +23,10 @@ local private = {
 -- Module Functions
 -- ============================================================================
 
-function DisenchantSearch.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
-		:AddKey("global", "shoppingOptions", "minDeSearchLvl")
-		:AddKey("global", "shoppingOptions", "maxDeSearchLvl")
-		:AddKey("global", "shoppingOptions", "maxDeSearchPercent")
+function DisenchantSearch.OnInitialize()
+	-- initialize thread
 	private.scanThreadId = Threading.New("DISENCHANT_SEARCH", private.ScanThread)
-	private.searchContext = AuctionSearchContext(private.scanThreadId, private.MarketValueFunction)
+	private.searchContext = TSM.Shopping.ShoppingSearchContext(private.scanThreadId, private.MarketValueFunction)
 end
 
 function DisenchantSearch.GetSearchContext()
@@ -46,7 +41,7 @@ end
 
 function private.ScanThread(auctionScan)
 	if TSM.AuctionDB.GetAppDataUpdateTimes() < time() - 60 * 60 * 12 then
-		ChatMessage.PrintUser(L["No recent AuctionDB scan data found."])
+		Log.PrintUser(L["No recent AuctionDB scan data found."])
 		return false
 	end
 
@@ -65,7 +60,7 @@ function private.ScanThread(auctionScan)
 		query:AddCustomFilter(private.QueryFilter)
 	end
 	if not auctionScan:ScanQueriesThreaded() then
-		ChatMessage.PrintUser(L["TSM failed to scan some auctions. Please rerun the scan."])
+		Log.PrintUser(L["TSM failed to scan some auctions. Please rerun the scan."])
 	end
 
 end
@@ -76,7 +71,7 @@ function private.ShouldInclude(itemString, minBuyout)
 	end
 
 	local itemLevel = ItemInfo.GetItemLevel(itemString) or -1
-	if itemLevel < private.settings.minDeSearchLvl or itemLevel > private.settings.maxDeSearchLvl then
+	if itemLevel < TSM.db.global.shoppingOptions.minDeSearchLvl or itemLevel > TSM.db.global.shoppingOptions.maxDeSearchLvl then
 		return false
 	end
 
@@ -100,10 +95,10 @@ function private.QueryFilter(_, row)
 end
 
 function private.IsItemBuyoutTooHigh(itemString, itemBuyout)
-	local disenchantValue = CustomString.GetSourceValue("Destroy", itemString)
-	return not disenchantValue or itemBuyout > private.settings.maxDeSearchPercent / 100 * disenchantValue
+	local disenchantValue = CustomPrice.GetSourcePrice(itemString, "Destroy")
+	return not disenchantValue or itemBuyout > TSM.db.global.shoppingOptions.maxDeSearchPercent / 100 * disenchantValue
 end
 
 function private.MarketValueFunction(row)
-	return CustomString.GetSourceValue("Destroy", row:GetItemString() or row:GetBaseItemString())
+	return CustomPrice.GetSourcePrice(row:GetItemString() or row:GetBaseItemString(), "Destroy")
 end

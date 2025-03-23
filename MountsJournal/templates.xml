@@ -4,7 +4,6 @@
 	<Script file="mixins/WorldMapMixin.lua"/>
 	<Script file="mixins/ExistingListsMixin.lua"/>
 	<Script file="mixins/CompanionMixin.lua"/>
-	<Script file="mixins/MountListMixin.lua"/>
 
 	<CheckButton name="MJUseMountsJournalButtonTemplate" motionScriptsWhileDisabled="true" inherits="MJCheckButtonTemplate" virtual="true">
 		<Layers>
@@ -14,7 +13,7 @@
 		</Layers>
 	</CheckButton>
 
-	<Frame name="MJMountJournalFrameTemplate" protected="true" frameLevel="1000" enableMouse="true" inherits="PortraitFrameTemplateNoCloseButton" virtual="true">
+	<Frame name="MJMountJournalFrameTemplate" protected="true" frameLevel="1000" enableMouse="true" dontSavePosition="true" resizable="true" inherits="PortraitFrameTemplateNoCloseButton" virtual="true">
 		<Size x="703" y="606"/>
 		<Frames>
 
@@ -73,65 +72,22 @@
 				</Anchors>
 			</Button>
 
-			<CheckButton parentKey="navBarBtn">
-				<Size x="48" y="32"/>
+			<Frame parentKey="navBar" clipChildren="true" inherits="NavBarTemplate" mixin="MJNavBarMixin" hidden="true">
+				<Size x="600" y="32"/>
 				<Anchors>
-					<Anchor point="TOPRIGHT" x="-1" y="-60"/>
-				</Anchors>
-				<Layers>
-					<Layer level="ARTWORK">
-						<Texture file="Interface/QuestFrame/UI-QuestMap_Button" parentKey="texture">
-							<Size x="48" y="32"/>
-							<Anchors>
-								<Anchor point="RIGHT"/>
-							</Anchors>
-							<TexCoords left=".125" right=".875" top="0" bottom=".5"/>
-						</Texture>
-					</Layer>
-					<Layer level="HIGHLIGHT">
-						<Texture file="Interface/BUTTONS/ButtonHilight-Square" alphaMode="ADD">
-							<Size x="36" y="25"/>
-							<Anchors>
-								<Anchor point="RIGHT" x="-6" y="0"/>
-							</Anchors>
-						</Texture>
-					</Layer>
-				</Layers>
-				<Scripts>
-					<OnMouseDown>
-						self.texture:SetTexCoord(.125, .875, .5, 1)
-					</OnMouseDown>
-					<OnMouseUp>
-						self.texture:SetTexCoord(.125, .875, .0, .5)
-					</OnMouseUp>
-					<OnClick>
-						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
-					</OnClick>
-				</Scripts>
-				<CheckedTexture file="Interface/Buttons/CheckButtonHilight" alphaMode="ADD" alpha=".5">
-					<Anchors>
-						<Anchor point="TOPLEFT" x="4" y="-1"/>
-						<Anchor point="BOTTOMRIGHT" x="-4" y="1"/>
-					</Anchors>
-				</CheckedTexture>
-			</CheckButton>
-
-			<Frame parentKey="navBar" inherits="NavBarTemplate" mixin="MJNavBarMixin">
-				<Size x="600" y="28"/>
-				<Anchors>
-					<Anchor point="TOPLEFT" x="8" y="-60"/>
-					<Anchor point="TOPRIGHT" relativeKey="$parent.navBarBtn" relativePoint="TOPLEFT" x="0" y="0"/>
+					<Anchor point="TOPLEFT" x="5" y="-60"/>
+					<Anchor point="TOPRIGHT" x="-5" y="-60"/>
 				</Anchors>
 				<Layers>
 					<Layer level="BORDER" textureSubLevel="-5">
 						<Texture inherits="UI-Frame-InnerBotLeftCorner" parentKey="InsetBorderBottomLeft">
 							<Anchors>
-								<Anchor point="BOTTOMLEFT" x="-3" y="-3"/>
+								<Anchor point="BOTTOMLEFT" x="0" y="0"/>
 							</Anchors>
 						</Texture>
 						<Texture inherits="UI-Frame-InnerBotRight" parentKey="InsetBorderBottomRight">
 							<Anchors>
-								<Anchor point="BOTTOMRIGHT" x="3" y="-3"/>
+								<Anchor point="BOTTOMRIGHT" x="0" y="0"/>
 							</Anchors>
 						</Texture>
 						<Texture inherits="_UI-Frame-InnerBotTile" parentKey="InsetBorderBottom">
@@ -142,13 +98,13 @@
 						</Texture>
 						<Texture inherits="!UI-Frame-InnerLeftTile" parentKey="InsetBorderLeft">
 							<Anchors>
-								<Anchor point="TOPLEFT" x="-3" y="0"/>
+								<Anchor point="TOPLEFT" x="0" y="0"/>
 								<Anchor point="BOTTOMLEFT" relativeKey="$parent.InsetBorderBottomRight" relativePoint="TOPLEFT"/>
 							</Anchors>
 						</Texture>
 						<Texture inherits="!UI-Frame-InnerRightTile" parentKey="InsetBorderRight">
 							<Anchors>
-								<Anchor point="TOPRIGHT" x="3" y="0"/>
+								<Anchor point="TOPRIGHT" x="0" y="0"/>
 								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.InsetBorderBottomRight" relativePoint="TOPRIGHT"/>
 							</Anchors>
 						</Texture>
@@ -222,7 +178,7 @@
 			<Frame parentKey="filtersPanel" inherits="InsetFrameTemplate">
 				<Size x="280" y="29"/>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.navBar" relativePoint="BOTTOMLEFT" x="-4" y="-4"/>
+					<Anchor point="TOPLEFT" x="4" y="-60"/>
 				</Anchors>
 				<Frames>
 					<CheckButton parentKey="btnToggle" inherits="MJArrowToggle">
@@ -292,35 +248,53 @@
 							</OnLoad>
 						</Scripts>
 					</Frame>
-				</Frames>
-			</Frame>
-
-			<Frame parentKey="shownPanel" inherits="InsetFrameTemplate" hidden="true">
-				<Size y="26"/>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.filtersPanel" relativePoint="BOTTOMLEFT" x="0" y="-2"/>
-					<Anchor point="TOPRIGHT" relativeKey="$parent.filtersPanel" relativePoint="BOTTOMRIGHT" x="0" y="-2"/>
-				</Anchors>
-				<Layers>
-					<Layer level="ARTWORK">
-						<FontString parentKey="text" inherits="GameFontNormal" justifyH="LEFT">
-							<Anchors>
-								<Anchor point="LEFT" x="8" y="-1"/>
-							</Anchors>
-						</FontString>
-						<FontString parentKey="count" inherits="GameFontHighlight" justifyH="LEFT">
-							<Anchors>
-								<Anchor point="LEFT" relativeKey="$parent.text" relativePoint="RIGHT" x="2" y="0"/>
-							</Anchors>
-						</FontString>
-					</Layer>
-				</Layers>
-				<Frames>
-					<Button parentKey="clear" inherits="MJClearButtonTemplate">
+					<Frame parentKey="shownPanel" useParentLevel="false" inherits="InsetFrameTemplate" hidden="true">
+						<Size y="26"/>
 						<Anchors>
-							<Anchor point="RIGHT" x="-5" y="0"/>
+							<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="BOTTOMLEFT" x="0" y="-2"/>
+							<Anchor point="TOPRIGHT" relativeKey="$parent" relativePoint="BOTTOMRIGHT" x="0" y="-2"/>
 						</Anchors>
-					</Button>
+						<Layers>
+							<Layer level="ARTWORK">
+								<FontString parentKey="text" inherits="GameFontNormal" justifyH="LEFT">
+									<Anchors>
+										<Anchor point="LEFT" x="8" y="-1"/>
+									</Anchors>
+								</FontString>
+								<FontString parentKey="count" inherits="GameFontHighlight" justifyH="LEFT">
+									<Anchors>
+										<Anchor point="LEFT" relativeKey="$parent.text" relativePoint="RIGHT" x="2" y="0"/>
+									</Anchors>
+								</FontString>
+								<FontString parentKey="filters" inherits="GameFontHighlight" justifyH="RIGHT" maxLines="1">
+									<Size y="22"/>
+									<Anchors>
+										<Anchor point="LEFT" relativeKey="$parent.count" relativePoint="RIGHT" x="4" y="0"/>
+										<Anchor point="RIGHT" x="-28" y="0"/>
+									</Anchors>
+									<Scripts>
+										<OnEnter>
+											if self:IsTruncated() then
+												GameTooltip:SetOwner(self, "ANCHOR_TOP")
+												GameTooltip:AddLine(self:GetText(), nil, nil, nil, true)
+												GameTooltip:Show()
+											end
+										</OnEnter>
+										<OnLeave>
+											GameTooltip:Hide()
+										</OnLeave>
+									</Scripts>
+								</FontString>
+							</Layer>
+						</Layers>
+						<Frames>
+							<Button parentKey="clear" inherits="MJClearButtonTemplate">
+								<Anchors>
+									<Anchor point="RIGHT" x="-5" y="0"/>
+								</Anchors>
+							</Button>
+						</Frames>
+					</Frame>
 				</Frames>
 			</Frame>
 
@@ -331,6 +305,18 @@
 					<Anchor point="BOTTOMLEFT" y="26"/>
 				</Anchors>
 				<Frames>
+					<Frame parentKey="scrollBox" inherits="WowScrollBoxList">
+						<Anchors>
+							<Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="4" y="-4"/>
+							<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" x="-4" y="4"/>
+						</Anchors>
+					</Frame>
+					<EventFrame parentKey="scrollBar" inherits="MinimalScrollBar">
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeKey="$parent.scrollBox" relativePoint="TOPRIGHT" x="8" y="1"/>
+							<Anchor point="BOTTOMLEFT" relativeKey="$parent.scrollBox" relativePoint="BOTTOMRIGHT" x="8" y="-1"/>
+						</Anchors>
+					</EventFrame>
 					<Frame parentKey="updateAnimFrame" alpha="0" setAllPoints="true" useParentLevel="true" virtual="true">
 						<Layers>
 							<Layer level="BACKGROUND">
@@ -348,20 +334,6 @@
 					</Frame>
 				</Frames>
 			</Frame>
-
-			<Frame parentKey="scrollBox" inherits="WowScrollBoxList">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.leftInset" relativePoint="TOPLEFT" x="4" y="-4"/>
-					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.leftInset" relativePoint="BOTTOMRIGHT" x="-4" y="4"/>
-				</Anchors>
-			</Frame>
-
-			<EventFrame parentKey="scrollBar" inherits="MinimalScrollBar">
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.scrollBox" relativePoint="TOPRIGHT" x="8" y="1"/>
-					<Anchor point="BOTTOMLEFT" relativeKey="$parent.scrollBox" relativePoint="BOTTOMRIGHT" x="8" y="-1"/>
-				</Anchors>
-			</EventFrame>
 
 			<Frame parentKey="rightInset" useParentLevel="true" inherits="InsetFrameTemplate">
 				<Anchors>
@@ -412,10 +384,26 @@
 								</Texture>
 							</Layer>
 							<Layer level="OVERLAY">
+								<FontString inherits="GameFontHighlightSmall" justifyH="CENTER" parentKey="link" alpha=".5">
+									<Anchors>
+										<Anchor point="TOP" y="3"/>
+									</Anchors>
+									<Scripts>
+										<OnEnter>
+											self:SetAlpha(1)
+											self:GetParent().linkLang:SetAlpha(1)
+										</OnEnter>
+										<OnLeave>
+											self:SetAlpha(.5)
+											self:GetParent().linkLang:SetAlpha(0)
+										</OnLeave>
+									</Scripts>
+								</FontString>
 								<FontString inherits="GameFontHighlightLarge" justifyH="LEFT" justifyV="MIDDLE" parentKey="name" maxLines="2">
-									<Size x="270" y="35"/>
+									<Size y="35"/>
 									<Anchors>
 										<Anchor point="LEFT" relativePoint="RIGHT" relativeKey="$parent.icon" x="10" y="0"/>
+										<Anchor point="RIGHT" x="-57"/>
 									</Anchors>
 								</FontString>
 							</Layer>
@@ -437,28 +425,34 @@
 							</Layer>
 						</Layers>
 						<Frames>
-							<EditBox parentKey="link" multiLine="false" autoFocus="false" ignoreArrows="false" alpha=".5">
-								<Size y="20" x="250"/>
+							<Button parentKey="linkLang" alpha="0">
+								<Size x="30" y="20"/>
 								<Anchors>
-									<Anchor point="TOP" y="5"/>
+									<Anchor point="LEFT" relativeKey="$parent.link" relativePoint="RIGHT" x="0" y="0"/>
 								</Anchors>
-								<FontString inherits="GameFontHighlightSmall" justifyH="CENTER"/>
+								<NormalFont style="GameFontNormalSmall"/>
+								<Layers>
+									<Layer level="ARTWORK">
+										<Texture parentKey="arrow" file="Interface/ChatFrame/ChatFrameExpandArrow">
+											<Size x="10" y="12"/>
+											<Anchors>
+												<Anchor point="RIGHT" x="2" y="0"/>
+											</Anchors>
+										</Texture>
+									</Layer>
+								</Layers>
+								<HighlightTexture file="Interface/Buttons/UI-Common-MouseHilight" alpha=".25" alphaMode="ADD"/>
 								<Scripts>
-									<OnEnter>self:SetAlpha(1)</OnEnter>
-									<OnLeave>self:SetAlpha(.5)</OnLeave>
-									<OnEditFocusGained>self:HighlightText()</OnEditFocusGained>
-									<OnEditFocusLost>self:HighlightText(0, 0)</OnEditFocusLost>
-									<OnEscapePressed>self:ClearFocus()</OnEscapePressed>
-									<OnTextChanged>
-										if userInput then
-											self:SetText(self.text or "")
-											self:HighlightText()
-										else
-											self.text = self:GetText()
-										end
-									</OnTextChanged>
+									<OnEnter>
+										local link = self:GetParent().link
+										link:GetScript("OnEnter")(link)
+									</OnEnter>
+									<OnLeave>
+										local link = self:GetParent().link
+										link:GetScript("OnLeave")(link)
+									</OnLeave>
 								</Scripts>
-							</EditBox>
+							</Button>
 							<Button parentKey="petSelectionBtn" mixin="MJSetPetMixin">
 								<Size x="38" y="38"/>
 								<Anchors>
@@ -664,7 +658,7 @@
 				<Size y="276"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.rightInset"/>
-					<Anchor point="TOPRIGHT" relativeKey="$parent.rightInset"/>
+					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.rightInset" y="212"/>
 				</Anchors>
 				<Frames>
 					<ScrollFrame parentKey="ScrollContainer">
@@ -721,9 +715,10 @@
 						</Anchors>
 					</CheckButton>
 					<Button parentKey="CurrentMap" inherits="UIPanelButtonTemplate">
-						<Size x="257" y="24"/>
+						<Size y="24"/>
 						<Anchors>
 							<Anchor point="RIGHT" relativeKey="$parent.existingListsToggle" relativePoint="LEFT" x="2"/>
+							<Anchor point="LEFT" relativeKey="$parent.mapControl" relativePoint="LEFT" x="134"/>
 						</Anchors>
 					</Button>
 					<Frame parentKey="hint" inherits="MJHelpPlate">
@@ -766,7 +761,7 @@
 							<Anchor point="LEFT" relativeKey="$parent.relationMap" relativePoint="RIGHT" x="0" y="0"/>
 						</Anchors>
 					</Button>
-					<Frame parentKey="existingLists" inherits="TooltipBackdropTemplate" enableMouse="true" mixin="MJExistingListsMixin" hidden="true">
+					<Frame parentKey="existingLists" inherits="MJDarkPanelTemplate" enableMouse="true" mixin="MJExistingListsMixin" hidden="true">
 						<Anchors>
 							<Anchor point="TOPLEFT" relativeKey="$parent.$parent" relativePoint="TOPRIGHT"/>
 							<Anchor point="BOTTOMLEFT" relativeKey="$parent.$parent" relativePoint="BOTTOMRIGHT"/>
@@ -775,16 +770,22 @@
 							<EditBox inherits="SearchBoxTemplate" parentKey="searchBox" letters="40">
 								<Size y="20"/>
 								<Anchors>
-									<Anchor point="TOPLEFT" x="10" y="-4"/>
-									<Anchor point="TOPRIGHT" x="-5"/>
+									<Anchor point="TOPLEFT" x="8" y="-6"/>
+									<Anchor point="TOPRIGHT" x="-3" y="-6"/>
 								</Anchors>
 							</EditBox>
-							<ScrollFrame parentKey="scrollFrame" inherits="MJPanelScrollFrameTemplate">
+							<Frame parentKey="scrollBox" inherits="WowScrollBoxList">
 								<Anchors>
-									<Anchor point="TOPLEFT" x="5" y="-26"/>
-									<Anchor point="BOTTOMRIGHT" x="-28" y="5"/>
+									<Anchor point="TOPLEFT" x="5" y="-28"/>
+									<Anchor point="BOTTOMRIGHT" x="-26" y="7"/>
 								</Anchors>
-							</ScrollFrame>
+							</Frame>
+							<EventFrame parentKey="scrollBar" inherits="MinimalScrollBar">
+								<Anchors>
+									<Anchor point="TOPLEFT" relativeKey="$parent.scrollBox" relativePoint="TOPRIGHT" x="8" y="1"/>
+									<Anchor point="BOTTOMLEFT" relativeKey="$parent.scrollBox" relativePoint="BOTTOMRIGHT" x="8" y="-1"/>
+								</Anchors>
+							</EventFrame>
 						</Frames>
 						<Scripts>
 							<OnLoad inherit="prepend" method="onLoad"/>
@@ -794,21 +795,37 @@
 				</Frames>
 			</Frame>
 
-			<Button parentKey="summonButton" motionScriptsWhileDisabled="true" inherits="UIPanelButtonTemplate" text="MOUNT">
+			<Button parentKey="summonButton" motionScriptsWhileDisabled="true" inherits="UIPanelButtonTemplate,MJSecureActionButtonUpTemplate" text="MOUNT">
 				<Size x="140" y="22"/>
 				<Anchors>
 					<Anchor point="BOTTOMLEFT" x="4" y="4"/>
 				</Anchors>
+				<Scripts>
+					<OnLoad>
+						self:SetAttribute("type", "macro")
+					</OnLoad>
+					<OnLeave function="GameTooltip_Hide"/>
+				</Scripts>
 			</Button>
 
-			<Button parentKey="btnConfig" inherits="UIPanelButtonTemplate">
-				<Size x="80" y="22"/>
+			<Button parentKey="resize">
+				<Size x="16" y="16"/>
 				<Anchors>
-					<Anchor point="BOTTOMRIGHT" x="-5" y="4"/>
+					<Anchor point="BOTTOMRIGHT" x="0" y="0"/>
+				</Anchors>
+				<NormalTexture file="Interface\ChatFrame\UI-ChatIM-SizeGrabber-Up"/>
+				<HighlightTexture file="Interface\ChatFrame\UI-ChatIM-SizeGrabber-Highlight"/>
+				<PushedTexture file="Interface\ChatFrame\UI-ChatIM-SizeGrabber-Down"/>
+			</Button>
+
+			<Button parentKey="mountSpecial" motionScriptsWhileDisabled="true" inherits="UIPanelButtonNoTooltipTemplate">
+				<Size x="22" y="22"/>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT" x="-10" y="4"/>
 				</Anchors>
 			</Button>
 
-			<Frame parentKey="mountsWeight" inherits="MJSliderFrameTemplate" hidden="true">
+			<Frame parentKey="percentSlider" inherits="MJSliderFrameTemplate" hidden="true">
 				<Layers>
 					<Layer level="ARTWORK">
 						<FontString parentKey="label" text="%" inherits="GameFontHighlightSmall">
@@ -880,6 +897,200 @@
 					</Button>
 				</Frames>
 			</Frame>
+
+			<Frame parentKey="settingsBackground" inherits="InsetFrameTemplate" hidden="true">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativePoint="TOPLEFT" y="-60" x="4"/>
+					<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT" x="-4" y="26"/>
+				</Anchors>
+
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture parentKey="BackgroundTile" atlas="collections-background-tile" useAtlasSize="true" vertTile="true" horizTile="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" x="4" y="-4" />
+								<Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+
+					<Layer level="BORDER" textureSubLevel="2">
+						<Texture parentKey="ShadowCornerTopLeft" atlas="collections-background-shadow-large" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+						</Texture>
+
+						<Texture parentKey="ShadowCornerTopRight" atlas="collections-background-shadow-large" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPRIGHT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+							<TexCoords left="1.0" right="0.0" top="0.0" bottom="1.0"/>
+						</Texture>
+
+						<Texture parentKey="ShadowCornerBottomLeft" atlas="collections-background-shadow-large" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+							<TexCoords left="0.0" right="1.0" top="1.0" bottom="0.0"/>
+						</Texture>
+
+						<Texture parentKey="ShadowCornerBottomRight" atlas="collections-background-shadow-large" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+							<TexCoords left="1.0" right="0.0" top="1.0" bottom="0.0"/>
+						</Texture>
+
+						<Texture parentKey="ShadowCornerTop" atlas="collections-background-shadow-large" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.ShadowCornerTopLeft" relativePoint="TOPRIGHT"/>
+								<Anchor point="TOPRIGHT" relativeKey="$parent.ShadowCornerTopRight" relativePoint="TOPLEFT"/>
+							</Anchors>
+							<TexCoords left="0.9999" right="1" top="0" bottom="1"/>
+						</Texture>
+
+						<Texture parentKey="ShadowCornerLeft" atlas="collections-background-shadow-large" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.ShadowCornerTopLeft" relativePoint="BOTTOMLEFT"/>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.ShadowCornerBottomLeft" relativePoint="TOPLEFT"/>
+							</Anchors>
+							<TexCoords left="0" right="1" top="0.9999" bottom="1"/>
+						</Texture>
+
+						<Texture parentKey="ShadowCornerRight" atlas="collections-background-shadow-large" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPRIGHT" relativeKey="$parent.ShadowCornerTopRight" relativePoint="BOTTOMRIGHT"/>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.ShadowCornerBottomRight" relativePoint="TOPRIGHT"/>
+							</Anchors>
+							<TexCoords left="1" right="0" top="0.9999" bottom="1"/>
+						</Texture>
+
+						<Texture parentKey="ShadowCornerBottom" atlas="collections-background-shadow-large" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.ShadowCornerBottomLeft" relativePoint="BOTTOMRIGHT"/>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.ShadowCornerBottomRight" relativePoint="BOTTOMLEFT"/>
+							</Anchors>
+							<TexCoords left="0.9999" right="1" top="1" bottom="0"/>
+						</Texture>
+					</Layer>
+
+					<Layer level="OVERLAY">
+						<Texture parentKey="OverlayShadowTopLeft" atlas="collections-background-shadow-small" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+						</Texture>
+
+						<Texture parentKey="OverlayShadowTopRight" atlas="collections-background-shadow-small" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPRIGHT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+							<TexCoords left="1" right="0" top="0" bottom="1"/>
+						</Texture>
+
+						<Texture parentKey="OverlayShadowBottomLeft" atlas="collections-background-shadow-small" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+							<TexCoords left="0" right="1" top="1" bottom="0"/>
+						</Texture>
+
+						<Texture parentKey="OverlayShadowBottomRight" atlas="collections-background-shadow-small" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+							<TexCoords left="1" right="0" top="1" bottom="0"/>
+						</Texture>
+
+						<Texture parentKey="OverlayShadowTop" atlas="collections-background-shadow-small" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.OverlayShadowTopLeft" relativePoint="TOPRIGHT" x="0" y="0"/>
+								<Anchor point="TOPRIGHT" relativeKey="$parent.OverlayShadowTopRight" relativePoint="TOPLEFT" x="0" y="0"/>
+							</Anchors>
+							<TexCoords left="0.9999" right="1" top="0" bottom="1"/>
+						</Texture>
+
+						<Texture parentKey="OverlayShadowLeft" atlas="collections-background-shadow-small" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.OverlayShadowTopLeft" relativePoint="BOTTOMLEFT"/>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.OverlayShadowBottomLeft" relativePoint="TOPLEFT"/>
+							</Anchors>
+							<TexCoords left="0" right="1" top="0.9999" bottom="1"/>
+						</Texture>
+
+						<Texture parentKey="OverlayShadowRight" atlas="collections-background-shadow-small" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="TOPRIGHT" relativeKey="$parent.OverlayShadowTopRight" relativePoint="BOTTOMRIGHT"/>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.OverlayShadowBottomRight" relativePoint="TOPRIGHT"/>
+							</Anchors>
+							<TexCoords left="1" right="0" top="0.9999" bottom="1"/>
+						</Texture>
+
+						<Texture parentKey="OverlayShadowBottom" atlas="collections-background-shadow-small" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.OverlayShadowBottomLeft" relativePoint="BOTTOMRIGHT" x="0" y="0"/>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.OverlayShadowBottomRight" relativePoint="BOTTOMLEFT" x="0" y="0"/>
+							</Anchors>
+							<TexCoords left="0.9999" right="1" top="1" bottom="0"/>
+						</Texture>
+					</Layer>
+
+					<Layer level="ARTWORK" textureSubLevel="1">
+						<Texture parentKey="BGCornerFilagreeBottomLeft" atlas="collections-background-filagree" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+							<TexCoords left="0.0" right="1.0" top="0.0" bottom="1.0"/>
+						</Texture>
+
+						<Texture parentKey="BGCornerFilagreeBottomRight" atlas="collections-background-filagree" useAtlasSize="true">
+							<Anchors>
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BackgroundTile"/>
+							</Anchors>
+							<TexCoords left="1.0" right="0.0" top="0.0" bottom="1.0"/>
+						</Texture>
+					</Layer>
+
+					<Layer level="BORDER" textureSubLevel="1">
+						<Texture parentKey="ShadowLineTop" atlas="_collections-background-line" useAtlasSize="true" horizTile="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BackgroundTile" x="0" y="-9" />
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BackgroundTile" relativePoint="TOPRIGHT" x="0" y="-13"/>
+							</Anchors>
+						</Texture>
+
+						<Texture parentKey="ShadowLineBottom" atlas="_collections-background-line" useAtlasSize="true" horizTile="true">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeKey="$parent.BackgroundTile" relativePoint="BOTTOMLEFT" x="0" y="13" />
+								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BackgroundTile" x="0" y="9"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+
+				</Layers>
+			</Frame>
+
+			<Button name="$parentTab1" parentArray="Tabs" parentKey="settingsTab" inherits="CharacterFrameTabButtonTemplate,SecureHandlerClickTemplate">
+				<Size x="10" y="32"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativePoint="BOTTOMRIGHT" x="-6" y="2"/>
+				</Anchors>
+			</Button>
+
+			<Button name="$parentTab2" parentArray="Tabs" parentKey="mapTab" inherits="CharacterFrameTabButtonTemplate,SecureHandlerClickTemplate">
+				<Size x="10" y="32"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativeKey="$parent.settingsTab" relativePoint="LEFT" x="16" y="0"/>
+				</Anchors>
+			</Button>
+
+			<Button name="$parentTab3" parentArray="Tabs" parentKey="modelTab" inherits="CharacterFrameTabButtonTemplate,SecureHandlerClickTemplate">
+				<Size x="10" y="32"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativeKey="$parent.mapTab" relativePoint="LEFT" x="16" y="0"/>
+				</Anchors>
+			</Button>
 
 		</Frames>
 	</Frame>
@@ -1115,20 +1326,37 @@
 					self.icon:SetScale(1)
 				end
 			</OnMouseUp>
-			<OnEnable>
-				self.icon:SetVertexColor(.8, .6, .0)
-				self.normalTexture:SetVertexColor(.2, .18, .01)
-				self.check:SetAlpha(1)
-			</OnEnable>
-			<OnDisable>
-				self.icon:SetVertexColor(.3, .3, .3)
-				self.normalTexture:SetVertexColor(.1, .1, .1)
-				self.check:SetAlpha(0)
-			</OnDisable>
 		</Scripts>
 	</CheckButton>
 
-	<Button name="MJMountDefaultListButton" mixin="MJDefaultMountListMixin" virtual="true">
+	<CheckButton name="MJSetFlyToggleTemplate" inherits="MJSetMountToggleTemplate" virtual="true">
+		<KeyValues>
+			<KeyValue key="type" value="fly" type="string"/>
+		</KeyValues>
+		<Scripts>
+			<OnLoad>self.icon:SetTexture("Interface/AddOns/MountsJournal/textures/fly")</OnLoad>
+		</Scripts>
+	</CheckButton>
+
+	<CheckButton name="MJSetGroundToggleTemplate" inherits="MJSetMountToggleTemplate" virtual="true">
+		<KeyValues>
+			<KeyValue key="type" value="ground" type="string"/>
+		</KeyValues>
+		<Scripts>
+			<OnLoad>self.icon:SetTexture("Interface/AddOns/MountsJournal/textures/ground")</OnLoad>
+		</Scripts>
+	</CheckButton>
+
+	<CheckButton name="MJSetSwimmingToggleTemplate" inherits="MJSetMountToggleTemplate" virtual="true">
+		<KeyValues>
+			<KeyValue key="type" value="swimming" type="string"/>
+		</KeyValues>
+		<Scripts>
+			<OnLoad>self.icon:SetTexture("Interface/AddOns/MountsJournal/textures/swimming")</OnLoad>
+		</Scripts>
+	</CheckButton>
+
+	<Button name="MJMountDefaultListButton" virtual="true">
 		<Size x="184" y="46"/>
 		<Anchors>
 			<Anchor point="LEFT" relativeKey="$parent.dragButton" relativePoint="RIGHT" x="0" y="0"/>
@@ -1227,69 +1455,26 @@
 				<KeyValues>
 					<KeyValue key="LibSFDropDownNoGMEvent" value="true" type="boolean"/>
 				</KeyValues>
-				<Scripts>
-					<OnEnter>
-						self.highlight:Show()
-						GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-						local parent = self:GetParent()
-						if parent.spellID then
-							GameTooltip:SetHyperlink("spell:"..parent.spellID)
-						end
-						parent.showingTooltip = true
-					</OnEnter>
-					<OnLeave>
-						self.highlight:Hide()
-						GameTooltip:Hide()
-						self:GetParent().showingTooltip = false
-					</OnLeave>
-					<OnLoad>
-						self:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-						self:RegisterForDrag("LeftButton")
-					</OnLoad>
-				</Scripts>
 			</Button>
-			<CheckButton parentKey="fly" inherits="MJSetMountToggleTemplate">
+			<CheckButton parentKey="fly" inherits="MJSetFlyToggleTemplate">
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="RIGHT" x="0" y="14"/>
 				</Anchors>
-				<KeyValues>
-					<KeyValue key="type" value="fly" type="string"/>
-				</KeyValues>
-				<Scripts>
-					<OnLoad>self.icon:SetTexture("Interface/AddOns/MountsJournal/textures/fly")</OnLoad>
-				</Scripts>
 			</CheckButton>
-			<CheckButton parentKey="ground" inherits="MJSetMountToggleTemplate">
+			<CheckButton parentKey="ground" inherits="MJSetGroundToggleTemplate">
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="RIGHT" x="0" y="0"/>
 				</Anchors>
-				<KeyValues>
-					<KeyValue key="type" value="ground" type="string"/>
-				</KeyValues>
-				<Scripts>
-					<OnLoad>self.icon:SetTexture("Interface/AddOns/MountsJournal/textures/ground")</OnLoad>
-				</Scripts>
 			</CheckButton>
-			<CheckButton parentKey="swimming" inherits="MJSetMountToggleTemplate">
+			<CheckButton parentKey="swimming" inherits="MJSetSwimmingToggleTemplate">
 				<Anchors>
 					<Anchor point="LEFT" relativePoint="RIGHT" x="0" y="-14"/>
 				</Anchors>
-				<KeyValues>
-					<KeyValue key="type" value="swimming" type="string"/>
-				</KeyValues>
-				<Scripts>
-					<OnLoad>self.icon:SetTexture("Interface/AddOns/MountsJournal/textures/swimming")</OnLoad>
-				</Scripts>
 			</CheckButton>
 		</Frames>
-		<Scripts>
-			<OnLoad method="onLoad"/>
-			<OnMouseDown method="onMouseDown"/>
-			<OnClick method="onClick"/>
-		</Scripts>
 	</Button>
 
-	<Button name="MJGridMountButtonTemplate" mixin="MJGrid3MountListMixin" virtual="true">
+	<Button name="MJGridMountButtonTemplate" virtual="true">
 		<Size x="40" y="40"/>
 		<Layers>
 			<Layer level="BORDER">
@@ -1328,51 +1513,25 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton parentKey="fly" inherits="MJSetMountToggleTemplate">
+			<CheckButton parentKey="fly" inherits="MJSetFlyToggleTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="1" y="0"/>
 				</Anchors>
-				<KeyValues>
-					<KeyValue key="type" value="fly" type="string"/>
-				</KeyValues>
-				<Scripts>
-					<OnLoad>self.icon:SetTexture("Interface/AddOns/MountsJournal/textures/fly")</OnLoad>
-				</Scripts>
 			</CheckButton>
-			<CheckButton parentKey="ground" inherits="MJSetMountToggleTemplate">
+			<CheckButton parentKey="ground" inherits="MJSetGroundToggleTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="1" y="-14"/>
 				</Anchors>
-				<KeyValues>
-					<KeyValue key="type" value="ground" type="string"/>
-				</KeyValues>
-				<Scripts>
-					<OnLoad>self.icon:SetTexture("Interface/AddOns/MountsJournal/textures/ground")</OnLoad>
-				</Scripts>
 			</CheckButton>
-			<CheckButton parentKey="swimming" inherits="MJSetMountToggleTemplate">
+			<CheckButton parentKey="swimming" inherits="MJSetSwimmingToggleTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="1" y="-28"/>
 				</Anchors>
-				<KeyValues>
-					<KeyValue key="type" value="swimming" type="string"/>
-				</KeyValues>
-				<Scripts>
-					<OnLoad>self.icon:SetTexture("Interface/AddOns/MountsJournal/textures/swimming")</OnLoad>
-				</Scripts>
 			</CheckButton>
 		</Frames>
 		<KeyValues>
 			<KeyValue key="LibSFDropDownNoGMEvent" value="true" type="boolean"/>
 		</KeyValues>
-		<Scripts>
-			<OnLoad method="onLoad"/>
-			<OnEnter method="onEnter"/>
-			<OnLeave method="onLeave"/>
-			<OnMouseDown method="onMouseDown"/>
-			<OnClick method="onClick"/>
-			<OnDragStart method="onDragStart"/>
-		</Scripts>
 	</Button>
 
 	<Frame name="MJMountGrid3ListButtons" virtual="true">
@@ -1564,7 +1723,6 @@
 				self:SetBackdropColor(0, 0, 0, .5)
 				self:SetBackdropBorderColor(.3, .3, .3, .8)
 			</OnLoad>
-			<OnEditFocusGained>self:HighlightText()</OnEditFocusGained>
 			<OnEnterPressed function="EditBox_ClearFocus"/>
 			<OnEnter>if self:IsEnabled() then self:SetBackdropBorderColor(.5, .5, .5, .8) end</OnEnter>
 			<OnLeave>self:SetBackdropBorderColor(.3, .3, .3, .8)</OnLeave>
@@ -1908,27 +2066,20 @@
 			</Anchors>
 			<Color r=".196" g=".388" b=".8"/>
 		</HighlightTexture>
-		<Scripts>
-			<OnEnable>self.text:SetTextColor(1,1,1,1)</OnEnable>
-			<OnDisable>self.text:SetTextColor(.5,.5,.5,1)</OnDisable>
-		</Scripts>
 	</Button>
 
-	<CheckButton name="MJCollapseButtonTemplate" virtual="true">
+	<Button name="MJCollapseButtonTemplate" virtual="true">
 		<Size y="18"/>
-		<Frames>
-			<Frame parentKey="toggle">
-				<Size x="14" y="14"/>
-				<Anchors>
-					<Anchor point="TOPLEFT" x="4" y="-1"/>
-				</Anchors>
-				<layers>
-					<Layer level="ARTWORK">
-						<Texture parentKey="plusMinus" file="Interface/Buttons/UI-MinusButton-UP" setAllPoints="true"/>
-					</Layer>
-				</layers>
-			</Frame>
-		</Frames>
+		<layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="toggle" file="Interface/Buttons/UI-MinusButton-UP">
+					<Size x="14" y="14"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="4" y="-1"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</layers>
 		<ButtonText parentKey="text" justifyH="LEFT" wordwrap="false">
 			<Anchors>
 				<Anchor point="LEFT" x="20" y="0"/>
@@ -1942,7 +2093,7 @@
 			</Anchors>
 			<Color r=".196" g=".388" b=".8"/>
 		</HighlightTexture>
-	</CheckButton>
+	</Button>
 
 	<Frame name="MJSecureActionButtonTemplate" inherits="SecureActionButtonTemplate" mixin="MJMacroMixin" virtual="true">
 		<Scripts>
@@ -1987,7 +2138,7 @@
 		</Scripts>
 	</Button>
 
-	<Button name="MJSecureMacroButtonTemplate" inherits="MJSecureActionButtonUpTemplate" virtual="true">
+	<Button name="MJIconButtonTemplate" virtual="true">
 		<Size x="33" y="33"/>
 		<Layers>
 			<Layer level="OVERLAY">
@@ -2000,9 +2151,13 @@
 			</Layer>
 		</Layers>
 		<HighlightTexture parentKey="highlight" file="Interface\Buttons\ButtonHilight-Square" alphaMode="ADD"/>
+	</Button>
+
+	<Button name="MJSecureMacroButtonTemplate" inherits="MJIconButtonTemplate,MJSecureActionButtonUpTemplate" virtual="true">
 		<Scripts>
 			<OnLoad>
 				self:SetAttribute("type", "click")
+				self:RegisterForClicks("AnyUp")
 				self:RegisterForDrag("LeftButton")
 			</OnLoad>
 			<OnLeave>
@@ -2397,13 +2552,13 @@
 		</Scripts>
 	</Button>
 
-	<Frame name="MJCompanionsPanel" inherits="TooltipBackdropTemplate" mixin="MJCompanionsPanelMixin" enableMouse="true" hidden="true" virtual="true">
+	<Frame name="MJCompanionsPanel" inherits="MJDarkPanelTemplate" mixin="MJCompanionsPanelMixin" enableMouse="true" hidden="true" virtual="true">
 		<Frames>
 			<Frame parentKey="controlPanel" useParentLevel="false" inherits="InsetFrameTemplate">
 				<Size y="26"/>
 				<Anchors>
-					<Anchor point="TOPLEFT" x="4" y="-4"/>
-					<Anchor point="TOPRIGHT" x="-4" y="-4"/>
+					<Anchor point="TOPLEFT" x="2" y="-5"/>
+					<Anchor point="TOPRIGHT" x="-2" y="-5"/>
 				</Anchors>
 			</Frame>
 			<Button parentKey="closeButton" inherits="UIPanelCloseButtonNoScripts">
@@ -2427,8 +2582,8 @@
 			<Frame parentKey="controlButtons" useParentLevel="false" inherits="InsetFrameTemplate">
 				<Size y="129"/>
 				<Anchors>
-					<Anchor point="BOTTOMLEFT" x="4" y="4"/>
-					<Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+					<Anchor point="BOTTOMLEFT" x="2" y="5"/>
+					<Anchor point="BOTTOMRIGHT" x="-2" y="5"/>
 				</Anchors>
 			</Frame>
 			<Button parentKey="randomFavoritePet" inherits="MJPetListButton">
@@ -2602,5 +2757,282 @@
 				end
 			</OnLoad>
 		</Scripts>
+	</Frame>
+
+	<Frame name="MJDarkPanelTemplate" inherits="BackdropTemplate" virtual="true">
+		<Scripts>
+			<OnLoad>
+				self:SetBackdrop(MountsJournalUtil.darkPanelBackdrop)
+				self:SetBackdropColor(.1, .1, .1, .8)
+			</OnLoad>
+		</Scripts>
+	</Frame>
+
+	<Frame name="MJOptionPanelTemplate" inherits="BackdropTemplate" virtual="true">
+		<Size y="50"/>
+		<Scripts>
+			<OnLoad>
+				self:SetBackdrop(MountsJournalUtil.sliderPanelBackdrop)
+				self:SetBackdropColor(.1, .1, .1, .5)
+				self:SetBackdropBorderColor(.1, .1, .1, .5)
+			</OnLoad>
+		</Scripts>
+	</Frame>
+
+	<Button name="MJRemoveButtonTemplate" alpha=".5" virtual="true">
+		<Size x="20" y="20"/>
+		<NormalTexture file="Interface/BUTTONS/UI-GroupLoot-Pass-Up"/>
+		<PushedTexture file="Interface/BUTTONS/UI-GroupLoot-Pass-Up">
+			<Size x="20" y="20"/>
+			<Anchors>
+				<Anchor point="CENTER" x="-1" y="-1"/>
+			</Anchors>
+		</PushedTexture>
+		<Scripts>
+			<OnEnter>self:SetAlpha(1)</OnEnter>
+			<OnLeave>self:SetAlpha(.5)</OnLeave>
+		</Scripts>
+	</Button>
+
+	<Button name="MJRulePanelTemplate" inherits="MJOptionPanelTemplate" virtual="true">
+		<Size y="55"/>
+		<Layers>
+			<Layer level="BORDER">
+				<Texture parentKey="highlight" alpha="0">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="4" y="-4"/>
+						<Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+					</Anchors>
+					<Color r=".8" g=".6" b=".1" a=".1"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<FontString parentKey="order" inherits="GameFontNormalLarge" justifyH="CENTER">
+					<Size x="28"/>
+					<Anchors>
+						<Anchor point="LEFT" x="1"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="conds" inherits="GameFontNormal" justifyH="LEFT" maxLines="3">
+					<Anchors>
+						<Anchor point="LEFT" x="30"/>
+						<Anchor point="RIGHT" relativePoint="CENTER" x="-21"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="action" inherits="GameFontNormal" justifyH="LEFT" maxLines="1">
+					<Anchors>
+						<Anchor point="LEFT" relativeKey="$parent.conds" relativePoint="RIGHT" x="10"/>
+						<Anchor point="RIGHT" x="-62"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Animations>
+			<AnimationGroup parentKey="highlightLeave" setToFinalAlpha="true">
+				<Alpha parentKey="alpha" smoothing="IN_OUT" duration=".3" order="1" fromAlpha="1" toAlpha="0"/>
+			</AnimationGroup>
+		</Animations>
+		<Frames>
+			<Button parentKey="remove" inherits="MJRemoveButtonTemplate">
+				<Anchors>
+					<Anchor point="RIGHT" x="-10"/>
+				</Anchors>
+			</Button>
+			<Button parentKey="up">
+				<Size x="17" y="11"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" x="-40" y="-12"/>
+				</Anchors>
+				<NormalTexture atlas="minimal-scrollbar-arrow-top"/>
+				<PushedTexture atlas="minimal-scrollbar-arrow-top-down"/>
+				<HighlightTexture atlas="minimal-scrollbar-arrow-top-over" alphaMode="ADD"/>
+			</Button>
+			<Button parentKey="down">
+				<Size x="17" y="11"/>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT" x="-40" y="12"/>
+				</Anchors>
+				<NormalTexture atlas="minimal-scrollbar-arrow-bottom"/>
+				<PushedTexture atlas="minimal-scrollbar-arrow-bottom-down"/>
+				<HighlightTexture atlas="minimal-scrollbar-arrow-bottom-over" alphaMode="ADD"/>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnLoad inherit="prepend">
+				self.highlightLeave.alpha:SetTarget(self.highlight)
+			</OnLoad>
+			<OnEnter>
+				self.highlightLeave:Stop()
+				self.highlight:SetAlpha(1)
+			</OnEnter>
+			<OnLeave>
+				self.highlightLeave:Restart()
+			</OnLeave>
+		</Scripts>
+	</Button>
+
+	<Button name="MJConditionDropDownTemplate" inherits="MJDarkPanelTemplate" virtual="true">
+		<Size y="40"/>
+		<KeyValues>
+			<KeyValue key="LibSFDropDownNoGMEvent" value="true" type="boolean"/>
+		</KeyValues>
+		<NormalTexture parentKey="normal" file="Interface/ChatFrame/UI-ChatIcon-ScrollDown-Up">
+			<Size x="26" y="26"/>
+			<Anchors>
+				<Anchor point="RIGHT" x="-4"/>
+			</Anchors>
+		</NormalTexture>
+		<PushedTexture file="Interface/ChatFrame/UI-ChatIcon-ScrollDown-Down">
+			<Size x="26" y="26"/>
+			<Anchors>
+				<Anchor point="RIGHT" x="-4"/>
+			</Anchors>
+		</PushedTexture>
+		<HighlightTexture file="Interface/Buttons/UI-Common-MouseHilight" alphaMode="ADD">
+			<Size x="26" y="26"/>
+			<Anchors>
+				<Anchor point="RIGHT" x="-4"/>
+			</Anchors>
+		</HighlightTexture>
+		<NormalFont style="GameFontHighlight"/>
+		<ButtonText maxLines="1" justifyH="LEFT" parentKey="text">
+			<Anchors>
+				<Anchor point="LEFT" x="10" y="0"/>
+				<Anchor point="RIGHT" relativeKey="$parent.normal" relativePoint="LEFT" x="-5" y="0"/>
+			</Anchors>
+		</ButtonText>
+	</Button>
+
+	<EditBox name="MJConditionEditBoxTemplate" inherits="InputBoxScriptTemplate,MJDarkPanelTemplate" numeric="true" multiLine="false" autoFocus="false" virtual="true">
+		<Size y="40"/>
+		<FontString inherits="GameFontHighlight" justifyH="LEFT"/>
+		<TextInsets>
+			<AbsInset left="10" right="10"/>
+		</TextInsets>
+		<Frames>
+			<Frame parentKey="border" useParentLevel="true" inherits="InsetFrameTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" x="3" y="-5"/>
+					<Anchor point="BOTTOMRIGHT" x="-3" y="6"/>
+				</Anchors>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad inherit="prepend">
+				self:SetBackdropColor(0, 0, 0, .9)
+			</OnLoad>
+			<OnEnter>
+				if self.tooltip then
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
+					GameTooltip:SetText(self.tooltip, nil, nil, nil, nil, false)
+					GameTooltip:Show()
+				end
+			</OnEnter>
+			<OnLeave function="GameTooltip_Hide"/>
+		</Scripts>
+	</EditBox>
+
+	<Frame name="MJConditionPanelTemplate" inherits="MJOptionPanelTemplate" virtual="true">
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString parentKey="order" inherits="GameFontNormalLarge" justifyH="CENTER">
+					<Size x="26"/>
+					<Anchors>
+						<Anchor point="LEFT" x="2"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<CheckButton parentKey="notCheck" inherits="MJCheckButtonTemplate">
+				<HitRectInsets left="0" right="-30" top="0" bottom="0"/>
+				<Anchors>
+					<Anchor point="LEFT" x="30"/>
+				</Anchors>
+			</CheckButton>
+			<Button parentKey="optionType" inherits="MJConditionDropDownTemplate">
+				<Anchors>
+					<Anchor point="LEFT" relativeKey="$parent.notCheck.Text" relativePoint="RIGHT" x="10"/>
+					<Anchor point="RIGHT" relativePoint="CENTER" x="20"/>
+				</Anchors>
+			</Button>
+			<Button parentKey="remove" inherits="MJRemoveButtonTemplate">
+				<Anchors>
+					<Anchor point="RIGHT" x="-10"/>
+				</Anchors>
+			</Button>
+		</Frames>
+	</Frame>
+
+	<Frame name="MJActionPanelTemplate" inherits="MJOptionPanelTemplate" virtual="true">
+		<Frames>
+			<Button parentKey="optionType" inherits="MJConditionDropDownTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" x="30" y="-5"/>
+					<Anchor point="RIGHT" relativePoint="CENTER" x="-5"/>
+				</Anchors>
+			</Button>
+			<Button parentKey="macro" useParentLevel="true" inherits="BackdropTemplate" hidden="true">
+				<Size y="85"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.optionType" relativePoint="BOTTOMLEFT" x="0" y="-5"/>
+					<Anchor point="RIGHT" x="-30"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString parentKey="limitText" inherits="GameFontHighlightSmall">
+							<Size x="0" y="5"/>
+							<Anchors>
+								<Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" x="-5" y="10"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Frames>
+					<EventFrame parentKey="scrollBar" enableMouse="true" inherits="WowTrimScrollBar">
+						<Anchors>
+							<Anchor point="TOPRIGHT" x="-4" y="-5"/>
+							<Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+						</Anchors>
+					</EventFrame>
+					<Frame parentKey="editFrame" inherits="ScrollingEditBoxTemplate"/>
+				</Frames>
+				<Scripts>
+					<OnLoad>
+						self:SetBackdrop({
+							bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+							edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+							tile = true,
+							tileEdge = true,
+							tileSize = 16,
+							edgeSize = 16,
+							insets = { left = 4, right = 4, top = 4, bottom = 4 },
+						})
+						self:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR:GetRGB())
+						self:SetBackdropBorderColor(FRIENDS_GRAY_COLOR:GetRGB())
+
+						local anchorsToFrame = {
+							CreateAnchor("TOPLEFT", self, "TOPLEFT", 8, -8),
+							CreateAnchor("BOTTOMRIGHT", self, "BOTTOMRIGHT", -8, 8),
+						}
+						local anchorsToBar = {
+							CreateAnchor("TOPLEFT", self, "TOPLEFT", 8, -8),
+							CreateAnchor("BOTTOMRIGHT", self.scrollBar, "BOTTOMLEFT", -3, 4),
+						}
+						local scrollBox = self.editFrame:GetScrollBox()
+						ScrollUtil.RegisterScrollBoxWithScrollBar(scrollBox, self.scrollBar)
+						ScrollUtil.AddManagedScrollBarVisibilityBehavior(scrollBox, self.scrollBar, anchorsToBar, anchorsToFrame)
+
+						local editBox = self.editFrame:GetEditBox()
+						editBox:SetMaxLetters(255)
+						editBox:HookScript("OnTextChanged", function(editBox, userInput)
+							self.limitText:SetFormattedText(MACROFRAME_CHAR_LIMIT, editBox:GetNumLetters())
+						end)
+					</OnLoad>
+					<OnClick>self.editFrame:GetEditBox():SetFocus()</OnClick>
+					<OnHide>self:Hide()</OnHide>
+				</Scripts>
+			</Button>
+		</Frames>
 	</Frame>
 </Ui>

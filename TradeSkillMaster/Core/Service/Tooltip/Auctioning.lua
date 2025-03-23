@@ -6,12 +6,10 @@
 
 local TSM = select(2, ...) ---@type TSM
 local Auctioning = TSM.Tooltip:NewPackage("Auctioning")
-local ClientInfo = TSM.LibTSMWoW:Include("Util.ClientInfo")
-local L = TSM.Locale.GetTable()
-local AuctioningOperation = TSM.LibTSMSystem:Include("AuctioningOperation")
-local ItemString = TSM.LibTSMTypes:Include("Item.ItemString")
-local Group = TSM.LibTSMTypes:Include("Group")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
+local Environment = TSM.Include("Environment")
+local L = TSM.Include("Locale").GetTable()
+local ItemString = TSM.Include("Util.ItemString")
+local ItemInfo = TSM.Include("Service.ItemInfo")
 local private = {}
 
 
@@ -20,7 +18,7 @@ local private = {}
 -- Module Functions
 -- ============================================================================
 
-function Auctioning.OnEnable()
+function Auctioning.OnInitialize()
 	TSM.Tooltip.Register(TSM.Tooltip.CreateInfo()
 		:SetHeadings(L["TSM Auctioning"])
 		:SetSettingsModule("Auctioning")
@@ -39,20 +37,20 @@ function private.PopulatePostQuantityLine(tooltip, itemString)
 	local postCap, stackSize = nil, nil
 	if itemString == ItemString.GetPlaceholder() then
 		postCap = 5
-		stackSize = ClientInfo.HasFeature(ClientInfo.FEATURES.AH_STACKS) and 200 or nil
+		stackSize = Environment.HasFeature(Environment.FEATURES.AH_STACKS) and 200 or nil
 	elseif ItemInfo.IsSoulbound(itemString) then
 		return
 	else
-		itemString = Group.TranslateItemString(itemString)
+		itemString = TSM.Groups.TranslateItemString(itemString)
 		local _, operation = TSM.Operations.GetFirstOperationByItem("Auctioning", itemString)
 		if not operation then
 			return
 		end
 
-		postCap = AuctioningOperation.GetItemPrice(itemString, "postCap", operation)
-		stackSize = ClientInfo.HasFeature(ClientInfo.FEATURES.AH_STACKS) and AuctioningOperation.GetItemPrice(itemString, "stackSize", operation) or nil
+		postCap = TSM.Auctioning.Util.GetPrice("postCap", operation, itemString)
+		stackSize = Environment.HasFeature(Environment.FEATURES.AH_STACKS) and TSM.Auctioning.Util.GetPrice("stackSize", operation, itemString) or nil
 	end
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.AH_STACKS) then
+	if Environment.HasFeature(Environment.FEATURES.AH_STACKS) then
 		tooltip:AddTextLine(L["Post Quantity"], postCap and stackSize and postCap.."x"..stackSize or "---")
 	else
 		tooltip:AddTextLine(L["Post Quantity"], postCap or "---")
@@ -68,15 +66,15 @@ function private.PopulatePricesLine(tooltip, itemString)
 	elseif ItemInfo.IsSoulbound(itemString) then
 		return
 	else
-		itemString = Group.TranslateItemString(itemString)
+		itemString = TSM.Groups.TranslateItemString(itemString)
 		local _, operation = TSM.Operations.GetFirstOperationByItem("Auctioning", itemString)
 		if not operation then
 			return
 		end
 
-		minPrice = AuctioningOperation.GetItemPrice(itemString, "minPrice", operation)
-		normalPrice = AuctioningOperation.GetItemPrice(itemString, "normalPrice", operation)
-		maxPrice = AuctioningOperation.GetItemPrice(itemString, "maxPrice", operation)
+		minPrice = TSM.Auctioning.Util.GetPrice("minPrice", operation, itemString)
+		normalPrice = TSM.Auctioning.Util.GetPrice("normalPrice", operation, itemString)
+		maxPrice = TSM.Auctioning.Util.GetPrice("maxPrice", operation, itemString)
 	end
 	tooltip:AddItemValuesLine(L["Min/Normal/Max Prices"], minPrice, normalPrice, maxPrice)
 end

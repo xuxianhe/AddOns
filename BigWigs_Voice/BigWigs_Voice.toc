@@ -1,7 +1,7 @@
-﻿## Interface: 110007, 110100
+﻿## Interface: 100206
 
 ## Title: BigWigs |cffff0000+|r|cffffffffVoice: Yoda小兔头|r
-## Version: 11.1.0.0
+## Version: 10.2.6.0
 ## Notes: A plugin for BigWigs that will play Text-To-Speech sounds for boss abilities.
 ## Notes-zhCN: BigWigs附加模块，为团队首领技能播放语音提示。
 ## Notes-zhTW: BigWigs附加模組，為團隊首領技能播放語音提示。

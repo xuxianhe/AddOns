@@ -34,6 +34,8 @@ local LibDialog = LibStub("LibDialog-1.0RS")
 
 RSExplorerFilters = { };
 
+local filterCollectionsID = 1
+local filterStateID = 2
 local filters = { }
 
 local currentContinentDropDownValues = { }
@@ -82,6 +84,7 @@ end
 local function PopulateContinentDropDown(mainFrame, continentDropDown)
 	local collectionsLoot = RSCollectionsDB.GetAllEntitiesCollectionsLoot()[RSConstants.ITEM_SOURCE.NPC]
 	
+	local _, _, classIndex = UnitClass("player");
 	currentContinentDropDownValues = { }
 	local continentDropDownValuesNotSorted = { }
 	if (RSUtils.GetTableLength(filters) > 0) then
@@ -111,18 +114,7 @@ local function PopulateContinentDropDown(mainFrame, continentDropDown)
 					AddContinentDropDownValue(npcID, npcInfo, continentDropDownValuesNotSorted)
 				elseif (filters[RSConstants.EXPLORER_FILTER_DROP_TOYS] and collectionsLoot and collectionsLoot[npcID] and RSUtils.GetTableLength(collectionsLoot[npcID][RSConstants.ITEM_TYPE.TOY]) > 0) then
 					AddContinentDropDownValue(npcID, npcInfo, continentDropDownValuesNotSorted)
-				elseif (filters[RSConstants.EXPLORER_FILTER_DROP_APPEARANCES] and collectionsLoot and collectionsLoot[npcID] and RSUtils.GetTableLength(collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE]) > 0) then
-					if (filters[RSConstants.EXPLORER_FILTER_DROP_CLASS_APPEARANCES]) then
-						for _, itemID in pairs(collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE]) do
-							if (RSCollectionsDB.IsNotCollectedClassAppearance(itemID)) then
-								AddContinentDropDownValue(npcID, npcInfo, continentDropDownValuesNotSorted)
-								break
-							end
-						end
-					else
-						AddContinentDropDownValue(npcID, npcInfo, continentDropDownValuesNotSorted)
-					end
-				elseif (filters[RSConstants.EXPLORER_FILTER_DROP_DRAKEWATCHER] and collectionsLoot and collectionsLoot[npcID] and RSUtils.GetTableLength(collectionsLoot[npcID][RSConstants.ITEM_TYPE.DRAKEWATCHER]) > 0) then
+				elseif (filters[RSConstants.EXPLORER_FILTER_DROP_APPEARANCES] and collectionsLoot and collectionsLoot[npcID] and collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE] and RSUtils.GetTableLength(collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE][classIndex]) > 0) then
 					AddContinentDropDownValue(npcID, npcInfo, continentDropDownValuesNotSorted)
 				elseif (filters[RSConstants.EXPLORER_FILTER_PART_ACHIEVEMENT] and RSAchievementDB.GetNotCompletedAchievementLink(npcID)) then
 					AddContinentDropDownValue(npcID, npcInfo, continentDropDownValuesNotSorted)
@@ -266,49 +258,8 @@ local function FilterDropDownMenu_SetupMenu(dropDown, rootDescription)
 		if (filters[filterKey]) then
 			RSConfigDB.SetSearchingAppearances(false)
 			filters[filterKey] = nil
-			
-			-- Also disables searching for appearances for the current class
-			filters[RSConstants.EXPLORER_FILTER_DROP_CLASS_APPEARANCES] = false
-			RSConfigDB.SetSearchingClassAppearances(false)
 		else
 			RSConfigDB.SetSearchingAppearances(true)
-			filters[filterKey] = true
-		end
-		
-		return MenuResponse.Refresh;
-	end)
-	
-	local appearancesClassFilter = collectionsSubmenu:CreateRadio(AL["EXPLORER_FILTER_CLASS_APPEARANCES"], 
-		function(filterKey) return filters[filterKey] end, 
-		function(filterKey)
-			-- Overriden by SetResponder
-		end,
-		RSConstants.EXPLORER_FILTER_DROP_CLASS_APPEARANCES)
-	appearancesClassFilter:SetResponder(function(filterKey)
-		if (filters[filterKey]) then
-			RSConfigDB.SetSearchingClassAppearances(false)
-			filters[filterKey] = nil
-		else
-			RSConfigDB.SetSearchingClassAppearances(true)
-			filters[filterKey] = true
-		end
-		
-		return MenuResponse.Refresh;
-	end)
-	appearancesClassFilter:SetEnabled(function() return RSConfigDB.IsSearchingAppearances() end)
-
-	local drakewatcherFilter = collectionsSubmenu:CreateRadio(AL["EXPLORER_FILTER_DRAKEWATCHER"], 
-		function(filterKey) return filters[filterKey] end, 
-		function(filterKey)
-			-- Overriden by SetResponder
-		end,
-		RSConstants.EXPLORER_FILTER_DROP_DRAKEWATCHER)
-	drakewatcherFilter:SetResponder(function(filterKey)
-		if (filters[filterKey]) then
-			RSConfigDB.SetSearchingDrakewatcher(false)
-			filters[filterKey] = nil
-		else
-			RSConfigDB.SetSearchingDrakewatcher(true)
 			filters[filterKey] = true
 		end
 		
@@ -452,10 +403,18 @@ function RSExplorerFilters:Initialize(mainFrame)
 		PopulateContinentDropDown(self.mainFrame, self.ContinentDropDown)
 		self.ContinentDropDown:SetupMenu(ContinentDropDownMenu_SetupMenu)
 		
-		self.LockCurrentZoneCheckButton.Text:SetText(AL["EXPLORER_LOCK_CURRENT_ZONE"])
-		self.LockCurrentZoneCheckButton.tooltip = AL["EXPLORER_LOCK_CURRENT_ZONE_DESC"]
-		self.LockCurrentZoneCheckButton:SetChecked(RSConfigDB.IsLockingCurrentMap())
-		self.LockCurrentZoneCheckButton.func = function(self, checked)
+		self.LockCurrentZone = CreateFrame("CheckButton", "LockCurrentZone", self, "ChatConfigCheckButtonTemplate");
+		self.LockCurrentZone:SetPoint("LEFT", self.ContinentDropDown, "RIGHT", 10, 0)
+		LockCurrentZoneText:SetText(AL["EXPLORER_LOCK_CURRENT_ZONE"])
+		self.LockCurrentZone.tooltip = AL["EXPLORER_LOCK_CURRENT_ZONE_DESC"]
+		self.LockCurrentZone:SetScript("OnEnter", function(self)
+			mainFrame:ShowTooltip(self)
+		end)
+		self.LockCurrentZone:SetScript("OnLeave", function(self)
+			mainFrame:HideTooltip(self)
+		end)
+		self.LockCurrentZone:SetChecked(RSConfigDB.IsLockingCurrentMap())
+		self.LockCurrentZone.func = function(self, checked)
 			RSConfigDB.SetLockingCurrentMap(checked)
 		end
 		
@@ -526,11 +485,6 @@ function RSExplorerRareList_Sort(self)
 			if (raresListInfo[npcID2].hasMissingToy) then return false end
 		end
 				
-		if (raresListInfo[npcID1].hasMissingDrakewatcher ~= raresListInfo[npcID2].hasMissingDrakewatcher) then
-			if (raresListInfo[npcID1].hasMissingDrakewatcher) then return true end
-			if (raresListInfo[npcID2].hasMissingDrakewatcher) then return false end
-		end
-				
 		if (raresListInfo[npcID1].hasMissingAppearance ~= raresListInfo[npcID2].hasMissingAppearance) then
 			if (raresListInfo[npcID1].hasMissingAppearance) then return true end
 			if (raresListInfo[npcID2].hasMissingAppearance) then return false end
@@ -568,6 +522,8 @@ function RSExplorerRareList:Initialize(mainFrame)
 	end
 	
 	self.mainFrame = mainFrame
+	local _, _, classIndex = UnitClass("player");
+	self.classIndex = classIndex
 	self.listScroll.update = function() self:UpdateData(); end;
 	self.listScroll.dynamic = function(offset) return RSExplorerRareList_GetTopButton(self, offset) end;
 
@@ -608,29 +564,10 @@ function RSExplorerRareList:AddFilteredRareToList(npcID, npcInfo, npcName)
 		else
 			self.raresListInfo[npcID].hasMissingToy = false
 		end
-		if (RSUtils.GetTableLength(collectionsLoot[RSConstants.ITEM_SOURCE.NPC][npcID][RSConstants.ITEM_TYPE.APPEARANCE]) > 0) then
-			if (RSConfigDB.IsSearchingClassAppearances()) then
-				local found = false
-				for _, itemID in pairs(collectionsLoot[RSConstants.ITEM_SOURCE.NPC][npcID][RSConstants.ITEM_TYPE.APPEARANCE]) do
-					if (RSCollectionsDB.IsNotCollectedClassAppearance(itemID)) then
-						found = true
-						break
-					end
-				end
-				
-				if (found) then
-					self.raresListInfo[npcID].hasMissingAppearance = true
-				end
-			else
-				self.raresListInfo[npcID].hasMissingAppearance = true
-			end
+		if (collectionsLoot[RSConstants.ITEM_SOURCE.NPC][npcID][RSConstants.ITEM_TYPE.APPEARANCE] and RSUtils.GetTableLength(collectionsLoot[RSConstants.ITEM_SOURCE.NPC][npcID][RSConstants.ITEM_TYPE.APPEARANCE][self.classIndex]) > 0) then
+			self.raresListInfo[npcID].hasMissingAppearance = true
 		else
 			self.raresListInfo[npcID].hasMissingAppearance = false
-		end
-		if (RSUtils.GetTableLength(collectionsLoot[RSConstants.ITEM_SOURCE.NPC][npcID][RSConstants.ITEM_TYPE.DRAKEWATCHER]) > 0) then
-			self.raresListInfo[npcID].hasMissingDrakewatcher = true
-		else
-			self.raresListInfo[npcID].hasMissingDrakewatcher = false
 		end
 		
 		-- for custom items we show the texture only if they user is not filtering for an specific group
@@ -683,20 +620,7 @@ function RSExplorerRareList:UpdateRareList()
 						self:AddFilteredRareToList(npcID, npcInfo, npcName)
 					end
 								
-					if (filters[RSConstants.EXPLORER_FILTER_DROP_APPEARANCES] and collectionsLoot and collectionsLoot[npcID] and RSUtils.GetTableLength(collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE]) > 0) then
-						if (filters[RSConstants.EXPLORER_FILTER_DROP_CLASS_APPEARANCES]) then
-							for _, itemID in pairs(collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE]) do
-								if (RSCollectionsDB.IsNotCollectedClassAppearance(itemID)) then
-									self:AddFilteredRareToList(npcID, npcInfo, npcName)
-									break
-								end
-							end
-						else
-							self:AddFilteredRareToList(npcID, npcInfo, npcName)
-						end
-					end
-								
-					if (filters[RSConstants.EXPLORER_FILTER_DROP_DRAKEWATCHER] and collectionsLoot and collectionsLoot[npcID] and RSUtils.GetTableLength(collectionsLoot[npcID][RSConstants.ITEM_TYPE.DRAKEWATCHER]) > 0) then
+					if (filters[RSConstants.EXPLORER_FILTER_DROP_APPEARANCES] and collectionsLoot and collectionsLoot[npcID] and collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE] and RSUtils.GetTableLength(collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE][self.classIndex]) > 0) then
 						self:AddFilteredRareToList(npcID, npcInfo, npcName)
 					end
 					
@@ -710,17 +634,8 @@ function RSExplorerRareList:UpdateRareList()
 						self:AddFilteredRareToList(npcID, npcInfo, npcName)
 					end
 								
-					if (filters[RSConstants.EXPLORER_FILTER_WITHOUT_COLLECTIBLES]) then
-						if (not collectionsLoot or not collectionsLoot[npcID]) then
-							self:AddFilteredRareToList(npcID, npcInfo, npcName)
-						elseif (filters[RSConstants.EXPLORER_FILTER_DROP_CLASS_APPEARANCES] and collectionsLoot and collectionsLoot[npcID] and RSUtils.GetTableLength(collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE]) > 0) then
-							for _, itemID in pairs(collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE]) do
-								if (not RSCollectionsDB.IsNotCollectedClassAppearance(itemID)) then
-									self:AddFilteredRareToList(npcID, npcInfo, npcName)
-									break
-								end
-							end
-						end
+					if (filters[RSConstants.EXPLORER_FILTER_WITHOUT_COLLECTIBLES] and ((not collectionsLoot or not collectionsLoot[npcID]) or (collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE] and RSUtils.GetTableLength(collectionsLoot[npcID][RSConstants.ITEM_TYPE.APPEARANCE][self.classIndex]) == 0))) then
+						self:AddFilteredRareToList(npcID, npcInfo, npcName)
 					end
 				end
 			else
@@ -778,7 +693,6 @@ function RSExplorerRareList:UpdateData()
 			activeTextures = ToggleButtonTexture(activeTextures, button.RareNPC.MountTexture, self.raresListInfo[npcID].hasMissingMount)
 			activeTextures = ToggleButtonTexture(activeTextures, button.RareNPC.PetTexture, self.raresListInfo[npcID].hasMissingPet)
 			activeTextures = ToggleButtonTexture(activeTextures, button.RareNPC.ToyTexture, self.raresListInfo[npcID].hasMissingToy)
-			activeTextures = ToggleButtonTexture(activeTextures, button.RareNPC.DrakewatcherTexture, self.raresListInfo[npcID].hasMissingDrakewatcher)
 			activeTextures = ToggleButtonTexture(activeTextures, button.RareNPC.AppearanceTexture, self.raresListInfo[npcID].hasMissingAppearance)
 			activeTextures = ToggleButtonTexture(activeTextures, button.RareNPC.CustomTexture, self.raresListInfo[npcID].hasMissingCustom)
 			
@@ -805,7 +719,6 @@ function RSExplorerRareList:UpdateData()
 				button.RareNPC.MountTexture:SetDesaturated(1)
 				button.RareNPC.PetTexture:SetDesaturated(1)
 				button.RareNPC.ToyTexture:SetDesaturated(1)
-				button.RareNPC.DrakewatcherTexture:SetDesaturated(1)
 				button.RareNPC.AppearanceTexture:SetDesaturated(1)
 				button.RareNPC.CustomTexture:SetDesaturated(1)
 			else
@@ -813,7 +726,6 @@ function RSExplorerRareList:UpdateData()
 				button.RareNPC.MountTexture:SetDesaturated(nil)
 				button.RareNPC.PetTexture:SetDesaturated(nil)
 				button.RareNPC.ToyTexture:SetDesaturated(nil)
-				button.RareNPC.DrakewatcherTexture:SetDesaturated(nil)
 				button.RareNPC.AppearanceTexture:SetDesaturated(nil)
 				button.RareNPC.CustomTexture:SetDesaturated(nil)
 			end
@@ -844,7 +756,9 @@ end
 
 local function RSExplorerLoadMap(mapID, mapFrame)
 	-- Avoid refreshing if the map didn't change
+	mapFrame:Hide()
 	if (mapFrame.mapID and mapFrame.mapID == mapID) then
+		mapFrame:Show()
 		return
 	end
 	
@@ -867,13 +781,10 @@ local function RSExplorerLoadMap(mapID, mapFrame)
 		detailLayer:SetMapAndLayer(mapID, layerIndex, mapFrame);
 		detailLayer:Show();
 	end
+	mapFrame:Show()
 end
 
 local function AddIcon(icon, texture, x, y, r, g, b)
-	if (not x or not y) then
-		return
-	end
-	
 	icon.Texture:SetTexture(texture)
 	if (r and g and b) then
 		icon.Texture:SetVertexColor(r, g, b, 0.4)
@@ -938,14 +849,22 @@ function RSExplorerRareList:AddItems(parentFrame, itemType, customGroupKeys)
 	
 	local collectionsLoot = RSCollectionsDB.GetAllEntitiesCollectionsLoot()[RSConstants.ITEM_SOURCE.NPC]
 	if (collectionsLoot and collectionsLoot[self.selectedNpcId]) then
-		local itemIDs = collectionsLoot[self.selectedNpcId][itemType]
+		local itemIDs = nil
+		if (itemType == RSConstants.ITEM_TYPE.APPEARANCE and collectionsLoot[self.selectedNpcId][itemType]) then
+			-- Don't nest IFs!!
+			if (collectionsLoot[self.selectedNpcId][itemType][self.classIndex]) then
+				itemIDs = collectionsLoot[self.selectedNpcId][itemType][self.classIndex]
+			end
+		else
+			itemIDs = collectionsLoot[self.selectedNpcId][itemType]
+		end
 		
 	    if (RSUtils.GetTableLength(itemIDs) > 0) then
 			local xOffset = 0
 			local yOffset = -8
 			local numColumn = 0
 			local numRow = 0
-			local maxLines = 1
+			local maxLines = 0
 			local maxItemsPerRow
     		if (itemType ~= RSConstants.ITEM_TYPE.APPEARANCE and not RSUtils.Contains(customGroupKeys, itemType)) then
     			maxItemsPerRow = 3
@@ -960,47 +879,43 @@ function RSExplorerRareList:AddItems(parentFrame, itemType, customGroupKeys)
 	    	end
    
 	    	for _, itemID in ipairs(itemIDs) do
-	    		-- If appearance only add if not filtering by class
-	    		if (itemType ~= RSConstants.ITEM_TYPE.APPEARANCE or not RSConfigDB.IsSearchingClassAppearances() or RSCollectionsDB.IsNotCollectedClassAppearance(itemID)) then
-		    		local _, _, _, _, icon, _, _ = C_Item.GetItemInfoInstant(itemID)
-		    		local lootItem = mainFrame.lootItemsPool:Acquire();
-		    		
-		    		if (math.fmod(numColumn, maxItemsPerRow) == 0) then
-		    			xOffset = xOffset + 10
-		    		else
-		    			xOffset = xOffset + lootItem:GetWidth() + 2
-		    		end
-		    		
-		    		lootItem.itemID = itemID
-		    		lootItem.Icon:SetTexture(icon)
-		    		lootItem.isMount = itemType == RSConstants.ITEM_TYPE.MOUNT
-		    		lootItem.isPet = itemType == RSConstants.ITEM_TYPE.PET
-		    		lootItem.istoy = itemType == RSConstants.ITEM_TYPE.TOY
-		    		lootItem.isDrakewatcher = itemType == RSConstants.ITEM_TYPE.DRAKEWATCHER
-		    		lootItem.isAppearance = itemType == RSConstants.ITEM_TYPE.APPEARANCE
-		    		lootItem.isCustom = RSUtils.Contains(customGroupKeys, itemType)
-		    		
-		    		lootItem:SetPoint("TOPLEFT", parentFrame, "TOPLEFT", xOffset, yOffset)
-		    		lootItem:Show()
-		    		
-		    		numColumn = numColumn + 1
-		    		
-		    		if (math.fmod(numColumn, maxItemsPerRow) == 0) then
-	    				numRow = numRow + 1
-	    				if (numRow == maxLines) then	
-	    					break
-	    				end
-	    				
-	    				xOffset = 0
-	    				numColumn = 0
-	    				if (numRow > 1 and not lootItem.isAppearance and not lootItem.isCustom) then			
-			    			break
-			    		else	
-			    			maxItemsPerRow = 8
-			    			yOffset = yOffset - lootItem:GetHeight() - 2 
-			    		end
-	    			end
+	    		local _, _, _, _, icon, _, _ = GetItemInfoInstant(itemID)
+	    		local lootItem = mainFrame.lootItemsPool:Acquire();
+	    		
+	    		if (math.fmod(numColumn, maxItemsPerRow) == 0) then
+	    			xOffset = xOffset + 10
+	    		else
+	    			xOffset = xOffset + lootItem:GetWidth() + 2
 	    		end
+	    		
+	    		lootItem.itemID = itemID
+	    		lootItem.Icon:SetTexture(icon)
+	    		lootItem.isMount = itemType == RSConstants.ITEM_TYPE.MOUNT
+	    		lootItem.isPet = itemType == RSConstants.ITEM_TYPE.PET
+	    		lootItem.istoy = itemType == RSConstants.ITEM_TYPE.TOY
+	    		lootItem.isAppearance = itemType == RSConstants.ITEM_TYPE.APPEARANCE
+	    		lootItem.isCustom = RSUtils.Contains(customGroupKeys, itemType)
+	    		
+	    		lootItem:SetPoint("TOPLEFT", parentFrame, "TOPLEFT", xOffset, yOffset)
+	    		lootItem:Show()
+	    		
+	    		numColumn = numColumn + 1
+	    		
+	    		if (math.fmod(numColumn, maxItemsPerRow) == 0) then
+    				numRow = numRow + 1
+    				if (numRow == maxLines) then	
+    					break
+    				end
+    				
+    				xOffset = 0
+    				numColumn = 0
+    				if (numRow > 1 and not lootItem.isAppearance and not lootItem.isCustom) then			
+		    			break
+		    		else	
+		    			maxItemsPerRow = 8
+		    			yOffset = yOffset - lootItem:GetHeight() - 2 
+		    		end
+    			end
 	    	end
  			
 	    	-- Custom settings save current grid properties
@@ -1061,7 +976,6 @@ function RSExplorerRareList:SelectNpc(npcID)
 	self:AddItems(mainFrame.RareInfo.Mounts, RSConstants.ITEM_TYPE.MOUNT)
 	self:AddItems(mainFrame.RareInfo.Pets, RSConstants.ITEM_TYPE.PET)
 	self:AddItems(mainFrame.RareInfo.Toys, RSConstants.ITEM_TYPE.TOY)
-	self:AddItems(mainFrame.RareInfo.Drakewatcher, RSConstants.ITEM_TYPE.DRAKEWATCHER)
 	self:AddItems(mainFrame.RareInfo.Appearances, RSConstants.ITEM_TYPE.APPEARANCE)
 	
 	-- Refresh internal loot grid
@@ -1473,7 +1387,7 @@ function RSExplorerLoot:AddItems(editbox)
 		local errorIDs = {}
 		for itemIDstring in string.gmatch(value, '([^,]+)') do
 			local itemID = tonumber(itemIDstring)
-			local ret, _, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = pcall(C_Item.GetItemInfoInstant, itemID)
+			local ret, _, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = pcall(GetItemInfoInstant, itemID)
 			if (not ret or not icon) then
 				tinsert(errorIDs, itemID)
 			else
@@ -1572,7 +1486,7 @@ function RSExplorerLoot:SelectGroup(groupKey, groupName)
 		local maxLines = 8
 		local maxItemsPerRow = 17
     	for _, itemID in ipairs(itemIDs) do
-    		local _, _, _, _, icon, _, _ = C_Item.GetItemInfoInstant(itemID)
+    		local _, _, _, _, icon, _, _ = GetItemInfoInstant(itemID)
     		local lootItem = self.GroupInfo.lootItemsPool:Acquire();
     		
     		if (math.fmod(numColumn, maxItemsPerRow) ~= 0) then
@@ -1726,9 +1640,6 @@ function RSExplorerMixin:OnLoad()
 	self.RareInfo.Toys.Texture:SetTexture("Interface\\AddOns\\RareScanner\\Media\\Textures\\ToysCorner.blp")
 	self.RareInfo.Toys.Texture:SetVertexColor(1,1,1,0.5)
 	self.RareInfo.Toys.Texture.tooltip = AL["EXPLORER_TOYS"]
-	self.RareInfo.Drakewatcher.Texture:SetTexture("Interface\\AddOns\\RareScanner\\Media\\Textures\\DrakewatcherCorner.blp")
-	self.RareInfo.Drakewatcher.Texture:SetVertexColor(1,1,1,0.5)
-	self.RareInfo.Drakewatcher.Texture.tooltip = AL["EXPLORER_DRAKEWATCHER"]
 	self.RareInfo.Appearances.Texture:SetTexture("Interface\\AddOns\\RareScanner\\Media\\Textures\\AppearancesCorner.blp")
 	self.RareInfo.Appearances.Texture:SetVertexColor(1,1,1,0.5)
 	self.RareInfo.Appearances.Texture.tooltip = AL["EXPLORER_APPEARANCES"]
@@ -1743,8 +1654,16 @@ function RSExplorerMixin:HideCustomLootPanels()
 	self.CustomLoot:Hide()
 	self.CustomLoot.background:Hide()
 	self.CustomLoot.background2:Hide()
-	self.CustomLoot.Border:Hide()
+	self.CustomLoot.BaseFrameTopEdge:Hide()
+	self.CustomLoot.BaseFrameBottomEdge:Hide()
+	self.CustomLoot.BaseFrameLeftEdge:Hide()
+	self.CustomLoot.BaseFrameRightEdge:Hide()
+	self.CustomLoot.BaseFrameTopLeftCorner:Hide()
+	self.CustomLoot.BaseFrameTopRightCorner:Hide()
+	self.CustomLoot.BaseFrameBottomLeftCorner:Hide()
+	self.CustomLoot.BaseFrameBottomRightCorner:Hide()
 	self.CustomLoot.ControlFrame:Hide()
+	self.CustomLoot.ControlFrame.LootGroupDropDown:Hide()
 	self.CustomLoot.GroupList:Hide()
 	self.CustomLoot.GroupInfo:Hide()
 	
@@ -1758,8 +1677,16 @@ function RSExplorerMixin:ShowCustomLootPanels()
 	self.CustomLoot:Show()
 	self.CustomLoot.background:Show()
 	self.CustomLoot.background2:Show()
-	self.CustomLoot.Border:Show()
+	self.CustomLoot.BaseFrameTopEdge:Show()
+	self.CustomLoot.BaseFrameBottomEdge:Show()
+	self.CustomLoot.BaseFrameLeftEdge:Show()
+	self.CustomLoot.BaseFrameRightEdge:Show()
+	self.CustomLoot.BaseFrameTopLeftCorner:Show()
+	self.CustomLoot.BaseFrameTopRightCorner:Show()
+	self.CustomLoot.BaseFrameBottomLeftCorner:Show()
+	self.CustomLoot.BaseFrameBottomRightCorner:Show()
 	self.CustomLoot.ControlFrame:Show()
+	self.CustomLoot.ControlFrame.LootGroupDropDown:Show()
 	self.CustomLoot.GroupList:Show()
 	self.CustomLoot.GroupInfo:Show()
 	
@@ -1796,8 +1723,6 @@ function RSExplorerMixin:Initialize()
 	filters[RSConstants.EXPLORER_FILTER_DROP_PETS] = RSConfigDB.IsSearchingPets()
 	filters[RSConstants.EXPLORER_FILTER_DROP_TOYS] = RSConfigDB.IsSearchingToys()
 	filters[RSConstants.EXPLORER_FILTER_DROP_APPEARANCES] = RSConfigDB.IsSearchingAppearances()
-	filters[RSConstants.EXPLORER_FILTER_DROP_CLASS_APPEARANCES] = RSConfigDB.IsSearchingClassAppearances()
-	filters[RSConstants.EXPLORER_FILTER_DROP_DRAKEWATCHER] = RSConfigDB.IsSearchingDrakewatcher()
 	filters[RSConstants.EXPLORER_FILTER_DEAD] = RSConfigDB.IsShowDead()
 	filters[RSConstants.EXPLORER_FILTER_FILTERED] = RSConfigDB.IsShowFiltered()
 	filters[RSConstants.EXPLORER_FILTER_WITHOUT_COLLECTIBLES] = RSConfigDB.IsShowWithoutCollectibles()
@@ -1814,8 +1739,8 @@ function RSExplorerMixin:Initialize()
 end
 
 function RSExplorerMixin:OnShow()
-    -- check if there is a new database and it requires a new scan
-    if (not RSCollectionsDB.IsCollectionsScanDoneWithCurrentVersion()) then
+    -- check if there is a new database and the whole scan should be done or if only the current class is missing in the scan
+    if (not RSCollectionsDB.IsCollectionsScanDoneWithCurrentVersion() or not RSCollectionsDB.IsCollectionsScanByClassDone()) then
     	self.ScanRequired.ScanRequiredText:SetText(AL["EXPLORER_SCAN_REQUIRED"])
     	self.ScanRequired.StartScanningButton:SetText(AL["EXPLORER_START_SCAN"])
     	self.ScanRequired.StartScanningButton:Show()		

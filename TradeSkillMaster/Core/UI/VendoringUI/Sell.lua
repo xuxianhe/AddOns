@@ -5,14 +5,16 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Sell = TSM.UI.VendoringUI:NewPackage("Sell") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local String = TSM.LibTSMUtil:Include("Lua.String")
-local Theme = TSM.LibTSMService:Include("UI.Theme")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
-local UIElements = TSM.LibTSMUI:Include("Util.UIElements")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
+local Sell = TSM.UI.VendoringUI:NewPackage("Sell")
+local L = TSM.Include("Locale").GetTable()
+local Money = TSM.Include("Util.Money")
+local TempTable = TSM.Include("Util.TempTable")
+local String = TSM.Include("Util.String")
+local Theme = TSM.Include("Util.Theme")
+local ItemInfo = TSM.Include("Service.ItemInfo")
+local Settings = TSM.Include("Service.Settings")
+local UIElements = TSM.Include("UI.UIElements")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
 	settings = nil,
 	filterText = "",
@@ -25,8 +27,8 @@ local private = {
 -- Module Functions
 -- ============================================================================
 
-function Sell.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function Sell.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("global", "vendoringUIContext", "sellScrollingTable")
 	TSM.UI.VendoringUI.RegisterTopLevelPage(L["Sell"], private.GetFrame)
 end
@@ -40,7 +42,11 @@ end
 function private.GetFrame()
 	UIUtils.AnalyticsRecordPathChange("vendoring", "sell")
 	private.filterText = ""
-	private.query = private.query or TSM.Vendoring.Sell.CreateBagsQuery()
+	if private.query then
+		TSM.Vendoring.Sell.ResetBagsQuery(private.query)
+	else
+		private.query = TSM.Vendoring.Sell.CreateBagsQuery()
+	end
 
 	return UIElements.New("Frame", "sell")
 		:SetLayout("VERTICAL")
@@ -79,11 +85,39 @@ function private.GetFrame()
 				)
 			)
 		)
-		:AddChild(UIElements.New("VendorSellScrollTable", "items")
-			:SetSettings(private.settings, "sellScrollingTable")
-			:SetQuery(private.query, private.QueryResetFiltersFunc)
-			:SetScript("OnIgnoreItem", private.RowOnIgnoreItem)
-			:SetScript("OnSellItem", private.RowOnSellItem)
+		:AddChild(UIElements.New("QueryScrollingTable", "items")
+			:SetSettingsContext(private.settings, "sellScrollingTable")
+			:GetScrollingTableInfo()
+				:NewColumn("item")
+					:SetTitle(L["Item"])
+					:SetIconSize(12)
+					:SetFont("ITEM_BODY3")
+					:SetJustifyH("LEFT")
+					:SetTextInfo("itemString", private.GetItemText)
+					:SetIconInfo("itemString", ItemInfo.GetTexture)
+					:SetTooltipInfo("itemString")
+					:SetSortInfo("name")
+					:SetTooltipLinkingDisabled(true)
+					:DisableHiding()
+					:Commit()
+				:NewColumn("vendorSell")
+					:SetTitle(L["Vendor Sell"])
+					:SetFont("TABLE_TABLE1")
+					:SetJustifyH("RIGHT")
+					:SetTextInfo("vendorSell", private.GetVendorSellText)
+					:SetSortInfo("vendorSell")
+					:Commit()
+				:NewColumn("potential")
+					:SetTitle(L["Potential"])
+					:SetFont("TABLE_TABLE1")
+					:SetJustifyH("RIGHT")
+					:SetTextInfo("potentialValue", private.GetPotentialSellText)
+					:SetSortInfo("potentialValue")
+					:Commit()
+				:SetCursor("BUY_CURSOR")
+				:Commit()
+			:SetQuery(private.query)
+			:SetScript("OnRowClick", private.RowOnClick)
 		)
 		:AddChild(UIElements.New("HorizontalLine", "line"))
 		:AddChild(UIElements.New("Frame", "footer")
@@ -110,8 +144,16 @@ function private.GetFrame()
 		)
 end
 
-function private.QueryResetFiltersFunc(query)
-	TSM.Vendoring.Sell.ResetBagsQuery(query)
+function private.GetItemText(itemString)
+	return UIUtils.GetDisplayItemName(itemString) or "?"
+end
+
+function private.GetPotentialSellText(value)
+	return Money.ToString(value, nil, "OPT_RETAIL_ROUND")
+end
+
+function private.GetVendorSellText(vendorSell)
+	return vendorSell > 0 and Money.ToString(vendorSell, nil, "OPT_RETAIL_ROUND") or ""
 end
 
 
@@ -121,25 +163,28 @@ end
 -- ============================================================================
 
 function private.InputOnValueChanged(input)
-	local nameFilter = input:GetValue()
-	if nameFilter == private.filterText then
+	local text = input:GetValue()
+	if text == private.filterText then
 		return
 	end
-	private.filterText = nameFilter
-	nameFilter = String.Escape(nameFilter)
-	input:GetElement("__parent.__parent.__parent.items"):SetFilters(nameFilter ~= "" and nameFilter or nil)
+	private.filterText = text
+
+	TSM.Vendoring.Sell.ResetBagsQuery(private.query)
+	if text ~= "" then
+		private.query:Matches("name", String.Escape(text))
+	end
+	input:GetElement("__parent.__parent.__parent.items"):UpdateData(true)
 end
 
-function private.RowOnIgnoreItem(_, itemString, isPermanent)
-	if isPermanent then
+function private.RowOnClick(_, row, mouseButton)
+	local itemString = row:GetField("itemString")
+	if mouseButton == "RightButton" then
+		TSM.Vendoring.Sell.SellItem(itemString)
+	elseif IsShiftKeyDown() then
 		TSM.Vendoring.Sell.IgnoreItemPermanent(itemString)
 	else
 		TSM.Vendoring.Sell.IgnoreItemSession(itemString)
 	end
-end
-
-function private.RowOnSellItem(_, itemString)
-	TSM.Vendoring.Sell.SellItem(itemString)
 end
 
 function private.SellTrashBtnOnClick(button)
@@ -152,7 +197,7 @@ function private.SellTrashBtnOnClick(button)
 end
 
 function private.SellBOEBtnOnClick(button)
-	-- Checking if an item is disenchantable might cause our query to change since it depends on the ItemInfo DB, so cache the list of items first
+	-- checking if an item is disenchantable might cause our query to change since it depends on the ItemInfo DB, so cache the list of items first
 	local items = TempTable.Acquire()
 	for _, row in private.query:Iterator() do
 		tinsert(items, row:GetField("itemString"))

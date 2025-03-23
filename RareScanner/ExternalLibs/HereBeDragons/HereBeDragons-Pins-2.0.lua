@@ -1,9 +1,9 @@
 -- HereBeDragons-Pins is a library to show pins/icons on the world map and minimap
 
-local MAJOR, MINOR = "HereBeDragons-Pins-2.0", 15
+local MAJOR, MINOR = "HereBeDragons-Pins-2.0", 14
 assert(LibStub, MAJOR .. " requires LibStub")
 
-local pins, oldversion = LibStub:NewLibrary(MAJOR, MINOR)
+local pins, _oldversion = LibStub:NewLibrary(MAJOR, MINOR)
 if not pins then return end
 
 local HBD = LibStub("HereBeDragons-2.0")
@@ -23,12 +23,6 @@ pins.worldmapPinRegistry  = pins.worldmapPinRegistry or {}
 
 pins.worldmapProvider     = pins.worldmapProvider or CreateFromMixins(MapCanvasDataProviderMixin)
 pins.worldmapProviderPin  = pins.worldmapProviderPin or CreateFromMixins(MapCanvasPinMixin)
-
--- make sure the pool is refreshed
-if oldversion and oldversion < 15 and pins.worldmapProvider and CreateUnsecuredRegionPoolInstance then
-    pins.worldmapProvider:RemoveAllData()
-    pins.worldmapPinsPool = nil
-end
 
 if not pins.worldmapPinsPool then
     -- new frame pools in WoW 11.x
@@ -790,10 +784,4 @@ function pins:GetVectorToIcon(icon)
     if not x or not y or instance ~= data.instanceID then return nil end
 
     return HBD:GetWorldVector(instance, x, y, data.x, data.y)
-end
-
-if oldversion then
-    if WorldMapFrame:IsShown() then
-        worldmapProvider:RefreshAllData(false)
-    end
 end

@@ -98,18 +98,6 @@ function RSChatOptions.GetChatOptions()
 							width = "double",
 							disabled = function() return not TomTom or not RSConfigDB.IsDisplayingChatMessages() end,
 						},
-						ingame = {
-							order = 1,
-							type = "toggle",
-							name = AL["CHAT_WAYPOINT_INGAME"],
-							desc = AL["CHAT_WAYPOINT_INGAME_DESC"],
-							get = function() return RSConfigDB.IsAddingchatIngameWaypoints() end,
-							set = function(_, value)
-								RSConfigDB.SetAddingchatIngameWaypoints(value)
-							end,
-							width = "double",
-							disabled = function() return not RSConfigDB.IsDisplayingChatMessages() end,
-						},
 					}
 				},
 				tooltips = {

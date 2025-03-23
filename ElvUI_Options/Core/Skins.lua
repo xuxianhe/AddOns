@@ -52,7 +52,7 @@ local toggles = {
 	worldmap = L["WORLD_MAP"]
 }
 
-if E.Cata or E.Retail then
+if E.Cata or E.Wrath or E.Retail then
 	toggles.achievement = L["ACHIEVEMENTS"]
 	toggles.alertframes = L["Alert Frames"]
 	toggles.archaeology = L["Archaeology Frame"]
@@ -116,6 +116,9 @@ if E.Retail then
 elseif E.Cata then
 	toggles.arenaRegistrar = L["Arena Registrar"]
 	toggles.reforge = L["Reforge"]
+elseif E.Wrath then
+	toggles.arena = L["Arena"]
+	toggles.arenaRegistrar = L["Arena Registrar"]
 elseif E.Classic then
 	toggles.engraving = L["Engraving"]
 	toggles.battlefield = L["Battlefield"]

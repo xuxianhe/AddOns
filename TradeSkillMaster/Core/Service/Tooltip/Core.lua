@@ -5,16 +5,12 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Tooltip = TSM:NewPackage("Tooltip") ---@type AddonPackage
-local ObjectPool = TSM.LibTSMUtil:IncludeClassType("ObjectPool")
-local ItemString = TSM.LibTSMTypes:Include("Item.ItemString")
-local TooltipBuilder = TSM.LibTSMService:IncludeClassType("TooltipBuilder")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
-local Theme = TSM.LibTSMService:Include("UI.Theme")
-local TooltipWrapper = TSM.LibTSMWoW:Include("TooltipWrapper")
-local Item = TSM.LibTSMWoW:Include("API.Item")
-local L = TSM.Locale.GetTable()
-local LibTSMClass = LibStub("LibTSMClass")
+local Tooltip = TSM:NewPackage("Tooltip")
+local ItemString = TSM.Include("Util.ItemString")
+local ObjectPool = TSM.Include("Util.ObjectPool")
+local ItemTooltip = TSM.Include("Service.ItemTooltip")
+local Settings = TSM.Include("Service.Settings")
+local LibTSMClass = TSM.Include("LibTSMClass")
 local TooltipInfo = LibTSMClass.DefineClass("TooltipInfo")
 local TooltipEntry = LibTSMClass.DefineClass("TooltipEntry")
 local private = {
@@ -22,8 +18,6 @@ local private = {
 	settings = nil,
 	registeredInfo = {},
 	settingsBuilder = nil,
-	cancellables = {},
-	builder = nil,
 }
 local ITER_INDEX_PART_MULTIPLE = 1000
 
@@ -33,13 +27,8 @@ local ITER_INDEX_PART_MULTIPLE = 1000
 -- Module Functions
 -- ============================================================================
 
-function Tooltip.OnInitialize(settingsDB)
-	TooltipBuilder.SetInCombatPlaceholder(L["Can't load TSM tooltip while in combat"])
-	private.settings = settingsDB:NewView()
-		:AddKey("global", "tooltipOptions", "embeddedTooltip")
-		:AddKey("global", "tooltipOptions", "enabled")
-		:AddKey("global", "tooltipOptions", "tooltipShowModifier")
-		:AddKey("global", "tooltipOptions", "tooltipPriceFormat")
+function Tooltip.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("global", "tooltipOptions", "moduleTooltips")
 		:AddKey("global", "tooltipOptions", "customPriceTooltips")
 		:AddKey("global", "tooltipOptions", "vendorBuyTooltip")
@@ -49,24 +38,8 @@ function Tooltip.OnInitialize(settingsDB)
 		:AddKey("global", "tooltipOptions", "convertTooltipFormat")
 		:AddKey("global", "tooltipOptions", "operationTooltips")
 		:AddKey("global", "tooltipOptions", "inventoryTooltipFormat")
-	private.settingsBuilder = TooltipBuilder.New()
-	private.settings:PublisherForKey("tooltipPriceFormat")
-		:MapBooleanEquals("icon")
-		:CallFunction(TooltipBuilder.SetMoneyUseIcon)
-		:StoreIn(private.cancellables)
-	private.settings:PublisherForKey("embeddedTooltip")
-		:CallFunction(TooltipWrapper.SetEmbedTooltip)
-		:StoreIn(private.cancellables)
-	private.builder = TooltipBuilder.New()
-	TooltipWrapper.Load(private.PrepareItemTooltip, private.PopulateItemTooltip)
-
-	-- luacheck: globals ArkInventory
-	if ArkInventory and ArkInventory.API and ArkInventory.API.CustomBattlePetTooltipReady then
-		hooksecurefunc(ArkInventory.API, "CustomBattlePetTooltipReady", function(tooltip, link)
-			link = ItemInfo.GetLink(ItemString.Get(link))
-			TooltipWrapper.SetTooltipItem(tooltip, link)
-		end)
-	end
+	ItemTooltip.SetWrapperPopulateFunction(private.PopulateTooltip)
+	private.settingsBuilder = ItemTooltip.CreateBuilder()
 end
 
 function Tooltip.CreateInfo()
@@ -89,25 +62,25 @@ end
 -- TooltipInfo Class
 -- ============================================================================
 
-function TooltipInfo:__init()
+function TooltipInfo.__init(self)
 	self._headingLeft = nil
 	self._headingRight = nil
 	self._settingsModule = nil
 	self._entries = {}
 end
 
-function TooltipInfo:SetHeadings(left, right)
+function TooltipInfo.SetHeadings(self, left, right)
 	self._headingLeft = left
 	self._headingRight = right
 	return self
 end
 
-function TooltipInfo:SetSettingsModule(settingsModule)
+function TooltipInfo.SetSettingsModule(self, settingsModule)
 	self._settingsModule = settingsModule
 	return self
 end
 
-function TooltipInfo:AddSettingEntry(key, defaultValue, populateFunc, populateArg)
+function TooltipInfo.AddSettingEntry(self, key, defaultValue, populateFunc, populateArg)
 	if defaultValue == nil then
 		defaultValue = private.settings:GetDefaultReadOnly(key)
 	end
@@ -118,14 +91,14 @@ function TooltipInfo:AddSettingEntry(key, defaultValue, populateFunc, populateAr
 	return self
 end
 
-function TooltipInfo:AddSettingValueEntry(key, setValue, clearValue, populateFunc, populateArg)
+function TooltipInfo.AddSettingValueEntry(self, key, setValue, clearValue, populateFunc, populateArg)
 	local entry = private.entryObjPool:Get()
 	entry:_Acquire(self, key, setValue, clearValue, nil, populateFunc, populateArg)
 	tinsert(self._entries, entry)
 	return self
 end
 
-function TooltipInfo:DeleteSettingsByKeyMatch(matchStr)
+function TooltipInfo.DeleteSettingsByKeyMatch(self, matchStr)
 	for i = #self._entries, 1, -1 do
 		local entry = self._entries[i]
 		if entry:KeyMatches(matchStr) then
@@ -136,7 +109,7 @@ function TooltipInfo:DeleteSettingsByKeyMatch(matchStr)
 	end
 end
 
-function TooltipInfo:_CheckDefaults()
+function TooltipInfo._CheckDefaults(self)
 	if self._settingsModule and not private.settings.moduleTooltips[self._settingsModule] then
 		-- populate all the default values
 		private.settings.moduleTooltips[self._settingsModule] = {}
@@ -146,7 +119,7 @@ function TooltipInfo:_CheckDefaults()
 	end
 end
 
-function TooltipInfo:_GetSettingsTable()
+function TooltipInfo._GetSettingsTable(self)
 	if self._settingsModule then
 		return private.settings.moduleTooltips[self._settingsModule]
 	else
@@ -154,7 +127,7 @@ function TooltipInfo:_GetSettingsTable()
 	end
 end
 
-function TooltipInfo:_Populate(tooltip, itemString)
+function TooltipInfo._Populate(self, tooltip, itemString)
 	local headingRightText = self._headingRight and self._headingRight(tooltip, itemString) or nil
 	tooltip:StartSection(self._headingLeft, headingRightText)
 	for _, entry in ipairs(self._entries) do
@@ -165,7 +138,7 @@ function TooltipInfo:_Populate(tooltip, itemString)
 	tooltip:EndSection()
 end
 
-function TooltipInfo:_GetEntry(index)
+function TooltipInfo._GetEntry(self, index)
 	return self._entries[index]
 end
 
@@ -175,7 +148,7 @@ end
 -- TooltipEntry Class
 -- ============================================================================
 
-function TooltipEntry:__init()
+function TooltipEntry.__init(self)
 	self._info = nil
 	self._settingKey = nil
 	self._settingSetValue = nil
@@ -185,7 +158,7 @@ function TooltipEntry:__init()
 	self._populateArg = nil
 end
 
-function TooltipEntry:_Acquire(info, key, setValue, clearValue, defaultValue, populateFunc, populateArg)
+function TooltipEntry._Acquire(self, info, key, setValue, clearValue, defaultValue, populateFunc, populateArg)
 	assert(setValue == nil or setValue, "'setValue' must be truthy")
 	assert(info and key and populateFunc)
 	assert(clearValue ~= nil or defaultValue ~= nil)
@@ -198,7 +171,7 @@ function TooltipEntry:_Acquire(info, key, setValue, clearValue, defaultValue, po
 	self._populateArg = populateArg
 end
 
-function TooltipEntry:_Release()
+function TooltipEntry._Release(self)
 	self._info = nil
 	self._settingKey = nil
 	self._settingSetValue = nil
@@ -208,7 +181,7 @@ function TooltipEntry:_Release()
 	self._populateArg = nil
 end
 
-function TooltipEntry:GetSettingInfo()
+function TooltipEntry.GetSettingInfo(self)
 	local tbl = self._info:_GetSettingsTable()
 	local key, key2, extra = strsplit(".", self._settingKey)
 	assert(key and not extra)
@@ -220,7 +193,7 @@ function TooltipEntry:GetSettingInfo()
 	return tbl, key
 end
 
-function TooltipEntry:IsEnabled()
+function TooltipEntry.IsEnabled(self)
 	local settingTbl, settingKey = self:GetSettingInfo()
 	local settingValue = settingTbl[settingKey]
 	if settingValue == nil then
@@ -231,11 +204,11 @@ function TooltipEntry:IsEnabled()
 	return settingValue == self._settingSetValue
 end
 
-function TooltipEntry:KeyMatches(matchStr)
+function TooltipEntry.KeyMatches(self, matchStr)
 	return strmatch(self._settingKey, matchStr) and true or false
 end
 
-function TooltipEntry:_ResetSetting(value)
+function TooltipEntry._ResetSetting(self, value)
 	local tbl = self._info:_GetSettingsTable()
 	if self._settingDefaultValue ~= nil then
 		tbl[self._settingKey] = self._settingDefaultValue
@@ -246,7 +219,7 @@ function TooltipEntry:_ResetSetting(value)
 	end
 end
 
-function TooltipEntry:_Populate(tooltip, itemString)
+function TooltipEntry._Populate(self, tooltip, itemString)
 	self._populateFunc(tooltip, itemString, self._populateArg)
 end
 
@@ -256,13 +229,19 @@ end
 -- Private Helper Functions
 -- ============================================================================
 
+function private.PopulateTooltip(tooltip, itemString)
+	for _, info in ipairs(private.registeredInfo) do
+		info:_Populate(tooltip, itemString)
+	end
+end
+
 function private.SettingsLineIteratorHelper(_, index)
 	local infoIndex = floor(index / (ITER_INDEX_PART_MULTIPLE ^ 2))
 	local entryIndex = floor(index / ITER_INDEX_PART_MULTIPLE) % ITER_INDEX_PART_MULTIPLE
 	local lineIndex = index % ITER_INDEX_PART_MULTIPLE
 	local info, entry = nil, nil
 	while lineIndex >= private.settingsBuilder:GetNumLines() do
-		-- Move to the next entry
+		-- move to the next entry
 		info = private.registeredInfo[infoIndex]
 		entryIndex = entryIndex + 1
 		entry = info and info:_GetEntry(entryIndex)
@@ -271,7 +250,7 @@ function private.SettingsLineIteratorHelper(_, index)
 			entry:_Populate(private.settingsBuilder, ItemString.GetPlaceholder())
 			private.settingsBuilder:SetDisabled(false)
 		else
-			-- Move to the next info
+			-- move to the next info
 			if infoIndex > 0 then
 				private.settingsBuilder:EndSection()
 			end
@@ -290,46 +269,4 @@ function private.SettingsLineIteratorHelper(_, index)
 	local leftText, rightText, lineColor = private.settingsBuilder:GetLine(lineIndex)
 	assert(infoIndex < ITER_INDEX_PART_MULTIPLE and entryIndex < ITER_INDEX_PART_MULTIPLE and lineIndex < ITER_INDEX_PART_MULTIPLE)
 	return index, leftText, rightText, lineColor
-end
-
-function private.PrepareItemTooltip(link, quantity)
-	local itemString = ItemString.Get(link)
-	if not itemString then
-		return false
-	elseif not private.settings.enabled then
-		return false
-	elseif private.settings.tooltipShowModifier == "alt" and not IsAltKeyDown() then
-		return false
-	elseif private.settings.tooltipShowModifier == "ctrl" and not IsControlKeyDown() then
-		return false
-	end
-
-	local isCached = private.builder:_Prepare(itemString, quantity)
-	if not isCached then
-		-- Populate all the lines
-		for _, info in ipairs(private.registeredInfo) do
-			info:_Populate(private.builder, itemString)
-		end
-	end
-	if private.builder:_IsEmpty() then
-		return false
-	end
-
-	return true
-end
-
-function private.PopulateItemTooltip(link, targetTip, addItemName)
-	if addItemName then
-		local r, g, b = Item.GetQualityColor(ItemInfo.GetQuality(link) or 0)
-		targetTip:AddLine(ItemInfo.GetName(link), r, g, b)
-	end
-	targetTip:AddLine(" ")
-	for _, left, right, lineColor in private.builder:_LineIterator() do
-		local r, g, b = Theme.GetColor(lineColor):GetFractionalRGBA()
-		if right then
-			targetTip:AddDoubleLine(left, right, r, g, b, r, g, b)
-		else
-			targetTip:AddLine(left, r, g, b)
-		end
-	end
 end

@@ -5,12 +5,16 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Buyback = TSM.UI.VendoringUI:NewPackage("Buyback") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local UIElements = TSM.LibTSMUI:Include("Util.UIElements")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
+local Buyback = TSM.UI.VendoringUI:NewPackage("Buyback")
+local L = TSM.Include("Locale").GetTable()
+local Money = TSM.Include("Util.Money")
+local ItemInfo = TSM.Include("Service.ItemInfo")
+local Settings = TSM.Include("Service.Settings")
+local UIElements = TSM.Include("UI.UIElements")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
 	settings = nil,
+	query = nil,
 }
 
 
@@ -19,13 +23,9 @@ local private = {
 -- Module Functions
 -- ============================================================================
 
-function Buyback.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function Buyback.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("global", "vendoringUIContext", "buybackScrollingTable")
-		:AddKey("global", "coreOptions", "regionWide")
-		:AddKey("global", "appearanceOptions", "showTotalMoney")
-		:AddKey("global", "internalData", "warbankMoney")
-		:AddKey("sync", "internalData", "money")
 	TSM.UI.VendoringUI.RegisterTopLevelPage(BUYBACK, private.GetFrame)
 end
 
@@ -37,13 +37,46 @@ end
 
 function private.GetFrame()
 	UIUtils.AnalyticsRecordPathChange("vendoring", "buyback")
+	private.query = private.query or TSM.Vendoring.Buyback.CreateQuery()
+	private.query:ResetOrderBy()
+	private.query:OrderBy("name", true)
+
 	return UIElements.New("Frame", "buy")
 		:SetLayout("VERTICAL")
-		:AddChild(UIElements.New("VendorBuybackScrollTable", "items")
+		:AddChild(UIElements.New("QueryScrollingTable", "items")
 			:SetMargin(0, 0, -2, 0)
-			:SetSettings(private.settings, "buybackScrollingTable")
-			:SetQuery(TSM.Vendoring.Buyback.CreateQuery())
-			:SetScript("OnBuyback", private.RowOnBuyback)
+			:SetSettingsContext(private.settings, "buybackScrollingTable")
+			:GetScrollingTableInfo()
+				:NewColumn("qty")
+					:SetTitle(L["Qty"])
+					:SetFont("TABLE_TABLE1")
+					:SetJustifyH("RIGHT")
+					:SetTextInfo("quantity")
+					:SetSortInfo("quantity")
+					:Commit()
+				:NewColumn("item")
+					:SetTitle(L["Item"])
+					:SetIconSize(12)
+					:SetFont("ITEM_BODY3")
+					:SetJustifyH("LEFT")
+					:SetTextInfo("itemString", private.GetItemText)
+					:SetIconInfo("itemString", ItemInfo.GetTexture)
+					:SetTooltipInfo("itemString")
+					:SetSortInfo("name")
+					:SetTooltipLinkingDisabled(true)
+					:DisableHiding()
+					:Commit()
+				:NewColumn("cost")
+					:SetTitle(L["Cost"])
+					:SetFont("TABLE_TABLE1")
+					:SetJustifyH("RIGHT")
+					:SetTextInfo("price", private.GetCostPriceText)
+					:SetSortInfo("price")
+					:Commit()
+				:SetCursor("BUY_CURSOR")
+				:Commit()
+			:SetQuery(private.query)
+			:SetScript("OnRowClick", private.RowOnClick)
 		)
 		:AddChild(UIElements.New("HorizontalLine", "line"))
 		:AddChild(UIElements.New("Frame", "footer")
@@ -56,9 +89,7 @@ function private.GetFrame()
 				:SetWidth(166)
 				:SetMargin(0, 8, 0, 0)
 				:SetPadding(4)
-				:AddChild(UIElements.New("PlayerGoldText", "text")
-					:SetSettings(private.settings)
-				)
+				:AddChild(TSM.UI.Views.PlayerGoldText.New("text"))
 			)
 			:AddChild(UIElements.New("ActionButton", "buybackAllBtn")
 				:SetText(L["Buyback All"])
@@ -67,21 +98,28 @@ function private.GetFrame()
 		)
 end
 
+function private.GetItemText(itemString)
+	return UIUtils.GetDisplayItemName(itemString) or "?"
+end
+
+function private.GetCostPriceText(value)
+	return Money.ToString(value, nil, "OPT_RETAIL_ROUND")
+end
+
 
 
 -- ============================================================================
 -- Local Script Handlers
 -- ============================================================================
 
-function private.RowOnBuyback(_, index)
-	TSM.Vendoring.Buyback.BuybackItem(index)
+function private.RowOnClick(_, row, mouseButton)
+	if mouseButton == "RightButton" then
+		TSM.Vendoring.Buyback.BuybackItem(row:GetField("index"))
+	end
 end
 
 function private.BuybackAllBtnOnClick(button)
-	local query = TSM.Vendoring.Buyback.CreateQuery()
-		:Select("index")
-	for _, index in query:Iterator() do
-		TSM.Vendoring.Buyback.BuybackItem(index)
+	for _, row in private.query:Iterator() do
+		TSM.Vendoring.Buyback.BuybackItem(row:GetField("index"))
 	end
-	query:Release()
 end

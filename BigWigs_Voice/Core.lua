@@ -24,16 +24,3 @@ end
 
 BigWigsLoader.RegisterMessage(addon, "BigWigs_Voice", handler)
 BigWigsAPI.RegisterVoicePack("temp")
-
-BigWigsAPI:RegisterCountdown("中文语音：Yoda小兔头", {
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\1.ogg",
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\2.ogg",
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\3.ogg",
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\4.ogg",
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\5.ogg",
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\6.ogg",
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\7.ogg",
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\8.ogg",
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\9.ogg",
-    "Interface\\AddOns\\BigWigs_Voice\\Media\\Sounds\\10.ogg",
-})

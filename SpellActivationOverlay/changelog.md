@@ -1,8 +1,334 @@
 ## SpellActivationOverlay Changelog
 
+#### v2.3.4 (2025-12-06)
+
+Bump in TOC file for Anniversary update (Classic Era)
+Bump in TOC file for Firelands patch (Cataclysm)
+
+Bug Fixes:
+- Restored size of "Toggle Test" button in options panel
+- Loading both SpellActivationOverlay and Necrosis could cause a Lua error
+- Prevent taint from (unofficial) Cataclysm release of v2.3.3
+
+#### v2.3.3 (2024-09-28)
+
+Bump in TOC file for Season of Discovery update (Classic Era)
+
+Bug Fixes
+- The options panel was broken since last patch (Classic Era)
+- Toggle Test used wrong orientation for top texture (Classic Era)
+
+#### v2.3.2 (2024-09-15)
+
+New Spell Alert:
+- Hunter's Mongoose Bite (Era, TBC)
+
+Updated Glowing Button:
+- Shaman's Molten Blast no longer glows infinitely after leaving combat (SoD)
+
+Removed Effect:
+- Priest's Mind Spike has been removed temporarily until it is resolved (SoD)
+
+Bug Fixes
+- The options panel has been fixed for Firelands' PTR (Cataclysm)
+
+#### v2.3.1 (2024-08-04)
+
+New runes for Season of Discovery:
+- New SAO: Rogues's Cutthroat
+- New SAO: Warlock's Decimation
+- New SAO: Warrior's Sudden Death
+- New GAB: Rogues's Ambush, during Cutthroat
+- New GAB: Warlock's Drain Soul, with Soul Siphon rune
+- New GAB: Warlock's Soul Fire, during Decimation
+- New GAB: Warrior's Execute, during Sudden Death
+
+Updated runes for Season of Discovery:
+- Mage's Hot Streak triggers from Balefire Bolt
+- Mage's Hot Streak triggers from Overheat's Fire Blast
+- Warlock's Shadow Cleave glows during Shadow Trance (a.k.a. Nightfall)
+
+Bug Fixes
+- Mage's Hot Streak was not detected correctly since last patch of Classic Era
+
+#### v2.3.0 (2024-07-17)
+
+Bump in TOC file for Season of Discovery update (Classic Era)
+
+Mage
+- Mage's Impact effect is hidden when Fire Blast misses (Wrath, Cataclysm)
+
+Shaman
+- Shaman's Molten Blast option was displayed twice (Season of Discovery)
+- Shaman's Maelstorm Weapon no longer empowers Chain Heal (SoD)
+- Shaman's Maelstorm Weapon no longer empowers Healing Wave (SoD)
+
+Bug Fixes
+- Lua errors caused by action buttons should no longer happen
+- This should fix the infinite action bar switch on Malygos, Nefarian, etc.
+
+#### v2.2.0 (2024-06-17)
+
+Necrosis
+- Recently, Necrosis has started to include SpellActivationOverlay
+- There were issues when both SpellActivationOverlay and Necrosis are installed
+- Players who have not installed Necrosis were unaffected
+- Players who log in with a class other than Warlock were unaffected
+- Please update both SpellActivationOverlay and Necrosis to fix these issues
+
+Options Panel
+- A special mode "Disabled" has been introduced, blocking the options panel
+- On top of blocking the options panel, effects can no longer trigger
+- Players can opt in to disable SpellActivationOverlay when Necrosis is loaded
+- This option is available only for Warlocks who have installed Necrosis
+
+Bug Fixes
+- Lua errors caused by 'OverrideActionBarButton' should no longer happen
+- Lua errors caused by other action buttons should happen less often
+
+#### v2.1.1 (2024-06-10)
+
+New Spell Alert:
+- Death Knight's Dark Transformation (Cataclysm)
+
+New Glowing Button:
+- Death Knight's Dark Transformation (Cataclysm)
+
+Bug Fixes
+- Effects based on Holy Power can no longer trigger before level 9 (Cataclysm)
+- Mage's Arcane Missiles timer should now refresh correctly (Cataclysm)
+
+The Arcane Missiles issue is most likely a bug from the game client
+Until Blizzard fixes it, the addon exceptionally implements a local fix
+
+#### v2.1.0 (2024-06-03)
+
+Options Panel
+- A new option "responsive mode" is available in the options panel
+- In some cases, it detects procs slightly sooner
+- In most situations, it makes no difference
+- The option is disabled by default to favor performance
+
+Updated effects:
+- Death Knight's Bone Shield is now combat-only (Cataclysm)
+- Druid's Eclipses are now combat-only (Season of Discovery, Wrath, Cataclysm)
+- Paladin's Infusion of Light texture matches the reference client (Cataclysm)
+- Updated texture and size of Paladin's Charges of Holy Power (Cataclysm)
+- Paladin's Charges of Holy Power is no longer combat-only (Cataclysm)
+- Paladin's Daybreak is displayed only when Holy Shock is usable (Cataclysm)\*
+
+\* Exceptionally, this does not match the reference client, on purpose
+
+It felt weird to see Daybreak proc, try to cast Holy Shock but fail, due to CD
+
+New Spell Alert:
+- Warlock's Fel Spark, from tier 11 set bonus (Cataclysm)
+
+New Glowing Buttons:
+- Judgement when Judgements of the Pure buff is missing (Wrath, Cataclysm)
+- Priest's Inner Fire, when the buff is missing (Wrath, Cataclysm)\*\*
+- Priest's Shadowform, when not assuming the shadowform
+- Priest's Shadow Word: Death, when the enemy has low hp (Cataclysm)
+- Rogue's Backstab, with Murderous Intent when the enemy has low hp (Cataclysm)
+- Warlock's Fel Flame, during Fel Spark, from tier 11 set bonus (Cataclysm)
+- Warlock's Shadowburn, when the spell is usable (Cataclysm)\*\*\*
+
+\*\* Inner Fire existed before, but has become very important only since Wrath
+
+\*\*\* Shadowburn existed before, but costs no soul shards only since Cataclysm
+
+Bug Fixes
+- Effects gained or lost during a loading screen are correctly updated
+- Soul Preserver overlays are now slightly dimmer (Wrath)
+- Mage's Clearcasting overlay is now slightly dimmer
+- Mage's Finger of Frost overlay is now slightly dimmer (Cataclysm)
+- Mage's Missile Barrage overlay is now blue-ish (Season of Discovery)
+- Priest's Mind Spike overlay is now purple-ish (Season of Discovery)
+
+Known Issues
+- Druid's Eclipse buttons do not stop glowing after leaving combat (Cataclysm)
+- This issue was already there and has not been introduced with this release
+
+#### v2.0.0 (2024-05-27)
+
+This release marks a major overhaul of the effect system
+
+New effects:
+- New SAO: Paladin's charges of Holy Power (Cataclysm)
+- New GAB: Death Knight's Bone Shield, when the buff is missing (Cataclysm)
+- New GAB: Paladin's Inquisition, at 3 charges of Holy Power (Cataclysm)
+- New GAB: Paladin's Light of Dawn, at 3 Holy Power (Cataclysm)
+- New GAB: Paladin's Templar's Verdict, at 3 Holy Power (Cataclysm)
+- New GAB: Paladin's Shield of the Righteous, at 3 Holy Power (Cataclysm)
+- New GAB: Paladin's Word of Glory, at 3 Holy Power (Cataclysm)
+
+Bug Fixes
+- Buffs should now be detected a bit more efficiently (Season of Discovery)
+- Checking a checkbox in options panel refreshes their effects immediately
+
+Known Issues
+- Rare effects still do not refresh immediately after changing their option
+
+#### v1.4.4 (2024-05-20)
+
+Shout-out to fellow developer stako. Thanks!
+
+Bug Fixes
+- Hunter's Master Marksman should now trigger correctly (Cataclysm)
+- Mage's Heating Up during Hot Streak has been reinstated (Cataclysm)
+
+#### v1.4.3 (2024-05-12)
+
+New Glowing Buttons:
+- New GAB: Priest's Mind Blast, with 2 stacks of Mind Melt (Cataclysm)
+- New GAB: Hunter's Kill Command, during Killing Streak (Cataclysm)
+- New GAB: Warrior's Cleave, during Battle Trance (Cataclysm)
+- New GAB: Warrior's Heroic Strike, during Battle Trance (Cataclysm)
+
+Bug Fixes
+- Spell Alerts should no longer display a visual timer shorter than intended
+- Combat-only Spell Alerts should no longer flicker when entering combat
+- Glowing button settings are more visible when there are more than 12 buttons
+- Mage's Frozen debuff had incorrect texture orientation (Cataclysm)
+- Mage's Improved Cone of Cold did not trigger Frozen debuff (Cataclysm)
+- Mage's Ring of Frost did not trigger Frozen debuff (Cataclysm)
+- Mage's Arcane Potency at 1 stack did not fade out after combat (Cataclysm)
+- Warlock's Backdraft was not triggered correctly (Cataclysm)
+
+Known Issues
+- Mage's Pyroblast! glow is not previewed when hovering the mouse in options
+- Priest's Flash Heal glow is not previewed when hovering the mouse in options
+
+#### v1.4.2 (2024-05-10)
+
+Bug Fixes
+- Unnecessary information was written to the game chat
+
+#### v1.4.1 (2024-05-09)
+
+New effects:
+- New SAO: Paladin's Daybreak (Cataclysm)
+- New SAO: Paladin's Divine Purpose (Cataclysm)
+- New SAO: Paladin's Grand Crusader (Cataclysm)
+- New GAB: Paladin's Inquisition, during Divine Purpose (Cataclysm)
+- New GAB: Paladin's Templar's Verdict, during Divine Purpose (Cataclysm)
+- New GAB: Paladin's Word of Glory, during Divine Purpose (Cataclysm)
+- New GAB: Paladin's Zealotry, during Divine Purpose (Cataclysm)
+- New GAB: Paladin's Holy Light, during Crusade (Cataclysm)
+- New GAB: Paladin's Holy Shock, during Daybreak (Cataclysm)
+- New GAB: Paladin's Avenger's Shield, during Grand Crusader (Cataclysm)
+
+Bug Fixes
+- Some effects triggered immediately upon login would not glow their buttons
+
+Glowing Buttons would only glow rank 1 of the following spells and abilities:
+- Death Knight's Frost Strike (Wrath)
+- Death Knight's Howling Blast (Wrath)
+- Death Knight's Icy Touch (Wrath)
+- Druid's Cyclone (Wrath)
+- Druid's Entangling Roots (Wrath)
+- Druid's Healing Touch (Season of Discovery, Wrath)
+- Druid's Hibernate (Wrath)
+- Druid's Nourish (Wrath)
+- Druid's Rebirth (Wrath)
+- Druid's Regrowth (Wrath)
+- Druid's Starfire (Wrath)
+- Druid's Wrath (Wrath)
+- Hunter's Aimed Shot (Wrath)
+- Hunter's Arcane Shot (Wrath)
+- Hunter's Counterattack (Era, TBC, Wrath)
+- Hunter's Explosive Shot (Wrath)
+- Hunter's Kill Shot (Wrath)
+- Hunter's Mongoose Bite (Era, TBC)
+- Shaman's Chain Heal (Season of Discovery, Wrath)
+- Shaman's Chain Lightning (Season of Discovery, Wrath)
+- Shaman's Lesser Healing Wave (Season of Discovery, Wrath)
+- Shaman's Lightning Bolt (Season of Discovery, Wrath)
+- Shaman's Healing Wave (Season of Discovery, Wrath)
+- Warlock's Incinerate (TBC, Wrath)
+- Warlock's Shadow Bolt (Era, TBC, Wrath)
+- Warlock's Soul Fire (Wrath)
+
+#### v1.4.0 (2024-05-06)
+
+Shout-out to fellow developers Amanthuul and espionn. Thanks!
+
+New effects:
+- New SAO: Druid's Fury of Stormrage (Cataclysm)
+- New SAO: Hunter's Master Marksman (Cataclysm)
+- New SAO: Priest's Serendipity (Cataclysm)
+- New SAO: Shaman's Fulmination, with 6-9 Lightning Shield stacks (Cataclysm)
+- New SAO: Shaman's Maelstrom Weapon (Cataclysm)
+- New SAO: Shaman's Tidal Waves (Cataclysm)
+- New SAO: Warrior's Bladestorm (Wrath, Cataclysm)
+- New GAB: Druid's Starfire, during Fury of Stormrage (Cataclysm)
+- New GAB: Hunter's Aimed Shot!, during Master Marksman (Cataclysm)
+- New GAB: Warlock's Drain Soul, when the enemy has low HP (Cataclysm)
+- New GAB: Priest's Greater Heal, during Serendipity (Cataclysm)
+- New GAB: Priest's Prayer of Healing, during Serendipity (Cataclysm)
+- New GAB: Shaman's Lava Burst, with Lava Surge talent (Cataclysm)
+- New GAB: Shaman's Earth Shock, with 6-9 Lightning Shield stacks (Cataclysm)
+- New GAB: Shaman's Chain Heal, during Maelstrom Weapon (Cataclysm)
+- New GAB: Shaman's Chain Lightning, during Maelstrom Weapon (Cataclysm)
+- New GAB: Shaman's Greater Healing Wave, during Maelstrom Weapon (Cataclysm)
+- New GAB: Shaman's Healing Rain, during Maelstrom Weapon (Cataclysm)
+- New GAB: Shaman's Healing Surge, during Maelstrom Weapon (Cataclysm)
+- New GAB: Shaman's Healing Wave, during Maelstrom Weapon (Cataclysm)
+- New GAB: Shaman's Hex, during Maelstrom Weapon (Cataclysm)
+- New GAB: Shaman's Lightning Bolt, during Maelstrom Weapon (Cataclysm)
+- New GAB: Shaman's Healing Surge, during Tidal Waves (Cataclysm)
+- New GAB: Shaman's Healing Wave, during Tidal Waves (Cataclysm)
+- New GAB: Shaman's Greater Healing Wave, during Tidal Waves (Cataclysm)
+- New GAB: Warlock's Chaos Bolt, during Backdraft (Cataclysm)
+- New GAB: Warlock's Incinerate, during Backdraft (Cataclysm)
+- New GAB: Warlock's Shadow Bolt, during Backdraft (Cataclysm)
+- New GAB: Warlock's Soul Fire, during Empowered Imp (Cataclysm)
+
+Updated Effects:
+- Shaman's Elemental Focus spell alert uses a more discreet texture (Cataclysm)
+
+Removed effects:
+- Death Knight's Rune Strike no longer glows (Cataclysm)
+- Druid's Nature's Grace has been removed (Cataclysm)
+- Hunter's Arcane Shot no longer glows during Lock and Load (Cataclysm)
+- Hunter's Improved Steady Shot has been removed (Cataclysm)
+- Rogue's Riposte has been removed (Cataclysm)
+- Warlock's Soul Fire no longer glows during Molten Core (Cataclysm)
+
+Sounds are no longer played for minor alerts, including:
+- Mage's Clearcasting
+- Mage's Frozen debuff
+- Mage's Heating Up (Season of Discovery, Wrath, Cataclysm)
+- Mage's Arcane Blast at 1-3 stacks (Season of Discovery)
+- Paladin's The Art of War with only 1 talent point (Wrath)
+- Priest's Serendipity at 1-2 stacks (Season of Discovery, TBC, Wrath)
+- Priest's Mind Spike at 1-2 stacks (Season of Discovery)
+- Shaman's Elemental Focus
+- Shaman's Maelstrom Weapon at 1-4 stacks (Season of Discovery, Wrath)
+- Shaman's Rolling Thunder at 7-9 Lightning Shield stacks (Season of Discovery)
+
+UI Improvements
+- Classes with no Spell Alerts now have a "None" text in their options panel
+- Classes with no Glowing Buttons now have a "None" text in their options panel
+
+Bug Fixes
+- Spell Alerts could sometimes not pulse when previewing in the options panel
+- Spell Alert during Toggle Test had incorrect texture orientation (Cataclysm)
+- Mage's Fringers of Frost had incorrect texture orientation (Cataclysm)
+- Mage's Frozen debuff had incorrect texture orientation (Cataclysm)
+- Mage's Brain Freeze had incorrect texture orientation (Cataclysm)
+- Mage's Pyroblast! is no longer counted for triggering Heating Up (Cataclysm)
+- Warlock's Drain Soul spec names in options displayed numbers (Cataclysm)
+
+Known issues
+- Some classes have too many options to fit in the options panel
+- Spell Alerts with distinct stack effects may display a short visual timer
+- Bladestorm textures may flip horizontally after changing race or body type
+
 #### v1.3.2 (2024-04-30)
 
 The Death Knight class experiments the upcoming rework for Cataclysm.
+
 Make sure to report issues you would encounter, thank you :)
 
 New effects:
@@ -34,9 +360,10 @@ New effects:
 - New GAB: Warrior's Colossus Smash, during Sudden Death (Cataclysm)
 - New GAB: Warrior's Shield Slam, during Sword and Board (Cataclysm)
 - New GAB: Warrior's Shield Slam, during Sword and Board (Season of Discovery)
-- New GAB: Warrior's Overpower, during Taste for Blood* (Season of Discovery)
+- New GAB: Warrior's Overpower, during Taste for Blood\* (Season of Discovery)
 
-* As in Wrath, there is no dedicated Taste for Blood option
+\* As in Wrath, there is no dedicated Taste for Blood option
+
 Taste for Blood shares its option with Overpower
 
 Updated effects:
@@ -272,6 +599,7 @@ List of spells that trigger the Frozen effect:
 - Taste for Blood is available on Wrath Classic only
 
 The bug that happened to druids may also happen to other classes
+
 Please report bugs to the addon's Discord, GitHub or CurseForge
 
 #### v0.9.2 (2023-06-21)
@@ -395,6 +723,7 @@ Shout-out to MartGon and xHashii for their contribution to the code. Thanks!
 #### v0.5.0-beta (2022-08-31)
 
 SpellActivationOverlay now has a Discord server!
+
 Make sure to check it out at https://discord.gg/xJmGfGcd4M
 
 Support for Glowing Action Buttons (GABs), making some actions glow, namely:

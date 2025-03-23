@@ -56,11 +56,7 @@ local function GetMapNpcs()
 	
 	-- Gets NPCs in the map
 	RSLogger:PrintDebugMessage(string.format("TargetUnit refrescando lista para mapa [%s]", mapID))
-	if (RSMapDB.IsZoneWithoutVignette(mapID)) then
-		cachedNpcIDs = RSNpcDB.GetNpcIDsByMapID(mapID, false, true)
-	else
-		cachedNpcIDs = RSNpcDB.GetNpcIDsByMapID(mapID, true, true)
-	end
+	cachedNpcIDs = RSNpcDB.GetNpcIDsByMapID(mapID, false)
 	
 	return cachedNpcIDs, mapID, true
 end
@@ -141,7 +137,7 @@ local function TargetUnits(rareScannerButton, mapID, npcIDs)
 		end
 		
 		-- If NPC has quest completed
-		if (not filtered and npcInfo and npcInfo.questID) then
+		if (npcInfo and npcInfo.questID) then
 			for _, questID in ipairs(npcInfo.questID) do
 				if (C_QuestLog.IsQuestFlaggedCompleted(questID)) then
 					filtered = true
@@ -152,7 +148,7 @@ local function TargetUnits(rareScannerButton, mapID, npcIDs)
 		end
 		
 		-- If NPC has weekly quest completed
-		if (not filtered and npcInfo and npcInfo.warbandQuestID and RSConfigDB.IsWeeklyRepNpcFilterEnabled()) then
+		if (npcInfo and npcInfo.warbandQuestID and RSConfigDB.IsWeeklyRepNpcFilterEnabled()) then
 			for _, questID in ipairs(npcInfo.warbandQuestID) do
 				if (C_QuestLog.IsQuestFlaggedCompletedOnAccount(questID)) then
 					filtered = true
@@ -172,7 +168,7 @@ local function TargetUnits(rareScannerButton, mapID, npcIDs)
 					CloseErrorPopUp()
 					
 					local x, y = RSNpcDB.GetBestInternalNpcCoordinates(npcID, mapID)
-					rareScannerButton:SimulateRareFound(npcID, nil, RSNpcDB.GetNpcName(npcID), x, y, RSConstants.NPC_VIGNETTE, RSConstants.TRACKING_SYSTEM.UNIT_TARGET)
+					rareScannerButton:SimulateRareFound(npcID, nil, RSNpcDB.GetNpcName(npcID), x, y, RSConstants.NPC_VIGNETTE)
 					recentlySeen[npcID] = time() + RSConstants.RECENTLY_SEEN_RESET_TIMER
 					npcFound = false
 				end

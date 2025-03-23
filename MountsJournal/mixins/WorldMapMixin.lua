@@ -1,4 +1,6 @@
-MJMapCanvasMixin = {}
+local _, ns = ...
+local util = ns.util
+MJMapCanvasMixin = util.createFromEventsMixin()
 
 
 function MJMapCanvasMixin:onLoad()
@@ -108,12 +110,14 @@ end
 
 function MJMapCanvasMixin:onShow()
 	self:refresh()
-	self.navBar:on("MAP_CHANGE.WORLDMAP", function() self:refresh() end)
+	self:on("MAP_CHANGE", self.refresh)
+	self:on("JOURNAL_RESIZED", self.refresh)
 end
 
 
 function MJMapCanvasMixin:onHide()
-	self.navBar:off("MAP_CHANGE.WORLDMAP")
+	self:off("MAP_CHANGE", self.refresh)
+	self:off("JOURNAL_RESIZED", self.refresh)
 end
 
 

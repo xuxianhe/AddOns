@@ -32,8 +32,8 @@ local options
 
 private.ITEM_QUALITY = {
 	[Enum.ItemQuality.Poor] = ITEM_QUALITY0_DESC,
-	[Enum.ItemQuality.Common] = ITEM_QUALITY1_DESC,
-	[Enum.ItemQuality.Uncommon] = ITEM_QUALITY2_DESC,
+	[Enum.ItemQuality.Standard] = ITEM_QUALITY1_DESC,
+	[Enum.ItemQuality.Good] = ITEM_QUALITY2_DESC,
 	[Enum.ItemQuality.Rare] = ITEM_QUALITY3_DESC,
 	[Enum.ItemQuality.Epic] = ITEM_QUALITY4_DESC,
 	[Enum.ItemQuality.Legendary] = ITEM_QUALITY5_DESC,
@@ -48,15 +48,15 @@ private.ITEM_QUALITY = {
 local SPEAR_ID = 17 --CHECK (none uses it)
 
 private.ITEM_CLASSES = {
-	[Enum.ItemClass.Consumable] = { 0, 1, 2, 3, 5, 7, 8, 9 }, --consumables
+	[Enum.ItemClass.Consumable] = { Enum.ItemConsumableSubclass.Generic, Enum.ItemConsumableSubclass.Potion, Enum.ItemConsumableSubclass.Elixir, Enum.ItemConsumableSubclass.Scroll, Enum.ItemConsumableSubclass.Fooddrink, Enum.ItemConsumableSubclass.Itemenhancement, Enum.ItemConsumableSubclass.Bandage, Enum.ItemConsumableSubclass.Other }, --consumables
 	[Enum.ItemClass.Container] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, --bags
 	[Enum.ItemClass.Weapon] = { Enum.ItemWeaponSubclass.Axe1H, Enum.ItemWeaponSubclass.Axe2H, Enum.ItemWeaponSubclass.Bows, Enum.ItemWeaponSubclass.Guns, Enum.ItemWeaponSubclass.Mace1H, Enum.ItemWeaponSubclass.Mace2H, Enum.ItemWeaponSubclass.Polearm, Enum.ItemWeaponSubclass.Sword1H, Enum.ItemWeaponSubclass.Sword2H, Enum.ItemWeaponSubclass.Warglaive, Enum.ItemWeaponSubclass.Staff, Enum.ItemWeaponSubclass.Bearclaw, Enum.ItemWeaponSubclass.Catclaw, Enum.ItemWeaponSubclass.Unarmed, Enum.ItemWeaponSubclass.Generic, Enum.ItemWeaponSubclass.Dagger, Enum.ItemWeaponSubclass.Thrown, SPEAR_ID, Enum.ItemWeaponSubclass.Crossbow, Enum.ItemWeaponSubclass.Wand, Enum.ItemWeaponSubclass.Fishingpole }, --weapons
-	[Enum.ItemClass.Gem] = { Enum.ItemGemSubclass.Intellect, Enum.ItemGemSubclass.Agility, Enum.ItemGemSubclass.Strength, Enum.ItemGemSubclass.Stamina, Enum.ItemGemSubclass.Spirit, Enum.ItemGemSubclass.Criticalstrike, Enum.ItemGemSubclass.Mastery, Enum.ItemGemSubclass.Haste, Enum.ItemGemSubclass.Versatility, 9, Enum.ItemGemSubclass.Multiplestats, Enum.ItemGemSubclass.Artifactrelic }, --gemes
+	[Enum.ItemClass.Gem] = { Enum.ItemGemSubclass.Red, Enum.ItemGemSubclass.Blue, Enum.ItemGemSubclass.Yellow, Enum.ItemGemSubclass.Purple, Enum.ItemGemSubclass.Green, Enum.ItemGemSubclass.Orange, Enum.ItemGemSubclass.Meta, Enum.ItemGemSubclass.Simple, Enum.ItemGemSubclass.Prismatic }, --gemes
 	[Enum.ItemClass.Armor] = { Enum.ItemArmorSubclass.Generic, Enum.ItemArmorSubclass.Cloth, Enum.ItemArmorSubclass.Leather, Enum.ItemArmorSubclass.Mail, Enum.ItemArmorSubclass.Plate, Enum.ItemArmorSubclass.Cosmetic, Enum.ItemArmorSubclass.Shield, Enum.ItemArmorSubclass.Libram, Enum.ItemArmorSubclass.Idol, Enum.ItemArmorSubclass.Totem, Enum.ItemArmorSubclass.Sigil, Enum.ItemArmorSubclass.Relic }, --armor
-	[Enum.ItemClass.Reagent] = { 0, 1 }, --consumable
+	[Enum.ItemClass.Reagent] = { Enum.ItemReagentSubclass.Reagent, Enum.ItemReagentSubclass.Keystone, Enum.ItemReagentSubclass.ContextToken }, --reagents
 	[Enum.ItemClass.Projectile] = { 2, 3 }, --projectile
 	[Enum.ItemClass.Tradegoods] = { 1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16 }, --tradeables
-	[Enum.ItemClass.ItemEnhancement] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 }, --object improvements
+	--[Enum.ItemClass.ItemEnhancement] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 }, --object improvements (obsolete)
 	[Enum.ItemClass.Recipe] = { Enum.ItemRecipeSubclass.Book, Enum.ItemRecipeSubclass.Leatherworking, Enum.ItemRecipeSubclass.Tailoring, Enum.ItemRecipeSubclass.Engineering, Enum.ItemRecipeSubclass.Blacksmithing, Enum.ItemRecipeSubclass.Cooking, Enum.ItemRecipeSubclass.Alchemy, Enum.ItemRecipeSubclass.FirstAid, Enum.ItemRecipeSubclass.Enchanting, Enum.ItemRecipeSubclass.Fishing, Enum.ItemRecipeSubclass.Jewelcrafting, Enum.ItemRecipeSubclass.Inscription }, --recipes
 	-- [10] = { }, --money (obsolete)
 	-- [Enum.ItemClass.Quiver] = { 0 }, --quiver  (obsolete)
@@ -130,7 +130,7 @@ end
 local customLine = "custom_%s_line"
 
 function RSLootOptions.GetLootOptions()	
-	local customItemsPosition = 9
+	local customItemsPosition = 7
 	
 	if (not options) then
 		private.loot_toggle_all = true
@@ -226,20 +226,8 @@ function RSLootOptions.GetLootOptions()
 							width = "full",
 							disabled = function() return (not RSConfigDB.IsDisplayingLootBar() and not RSConfigDB.IsShowingLootOnWorldMap()) end,
 						},
-						covenantRequirement = {
-							order = 1,
-							type = "toggle",
-							name = AL["LOOT_TOOLTIPS_COVENANT"],
-							desc = AL["LOOT_TOOLTIPS_COVENANT_DESC"],
-							get = function() return RSConfigDB.IsShowingCovenantRequirement() end,
-							set = function(_, value)
-								RSConfigDB.SetShowingCovenantRequirement(value)
-							end,
-							width = "full",
-							disabled = function() return (not RSConfigDB.IsDisplayingLootBar() and not RSConfigDB.IsShowingLootOnWorldMap()) end,
-						},
 						canImogit = {
-							order = 2,
+							order = 1,
 							type = "toggle",
 							name = AL["LOOT_TOOLTIPS_CANIMOGIT"],
 							desc = AL["LOOT_TOOLTIPS_CANIMOGIT_DESC"],
@@ -249,18 +237,6 @@ function RSLootOptions.GetLootOptions()
 							end,
 							width = "full",
 							disabled = function() return (not CanIMogIt or (not RSConfigDB.IsDisplayingLootBar() and not RSConfigDB.IsShowingLootOnWorldMap())) end,
-						},
-						tsm = {
-							order = 3,
-							type = "toggle",
-							name = AL["LOOT_TOOLTIPS_TSM"],
-							desc = AL["LOOT_TOOLTIPS_TSM_DESC"],
-							get = function() return RSConfigDB.IsShowingLootTSMTooltip() end,
-							set = function(_, value)
-								RSConfigDB.SetShowingLootTSMTooltip(value)
-							end,
-							width = "full",
-							disabled = function() return (not TSM_API or not TSM_API.GetCustomPriceValue or (not RSConfigDB.IsDisplayingLootBar() and not RSConfigDB.IsShowingLootOnWorldMap())) end,
 						}
 					},
 					disabled = function() return (not RSConfigDB.IsDisplayingLootBar() and not RSConfigDB.IsShowingLootOnWorldMap()) end,
@@ -341,33 +317,6 @@ function RSLootOptions.GetLootOptions()
 							get = function() return RSConfigDB.IsShowingMissingAppearances() end,
 							set = function(_, value)
 								RSConfigDB.SetShowingMissingAppearances(value)
-								if (not value) then
-									RSConfigDB.SetShowingMissingClassAppearances(value)
-								end
-							end,
-							width = "full",
-							disabled = function() return (not RSConfigDB.IsFilteringByExplorerResults()) end,
-						},
-						show_class_appearances = {
-							order = 7,
-							type = "toggle",
-							name = AL["LOOT_EXPLORER_SHOW_MISSING_CLASS_APPEARANCES"],
-							desc = AL["LOOT_EXPLORER_SHOW_MISSING_CLASS_APPEARANCES_DESC"],
-							get = function() return RSConfigDB.IsShowingMissingClassAppearances() end,
-							set = function(_, value)
-								RSConfigDB.SetShowingMissingClassAppearances(value)
-							end,
-							width = "full",
-							disabled = function() return (not RSConfigDB.IsFilteringByExplorerResults() or not RSConfigDB.IsShowingMissingAppearances()) end,
-						},
-						show_drakewatcher = {
-							order = 8,
-							type = "toggle",
-							name = AL["LOOT_EXPLORER_SHOW_MISSING_DRAKEWATCHER"],
-							desc = AL["LOOT_EXPLORER_SHOW_MISSING_DRAKEWATCHER_DESC"],
-							get = function() return RSConfigDB.IsShowingMissingDrakewatcher() end,
-							set = function(_, value)
-								RSConfigDB.SetShowingMissingDrakewatcher(value)
 							end,
 							width = "full",
 							disabled = function() return (not RSConfigDB.IsFilteringByExplorerResults()) end,
@@ -569,30 +518,6 @@ function RSLootOptions.GetLootOptions()
 									get = function() return RSConfigDB.IsFilteringLootByNotMatchingFaction() end,
 									set = function(_, value)
 										RSConfigDB.SetFilteringLootByNotMatchingFaction(value)
-									end,
-									width = "full",
-									disabled = function() return (not RSConfigDB.IsDisplayingLootBar() and not RSConfigDB.IsShowingLootOnWorldMap()) end,
-								},
-								filterAnimaItems = {
-									order = 5,
-									type = "toggle",
-									name = AL["LOOT_FILTER_ANIMA_ITEMS"],
-									desc = AL["LOOT_FILTER_ANIMA_ITEMS_DESC"],
-									get = function() return RSConfigDB.IsFilteringAnimaItems() end,
-									set = function(_, value)
-										RSConfigDB.SetFilteringAnimaItems(value)
-									end,
-									width = "full",
-									disabled = function() return (not RSConfigDB.IsDisplayingLootBar() and not RSConfigDB.IsShowingLootOnWorldMap()) end,
-								},
-								filterNotUsableConduits = {
-									order = 6,
-									type = "toggle",
-									name = AL["LOOT_FILTER_CONDUIT_ITEMS"],
-									desc = AL["LOOT_FILTER_CONDUIT_ITEMS_DESC"],
-									get = function() return RSConfigDB.IsFilteringConduitItems() end,
-									set = function(_, value)
-										RSConfigDB.SetFilteringConduitItems(value)
 									end,
 									width = "full",
 									disabled = function() return (not RSConfigDB.IsDisplayingLootBar() and not RSConfigDB.IsShowingLootOnWorldMap()) end,

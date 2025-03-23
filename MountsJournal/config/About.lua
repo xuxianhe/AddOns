@@ -1,16 +1,14 @@
-local addon, L = ...
+local addon, ns = ...
+local L, util = ns.L, ns.util
 local aboutConfig = CreateFrame("FRAME", "MountsJournalConfigAbout", InterfaceOptionsFramePanelContainer)
+ns.aboutConfig = aboutConfig
 aboutConfig:Hide()
-aboutConfig.name = L["About"]
-aboutConfig.parent = addon
 
 
 aboutConfig:SetScript("OnShow", function(self)
 	self:SetScript("OnShow", function(self)
-		self:SetPoint("TOPLEFT", -12, 8)
 		self.model:PlayAnimKit(1371)
 	end)
-	self:SetPoint("TOPLEFT", -12, 8)
 
 	self.model = CreateFrame("PlayerModel", nil, self)
 	self.model:SetSize(220, 220)
@@ -49,24 +47,10 @@ aboutConfig:SetScript("OnShow", function(self)
 	helpText:SetPoint("LEFT", 32, 0)
 	helpText:SetText(L["Help with translation of %s. Thanks."]:format(addon))
 
-	local link = "https://www.curseforge.com/wow/addons/mountsjournal/localization"
-	local editbox = CreateFrame("Editbox", nil, self)
-	editbox:SetAutoFocus(false)
-	editbox:SetAltArrowKeyMode(true)
-	editbox:SetFontObject("GameFontHighlight")
-	editbox:SetSize(500, 20)
-	editbox:SetPoint("TOPLEFT", helpText, "BOTTOMLEFT", 8, 0)
-	editbox:SetText(link)
-	editbox:SetCursorPosition(0)
-	editbox:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
-	editbox:SetScript("OnEditFocusLost", function(self) self:HighlightText(0, 0) end)
-	editbox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-	editbox:SetScript("OnTextChanged", function(self, userInput)
-		if userInput then
-			self:SetText(link)
-			self:HighlightText()
-		end
-	end)
+	local link = self:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+	link:SetPoint("TOPLEFT", helpText, "BOTTOMLEFT", 8, -4)
+	link:SetText("https://www.curseforge.com/wow/addons/mountsjournal/localization")
+	util.setCopyBox(link)
 
 	-- TRANSLATORS
 	local translators = self:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -102,11 +86,3 @@ aboutConfig:SetScript("OnShow", function(self)
 		last = st
 	end
 end)
-
-
-local category = Settings.GetCategory(addon)
-local subcategory, layout = Settings.RegisterCanvasLayoutSubcategory(category, aboutConfig,  L["About"])
-subcategory.ID = L["About"]
--- layout:AddAnchorPoint("TOPLEFT", -12, 8)
--- layout:AddAnchorPoint("BOTTOMRIGHT", 0, 0)
-Settings.RegisterAddOnCategory(subcategory)

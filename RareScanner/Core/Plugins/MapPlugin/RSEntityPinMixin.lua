@@ -21,7 +21,6 @@ local RSProvider = private.ImportLib("RareScannerProvider")
 -- RareScanner services
 local RSGuidePOI = private.ImportLib("RareScannerGuidePOI")
 local RSTomtom = private.ImportLib("RareScannerTomtom")
-local RSWaypoints = private.ImportLib("RareScannerWaypoints")
 local RSEntityStateHandler = private.ImportLib("RareScannerEntityStateHandler")
 
 -- RareScanner general libraries
@@ -37,14 +36,13 @@ function RSEntityPinMixin:OnLoad()
 end
 
 function RSEntityPinMixin:OnAcquired(POI, dataProvider)
-	self:UseFrameLevelType("PIN_FRAME_LEVEL_VIGNETTE", self:GetMap():GetNumActivePinsByTemplate("RSEntityPinTemplate"));
+	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI", self:GetMap():GetNumActivePinsByTemplate("RSEntityPinTemplate"));
 	self.POI = POI
 	self.dataProvider = dataProvider
 	self.Texture:SetTexture(POI.Texture)
 	self.Texture:SetScale(RSConfigDB.GetIconsWorldMapScale())
 	self.IconTexture:SetAtlas(POI.iconAtlas)
 	self:SetPosition(RSUtils.FixCoord(POI.x), RSUtils.FixCoord(POI.y));
-	MapPinHighlight_CheckHighlightPin(self:GetHighlightType(), self, self.Texture, AREAPOI_HIGHLIGHT_PARAMS);
 end
 
 function RSEntityPinMixin:OnMouseEnter()
@@ -58,7 +56,7 @@ function RSEntityPinMixin:OnMouseLeave()
 end
 
 function RSEntityPinMixin:OnMouseDown(button)
-	if (button == "LeftButton") then		
+	if (button == "LeftButton") then
 		--Filter/unfilter
 		if (IsShiftKeyDown() and IsAltKeyDown()) then
 			if (self.POI.isNpc) then
@@ -106,9 +104,6 @@ function RSEntityPinMixin:OnMouseDown(button)
 		if (IsShiftKeyDown()) then
 			if (RSConfigDB.IsAddingWorldMapTomtomWaypoints()) then
 				RSTomtom.AddWorldMapTomtomWaypoint(self.POI.mapID, self.POI.x, self.POI.y, self.POI.name)
-			end
-			if (RSConfigDB.IsAddingWorldMapIngameWaypoints()) then
-				RSWaypoints.AddWorldMapWaypoint(self.POI.mapID, self.POI.x, self.POI.y)
 			end
 		-- Toggle guide
 		elseif (not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown()) then
@@ -212,17 +207,4 @@ end
 function RSEntityPinMixin:OnReleased()
 	RSTooltip.ReleaseTooltip(self.tooltip)
 	self.tooltip = nil
-end
-
-function RSEntityPinMixin:GetHighlightType()
-	if (RSConfigDB.IsHighlightingReputation()) then
-		local _, bountyFactionID, bountyFrameType = self.dataProvider:GetBountyInfo();
-		if (bountyFrameType == BountyFrameType.ActivityTracker) then
-			if (self.POI.factionID and RSUtils.Contains(self.POI.factionID, bountyFactionID)) then
-				return MapPinHighlightType.SupertrackedHighlight;
-			end
-		end
-	end
-
-	return MapPinHighlightType.None;
 end

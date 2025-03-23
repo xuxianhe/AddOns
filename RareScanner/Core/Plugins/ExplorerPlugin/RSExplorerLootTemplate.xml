@@ -3,10 +3,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
 
-	<Frame name="RSExplorerCustomLootTemplate" virtual="true">
+	<Frame name="RSExplorerCustomLootTemplate" inherits="RSExplorerRareInfoBaseFrameTemplate" virtual="true">
 		<Layers>
 			<Layer level="BACKGROUND">
-				<Texture parentKey="background" atlas="thewarwithin-landingpage-background">
+				<Texture parentKey="background" atlas="GarrLanding-MiddleTile">
 					<Anchors>
 						<Anchor point="TOPLEFT" />
 						<Anchor point="BOTTOMRIGHT" />
@@ -24,49 +24,22 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Frame parentKey="Border" setAllPoints="true" frameLevel="100">
-				<Layers>
-					<Layer level="OVERLAY">
-						<Texture parentKey="Border" atlas="ui-frame-thewarwithin-border">
-							<Anchors>
-								<Anchor point="TOPLEFT" />
-								<Anchor point="BOTTOMRIGHT" />
-							</Anchors>
-						</Texture>
-						<Texture parentKey="BottomEmbellishment" atlas="ui-frame-thewarwithin-embellishmentbottom" useAtlasSize="true">
-							<Anchors>
-								<Anchor point="BOTTOM"/>
-							</Anchors>
-						</Texture>
-						<Texture parentKey="TopEmbellishment" atlas="ui-frame-thewarwithin-embellishmentbottom" useAtlasSize="true" rotation="180">
-							<Anchors>
-								<Anchor point="TOP"/>
-							</Anchors>
-						</Texture>
-					</Layer>
-				</Layers>
-				<Scripts>
-					<OnLoad>
-						self:SetScale(0.4)
-					</OnLoad>
-				</Scripts>
-			</Frame>
 			<Frame parentKey="ControlFrame" inherits="RSExplorerLootControlTemplate" >
 				<Anchors>
-					<Anchor point="TOPLEFT" x="5" y="-25" />
-					<Anchor point="TOPRIGHT" x="-5" y="25" />
+					<Anchor point="TOPLEFT" y="-10" />
+					<Anchor point="TOPRIGHT" />
 				</Anchors>
 			</Frame>
 			<Frame parentKey="GroupList" inherits="RSExplorerLootGroupListTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.ControlFrame" relativePoint="BOTTOMLEFT"/>
-					<Anchor point="BOTTOM" relativeKey="$parent" relativePoint="BOTTOM" y="10" />
+					<Anchor point="BOTTOM" relativeKey="$parent" relativePoint="BOTTOM" />
 				</Anchors>
 			</Frame>
 			<Frame parentKey="GroupInfo" inherits="RSExplorerGroupInfo">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.GroupList" relativePoint="TOPRIGHT" x="-25"/>
-					<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="BOTTOMRIGHT" y="10" />
+					<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="BOTTOMRIGHT" y="5" />
 				</Anchors>
 			</Frame>
 		</Frames>
@@ -134,7 +107,7 @@
 				</Scripts>
 			</EditBox>
 			<EditBox parentKey="ItemList" inherits="InputBoxTemplate" autoFocus="false">
-				<Size x="840" y="30" />
+				<Size x="815" y="30" />
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.ItemListLabel" relativePoint="BOTTOMLEFT" y="2" x="2" />
 				</Anchors>
@@ -246,7 +219,7 @@
 		</Anchors>
 		<Layers>
 			<Layer level="BACKGROUND">
-				<Texture parentKey="BG" atlas="UI-Frame-Dragonflight-CardParchmentWider" useAtlasSize="false">
+				<Texture parentKey="BG" atlas="UI-Frame-Neutral-CardParchmentWider" useAtlasSize="false">
 					<Anchors>
 						<Anchor point="TOPLEFT" />
 						<Anchor point="BOTTOMRIGHT" />
@@ -281,13 +254,10 @@
 					</OnLeave>
 				</Scripts>
 			</EditBox>
-			<Button parentKey="DeleteGroup" inherits="SharedButtonSmallTemplate">
+			<Button parentKey="DeleteGroup" inherits="StaticPopupButtonTemplate">
 				<Anchors>
 					<Anchor point="LEFT" relativeKey="$parent.EditGroupName" relativePoint="RIGHT" />
 				</Anchors>
-				<KeyValues>
-					<KeyValue key="atlasName" value="128-RedButton" type="string" />
-				</KeyValues>
 				<Scripts>
 					<OnClick>
 						self:GetParent():GetParent():DeleteGroup(self, button)

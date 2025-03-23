@@ -5,15 +5,12 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local LibTSMClass = LibStub("LibTSMClass")
-local CooldownCraftingTask = LibTSMClass.DefineClass("CooldownCraftingTask", TSM.TaskList.CraftingTask)
-local Math = TSM.LibTSMUtil:Include("Lua.Math")
-local Profession = TSM.LibTSMService:Include("Profession")
-local AddonSettings = TSM.LibTSMApp:Include("Service.AddonSettings")
+local CooldownCraftingTask = TSM.Include("LibTSMClass").DefineClass("CooldownCraftingTask", TSM.TaskList.CraftingTask)
+local Math = TSM.Include("Util.Math")
+local Profession = TSM.Include("Service.Profession")
 TSM.TaskList.CooldownCraftingTask = CooldownCraftingTask
 local private = {
-	didModuleInit = false,
-	settings = nil,
+	registeredCallbacks = false,
 	activeTasks = {},
 }
 
@@ -25,12 +22,10 @@ local private = {
 
 function CooldownCraftingTask.__init(self)
 	self.__super:__init()
-	if not private.didModuleInit then
-		private.didModuleInit = true
-		private.settings = AddonSettings.GetDB():NewView()
-			:AddKey("char", "internalData", "craftingCooldowns")
+	if not private.registeredCallbacks then
 		TSM.Crafting.CreateIgnoredCooldownQuery()
 			:SetUpdateCallback(private.UpdateTasks)
+		private.registeredCallbacks = true
 	end
 end
 
@@ -76,10 +71,10 @@ function CooldownCraftingTask._UpdateState(self)
 end
 
 function CooldownCraftingTask._IsOnCooldown(self, craftString)
-	assert(not private.settings.craftingCooldowns[craftString])
+	assert(not TSM.db.char.internalData.craftingCooldowns[craftString])
 	local remainingCooldown = Profession.GetRemainingCooldown(craftString)
 	if remainingCooldown then
-		private.settings.craftingCooldowns[craftString] = time() + Math.Round(remainingCooldown)
+		TSM.db.char.internalData.craftingCooldowns[craftString] = time() + Math.Round(remainingCooldown)
 		return true
 	end
 	return false

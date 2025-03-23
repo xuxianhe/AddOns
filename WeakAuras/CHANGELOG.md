@@ -1,41 +1,32 @@
-# [5.12.9-22-g6d1761bd](https://github.com/WeakAuras/WeakAuras2/tree/6d1761bd7e3279debbd69d46aaa9e08109b1a827) (2024-05-07)
+# [5.19.5-16-ge9c64666](https://github.com/WeakAuras/WeakAuras2/tree/e9c646666787850364f44c932836730bb333d1c1) (2025-03-20)
 
-[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.12.9...6d1761bd7e3279debbd69d46aaa9e08109b1a827)
+[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.19.5...e9c646666787850364f44c932836730bb333d1c1)
 
-Boneshock (5):
+InfusOnWoW (12):
 
-- add options for sound fadeout
-- Fix instance type options are empty on cata classic
-- Enable clickthrough with 'tooltip on mouseover'
-- Rename cleu message prefix and suffix
-- Add headers to categorize filters in large triggers (#5027)
-
-InfusOnWoW (1):
-
+- Fix lua error on showing fake states with ticks
+- Fix "Automatic Progress" of Sub Elements attached to an Empty Base
 - Update Atlas File List from wago.tools
+- Load: Add a guild name option
+- Health trigger: Add aborb at end reversed mode
+- StopMotion: Fix up/down buttons for start/end percent
+- Tweak spell cache building
+- Formatters: Add a pad option to various formatters
+- Ticks: Update Ticks on UpdateProgress not on Update
+- Fix string Conditions not unsetting if string left empty default
+- Item Equipped: Add exact match to load options/fix name matching
+- Sub Regions: Fix progress not updating on trigger deactivation
 
-Stanzilla (5):
+Stanzilla (1):
 
-- Update TOC for Retail Patch 10.2.7
-- Few more spelling and type fixes
-- Fix typo
 - Update WeakAurasModelPaths from wago.tools
-- Update bug_report.yml
 
-emptyrivers (3):
+emptyrivers (1):
 
-- ensure we always compute the correct rect for a dynamic group (#5034)
-- only upload & advertise build artifact if triggering actor has a write bit
-- advertise a link to an experimental build, if one exists (#5037)
+- RENOWN_LEVEL_LABEL globalstring changed with 11.1
 
-mrbuds (8):
+mrbuds (2):
 
-- Cataclysm Templates
-- Fix Premade Auras option not shown
-- For spell input fields with noValidation (used for "Name(s)" fields) show name from GetSpellInfo when value is a number, fixes #5058
-- Add missing global in luacheckrc
-- AuraBar: add some alias textures, and option to use texture picker
-- Weapon Enchant trigger: fetch data for ranged slot only on Cataclysm
-- Weapon Enchant trigger: support ranged weapon on Cataclysm, fixes #5043
-- Prepare for the removal of deprecated functions
+- Update bug report url
+- BossMod triggers: bar timers doesn't require to be enable in addon settings anymore, add an option to still filter matching add settings
 

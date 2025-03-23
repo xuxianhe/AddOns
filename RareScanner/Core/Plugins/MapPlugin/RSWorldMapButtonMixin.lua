@@ -46,12 +46,12 @@ function RSWorldMapButtonMixin:NotifyUpdate(description)
 end
 
 function RSWorldMapButtonMixin:OnMouseDown(button)
-    self.Icon:SetPoint('TOPLEFT', self, "TOPLEFT", 7, -6)
+    self.Icon:SetPoint('TOPLEFT', self, "TOPLEFT", 6, -6)
     PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
 end
 
 function RSWorldMapButtonMixin:OnMouseUp()
-	self.Icon:SetPoint('TOPLEFT', 7.2, -6)
+	self.Icon:SetPoint('TOPLEFT', 6.2, -6)
 end
 
 function RSWorldMapButtonMixin:OnEnter()
@@ -97,19 +97,6 @@ function RSWorldMapButtonMixin:SetupMenu()
 				end
 			end)
 		npcsLastSeen:SetEnabled(function() return RSConfigDB.IsShowingNpcs() end)
-
-		if (RSMapDB.GetContinentOfMap(mapID) == RSConstants.KHAZ_ALGAR and not RSUtils.Contains(RSConstants.TWW_MAPS_WITHOUT_REP, mapID)) then
-	    	local npcsWeekly = npcsSubmenu:CreateCheckbox("|T"..RSConstants.NORMAL_NPC_TEXTURE..":18:18:::::0:32:0:32|t "..AL["MAP_MENU_DISABLE_WEEKLY_REP_FILTER"], 
-	    		function() return RSConfigDB.IsShowingWeeklyRepFilterEnabled() end, 
-				function()
-					if (RSConfigDB.IsShowingWeeklyRepFilterEnabled()) then
-						RSConfigDB.SetShowingWeeklyRepFilterEnabled(false)
-					else
-						RSConfigDB.SetShowingWeeklyRepFilterEnabled(true)
-					end
-				end)
-			npcsWeekly:SetEnabled(function() return RSConfigDB.IsShowingNpcs() and not RSConfigDB.IsWeeklyRepNpcFilterEnabled() end)
-		end
 		
     	local npcsDead = npcsSubmenu:CreateCheckbox("|T"..RSConstants.BLUE_NPC_TEXTURE..":18:18:::::0:32:0:32|t "..AL["MAP_MENU_SHOW_DEAD_RARE_NPCS"], 
     		function() return RSConfigDB.IsShowingAlreadyKilledNpcs() end, 
@@ -173,39 +160,6 @@ function RSWorldMapButtonMixin:SetupMenu()
 			end)
 		npcsAchievements:SetEnabled(function() return RSConfigDB.IsShowingNpcs() end)
 		
-    	local npcsProfs = npcsSubmenu:CreateCheckbox("|A:"..RSConstants.PROFFESION_ICON_ATLAS..":18:18::::|a "..AL["MAP_MENU_SHOW_PROFESSION_RARE_NPCS"], 
-    		function() return RSConfigDB.IsShowingProfessionRareNPCs() end, 
-			function()
-				if (RSConfigDB.IsShowingProfessionRareNPCs()) then
-					RSConfigDB.SetShowingProfessionRareNPCs(false)
-				else
-					RSConfigDB.SetShowingProfessionRareNPCs(true)
-				end
-			end)
-		npcsProfs:SetEnabled(function() return RSConfigDB.IsShowingNpcs() end)
-		
-		for minieventID, minieventData in pairs (RSConstants.MINIEVENTS_WORLDMAP_FILTERS) do
-			if (minieventData.npcs and RSUtils.Contains(minieventData.mapIDs, mapID)) then
-				local text
-				if (minieventData.atlas) then
-					text = "|A:"..minieventData.atlas..":18:18::::|a "..minieventData.text
-				else
-					text = "|T"..minieventData.texture..":18:18::::|a "..minieventData.text
-				end
-				
-				local npcsMinievents = npcsSubmenu:CreateCheckbox(text, 
-		    		function() return not RSConfigDB.IsMinieventFiltered(minieventID) end, 
-					function()
-						if (RSConfigDB.IsMinieventFiltered(minieventID)) then
-							RSConfigDB.SetMinieventFiltered(minieventID, false)
-						else
-							RSConfigDB.SetMinieventFiltered(minieventID, true)
-						end
-					end)
-				npcsMinievents:SetEnabled(function() return RSConfigDB.IsShowingNpcs() end)
-			end
-		end
-		
     	local npcsOthers = npcsSubmenu:CreateCheckbox(AL["MAP_MENU_SHOW_OTHER_RARE_NPCS"], 
     		function() return RSConfigDB.IsShowingOtherRareNPCs() end, 
 			function()
@@ -218,21 +172,10 @@ function RSWorldMapButtonMixin:SetupMenu()
 		npcsOthers:SetEnabled(function() return RSConfigDB.IsShowingNpcs() end)
 		
 		-- Filter NPCs		
-		local npcIDsWithNames = RSNpcDB.GetActiveNpcIDsWithNamesByMapID(mapID)
+		local npcIDsWithNames = RSNpcDB.GetActiveNpcIDsWithNamesByMapID(mapID, false)
 		if (RSUtils.GetTableLength(npcIDsWithNames) > 0) then
 			npcsSubmenu:CreateDivider()
 			npcsSubmenu:CreateTitle(AL["MAP_MENU_FILTER"])
-			
-			if (RSMapDB.GetContinentOfMap(mapID) == RSConstants.KHAZ_ALGAR and not RSUtils.Contains(RSConstants.TWW_MAPS_WITHOUT_REP, mapID)) then
-		    	npcsSubmenu:CreateCheckbox(AL["MAP_MENU_FILTER_WEEKLY_REP_FILTER"], function() return RSConfigDB.IsWeeklyRepNpcFilterEnabled() end, 
-					function()
-						if (RSConfigDB.IsWeeklyRepNpcFilterEnabled()) then
-							RSConfigDB.SetWeeklyRepNpcFilterEnabled(false)
-						else
-							RSConfigDB.SetWeeklyRepNpcFilterEnabled(true)
-						end
-					end)
-			end
 		
 	    	local npcsFilterSubmenu = npcsSubmenu:CreateButton(AL["MAP_MENU_FILTER_NPCS"])
 			npcsFilterSubmenu:SetScrollMode(500)
@@ -276,11 +219,7 @@ function RSWorldMapButtonMixin:SetupMenu()
 				
 				local npcInfo = RSNpcDB.GetInternalNpcInfo(npcID)
 				if (npcInfo) then
-					if (npcInfo and npcInfo.prof) then
-						text = text.."|A:"..RSConstants.PROFFESION_ICON_ATLAS..":18:18::::|a "..npcName
-					elseif (npcInfo.minieventID and RSConstants.MINIEVENTS_WORLDMAP_FILTERS[npcInfo.minieventID] and RSConstants.MINIEVENTS_WORLDMAP_FILTERS[npcInfo.minieventID].atlas) then
-						text = text.."|A:"..RSConstants.MINIEVENTS_WORLDMAP_FILTERS[npcInfo.minieventID].atlas..":18:18::::|a "..npcName
-					elseif (RSUtils.GetTableLength(RSAchievementDB.GetNotCompletedAchievementIDsByMap(npcID, mapID)) > 0) then
+					if (RSUtils.GetTableLength(RSAchievementDB.GetNotCompletedAchievementIDsByMap(npcID, mapID)) > 0) then
 						text = text.."|A:"..RSConstants.ACHIEVEMENT_ICON_ATLAS..":18:18::::|a "..npcName
 					else
 						text = text..npcName
@@ -289,7 +228,7 @@ function RSWorldMapButtonMixin:SetupMenu()
 					text = text..npcName
 				end
 				
-				local npcFilter = npcsFilterSubmenu:CreateCheckbox(text, 
+				npcsFilterSubmenu:CreateCheckbox(text, 
 		    		function() return RSConfigDB.GetNpcFiltered(npcID) == nil end, 
 					function()
 						if (RSConfigDB.GetNpcFiltered(npcID)) then
@@ -298,30 +237,6 @@ function RSWorldMapButtonMixin:SetupMenu()
 							RSConfigDB.SetNpcFiltered(npcID)
 						end
 					end)
-				npcFilter:SetEnabled(function() 
-					local npcInfo = RSNpcDB.GetInternalNpcInfo(npcID)
-					if (npcInfo and RSConfigDB.IsWeeklyRepNpcFilterEnabled()) then
-						if (npcInfo.warbandQuestID) then
-							for _, questID in ipairs(npcInfo.warbandQuestID) do
-								if (C_QuestLog.IsQuestFlaggedCompletedOnAccount(questID)) then
-									return false
-								end
-							end
-						elseif (RSMapDB.GetContinentOfMap(mapID) == RSConstants.KHAZ_ALGAR and not RSUtils.Contains(RSConstants.KHAZ_ALGAR_NPCS_MOUNTS, npcID) and not RSUtils.Contains(RSConstants.TWW_MAPS_WITHOUT_REP, mapID)) then
-							if (npcInfo.questID) then
-								for _, questID in ipairs(npcInfo.questID) do
-									if (C_QuestLog.IsQuestFlaggedCompletedOnAccount(questID)) then
-										return false
-									end
-								end
-							else
-								return false
-							end
-						end
-					end
-					
-					return true				
-				end)
 			end
 		end
 		
@@ -384,17 +299,6 @@ function RSWorldMapButtonMixin:SetupMenu()
 			end)
 		containerAchievements:SetEnabled(function() return RSConfigDB.IsShowingContainers() end)
 
-    	local containerProfs = containersSubmenu:CreateCheckbox("|A:"..RSConstants.PROFFESION_ICON_ATLAS..":18:18::::|a "..AL["MAP_MENU_SHOW_PROFESSION_CONTAINERS"], 
-    		function() return RSConfigDB.IsShowingProfessionContainers() end, 
-			function()
-				if (RSConfigDB.IsShowingProfessionContainers()) then
-					RSConfigDB.SetShowingProfessionContainers(false)
-				else
-					RSConfigDB.SetShowingProfessionContainers(true)
-				end
-			end)
-		containerProfs:SetEnabled(function() return RSConfigDB.IsShowingContainers() end)
-
     	local containerNoTrackable = containersSubmenu:CreateCheckbox("|A:"..RSConstants.NOT_TRACKABLE_ICON_ATLAS..":18:18::::|a "..AL["MAP_MENU_SHOW_NOT_TRACKABLE_CONTAINERS"], 
     		function() return RSConfigDB.IsShowingNotTrackeableContainers() end, 
 			function()
@@ -405,28 +309,6 @@ function RSWorldMapButtonMixin:SetupMenu()
 				end
 			end)
 		containerNoTrackable:SetEnabled(function() return RSConfigDB.IsShowingContainers() end)
-	
-		for minieventID, minieventData in pairs (RSConstants.MINIEVENTS_WORLDMAP_FILTERS) do
-			if (minieventData.containers and RSUtils.Contains(minieventData.mapIDs, mapID)) then
-				local text
-				if (minieventData.atlas) then
-					text = "|A:"..minieventData.atlas..":18:18::::|a "..minieventData.text
-				else
-					text = "|T"..minieventData.texture..":18:18::::|a "..minieventData.text
-				end
-				
-				local containerMinievent = containersSubmenu:CreateCheckbox(text, 
-		    		function() return not RSConfigDB.IsMinieventFiltered(minieventID) end, 
-					function()
-						if (RSConfigDB.IsMinieventFiltered(minieventID)) then
-							RSConfigDB.SetMinieventFiltered(minieventID, false)
-						else
-							RSConfigDB.SetMinieventFiltered(minieventID, true)
-						end
-					end)
-				containerMinievent:SetEnabled(function() return RSConfigDB.IsShowingContainers() end)
-			end
-		end
 			
     	local containerOthers = containersSubmenu:CreateCheckbox(AL["MAP_MENU_SHOW_OTHER_CONTAINERS"], 
     		function() return RSConfigDB.IsShowingOtherContainers() end, 
@@ -485,11 +367,7 @@ function RSWorldMapButtonMixin:SetupMenu()
 				
 				local containerInfo = RSContainerDB.GetInternalContainerInfo(containerID)
 				if (containerInfo) then
-					if (containerInfo and containerInfo.prof) then
-						text = text.."|A:"..RSConstants.PROFFESION_ICON_ATLAS..":18:18::::|a "..containerName
-					elseif (containerInfo.minieventID and RSConstants.MINIEVENTS_WORLDMAP_FILTERS[containerInfo.minieventID] and RSConstants.MINIEVENTS_WORLDMAP_FILTERS[containerInfo.minieventID].atlas) then
-						text = text.."|A:"..RSConstants.MINIEVENTS_WORLDMAP_FILTERS[containerInfo.minieventID].atlas..":18:18::::|a "..containerName
-					elseif (RSUtils.GetTableLength(RSAchievementDB.GetNotCompletedAchievementIDsByMap(containerID, mapID)) > 0) then
+					if (RSUtils.GetTableLength(RSAchievementDB.GetNotCompletedAchievementIDsByMap(containerID, mapID)) > 0) then
 						text = text.."|A:"..RSConstants.ACHIEVEMENT_ICON_ATLAS..":18:18::::|a "..containerName
 					elseif (RSUtils.Contains(RSConstants.CONTAINERS_WITHOUT_VIGNETTE, containerID)) then
 						text = text.."|A:"..RSConstants.NOT_TRACKABLE_ICON_ATLAS..":18:18::::|a "..containerName
@@ -500,7 +378,7 @@ function RSWorldMapButtonMixin:SetupMenu()
 					text = text..containerName
 				end
 				
-				local containerFilter = containersFilterSubmenu:CreateCheckbox(text, 
+				containersFilterSubmenu:CreateCheckbox(text, 
 		    		function() return RSConfigDB.GetContainerFiltered(containerID) == nil end, 
 					function()
 						if (RSConfigDB.GetContainerFiltered(containerID)) then
@@ -604,11 +482,7 @@ function RSWorldMapButtonMixin:SetupMenu()
 				
 				local eventInfo = RSEventDB.GetInternalEventInfo(eventID)
 				if (eventInfo) then
-					if (eventInfo and eventInfo.prof) then
-						text = text.."|A:"..RSConstants.PROFFESION_ICON_ATLAS..":18:18::::|a "..eventName
-					elseif (eventInfo.minieventID and RSConstants.MINIEVENTS_WORLDMAP_FILTERS[eventInfo.minieventID] and RSConstants.MINIEVENTS_WORLDMAP_FILTERS[eventInfo.minieventID].atlas) then
-						text = text.."|A:"..RSConstants.MINIEVENTS_WORLDMAP_FILTERS[eventInfo.minieventID].atlas..":18:18::::|a "..eventName
-					elseif (RSUtils.GetTableLength(RSAchievementDB.GetNotCompletedAchievementIDsByMap(eventID, mapID)) > 0) then
+					if (RSUtils.GetTableLength(RSAchievementDB.GetNotCompletedAchievementIDsByMap(eventID, mapID)) > 0) then
 						text = text.."|A:"..RSConstants.ACHIEVEMENT_ICON_ATLAS..":18:18::::|a "..eventName
 					else
 						text = text..eventName
@@ -617,7 +491,7 @@ function RSWorldMapButtonMixin:SetupMenu()
 					text = text..eventName
 				end
 				
-				local eventFilter = eventsFilterSubmenu:CreateCheckbox(text, 
+				eventsFilterSubmenu:CreateCheckbox(text, 
 		    		function() return RSConfigDB.GetEventFiltered(eventID) == nil end, 
 					function()
 						if (RSConfigDB.GetEventFiltered(eventID)) then
@@ -628,18 +502,6 @@ function RSWorldMapButtonMixin:SetupMenu()
 					end)
 			end
 		end
-	    
-	    -- Others
-	   	local othersSubmenu = rootDescription:CreateButton("|TInterface\\AddOns\\RareScanner\\Media\\Icons\\DragonGlyphSmall:18:18:::::0:32:0:32|t "..AL["MAP_MENU_OTHERS"])
-	   	othersSubmenu:CreateCheckbox("|TInterface\\AddOns\\RareScanner\\Media\\Icons\\DragonGlyphSmall:18:18:::::0:32:0:32|t "..AL["MAP_MENU_SHOW_DRAGON_GLYPHS"], 
-	   		function() return RSConfigDB.IsShowingDragonGlyphs() end, 
-			function()
-	    		if (RSConfigDB.IsShowingDragonGlyphs()) then
-					RSConfigDB.SetShowingDragonGlyphs(false)
-				else
-					RSConfigDB.SetShowingDragonGlyphs(true)
-				end
-			end)
 			
 		-- Not discovered old expansions
 	 	rootDescription:CreateCheckbox(AL["MAP_MENU_SHOW_NOT_DISCOVERED_OLD"], 

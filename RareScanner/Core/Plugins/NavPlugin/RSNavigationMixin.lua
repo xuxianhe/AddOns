@@ -8,7 +8,6 @@ local AL = LibStub("AceLocale-3.0"):GetLocale("RareScanner");
 
 -- RareScanner other addons integration services
 local RSTomtom = private.ImportLib("RareScannerTomtom")
-local RSWaypoints = private.ImportLib("RareScannerWaypoints")
 
 -- Navigation cache
 local navigationCache = {}
@@ -84,11 +83,9 @@ function RSNavigationMixin:AddNext(mapID, x, y, name, atlasName, objectGUID)
 
 		-- Refresh waypoint
 		RSTomtom.AddTomtomAutomaticWaypoint(mapID, x, y, name)
-		RSWaypoints.AddAutomaticWaypoint(mapID, x, y)
 	-- If the navigation cache only contains one item, adds waypoint
 	elseif (table.getn(navigationCache) == 1) then
 		RSTomtom.AddTomtomAutomaticWaypoint(mapID, x, y, name)
-		RSWaypoints.AddAutomaticWaypoint(mapID, x, y)
 	end
 end
 
@@ -117,7 +114,6 @@ function RSNavigationMixin:Navigate()
 
 	-- Adds waypoint
 	RSTomtom.AddTomtomAutomaticWaypoint(vignetteInfo.mapID, vignetteInfo.x, vignetteInfo.y, vignetteInfo.name)
-	RSWaypoints.AddAutomaticWaypoint(vignetteInfo.mapID, vignetteInfo.x, vignetteInfo.y)
 end
 
 function RSNavigationMixin:Reset()

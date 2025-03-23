@@ -1,10 +1,14 @@
+---@diagnostic disable: missing-fields
 local addonName = "RecipesCollector"
-local addonNotes = select(3, _G.GetAddOnInfo(addonName))
+local addonNotes = select(3, C_AddOns.GetAddOnInfo(addonName))
+---@class RC : AceAddon
 local RC = _G.LibStub("AceAddon-3.0"):GetAddon(addonName)
+---@class L : AceLocale-3.0
 local L = _G.LibStub("AceLocale-3.0"):GetLocale(addonName, true)
 local AceConfig = _G.LibStub("AceConfig-3.0")
 local AceConfigDialog = _G.LibStub("AceConfigDialog-3.0")
 
+-- Generate options and include them in client Addons Options
 function RC:RegisterOptionsTable()
     AceConfig:RegisterOptionsTable(addonName, {
         name = addonName,
@@ -49,12 +53,26 @@ function RC:RegisterOptionsTable()
                                 get = function() return self.db.global.hideUnlearnable end,
                                 set = function(_, val) self.db.global.hideUnlearnable = val end,
                             },
-                            showOnCraftingSpells = {
+                            hideHeader = {
                                 order = 40,
+                                type = "toggle",
+                                name = L["Hide addon header from tooltip"],
+                                get = function() return self.db.global.hideHeader end,
+                                set = function(_, val) self.db.global.hideHeader = val end,
+                            },
+                            showOnCraftingSpells = {
+                                order = 50,
                                 type = "toggle",
                                 name = L["Add to linked tradeskill"],
                                 get = function() return self.db.global.showOnCraftingSpells end,
                                 set = function(_, val) self.db.global.showOnCraftingSpells = val end,
+                            },
+                            showLastUpdate = {
+                                order = 60,
+                                type = "toggle",
+                                name = L["Show last update"],
+                                get = function() return self.db.global.showLastUpdate end,
+                                set = function(_, val) self.db.global.showLastUpdate = val end,
                             },
                         },
                     },
@@ -64,6 +82,11 @@ function RC:RegisterOptionsTable()
                         name = L["Database Settings"],
                         inline = true,
                         args = {
+                            intro = {
+                                order = 0,
+                                type = "description",
+                                name = L["firstrun.info"],
+                            },
                             purgeTradeSkill = {
                                 order = 80,
                                 type = "select",

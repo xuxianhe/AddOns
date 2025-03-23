@@ -5,13 +5,12 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local ProfessionScanner = TSM.Crafting:NewPackage("ProfessionScanner") ---@type AddonPackage
-local Log = TSM.LibTSMUtil:Include("Util.Log")
-local MatString = TSM.LibTSMTypes:Include("Crafting.MatString")
-local TradeSkill = TSM.LibTSMWoW:Include("API.TradeSkill")
-local ClientInfo = TSM.LibTSMWoW:Include("Util.ClientInfo")
-local SessionInfo = TSM.LibTSMWoW:Include("Util.SessionInfo")
-local Profession = TSM.LibTSMService:Include("Profession")
+local ProfessionScanner = TSM.Crafting:NewPackage("ProfessionScanner")
+local Log = TSM.Include("Util.Log")
+local MatString = TSM.Include("Util.MatString")
+local Wow = TSM.Include("Util.Wow")
+local Profession = TSM.Include("Service.Profession")
+local Settings = TSM.Include("Service.Settings")
 local private = {
 	settings = nil,
 	matQuantitiesTemp = {},
@@ -23,8 +22,8 @@ local private = {
 -- Module Functions
 -- ============================================================================
 
-function ProfessionScanner.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function ProfessionScanner.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("sync", "internalData", "playerProfessions")
 		:AddKey("factionrealm", "internalData", "mats")
 	Profession.SetScanHookFuncs(private.ScanHook, private.HandleInactiveRecipes)
@@ -36,20 +35,20 @@ end
 -- Profession Scanning
 -- ============================================================================
 
-function private.ScanHook(professionName, craftStrings)
+function private.ScanHook(professionName, craftStrings, categorySkillLevelLookup)
 	if not private.settings.playerProfessions[professionName] then
 		-- we are in combat or the player's professions haven't been scanned yet by PlayerProfessions.lua, so will try again in a bit
 		return false, true
 	end
 
 	-- update the link for this profession
-	private.settings.playerProfessions[professionName].link = TradeSkill.GetLink()
+	private.settings.playerProfessions[professionName].link = Profession.GetLink()
 
 	-- scan all the recipes
 	TSM.Crafting.SetSpellDBQueryUpdatesPaused(true)
 	local numFailed = 0
 	for _, craftString in ipairs(craftStrings) do
-		if not private.ScanRecipe(professionName, craftString) then
+		if not private.ScanRecipe(professionName, craftString, categorySkillLevelLookup) then
 			numFailed = numFailed + 1
 		end
 	end
@@ -59,7 +58,7 @@ function private.ScanHook(professionName, craftStrings)
 	return numFailed == 0, false
 end
 
-function private.ScanRecipe(professionName, craftString)
+function private.ScanRecipe(professionName, craftString, categorySkillLevelLookup)
 	local itemString = Profession.GetItemStringByCraftString(craftString)
 	local craftName = Profession.GetCraftNameByCraftString(craftString)
 	assert(itemString and craftName ~= "")
@@ -69,11 +68,9 @@ function private.ScanRecipe(professionName, craftString)
 
 	local numResultItems = Profession.GetNumResultItems(craftString)
 	local hasCD = Profession.HasCooldown(craftString)
-	local recipeDifficulty, baseRecipeQuality = Profession.GetRecipeQualityInfo(craftString)
-	local categoryId = Profession.GetCategoryIdByCraftString(craftString)
-	local rootCategoryId = ClientInfo.HasFeature(ClientInfo.FEATURES.C_TRADE_SKILL_UI) and TradeSkill.GetRootCategoryId(categoryId) or -1
+	local recipeDifficulty, baseRecipeQuality, _, inspirationAmount, inspirationChance = Profession.GetRecipeQualityInfo(craftString)
 
-	TSM.Crafting.CreateOrUpdate(craftString, itemString, professionName, rootCategoryId, craftName, numResult, SessionInfo.GetCharacterName(), hasCD, recipeDifficulty, baseRecipeQuality, numResultItems)
+	TSM.Crafting.CreateOrUpdate(craftString, itemString, professionName, craftName, numResult, Wow.GetCharacterName(), hasCD, recipeDifficulty, baseRecipeQuality, numResultItems, inspirationAmount, inspirationChance)
 
 	assert(not next(private.matQuantitiesTemp))
 	for _, matString, quantity in Profession.MatIterator(craftString) do
@@ -95,5 +92,5 @@ function private.ScanRecipe(professionName, craftString)
 end
 
 function private.HandleInactiveRecipes(craftStrings)
-	TSM.Crafting.RemovePlayerSpells(SessionInfo.GetCharacterName(), craftStrings)
+	TSM.Crafting.RemovePlayerSpells(Wow.GetCharacterName(), craftStrings)
 end

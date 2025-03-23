@@ -87,16 +87,14 @@ function RSEventPOI.GetEventPOI(eventID, mapID, eventInfo, alreadyFoundInfo)
 	end
 	
 	-- Mini icons
-	if (eventInfo and eventInfo.prof) then
-		POI.iconAtlas = RSConstants.PROFFESION_ICON_ATLAS
-	elseif (RSUtils.GetTableLength(POI.achievementIDs) > 0) then
+	if (RSUtils.GetTableLength(POI.achievementIDs) > 0) then
 		POI.iconAtlas = RSConstants.ACHIEVEMENT_ICON_ATLAS
 	end
 	
 	return POI
 end
 
-local function IsEventPOIFiltered(eventID, mapID, zoneQuestID, vignetteGUIDs, onWorldMap, onMinimap)
+local function IsEventPOIFiltered(eventID, mapID, zoneQuestID, onWorldMap, onMinimap)
 	local name = RSEventDB.GetEventName(eventID) or AL["EVENT"]
 	
 	-- Skip if filtering by name in the world map search box
@@ -142,26 +140,10 @@ local function IsEventPOIFiltered(eventID, mapID, zoneQuestID, vignetteGUIDs, on
 		return true
 	end
 
-	-- Skip if an ingame vignette is already showing this entity (on Vignette)
-	for _, vignetteGUID in ipairs(vignetteGUIDs) do
-		local vignetteInfo = C_VignetteInfo.GetVignetteInfo(vignetteGUID);
-		if (vignetteInfo and vignetteInfo.objectGUID) then
-			local _, _, _, _, _, vignetteNPCID, _ = strsplit("-", vignetteInfo.objectGUID);
-			if (tonumber(vignetteNPCID) == eventID and onWorldMap and vignetteInfo.onWorldMap) then
-				RSLogger:PrintDebugMessageEntityID(eventID, string.format("Saltado Evento [%s]: Hay un vignette del juego mostrándolo (Vignette onWorldmap).", eventID))
-				return true
-			end
-			if (tonumber(vignetteNPCID) == eventID and onMinimap and vignetteInfo.onMinimap) then
-				RSLogger:PrintDebugMessageEntityID(eventID, string.format("Saltado Evento [%s]: Hay un vignette del juego mostrándolo (Vignette onMinimap).", eventID))
-				return true
-			end
-		end
-	end
-
 	return false
 end
 
-function RSEventPOI.GetMapNotDiscoveredEventPOIs(mapID, vignetteGUIDs, onWorldMap, onMinimap)
+function RSEventPOI.GetMapNotDiscoveredEventPOIs(mapID, onWorldMap, onMinimap)
 	-- Skip if not showing event icons
 	if (not RSConfigDB.IsShowingEvents()) then
 		return
@@ -191,7 +173,7 @@ function RSEventPOI.GetMapNotDiscoveredEventPOIs(mapID, vignetteGUIDs, onWorldMa
 		end
 
 		-- Skip if common filters
-		if (not filtered and not IsEventPOIFiltered(eventID, mapID, eventInfo.zoneQuestId, vignetteGUIDs, onWorldMap, onMinimap)) then
+		if (not filtered and not IsEventPOIFiltered(eventID, mapID, eventInfo.zoneQuestId, onWorldMap, onMinimap)) then
 			tinsert(POIs, RSEventPOI.GetEventPOI(eventID, mapID, eventInfo))
 		end
 	end
@@ -199,7 +181,7 @@ function RSEventPOI.GetMapNotDiscoveredEventPOIs(mapID, vignetteGUIDs, onWorldMa
 	return POIs
 end
 
-function RSEventPOI.GetMapAlreadyFoundEventPOI(eventID, alreadyFoundInfo, mapID, vignetteGUIDs, onWorldMap, onMinimap)
+function RSEventPOI.GetMapAlreadyFoundEventPOI(eventID, alreadyFoundInfo, mapID, onWorldMap, onMinimap)
 	-- Skip if not showing events icons
 	if (not RSConfigDB.IsShowingEvents()) then
 		RSLogger:PrintDebugMessageEntityID(eventID, string.format("Saltado Evento [%s]: Iconos de eventos deshabilitado.", eventID))
@@ -236,7 +218,7 @@ function RSEventPOI.GetMapAlreadyFoundEventPOI(eventID, alreadyFoundInfo, mapID,
 		zoneQuestID = eventInfo.zoneQuestId
 	end
 
-	if (not IsEventPOIFiltered(eventID, mapID, zoneQuestID, vignetteGUIDs, onWorldMap, onMinimap)) then
+	if (not IsEventPOIFiltered(eventID, mapID, zoneQuestID, onWorldMap, onMinimap)) then
 		return RSEventPOI.GetEventPOI(eventID, mapID, eventInfo, alreadyFoundInfo)
 	end
 end

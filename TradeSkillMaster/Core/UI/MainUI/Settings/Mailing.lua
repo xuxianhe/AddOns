@@ -5,25 +5,18 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Mailing = TSM.MainUI.Settings:NewPackage("Mailing") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local Math = TSM.LibTSMUtil:Include("Lua.Math")
-local UIElements = TSM.LibTSMUI:Include("Util.UIElements")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
+local Mailing = TSM.MainUI.Settings:NewPackage("Mailing")
+local L = TSM.Include("Locale").GetTable()
+local Sound = TSM.Include("Util.Sound")
+local Math = TSM.Include("Util.Math")
+local UIElements = TSM.Include("UI.UIElements")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
-	settings = nil,
+	sounds = {},
+	soundkeys = {},
 }
 local ITEM_QUALITY_DESCS = { ITEM_QUALITY2_DESC, ITEM_QUALITY3_DESC, ITEM_QUALITY4_DESC }
 local ITEM_QUALITY_KEYS = { 2, 3, 4 }
-local SETTING_TOOLTIP = {
-	inboxMessages = L["If enabled, TSM will add chat messages describing mail being opened."],
-	keepMailSpace = L["TSM will stop automatically opening mail as needed in order keep this number of slots empty in your bags."],
-	openMailSound = L["The sound to play when mail has finished automatically opening."],
-	sendMessages = L["If enabled, TSM will add chat messages describing mail being sent."],
-	sendItemsIndividually = L["Setting this will result in different items being sent in separate mails rather than mixing them within the same mail when sending with Mailing operations."],
-	resendDelay = L["How long in minutes to wait between automatically attempting to re-send items according to your Mailing operations."],
-	deMaxQuality = L["The max quality of item to send when mailing disenchantables in the 'Other' tab."],
-}
 
 
 
@@ -31,16 +24,12 @@ local SETTING_TOOLTIP = {
 -- Module Functions
 -- ============================================================================
 
-function Mailing.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
-		:AddKey("global", "mailingOptions", "inboxMessages")
-		:AddKey("global", "mailingOptions", "keepMailSpace")
-		:AddKey("global", "mailingOptions", "openMailSound")
-		:AddKey("global", "mailingOptions", "sendMessages")
-		:AddKey("global", "mailingOptions", "sendItemsIndividually")
-		:AddKey("global", "mailingOptions", "resendDelay")
-		:AddKey("global", "mailingOptions", "deMaxQuality")
+function Mailing.OnInitialize()
 	TSM.MainUI.Settings.RegisterSettingPage(L["Mailing"], "middle", private.GetMailingSettingsFrame)
+	for key, name in Sound.Iterator() do
+		tinsert(private.sounds, name)
+		tinsert(private.soundkeys, key)
+	end
 end
 
 
@@ -62,8 +51,7 @@ function private.GetMailingSettingsFrame()
 					:SetWidth("AUTO")
 					:SetFont("BODY_BODY2_MEDIUM")
 					:SetText(L["Enable inbox chat messages"])
-					:SetSettingInfo(private.settings, "inboxMessages")
-					:SetTooltip(SETTING_TOOLTIP.inboxMessages)
+					:SetSettingInfo(TSM.db.global.mailingOptions, "inboxMessages")
 				)
 				:AddChild(UIElements.New("Spacer", "spacer"))
 			)
@@ -81,8 +69,7 @@ function private.GetMailingSettingsFrame()
 					:SetMargin(0, 8, 0, 0)
 					:SetBackgroundColor("ACTIVE_BG")
 					:SetValidateFunc("NUMBER", "0:20")
-					:SetSettingInfo(private.settings, "keepMailSpace")
-					:SetTooltip(SETTING_TOOLTIP.keepMailSpace, "__parent")
+					:SetSettingInfo(TSM.db.global.mailingOptions, "keepMailSpace")
 				)
 				:AddChild(UIElements.New("Text", "label")
 					:SetSize("AUTO", 16)
@@ -96,10 +83,11 @@ function private.GetMailingSettingsFrame()
 				:SetFont("BODY_BODY2_MEDIUM")
 				:SetText(L["Open mail complete sound"])
 			)
-			:AddChild(UIElements.New("SoundDropdown", "mailSoundDropdown")
+			:AddChild(UIElements.New("SelectionDropdown", "soundDropdown")
 				:SetHeight(24)
-				:SetSettingInfo(private.settings, "openMailSound")
-				:SetTooltip(SETTING_TOOLTIP.openMailSound)
+				:SetItems(private.sounds, private.soundkeys)
+				:SetSettingInfo(TSM.db.global.mailingOptions, "openMailSound")
+				:SetScript("OnSelectionChanged", private.SoundOnSelectionChanged)
 			)
 		)
 		:AddChild(TSM.MainUI.Settings.CreateExpandableSection("Mailing", "send", L["Sending Settings"], "")
@@ -111,8 +99,7 @@ function private.GetMailingSettingsFrame()
 					:SetWidth("AUTO")
 					:SetFont("BODY_BODY2_MEDIUM")
 					:SetText(L["Enable sending chat messages"])
-					:SetSettingInfo(private.settings, "sendMessages")
-					:SetTooltip(SETTING_TOOLTIP.sendMessages)
+					:SetSettingInfo(TSM.db.global.mailingOptions, "sendMessages")
 				)
 				:AddChild(UIElements.New("Spacer", "spacer"))
 			)
@@ -124,8 +111,7 @@ function private.GetMailingSettingsFrame()
 					:SetWidth("AUTO")
 					:SetFont("BODY_BODY2_MEDIUM")
 					:SetText(L["Send grouped items individually"])
-					:SetSettingInfo(private.settings, "sendItemsIndividually")
-					:SetTooltip(SETTING_TOOLTIP.sendItemsIndividually)
+					:SetSettingInfo(TSM.db.global.mailingOptions, "sendItemsIndividually")
 				)
 				:AddChild(UIElements.New("Spacer", "spacer"))
 			)
@@ -143,9 +129,8 @@ function private.GetMailingSettingsFrame()
 					:SetMargin(0, 8, 0, 0)
 					:SetBackgroundColor("ACTIVE_BG")
 					:SetValidateFunc("NUMBER", "0.5:10")
-					:SetValue(private.settings.resendDelay)
+					:SetValue(TSM.db.global.mailingOptions.resendDelay)
 					:SetScript("OnValueChanged", private.RestartDelayOnValueChanged)
-					:SetTooltip(SETTING_TOOLTIP.resendDelay, "__parent")
 				)
 				:AddChild(UIElements.New("Text", "label")
 					:SetSize("AUTO", 16)
@@ -162,8 +147,7 @@ function private.GetMailingSettingsFrame()
 			:AddChild(UIElements.New("SelectionDropdown", "mailPageDropdown")
 				:SetHeight(26)
 				:SetItems(ITEM_QUALITY_DESCS, ITEM_QUALITY_KEYS)
-				:SetSettingInfo(private.settings, "deMaxQuality")
-				:SetTooltip(SETTING_TOOLTIP.deMaxQuality)
+				:SetSettingInfo(TSM.db.global.mailingOptions, "deMaxQuality")
 			)
 		)
 end
@@ -174,7 +158,11 @@ end
 -- Local Script Handlers
 -- ============================================================================
 
+function private.SoundOnSelectionChanged(self, selection)
+	Sound.PlaySound(TSM.db.global.mailingOptions.openMailSound)
+end
+
 function private.RestartDelayOnValueChanged(input)
 	local value = Math.Round(tonumber(input:GetValue()), 0.5)
-	private.settings.resendDelay = value
+	TSM.db.global.mailingOptions.resendDelay = value
 end

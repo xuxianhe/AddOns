@@ -22,7 +22,6 @@ local RSRoutines = private.ImportLib("RareScannerRoutines")
 
 -- RareScanner service libraries
 local RSMinimap = private.ImportLib("RareScannerMinimap")
-local RSTargetUnitTracker = private.ImportLib("RareScannerTargetUnitTracker")
 
 -----------------------------------------------------------------------
 -- Functions to delete custom NPCs
@@ -66,9 +65,6 @@ function RSCustomNpcs.DeleteCustomNpc(npcID, options)
 	
 	-- Update minimap
 	RSMinimap.HideIcon(tonumber(npcID))
-	
-	-- Update Target Unit
-	RSTargetUnitTracker.Refresh()
 end
 
 -----------------------------------------------------------------------
@@ -252,7 +248,13 @@ function RSCustomNpcs.ImportNpcs(text, options, callback)
 				
 				-- Check if NPC exists
 				if (npcIDcorrect) then
+					local imported = false
 					RSTooltipScanners.ScanNpcName(npcID, function(npcName)
+						-- In Classic this callback is summoned twice
+						if (imported) then
+							return
+						end
+						
 						if (not npcName) then
 							AddLineError(npcErrorLines, s, string.format(AL["CUSTOM_NPC_ERROR3_NPCID"], npcID))
 						elseif (RSUtils.GetTableLength(npcErrorLines) == 0) then
@@ -274,6 +276,7 @@ function RSCustomNpcs.ImportNpcs(text, options, callback)
 								RSCollectionsDB.UpdateEntityCollectibles(tonumber(npcID), newNpcInfo.items, RSConstants.ITEM_SOURCE.NPC)
 							end
 						
+							imported = true						
 							tinsert(output, string.format("# |A:common-icon-checkmark:10:10::::|a %s", string.format(AL["CUSTOM_NPC_IMPORT_OK"], s)))
 						else
 							for _, string in pairs(npcErrorLines) do

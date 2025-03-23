@@ -67,7 +67,7 @@ function RSMapDB.GetActiveMapIDsWithNamesByMapID(mapID)
 	local mapIDs = {}
 	
 	-- Ignore world maps
-	if (mapID == RSConstants.AZEROTH or mapID == RSConstants.COSMIC) then
+	if (mapID == RSConstants.AZEROTH) then
 		return
 	end
 		
@@ -177,69 +177,6 @@ function RSMapDB.IsMapInParentMap(parentMapID, subzoneMapID)
 		if (subzones and RSUtils.Contains(subzones, subzoneMapID)) then
 			return true;
 		end
-	end
-
-	return false
-end
-
----============================================================================
--- Permanent state areas database
----============================================================================
-
-function RSMapDB.GetPermanentKillZoneIDs()
-	return private.PERMANENT_KILLS_ZONE_IDS
-end
-
-function RSMapDB.GetPermanentKillZoneArtID(mapID)
-	if (mapID) then
-		return private.PERMANENT_KILLS_ZONE_IDS[mapID]
-	end
-
-	return nil
-end
-
-function RSMapDB.IsEntityInPermanentZone(entityID, mapID, infoAlreadyFound, alreadyChecked)
-	return BelongsToZone(entityID, mapID, RSMapDB.GetPermanentKillZoneIDs(), infoAlreadyFound, alreadyChecked)
-end
-
----============================================================================
--- Reseteable state areas database
----============================================================================
-
-function RSMapDB.GetReseteableKillZoneIDs()
-	return private.RESETABLE_KILLS_ZONE_IDS
-end
-
-function RSMapDB.GetReseteableKillZoneArtID(mapID)
-	if (mapID) then
-		return private.RESETABLE_KILLS_ZONE_IDS[mapID]
-	end
-
-	return nil
-end
-
-function RSMapDB.IsEntityInReseteableZone(entityID, mapID, infoAlreadyFound, alreadyChecked)
-	return BelongsToZone(entityID, mapID, RSMapDB.GetReseteableKillZoneIDs(), infoAlreadyFound, alreadyChecked)
-end
-
-function RSMapDB.IsReseteableKillMapID(mapID, artID)
-	if (mapID) then
-		local reseteableArtIDs = RSMapDB.GetReseteableKillZoneArtID(mapID)
-		if (reseteableArtIDs and (RSUtils.Contains(reseteableArtIDs, RSConstants.ALL_ZONES) or RSUtils.Contains(reseteableArtIDs, artID))) then
-			return true;
-		end
-	end
-
-	return false
-end
-
----============================================================================
--- Zones without vignette
----============================================================================
---
-function RSMapDB.IsZoneWithoutVignette(mapID)
-	if (mapID and private.ZONES_WITHOUT_VIGNETTE[mapID]) then
-		return RSUtils.Contains(private.ZONES_WITHOUT_VIGNETTE[mapID], C_Map.GetMapArtID(mapID))
 	end
 
 	return false

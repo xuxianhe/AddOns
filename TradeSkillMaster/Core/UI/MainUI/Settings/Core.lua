@@ -6,9 +6,10 @@
 
 local TSM = select(2, ...) ---@type TSM
 local Settings = TSM.MainUI:NewPackage("Settings")
-local L = TSM.Locale.GetTable()
-local UIElements = TSM.LibTSMUI:Include("Util.UIElements")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
+local L = TSM.Include("Locale").GetTable()
+local Wow = TSM.Include("Util.Wow")
+local UIElements = TSM.Include("UI.UIElements")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
 	settingPages = {
 		top = {},
@@ -21,6 +22,7 @@ local private = {
 }
 local SECTIONS = { "top", "middle" }
 local SETTING_PATH_SEP = "`"
+local SETTING_LABEL_WIDTH = 400
 
 
 
@@ -45,6 +47,21 @@ function Settings.RegisterChildSettingPage(parentName, childName, callback)
 	private.callback[path] = callback
 end
 
+function Settings.CreateSettingLine(id, labelText, width)
+	width = width or SETTING_LABEL_WIDTH
+
+	return UIElements.New("Frame", id)
+		:SetLayout("HORIZONTAL")
+		:SetHeight(26)
+		:SetMargin(0, 0, 0, 16)
+		:AddChild(UIElements.New("Text", "label")
+			:SetWidth(width)
+			:SetFont("BODY_BODY2_MEDIUM")
+			:SetTextColor("TEXT_ALT")
+			:SetText(labelText)
+		)
+end
+
 function Settings.CreateHeading(id, text)
 	return UIElements.New("Text", id)
 		:SetHeight(19)
@@ -53,15 +70,16 @@ function Settings.CreateHeading(id, text)
 		:SetText(text)
 end
 
-function Settings.CreateInputWithReset(id, label, settingsObj, settingsKey, validate, forceDisable, tooltip)
+function Settings.CreateInputWithReset(id, label, context, validate, forceDisable)
+	local scope, namespace, key = strsplit(".", context)
 	local validateFunc, validateContext = nil, nil
 	if type(validate) == "table" then
-		validateFunc = "CUSTOM_STRING"
+		validateFunc = "CUSTOM_PRICE"
 		validateContext = validate
 	elseif type(validate) == "function" then
 		validateFunc = validate
 	elseif validate == nil then
-		validateFunc = "CUSTOM_STRING"
+		validateFunc = "CUSTOM_PRICE"
 	else
 		error("Invalid validate: "..tostring(validate))
 	end
@@ -77,37 +95,34 @@ function Settings.CreateInputWithReset(id, label, settingsObj, settingsKey, vali
 		:AddChild(UIElements.New("Frame", "content")
 			:SetLayout("HORIZONTAL")
 			:SetHeight(24)
-			:SetContext(settingsObj)
-			:AddChild(UIElements.New("CustomStringSingleLineInput", "input")
+			:AddChild(UIElements.New("Input", "input")
 				:SetMargin(0, 8, 0, 0)
-				:SetBackgroundColor("PRIMARY_BG")
+				:SetBackgroundColor("ACTIVE_BG")
 				:SetValidateFunc(validateFunc, validateContext)
-				:SetSettingInfo(settingsObj, settingsKey)
+				:SetSettingInfo(TSM.db[scope][namespace], key)
 				:SetDisabled(forceDisable)
-				:SetContext(settingsKey)
-				:SetPopoutTitle(label)
 				:SetScript("OnValueChanged", private.InputOnValueChanged)
-				:SetTooltip(tooltip, "__parent")
 			)
 			:AddChild(UIElements.New("ActionButton", "resetButton")
 				:SetWidth(108)
 				:SetText(L["Reset"])
-				:SetDisabled(forceDisable or settingsObj[settingsKey] == settingsObj:GetDefaultReadOnly(settingsKey))
+				:SetDisabled(forceDisable or TSM.db[scope][namespace][key] == TSM.db:GetDefault(scope, namespace, key))
 				:SetScript("OnClick", private.ResetBtnOnClick)
-				:SetContext(settingsKey)
+				:SetContext(context)
 			)
 		)
 end
 
-function Settings.CreateMultiInputWithReset(id, label, settingsObj, settingsKey, validate, tooltip)
+function Settings.CreateMultiInputWithReset(id, label, context, validate)
+	local scope, namespace, key = strsplit(".", context)
 	local validateFunc, validateContext = nil, nil
 	if type(validate) == "table" then
-		validateFunc = "CUSTOM_STRING"
+		validateFunc = "CUSTOM_PRICE"
 		validateContext = validate
 	elseif type(validate) == "function" then
 		validateFunc = validate
 	elseif validate == nil then
-		validateFunc = "CUSTOM_STRING"
+		validateFunc = "CUSTOM_PRICE"
 	else
 		error("Invalid validate: "..tostring(validate))
 	end
@@ -122,15 +137,12 @@ function Settings.CreateMultiInputWithReset(id, label, settingsObj, settingsKey,
 		)
 		:AddChild(UIElements.New("Frame", "content")
 			:SetLayout("VERTICAL")
-			:SetContext(settingsObj)
 			:AddChild(UIElements.New("MultiLineInput", "input")
 				:SetHeight(70)
 				:SetMargin(0, 0, 0, 8)
 				:SetValidateFunc(validateFunc, validateContext)
-				:SetSettingInfo(settingsObj, settingsKey)
-				:SetContext(settingsKey)
+				:SetSettingInfo(TSM.db[scope][namespace], key)
 				:SetScript("OnValueChanged", private.MultiInputOnValueChanged)
-				:SetTooltip(tooltip)
 			)
 			:AddChild(UIElements.New("Frame", "reset")
 				:SetLayout("HORIZONTAL")
@@ -139,10 +151,10 @@ function Settings.CreateMultiInputWithReset(id, label, settingsObj, settingsKey,
 				:AddChild(UIElements.New("ActionButton", "button")
 					:SetWidth(108)
 					:SetText(L["Reset"])
-					:SetDisabled(settingsObj[settingsKey] == settingsObj:GetDefaultReadOnly(settingsKey))
+					:SetDisabled(TSM.db[scope][namespace][key] == TSM.db:GetDefault(scope, namespace, key))
 					:SetContext("global.craftingOptions.defaultCraftPriceMethod")
 					:SetScript("OnClick", private.MultiResetBtnOnClick)
-					:SetContext(settingsKey)
+					:SetContext(context)
 				)
 			)
 		)
@@ -160,6 +172,17 @@ function Settings.CreateExpandableSection(pageName, id, text, description, descr
 			:SetFont("BODY_BODY3")
 			:SetText(description)
 		)
+end
+
+function Settings.PromptToReload()
+	StaticPopupDialogs["TSMReloadPrompt"] = StaticPopupDialogs["TSMReloadPrompt"] or {
+		text = L["You must reload your UI for these settings to take effect. Reload now?"],
+		button1 = YES,
+		button2 = NO,
+		timeout = 0,
+		OnAccept = ReloadUI,
+	}
+	Wow.ShowStaticPopupDialog("TSMReloadPrompt")
 end
 
 
@@ -264,38 +287,36 @@ function private.NavButtonOnClick(button)
 end
 
 function private.InputOnValueChanged(input)
-	local settingsObj = input:GetParentElement():GetContext()
-	local settingsKey = input:GetContext()
 	local button = input:GetElement("__parent.resetButton")
-	button:SetDisabled(settingsObj[settingsKey] == settingsObj:GetDefaultReadOnly(settingsKey))
+	local scope, namespace, key = strsplit(".", button:GetContext())
+	button:SetDisabled(TSM.db[scope][namespace][key] == TSM.db:GetDefault(scope, namespace, key))
 		:Draw()
 end
 
 function private.ResetBtnOnClick(button)
-	local settingsObj = button:GetParentElement():GetContext()
-	local settingsKey = button:GetContext()
-	settingsObj:ResetToDefault(settingsKey)
+	local scope, namespace, key = strsplit(".", button:GetContext())
+	local defaultValue = TSM.db:GetDefault(scope, namespace, key)
+	TSM.db:Set(scope, nil, namespace, key, defaultValue)
 	button:GetElement("__parent.input")
-		:SetValue(settingsObj[settingsKey])
+		:SetValue(defaultValue)
 		:Draw()
 	button:SetDisabled(true)
 		:Draw()
 end
 
 function private.MultiInputOnValueChanged(input)
-	local settingsObj = input:GetParentElement():GetContext()
-	local settingsKey = input:GetContext()
 	local button = input:GetElement("__parent.reset.button")
-	button:SetDisabled(settingsObj[settingsKey] == settingsObj:GetDefaultReadOnly(settingsKey))
+	local scope, namespace, key = strsplit(".", button:GetContext())
+	button:SetDisabled(TSM.db[scope][namespace][key] == TSM.db:GetDefault(scope, namespace, key))
 		:Draw()
 end
 
 function private.MultiResetBtnOnClick(button)
-	local settingsObj = button:GetElement("__parent.__parent"):GetContext()
-	local settingsKey = button:GetContext()
-	settingsObj:ResetToDefault(settingsKey)
+	local scope, namespace, key = strsplit(".", button:GetContext())
+	local defaultValue = TSM.db:GetDefault(scope, namespace, key)
+	TSM.db:Set(scope, nil, namespace, key, defaultValue)
 	button:GetElement("__parent.__parent.input")
-		:SetValue(settingsObj[settingsKey])
+		:SetValue(defaultValue)
 		:Draw()
 	button:SetDisabled(true)
 		:Draw()

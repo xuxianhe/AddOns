@@ -1,7 +1,8 @@
+local _, ns = ...
+local mounts, util = ns.mounts, ns.util
 local random, C_PetJournal, UnitBuff, C_Timer, wipe, InCombatLockdown, IsFlying, IsMounted, UnitHasVehicleUI, UnitCastingInfo, UnitChannelInfo, IsStealthed, UnitIsGhost, GetSpellCooldown, UnitIsAFK, DoEmote = random, C_PetJournal, UnitBuff, C_Timer, wipe, InCombatLockdown, IsFlying, IsMounted, UnitHasVehicleUI, UnitCastingInfo, UnitChannelInfo, IsStealthed, UnitIsGhost, GetSpellCooldown, UnitIsAFK, DoEmote
-local mounts, util = MountsJournal, MountsJournalUtil
 local pets = CreateFrame("FRAME")
-mounts.pets = pets
+ns.pets = pets
 util.setEventsMixin(pets)
 
 
@@ -73,6 +74,7 @@ end
 
 do
 	local aurasList = {
+		[66] = true, -- Invisibility
 		[3680] = true, -- Lesser Invisibility
 		[11392] = true, -- Invisibility Potion
 		[32612] = true, -- Invisibility
@@ -156,6 +158,7 @@ function pets:setSummonEvery()
 		self:stopTicker()
 	end
 end
+pets:on("ADDON_INIT", pets.setSummonEvery)
 
 
 function pets:setPetJournalFiltersBackup()

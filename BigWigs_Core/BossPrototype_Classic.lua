@@ -44,7 +44,7 @@ local EJ_GetEncounterInfo = isCata and function(key)
 end or isRetail and EJ_GetEncounterInfo or function(key)
 	return BigWigsAPI:GetLocale("BigWigs: Encounters")[key]
 end
-local SendChatMessage, GetInstanceInfo, Timer, SetRaidTarget = loader.SendChatMessage, loader.GetInstanceInfo, loader.CTimerAfter, loader.SetRaidTarget
+local SendChatMessage, GetInstanceInfo, SimpleTimer, SetRaidTarget = loader.SendChatMessage, loader.GetInstanceInfo, loader.CTimerAfter, loader.SetRaidTarget
 local UnitGUID, UnitHealth, UnitHealthMax = loader.UnitGUID, loader.UnitHealth, loader.UnitHealthMax
 local RegisterAddonMessagePrefix = loader.RegisterAddonMessagePrefix
 local format, find, gsub, band, tremove, twipe = string.format, string.find, string.gsub, bit.band, table.remove, table.wipe
@@ -59,7 +59,7 @@ local bossUtilityFrame = CreateFrame("Frame")
 local petUtilityFrame = CreateFrame("Frame")
 local activeNameplateUtilityFrame, inactiveNameplateUtilityFrame = CreateFrame("Frame"), CreateFrame("Frame")
 local engagedGUIDs, activeNameplates, nameplateWatcher = {}, {}, nil
-local enabledModules, unitTargetScans = {}, {}
+local enabledModules, unitTargetScans, scheduledEvents = {}, {}, {}
 local allowedEvents = {}
 local difficulty, maxPlayers
 local UpdateDispelStatus, UpdateInterruptStatus = nil, nil
@@ -128,7 +128,7 @@ local updateData = function(module)
 		local spent = 0
 		local talentTree = 0
 		for tree = 1, 3 do
-			local pointsSpent = select(isClassicEra and 5 or 3, GetTalentTabInfo(tree))
+			local _, _, _, _, pointsSpent = GetTalentTabInfo(tree)
 			if pointsSpent > spent then
 				spent = pointsSpent
 				talentTree = tree
@@ -528,6 +528,7 @@ function boss:Enable(isWipe)
 
 		updateData(self)
 		self.sayCountdowns = {}
+		scheduledEvents[self] = {}
 
 		-- Update enabled modules list
 		for i = #enabledModules, 1, -1 do
@@ -568,6 +569,10 @@ function boss:Disable(isWipe)
 		-- Update enabled modules list
 		self:DeleteFromTable(enabledModules, self)
 
+		-- Cancel and clean up scheduled events
+		self:CancelAllTimers()
+		scheduledEvents[self] = nil
+
 		-- No enabled modules? Unregister the combat log!
 		if #enabledModules == 0 then
 			bossUtilityFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -575,9 +580,11 @@ function boss:Disable(isWipe)
 			activeNameplateUtilityFrame:UnregisterEvent("NAME_PLATE_UNIT_ADDED")
 			inactiveNameplateUtilityFrame:UnregisterEvent("NAME_PLATE_UNIT_REMOVED")
 			nameplateWatcher:Stop()
+			enabledModules = {}
 			engagedGUIDs = {}
 			activeNameplates = {}
 			unitTargetScans = {}
+			scheduledEvents = {}
 		else
 			for i = #unitTargetScans, 1, -1 do
 				if self == unitTargetScans[i][1] then
@@ -626,8 +633,6 @@ function boss:Disable(isWipe)
 		self.isWiping = nil
 		self.isEngaged = nil
 		self.bossTargetChecks = nil
-
-		self:CancelAllTimers()
 
 		if not isWiping then
 			self:SendMessage("BigWigs_OnBossDisable", self)
@@ -1368,7 +1373,7 @@ do
 		end
 
 		if #unitTargetScans ~= 0 then
-			Timer(0.05, unitScanner)
+			SimpleTimer(0.05, unitScanner)
 		end
 	end
 
@@ -1380,7 +1385,7 @@ do
 	-- @string guid GUID of the mob to get the target of
 	function boss:GetUnitTarget(func, tankCheckExpiry, guid)
 		if #unitTargetScans == 0 then
-			Timer(0.05, unitScanner)
+			SimpleTimer(0.05, unitScanner)
 		end
 
 		unitTargetScans[#unitTargetScans+1] = {self, func, solo and 0.1 or tankCheckExpiry, guid, 0} -- Tiny allowance when solo
@@ -1472,7 +1477,7 @@ do
 			twipe(icons) -- Wipe icon cache
 			twipe(spells)
 			if self.OnWin then self:OnWin() end
-			Timer(1, function() self:Disable() end) -- Delay a little to prevent re-enabling
+			SimpleTimer(1, function() self:Disable() end) -- Delay a little to prevent re-enabling
 			self:SendMessage("BigWigs_OnBossWin", self)
 			self:SendMessage("BigWigs_VictorySound", self)
 		end
@@ -1521,7 +1526,7 @@ do
 			if UnitGUID(unit) == guid then
 				self.bossTargetChecks[unit] = func
 				self:RegisterUnitEvent("UNIT_TARGET", "NextTarget", unit)
-				Timer(timeToWait or 0.3, function()
+				SimpleTimer(timeToWait or 0.3, function()
 					if self.bossTargetChecks[unit] then
 						self:UnregisterUnitEvent("UNIT_TARGET", unit)
 					end
@@ -1539,19 +1544,8 @@ do
 			self[self.targetEventFunc](self, event, "mouseover", guid)
 		end
 	end
-	function boss:UNIT_TARGET(event, unit)
-		local unitTarget = unit.."target"
-		local guid = UnitGUID(unitTarget)
-		if guid and not myGroupGUIDs[guid] then
-			self[self.targetEventFunc](self, event, unitTarget, guid)
-		end
-
-		if self.targetEventFunc then -- Event is still registered, continue
-			guid = UnitGUID(unit)
-			if guid and not myGroupGUIDs[guid] then
-				self[self.targetEventFunc](self, event, unit, guid)
-			end
-		end
+	function boss:BigWigs_UNIT_TARGET(_, _, unitTarget, guid)
+		self[self.targetEventFunc](self, "UNIT_TARGET", unitTarget, guid)
 	end
 	function boss:NAME_PLATE_UNIT_ADDED(event, unit)
 		local guid = UnitGUID(unit)
@@ -1567,7 +1561,7 @@ do
 		if self[func] then
 			self.targetEventFunc = func
 			self:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
-			self:RegisterEvent("UNIT_TARGET")
+			self:RegisterMessage("BigWigs_UNIT_TARGET")
 			self:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 		end
 	end
@@ -1575,7 +1569,7 @@ do
 	function boss:UnregisterTargetEvents()
 		self.targetEventFunc = nil
 		self:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
-		self:UnregisterEvent("UNIT_TARGET")
+		self:UnregisterMessage("BigWigs_UNIT_TARGET")
 		self:UnregisterEvent("NAME_PLATE_UNIT_ADDED")
 	end
 end
@@ -1590,7 +1584,7 @@ function boss:EncounterEnd(_, id, name, diff, size, status)
 			end
 		elseif status == 0 then
 			self:SendMessage("BigWigs_StopBars", self)
-			Timer(5, function() self:Wipe() end) -- Delayed due to issues with some multi-boss encounters showing/hiding the boss frames (IEEU) rapidly whilst wiping.
+			SimpleTimer(5, function() self:Wipe() end) -- Delayed due to issues with some multi-boss encounters showing/hiding the boss frames (IEEU) rapidly whilst wiping.
 		end
 		self:SendMessage("BigWigs_EncounterEnd", self, id, name, diff, size, status) -- Do NOT use this for wipe detection, use BigWigs_OnBossWipe.
 	end
@@ -2842,7 +2836,7 @@ do
 				twipe(playerTable)
 				if markers then twipe(markers) end
 			elseif playersInTable == 1 then
-				Timer(customTime or 0.3, function()
+				SimpleTimer(customTime or 0.3, function()
 					twipe(playerTable)
 					if markers then twipe(markers) end
 				end)
@@ -2861,7 +2855,7 @@ do
 			if playersInTable == playerCount then
 				printTargets(self, key, playerTable, color, text, icon, markers)
 			elseif playersInTable == 1 then
-				Timer(customTime or 0.3, function()
+				SimpleTimer(customTime or 0.3, function()
 					printTargets(self, key, playerTable, color, text, icon, markers)
 				end)
 			end
@@ -2870,7 +2864,7 @@ do
 				twipe(playerTable)
 				if markers then twipe(markers) end
 			elseif playersInTable == 1 then
-				Timer(customTime or 0.3, function()
+				SimpleTimer(customTime or 0.3, function()
 					twipe(playerTable)
 					if markers then twipe(markers) end
 				end)
@@ -2964,7 +2958,7 @@ do
 			if playersAddedSinceLastPrint == playerCount then
 				printTargets(self, key, playerTable, color, text, icon)
 			elseif playersAddedSinceLastPrint == 1 then
-				Timer(customTime or 0.3, function()
+				SimpleTimer(customTime or 0.3, function()
 					printTargets(self, key, playerTable, color, text, icon)
 				end)
 			end
@@ -3483,7 +3477,7 @@ do
 		end
 		local startOffset = start + 0.2
 		for i = 1.2, startOffset do
-			Timer(seconds-i, printTime)
+			SimpleTimer(seconds-i, printTime)
 		end
 		self.sayCountdowns[key] = tbl
 	end
@@ -3507,7 +3501,7 @@ do
 		end
 		local startOffset = start + 0.2
 		for i = 1.2, startOffset do
-			Timer(seconds-i, printTime)
+			SimpleTimer(seconds-i, printTime)
 		end
 		self.sayCountdowns[key] = tbl
 	end
@@ -3522,7 +3516,51 @@ end
 -- @param func callback function to trigger after the delay
 -- @number delay how long to wait until triggering the function
 function boss:SimpleTimer(func, delay)
-	Timer(delay, func)
+	SimpleTimer(delay, func)
+end
+
+do
+	local Timer = BigWigsLoader.CTimerNewTimer
+	function boss:ScheduleTimer(func, delay, one, two, three, four, five, six, seven, eight)
+		if type(func) == "function" then
+			local timerId = Timer(delay, function() func(one, two, three, four, five, six, seven, eight) end)
+			scheduledEvents[self][timerId] = true
+			return timerId
+		else
+			local timerId = Timer(delay, function() self[func](self, one, two, three, four, five, six, seven, eight) end)
+			scheduledEvents[self][timerId] = true
+			return timerId
+		end
+	end
+end
+
+do
+	local Ticker = BigWigsLoader.CTimerNewTicker
+	function boss:ScheduleRepeatingTimer(func, delay, one, two, three, four, five, six, seven, eight)
+		if type(func) == "function" then
+			local timerId = Ticker(delay, function() func(one, two, three, four, five, six, seven, eight) end)
+			scheduledEvents[self][timerId] = true
+			return timerId
+		else
+			local timerId = Ticker(delay, function() self[func](self, one, two, three, four, five, six, seven, eight) end)
+			scheduledEvents[self][timerId] = true
+			return timerId
+		end
+	end
+end
+
+function boss:CancelTimer(timerId)
+	if scheduledEvents[self] and scheduledEvents[self][timerId] then
+		timerId:Cancel()
+		scheduledEvents[self][timerId] = nil
+	end
+end
+
+function boss:CancelAllTimers()
+	for k in next, scheduledEvents[self] do
+		k:Cancel()
+	end
+	scheduledEvents[self] = {}
 end
 
 --- Flash the screen edges.
@@ -3609,7 +3647,7 @@ do
 				else
 					msg = "B^".. msg
 				end
-				local _, result = SendAddonMessage("BigWigs", msg, IsInGroup(2) and "INSTANCE_CHAT" or "RAID")
+				local result = SendAddonMessage("BigWigs", msg, IsInGroup(2) and "INSTANCE_CHAT" or "RAID")
 				if type(result) == "number" and result ~= 0 then
 					local errorMsg = format("Failed to send boss comm %q. Error code: %d", msg, result)
 					core:Error(errorMsg)

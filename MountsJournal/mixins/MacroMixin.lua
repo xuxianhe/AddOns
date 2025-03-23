@@ -1,20 +1,28 @@
+local _, ns = ...
+local util = ns.util
 local type, pairs, rawget, GetItemCount, GetUnitSpeed, IsFalling, InCombatLockdown, GetTime, C_Item, GetInventoryItemID, GetInventoryItemLink, EquipItemByName, IsMounted, IsSubmerged = type, pairs, rawget, GetItemCount, GetUnitSpeed, IsFalling, InCombatLockdown, GetTime, C_Item, GetInventoryItemID, GetInventoryItemLink, EquipItemByName, IsMounted, IsSubmerged
 local macroFrame = CreateFrame("FRAME")
+ns.macroFrame = macroFrame
+util.setEventsMixin(macroFrame)
 
 
 macroFrame:SetScript("OnEvent", function(self, event, ...)
 	self[event](self, ...)
 end)
-macroFrame:RegisterEvent("PLAYER_LOGIN")
 
 
-function macroFrame:PLAYER_LOGIN()
-	self.PLAYER_LOGIN = nil
-	self.mounts = MountsJournal
+macroFrame:on("ADDON_INIT", function(self)
+	self.additionalMounts = ns.additionalMounts
+	self.calendar = ns.calendar
+	self.mounts = ns.mounts
 	self.config = self.mounts.config
+	self.ruleConfig = self.mounts.globalDB.ruleConfig
 	self.sFlags = self.mounts.sFlags
 	self.macrosConfig = self.config.macrosConfig
 	self.charMacrosConfig = self.mounts.charDB.macrosConfig
+	self.conditions = ns.conditions
+	self.actions = ns.actions
+	self.checkRules = {}
 	self.class = select(2, UnitClass("player"))
 	self.broomID = 37011
 	self.itemName = setmetatable({}, {__index = function(self, itemID)
@@ -31,56 +39,34 @@ function macroFrame:PLAYER_LOGIN()
 		end
 	end})
 
-	local function loadFunc(name, funcStr)
-		local loadedFunc, err = loadstring(funcStr)
-		if err then
-			geterrorhandler()(err)
-		else
-			self[name] = loadedFunc()
-		end
-	end
-
 	local classOptionMacro = ""
 	local defMacro = ""
 
 	if self.class == "PALADIN" then
-		classOptionMacro = classOptionMacro..[[
-			local GetShapeshiftForm, GetShapeshiftFormInfo = GetShapeshiftForm, GetShapeshiftFormInfo
-
-			local function getAuraSpellID()
-				local shapeshiftIndex = GetShapeshiftForm()
-				if shapeshiftIndex > 0 then
-					local _,_,_, spellID = GetShapeshiftFormInfo(shapeshiftIndex)
-					return spellID
-				end
+		local GetShapeshiftForm, GetShapeshiftFormInfo = GetShapeshiftForm, GetShapeshiftFormInfo
+		self.getAuraSpellID = function()
+			local shapeshiftIndex = GetShapeshiftForm()
+			if shapeshiftIndex > 0 then
+				local _,_,_, spellID = GetShapeshiftFormInfo(shapeshiftIndex)
+				return spellID
 			end
-		]]
-		defMacro = defMacro..[[
-			local GetShapeshiftForm, GetShapeshiftFormInfo = GetShapeshiftForm, GetShapeshiftFormInfo
-
-			local function getAuraSpellID()
-				local shapeshiftIndex = GetShapeshiftForm()
-				if shapeshiftIndex > 0 then
-					local _,_,_, spellID = GetShapeshiftFormInfo(shapeshiftIndex)
-					return spellID
-				end
-			end
-		]]
+		end
 	elseif self.class == "PRIEST" or self.class == "MAGE" then
 		classOptionMacro = classOptionMacro..[[
-			local IsFalling, GetTime = IsFalling, GetTime
+			local IsFalling, GetTime, C_UnitAuras = IsFalling, GetTime, C_UnitAuras
 		]]
 	elseif self.class == "DRUID" then
-		classOptionMacro = classOptionMacro..[[
-			local GetShapeshiftForm, GetShapeshiftFormInfo, GetTime = GetShapeshiftForm, GetShapeshiftFormInfo, GetTime
-
-			local function getFormSpellID()
-				local shapeshiftIndex = GetShapeshiftForm()
-				if shapeshiftIndex > 0 then
-					local _,_,_, spellID = GetShapeshiftFormInfo(shapeshiftIndex)
-					return spellID
-				end
+		local GetShapeshiftForm, GetShapeshiftFormInfo = GetShapeshiftForm, GetShapeshiftFormInfo
+		self.getFormSpellID = function()
+			local shapeshiftIndex = GetShapeshiftForm()
+			if shapeshiftIndex > 0 then
+				local _,_,_, spellID = GetShapeshiftFormInfo(shapeshiftIndex)
+				return spellID
 			end
+		end
+
+		classOptionMacro = classOptionMacro..[[
+			local GetTime = GetTime
 		]]
 		defMacro = defMacro..[[
 			local GetShapeshiftFormID = GetShapeshiftFormID
@@ -92,28 +78,32 @@ function macroFrame:PLAYER_LOGIN()
 	]]
 	defMacro = defMacro..[[
 		return function(self)
-			local macro = "/stand"
+			local macro
 	]]
 
 	if self.class == "PALADIN" then
-		classOptionMacro = classOptionMacro..[[
+		self.classDismount = [[
 			if self.classConfig.useCrusaderAura then
-				local spellID = getAuraSpellID()
+				local spellID = self.getAuraSpellID()
 
 				if spellID and spellID ~= 32223 then
 					self.charMacrosConfig.lastAuraSpellID = spellID
 				elseif self.sFlags.isMounted and spellID == 32223 then
 
 					if self.classConfig.returnLastAura and self.charMacrosConfig.lastAuraSpellID then
-						return self:addLine(self:getDismountMacro(), "/cast !"..self:getSpellName(self.charMacrosConfig.lastAuraSpellID))
+						local spellName = self:getSpellName(self.charMacrosConfig.lastAuraSpellID)
+						if spellName then
+							return self:addLine(self:getDismountMacro(), "/cast !"..spellName)
+						end
 					end
 
 					self.charMacrosConfig.lastAuraSpellID = nil
 				end
 			end
 		]]
+		classOptionMacro = classOptionMacro..self.classDismount
 		defMacro = defMacro..[[
-			if self.classConfig.useCrusaderAura and getAuraSpellID() ~= 32223 then
+			if self.classConfig.useCrusaderAura and self.getAuraSpellID() ~= 32223 then
 				macro = self:addLine(macro, "/cast !"..self:getSpellName(32223))
 			end
 		]]
@@ -121,17 +111,14 @@ function macroFrame:PLAYER_LOGIN()
 		classOptionMacro = classOptionMacro..[[
 			-- 1706 - Levitation
 			if self.classConfig.useLevitation and not self.magicBroom and IsFalling() then
-				if GetTime() - (self.lastUseClassSpellTime or 0) < .5 then return "" end
-				local i = 1
-				repeat
-					local _,_,_,_,_,_,_,_,_, spellID = UnitBuff("player", i)
-					if spellID == 1706 then
-						return "/cancelaura "..self:getSpellName(1706)
-					end
-					i = i + 1
-				until not spellID
-				self.lastUseClassSpellTime = GetTime()
-				return "/cast [@player]"..self:getSpellName(1706)
+				if GetTime() - (self.lastUseClassSpellTime or 0) < .5 then
+					return ""
+				elseif C_UnitAuras.GetPlayerAuraBySpellID(1706) then
+					return "/cancelaura "..self:getSpellName(1706)
+				else
+					self.lastUseClassSpellTime = GetTime()
+					return "/cast [@player]"..self:getSpellName(1706)
+				end
 			end
 		]]
 	elseif self.class == "DEATHKNIGHT" then
@@ -158,21 +145,18 @@ function macroFrame:PLAYER_LOGIN()
 		classOptionMacro = classOptionMacro..[[
 			-- 130 - Slow Fall
 			if self.classConfig.useSlowFall and not self.magicBroom and IsFalling() then
-				if GetTime() - (self.lastUseClassSpellTime or 0) < .5 then return "" end
-				local i = 1
-				repeat
-					local _,_,_,_,_,_,_,_,_, spellID = UnitBuff("player", i)
-					if spellID == 130 then
-						return "/cancelaura "..self:getSpellName(130)
-					end
-					i = i + 1
-				until not spellID
-				self.lastUseClassSpellTime = GetTime()
-				return "/cast [@player]"..self:getSpellName(130)
+				if GetTime() - (self.lastUseClassSpellTime or 0) < .5 then
+					return ""
+				elseif C_UnitAuras.GetPlayerAuraBySpellID(130) then
+					return "/cancelaura "..self:getSpellName(130)
+				else
+					self.lastUseClassSpellTime = GetTime()
+					return "/cast [@player]"..self:getSpellName(130)
+				end
 			end
 		]]
 	elseif self.class == "DRUID" then
-		classOptionMacro = classOptionMacro..[[
+		self.classDismount = [[
 			-- DRUID LAST FORM
 			-- 768 - cat form
 			-- 1066 - aquatic form
@@ -181,7 +165,7 @@ function macroFrame:PLAYER_LOGIN()
 			-- 40120 - swift flight from
 			-- 24858 - moonkin form
 			if self.classConfig.useLastDruidForm then
-				local spellID = getFormSpellID()
+				local spellID = self.getFormSpellID()
 
 				if self.charMacrosConfig.lastDruidFormSpellID
 				and spellID ~= 24858
@@ -193,7 +177,10 @@ function macroFrame:PLAYER_LOGIN()
 					  or spellID == 40120
 					  or self.sFlags.isIndoors and spellID == 768)
 				then
-					return self:addLine(self:getDismountMacro(), "/cancelform\n/cast "..self:getSpellName(self.charMacrosConfig.lastDruidFormSpellID))
+					local spellName = self:getSpellName(self.charMacrosConfig.lastDruidFormSpellID)
+					if spellName then
+						return self:addLine(self:getDismountMacro(), "/cancelform\n/cast "..spellName)
+					end
 				end
 
 				if spellID and spellID ~= 783 and spellID ~= 1066 and spellID ~= 33943 and spellID ~= 40120 then
@@ -207,7 +194,7 @@ function macroFrame:PLAYER_LOGIN()
 			if self.classConfig.useTravelIfCantFly
 			and self.macro
 			and self.mounts.instanceID ~= 530
-			and not self.sFlags.canUseFlying
+			and not self.sFlags.fly
 			and not self.sFlags.isIndoors
 			and not self.sFlags.isSubmerged
 			and not self.sFlags.isMounted
@@ -216,7 +203,7 @@ function macroFrame:PLAYER_LOGIN()
 			     or not self.magicBroom and (GetUnitSpeed("player") > 0
 			                                 or IsFalling()))
 			then
-				local spellID = getFormSpellID()
+				local spellID = self.getFormSpellID()
 				if spellID == 783 then
 					return self:addLine(self:getDismountMacro(), "/cancelform")
 				elseif spellID ~= 33943 and spellID ~= 40120 then
@@ -224,6 +211,7 @@ function macroFrame:PLAYER_LOGIN()
 				end
 			end
 		]]
+		classOptionMacro = classOptionMacro..self.classDismount
 		defMacro = defMacro..[[
 			if GetShapeshiftFormID() then
 				macro = self:addLine(macro, "/cancelform")
@@ -235,23 +223,73 @@ function macroFrame:PLAYER_LOGIN()
 		end
 	]]
 	defMacro = defMacro..[[
-			if self.magicBroom then
-				macro = self:addLine(macro, "/use "..self.itemName[self.broomID]) -- MAGIC BROOM
-				self.lastUseTime = GetTime()
-			else
-				macro = self:addLine(macro, "/mount doNotSetFlags")
-			end
 			return macro
 		end
 	]]
 
-	loadFunc("getClassOptionMacro", classOptionMacro)
-	loadFunc("getDefMacro", defMacro)
+	self.getClassOptionMacro = self:loadString(classOptionMacro)
+	self.getDefMacro = self:loadString(defMacro)
+	self:setRuleFuncs()
 
 	self:RegisterEvent("LEARNED_SPELL_IN_TAB")
 
 	self:refresh()
 	self:getClassMacro(self.class, function() self:refresh() end)
+end)
+
+
+function macroFrame:loadString(funcStr)
+	local loadedFunc, err = loadstring(funcStr)
+	if err then
+		geterrorhandler()(err)
+	else
+		return loadedFunc()
+	end
+end
+
+
+function macroFrame:setRuleFuncs()
+	local function addKeys(vars, keys)
+		if not vars then return end
+		for i = 1, #vars do
+			keys[vars[i]] = true
+		end
+	end
+
+	for i = 1, #self.ruleConfig do
+		local rules = self.ruleConfig[i]
+		local keys = {}
+		local func = [[
+return function(self, button, profileLoad)
+	self.mounts:resetMountsList()
+		]]
+
+		for j = 1, #rules do
+			local rule = rules[j]
+			local condText, condVars = self.conditions:getFuncText(rule)
+			local actionText, actionVars = self.actions:getFuncText(rule.action)
+			addKeys(condVars, keys)
+			addKeys(actionVars, keys)
+			func = ("%sif %sthen\n%send\n"):format(func, condText, actionText)
+		end
+
+		if next(keys) then
+			local vars = {}
+			for k in next, keys do
+				vars[#vars + 1] = k
+			end
+			local varsText = table.concat(vars, ", ")
+			func = ("local %s = %s\n%s"):format(varsText, varsText, func)
+		end
+
+		func = func..[[
+	self.mounts:setEmptyList()
+	return self:getMacro()
+end
+		]]
+
+		self.checkRules[i] = self:loadString(func)
+	end
 end
 
 
@@ -328,20 +366,7 @@ do
 
 	local classFunc = {
 		HUNTER = getClassDefFunc(5118), -- Aspect of the Cheetah
-		ROGUE = function(self, ...)
-			local sprint
-			if IsSpellKnown(11305) then
-				sprint = self:getSpellName(11305, ...)
-			elseif IsSpellKnown(8696) then
-				sprint = self:getSpellName(8696, ...)
-			else
-				sprint = self:getSpellName(2983, ...)
-			end
-
-			if sprint then
-				return "/cast "..sprint
-			end
-		end,
+		ROGUE = getClassDefFunc(2983), -- Sprint
 		SHAMAN = getClassDefFunc(2645), -- Ghost Wolf
 		MAGE = getClassDefFunc(1953), -- Blink
 		DRUID = function(self, ...)
@@ -374,9 +399,12 @@ do
 end
 
 
-function macroFrame:getMacro()
-	self.mounts:setFlags()
+function macroFrame:isMovingOrFalling()
+	return GetUnitSpeed("player") > 0 or IsFalling()
+end
 
+
+function macroFrame:getMacro(id, button)
 	-- MAGIC BROOM IS USABLE
 	self.magicBroom = self.config.useMagicBroom
 	                  and not self.sFlags.targetMount
@@ -400,12 +428,10 @@ function macroFrame:getMacro()
 	-- CLASSMACRO
 	elseif self.macro and (
 		self.class == "DRUID" and self.classConfig.useMacroAlways and (
-			not self.classConfig.useMacroOnlyCanFly or (
-				self.mounts.instanceID == 530 or self.mounts.instanceID == 571 and self.sFlags.canUseFlying
-			)
+			not self.classConfig.useMacroOnlyCanFly or self.sFlags.fly
 		)
 		or not self.magicBroom and (
-			self.sFlags.isIndoors or GetUnitSpeed("player") > 0 or IsFalling()
+			self.sFlags.isIndoors or self:isMovingOrFalling()
 		)
 	)
 	then
@@ -413,6 +439,31 @@ function macroFrame:getMacro()
 	-- MOUNT
 	else
 		macro = self:getDefMacro()
+
+		if self.magicBroom then
+			if self.magicBroom.itemID then
+				macro = self:addLine(macro, "/use item:"..self.magicBroom.itemID) -- USE ITEM BROOM
+			elseif self.magicBroom.mountID then
+				local name = C_MountJournal.GetMountInfoByID(self.magicBroom.mountID)
+				macro = self:addLine(macro, "/use "..name) -- USE MOUNT BROOM
+			end
+			self.lastUseTime = GetTime()
+		else
+			self.mounts:setSummonMount(true)
+
+			local additionMount
+			if self.sFlags.targetMount then
+				additionMount = self.additionalMounts[self.sFlags.targetMount]
+			else
+				additionMount = self.additionalMounts[self.mounts.summonedSpellID]
+			end
+
+			if additionMount then
+				macro = self:addLine(macro, additionMount.macro)
+			else
+				macro = self:addLine(macro, "/run MountsJournal:summon()")
+			end
+		end
 	end
 
 	return macro or ""
@@ -433,12 +484,12 @@ function macroFrame:getCombatMacro()
 end
 
 
-function MountsJournalUtil.getClassMacro(...)
+function util.getClassMacro(...)
 	return macroFrame:getClassMacro(...)
 end
 
 
-function MountsJournalUtil.refreshMacro()
+function util.refreshMacro()
 	macroFrame:refresh()
 end
 
@@ -446,24 +497,24 @@ end
 MJMacroMixin = {}
 
 
-function MJMacroMixin:onEvent(event, ...)
-	self[event](self, ...)
-end
-
-
 function MJMacroMixin:onLoad()
-	self.mounts = MountsJournal
+	self.mounts = ns.mounts
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 end
 
 
-function MJMacroMixin:preClick()
-	self.mounts.sFlags.forceModifier = self.forceModifier
-	if InCombatLockdown() then return end
-	self:SetAttribute("macrotext", macroFrame:getMacro())
+function MJMacroMixin:onEvent(event, ...)
+	self:SetAttribute("macrotext", macroFrame:getCombatMacro())
 end
 
 
-function MJMacroMixin:PLAYER_REGEN_DISABLED()
-	self:SetAttribute("macrotext", macroFrame:getCombatMacro())
+function MJMacroMixin:preClick(button, down)
+	if InCombatLockdown() then return end
+	if down ~= GetCVarBool("ActionButtonUseKeyDown") then
+		self:SetAttribute("macrotext", "")
+	else
+		self.mounts.sFlags.forceModifier = self.forceModifier
+		self.mounts:setFlags()
+		self:SetAttribute("macrotext", macroFrame.checkRules[self.id](macroFrame, button))
+	end
 end

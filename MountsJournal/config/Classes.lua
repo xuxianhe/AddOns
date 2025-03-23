@@ -1,43 +1,34 @@
-local addon, L = ...
-local util, mounts = MountsJournalUtil, MountsJournal
+local addon, ns = ...
+local L, util, mounts = ns.L, ns.util, ns.mounts
 local classConfig = CreateFrame("Frame", "MountsJournalConfigClasses", InterfaceOptionsFramePanelContainer)
+ns.classConfig = classConfig
 classConfig:Hide()
-classConfig.name = L["Class settings"]
-classConfig.parent = addon
 
 
 classConfig:SetScript("OnShow", function(self)
-	self:SetScript("OnShow", function()
-		self:SetPoint("TOPLEFT", -12, 8)
-	end)
-	self:SetPoint("TOPLEFT", -12, 8)
+	self:SetScript("OnShow", nil)
 	self.macrosConfig = mounts.config.macrosConfig
 	self.charMacrosConfig = mounts.charDB.macrosConfig
 
 	-- VERSION
 	local ver = self:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-	ver:SetPoint("TOPLEFT", 40, 20)
+	ver:SetPoint("TOPRIGHT", -40, 15)
 	ver:SetTextColor(.5, .5, .5, 1)
 	ver:SetJustifyH("RIGHT")
 	ver:SetText(C_AddOns.GetAddOnMetadata(addon, "Version"))
 
 	-- TITLE
-	local title = self:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	title:SetPoint("TOPLEFT", 16, -16)
-	title:SetText(L["Class settings"])
-
-	-- SUBTITLE
-	local subtitle = self:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	local subtitle = self:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 	self.subtitle = subtitle
 	subtitle:SetHeight(30)
-	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 1, -8)
+	subtitle:SetPoint("TOPLEFT", 16, -16)
 	subtitle:SetNonSpaceWrap(true)
 	subtitle:SetJustifyH("LEFT")
 	subtitle:SetJustifyV("TOP")
 
 	-- LEFT PANEL
 	self.leftPanel = CreateFrame("FRAME", nil, self, "MJOptionsPanel")
-	self.leftPanel:SetPoint("TOPLEFT", 8, -67)
+	self.leftPanel:SetPoint("TOPLEFT", 8, -37)
 	self.leftPanel:SetPoint("BOTTOMRIGHT", self, "BOTTOMLEFT", 181, 8)
 
 	-- CLASS BUTTONS
@@ -63,8 +54,7 @@ classConfig:SetScript("OnShow", function(self)
 			end
 			lastClassFrame = classFrame
 			classFrame.key = className
-			classFrame.name:SetText(localized)
-			classFrame.name:SetTextColor(r, g, b)
+			classFrame.name:SetText(WrapTextInColorCode(localized, ("ff%.2x%.2x%.2x"):format(r * 255, g * 255, b * 255, 255)))
 			classFrame.check:SetVertexColor(r, g, b)
 			classFrame.highlight:SetVertexColor(r, g, b)
 			classFrame.icon:SetTexCoord(unpack(CLASS_ICON_TCOORDS[className]))
@@ -82,8 +72,7 @@ classConfig:SetScript("OnShow", function(self)
 	classFrame:SetPoint("TOPLEFT", lastClassFrame, "BOTTOMLEFT", 0, -20)
 	classFrame.key = playerClassName
 	classFrame.name:SetPoint("RIGHT", -30, 0)
-	classFrame.name:SetText(UnitName("player"))
-	classFrame.name:SetTextColor(r, g, b)
+	classFrame.name:SetText(WrapTextInColorCode(UnitName("player"), ("ff%.2x%.2x%.2x"):format(r * 255, g * 255, b * 255, 255)))
 	classFrame.description = L["CHARACTER_CLASS_DESCRIPTION"]
 	classFrame.check:SetVertexColor(r, g, b)
 	classFrame.highlight:SetVertexColor(r, g, b)
@@ -108,7 +97,7 @@ classConfig:SetScript("OnShow", function(self)
 	-- RIGHT PANEL
 	local rightPanel = CreateFrame("FRAME", nil, self, "MJOptionsPanel")
 	self.rightPanel = rightPanel
-	rightPanel:SetPoint("TOPRIGHT", -8, -67)
+	rightPanel:SetPoint("TOPRIGHT", -8, -37)
 	rightPanel:SetPoint("BOTTOMLEFT", self.leftPanel, "BOTTOMRIGHT", 0, 0)
 
 	-- RIGHT PANEL SCROLL
@@ -387,11 +376,3 @@ function classConfig:combatMacroSave()
 	end
 	self.combatMacroEditBox:ClearFocus()
 end
-
-
-local category = Settings.GetCategory(addon)
-local subcategory, layout = Settings.RegisterCanvasLayoutSubcategory(category, classConfig, L["Class settings"])
-subcategory.ID = L["Class settings"]
--- layout:AddAnchorPoint("TOPLEFT", -12, 8)
--- layout:AddAnchorPoint("BOTTOMRIGHT", 0, 0)
-Settings.RegisterAddOnCategory(subcategory)

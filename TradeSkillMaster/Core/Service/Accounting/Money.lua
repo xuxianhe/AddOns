@@ -5,18 +5,19 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Money = TSM.Accounting:NewPackage("Money") ---@type AddonPackage
-local Database = TSM.LibTSMUtil:Include("Database")
-local CSV = TSM.LibTSMUtil:Include("Format.CSV")
-local Log = TSM.LibTSMUtil:Include("Util.Log")
-local SessionInfo = TSM.LibTSMWoW:Include("Util.SessionInfo")
+local Money = TSM.Accounting:NewPackage("Money")
+local Database = TSM.Include("Util.Database")
+local CSV = TSM.Include("Util.CSV")
+local Log = TSM.Include("Util.Log")
+local Wow = TSM.Include("Util.Wow")
+local Settings = TSM.Include("Service.Settings")
 local private = {
 	settings = nil,
 	db = nil,
 	dataChanged = false,
 }
 local CSV_KEYS = { "type", "amount", "otherPlayer", "player", "time" }
-local COMBINE_TIME_THRESHOLD = 300 -- Group expenses within 5 minutes together
+local COMBINE_TIME_THRESHOLD = 300 -- group expenses within 5 minutes together
 local SECONDS_PER_DAY = 24 * 60 * 60
 
 
@@ -25,8 +26,8 @@ local SECONDS_PER_DAY = 24 * 60 * 60
 -- Module Functions
 -- ============================================================================
 
-function Money.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function Money.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("realm", "internalData", "csvExpense")
 		:AddKey("realm", "internalData", "csvIncome")
 		:AddKey("global", "coreOptions", "regionWide")
@@ -41,18 +42,22 @@ function Money.OnInitialize(settingsDB)
 		:AddIndex("recordType")
 		:Commit()
 	private.db:BulkInsertStart()
-	for _, csvExpense, realm in private.settings:AccessibleValueIterator("csvExpense") do
-		private.LoadData("expense", csvExpense, realm == SessionInfo.GetRealmName())
+	for _, csvExpense, realm, isConnected in private.settings:AccessibleValueIterator("csvExpense") do
+		if isConnected or private.settings.regionWide then
+			private.LoadData("expense", csvExpense, realm == Wow.GetRealmName())
+		end
 	end
-	for _, csvIncome, realm in private.settings:AccessibleValueIterator("csvIncome") do
-		private.LoadData("income", csvIncome, realm == SessionInfo.GetRealmName())
+	for _, csvIncome, realm, isConnected in private.settings:AccessibleValueIterator("csvIncome") do
+		if isConnected or private.settings.regionWide then
+			private.LoadData("income", csvIncome, realm == Wow.GetRealmName())
+		end
 	end
 	private.db:BulkInsertEnd()
 end
 
 function Money.OnDisable()
 	if not private.dataChanged then
-		-- Nothing changed, so just keep the previous saved values
+		-- nothing changed, so just keep the previous saved values
 		return
 	end
 	private.settings.csvExpense = private.SaveData("expense")
@@ -77,14 +82,6 @@ end
 
 function Money.InsertGarrisonIncome(amount)
 	private.InsertRecord("income", "Garrison", amount, "Mission", time())
-end
-
-function Money.InsertCraftingOrderExpense(amount, seller, timestamp)
-	private.InsertRecord("expense", "Crafting Order", amount, seller, timestamp)
-end
-
-function Money.InsertCraftingOrderIncome(amount, buyer, timestamp)
-	private.InsertRecord("income", "Crafting Order", amount, buyer, timestamp)
 end
 
 function Money.CreateQuery()
@@ -124,10 +121,8 @@ end
 function private.LoadData(recordType, csvRecords, isCurrentRealm)
 	local decodeContext = CSV.DecodeStart(csvRecords, CSV_KEYS)
 	if not decodeContext then
-		if isCurrentRealm then
-			Log.Err("Failed to decode %s records (%d)", recordType, #csvRecords)
-		end
-		private.dataChanged = isCurrentRealm
+		Log.Err("Failed to decode %s records", recordType)
+		private.dataChanged = true
 		return
 	end
 
@@ -137,21 +132,19 @@ function private.LoadData(recordType, csvRecords, isCurrentRealm)
 		if amount and timestamp then
 			local newTimestamp = floor(timestamp)
 			if newTimestamp ~= timestamp then
-				-- Make sure all timestamps are stored as integers
+				-- make sure all timestamps are stored as integers
 				timestamp = newTimestamp
-				private.dataChanged = isCurrentRealm
+				private.dataChanged = true
 			end
 			private.db:BulkInsertNewRowFast7(recordType, type, amount, otherPlayer, player, timestamp, isCurrentRealm)
 		else
-			private.dataChanged = isCurrentRealm
+			private.dataChanged = true
 		end
 	end
 
 	if not CSV.DecodeEnd(decodeContext) then
-		if isCurrentRealm then
-			Log.Err("Failed to decode %s records", recordType)
-		end
-		private.dataChanged = isCurrentRealm
+		Log.Err("Failed to decode %s records", recordType)
+		private.dataChanged = true
 	end
 end
 

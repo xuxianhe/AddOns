@@ -30,7 +30,6 @@ local RSTooltip = private.ImportLib("RareScannerTooltip")
 local RSProvider = private.ImportLib("RareScannerProvider")
 local RSMinimap = private.ImportLib("RareScannerMinimap")
 local RSTomtom = private.ImportLib("RareScannerTomtom")
-local RSWaypoints = private.ImportLib("RareScannerWaypoints")
 
 -- Types
 local NPC_TYPE = "1";
@@ -59,17 +58,6 @@ function RSHyperlinks.GetEntityHyperLink(entityID, name)
 	elseif (RSEventDB.GetInternalEventInfo(entityID)) then
 		local eventName = name and name or RSEventDB.GetEventName(entityID)
 		return string.format("|cff%s|Haddon:RareScanner:%s:%s:%s:%s:%s:%s|h[%s]|h|r", RSConfigDB.GetChatLinkColorEvent(), EVENT_TYPE, entityID, alreadyFound.mapID, RSUtils.FixCoord(alreadyFound.coordX), RSUtils.FixCoord(alreadyFound.coordY), alreadyFound.foundTime, eventName)
-	end
-end
-
-local function GetGeneralChatID()
-	local general = EnumerateServerChannels()
-	local channels = {GetChannelList()}
-	for i = 1, #channels do
-		local id, name, disabled = channels[i], channels[i+1], channels[i+2]
-		if (name == general and not disabled) then
-			return id
-		end
 	end
 end
 
@@ -154,12 +142,8 @@ function RSHyperlinks.HookHyperLinks()
 					if (RSConfigDB.IsAddingchatTomtomWaypoints()) then
 						RSTomtom.AddWorldMapTomtomWaypoint(mapIDs, x, y, name)
 					end
-					if (RSConfigDB.IsAddingchatIngameWaypoints()) then
-						RSWaypoints.AddWorldMapWaypoint(mapIDs, x, y)
-					end
 				-- Add waypoint and share in chat
 				elseif (IsShiftKeyDown()) then
-					RSWaypoints.AddWorldMapWaypoint(mapIDs, x, y)
 					local guid = UnitGUID("target")
 					local unitHealth = UnitHealth("target")
 					local unitHealhMax = UnitHealthMax("target")
@@ -170,17 +154,12 @@ function RSHyperlinks.HookHyperLinks()
 						npcID = tonumber(npcIDs)
 					end
 					
-					local generalID = GetGeneralChatID()
-					if (not generalID) then
-						return
-					end
-					
 					-- Notification with health
 					if (npcID and npcID == entityID and unitHealth and unitHealhMax and unitHealhMax > 0) then
-						SendChatMessage(format(AL["CHAT_NOTIFICATION_HEALTH_RARE"], name, string.format("%.2f", unitHealth/unitHealhMax*100), C_Map.GetUserWaypointHyperlink()), "CHANNEL", nil, generalID)
+						SendChatMessage(format(AL["CHAT_NOTIFICATION_HEALTH_RARE"], name, string.format("%.2f", unitHealth/unitHealhMax*100), string.format("(x = %s, y = %s)", string.format("%.2f",x), string.format("%.2f",y))), "CHANNEL", nil, 1)
 					-- Notification without health
 					else
-						SendChatMessage(format(AL["CHAT_NOTIFICATION_RARE"], name, C_Map.GetUserWaypointHyperlink()), "CHANNEL", nil, generalID)
+						SendChatMessage(format(AL["CHAT_NOTIFICATION_RARE"], name, string.format("(x = %s, y = %s)", string.format("%.2f",x), string.format("%.2f",y))), "CHANNEL", nil, 1)
 					end
 				end
 			end

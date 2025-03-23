@@ -6,11 +6,9 @@
 
 local TSM = select(2, ...) ---@type TSM
 local Util = TSM.Banking:NewPackage("Util")
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local Group = TSM.LibTSMTypes:Include("Group")
-local BagTracking = TSM.LibTSMService:Include("Inventory.BagTracking")
-local WarbankTracking = TSM.LibTSMService:Include("Inventory.WarbankTracking")
-local Guild = TSM.LibTSMService:Include("Guild")
+local TempTable = TSM.Include("Util.TempTable")
+local BagTracking = TSM.Include("Service.BagTracking")
+local GuildTracking = TSM.Include("Service.GuildTracking")
 local private = {}
 
 
@@ -23,42 +21,33 @@ function Util.BagIterator(autoBaseItems)
 	local query = BagTracking.CreateQueryBags()
 		:OrderBy("slotId", true)
 	if autoBaseItems then
-		query:VirtualField("autoBaseItemString", "string", Group.TranslateItemString, "itemString")
+		query:VirtualField("autoBaseItemString", "string", TSM.Groups.TranslateItemString, "itemString")
 			:Select("bag", "slot", "autoBaseItemString", "quantity")
 	else
 		query:Select("bag", "slot", "itemString", "quantity")
 	end
 	if TSM.Banking.IsGuildBankOpen() then
-		query:Equal("isBound", false)
+		query:Equal("isBoP", false)
+			:Equal("isBoA", false)
 	end
 	return query:IteratorAndRelease()
 end
 
 function Util.OpenBankIterator(autoBaseItems)
 	if TSM.Banking.IsGuildBankOpen() then
-		local query = Guild.NewIndexQuery()
+		local query = GuildTracking.CreateQuery()
 		if autoBaseItems then
-			query:VirtualField("autoBaseItemString", "string", Group.TranslateItemString, "itemString")
+			query:VirtualField("autoBaseItemString", "string", TSM.Groups.TranslateItemString, "itemString")
 				:Select("tab", "slot", "autoBaseItemString", "quantity")
 		else
 			query:Select("tab", "slot", "itemString", "quantity")
-		end
-		return query:IteratorAndRelease()
-	elseif TSM.Banking.IsWarBankOpen() then
-		local query = WarbankTracking.CreateQuerySlot()
-			:OrderBy("slotId", true)
-		if autoBaseItems then
-			query:VirtualField("autoBaseItemString", "string", Group.TranslateItemString, "itemString")
-				:Select("bag", "slot", "autoBaseItemString", "quantity")
-		else
-			query:Select("bag", "slot", "itemString", "quantity")
 		end
 		return query:IteratorAndRelease()
 	else
 		local query = BagTracking.CreateQueryBank()
 			:OrderBy("slotId", true)
 		if autoBaseItems then
-			query:VirtualField("autoBaseItemString", "string", Group.TranslateItemString, "itemString")
+			query:VirtualField("autoBaseItemString", "string", TSM.Groups.TranslateItemString, "itemString")
 				:Select("bag", "slot", "autoBaseItemString", "quantity")
 		else
 			query:Select("bag", "slot", "itemString", "quantity")
@@ -120,7 +109,7 @@ end
 -- ============================================================================
 
 function private.InGroups(itemString, groups)
-	local groupPath = Group.GetPathByItem(itemString)
+	local groupPath = TSM.Groups.GetPathByItem(itemString)
 	-- TODO: support the base group
-	return groupPath and groupPath ~= Group.GetRootPath() and groups[groupPath]
+	return groupPath and groupPath ~= TSM.CONST.ROOT_GROUP_PATH and groups[groupPath]
 end

@@ -5,16 +5,10 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local LibTSMClass = LibStub("LibTSMClass")
-local ExpiringMailTask = LibTSMClass.DefineClass("ExpiringMailTask", TSM.TaskList.Task)
-local L = TSM.Locale.GetTable()
-local SessionInfo = TSM.LibTSMWoW:Include("Util.SessionInfo")
-local AddonSettings = TSM.LibTSMApp:Include("Service.AddonSettings")
+local ExpiringMailTask = TSM.Include("LibTSMClass").DefineClass("ExpiringMailTask", TSM.TaskList.Task)
+local L = TSM.Include("Locale").GetTable()
 TSM.TaskList.ExpiringMailTask = ExpiringMailTask
-local private = {
-	didModuleInit = false,
-	settings = nil,
-}
+local private = {}
 
 
 
@@ -27,12 +21,6 @@ function ExpiringMailTask.__init(self)
 	self.__super:__init()
 	self._characters = {}
 	self._daysLeft = {}
-	if not private.didModuleInit then
-		private.didModuleInit = true
-		private.settings = AddonSettings.GetDB():NewView()
-			:AddKey("factionrealm", "internalData", "expiringMail")
-			:AddKey("sync", "internalData", "classKey")
-	end
 end
 
 function ExpiringMailTask.Acquire(self, doneHandler, category)
@@ -90,7 +78,7 @@ function ExpiringMailTask.HideSubTask(self, index)
 	if not character then
 		return
 	end
-	private.settings.expiringMail[character] = nil
+	TSM.db.factionrealm.internalData.expiringMail[character] = nil
 
 	TSM.TaskList.Expirations.Update()
 end
@@ -144,7 +132,7 @@ function private.SubTaskIterator(self, index)
 		end
 	end
 	local charColored = character
-	local classColor = RAID_CLASS_COLORS[private.settings.GetForScopeKey("classKey", character, SessionInfo.GetFactionrealmName())]
+	local classColor = RAID_CLASS_COLORS[TSM.db:Get("sync", TSM.db:GetSyncScopeKeyByCharacter(character), "internalData", "classKey")]
 	if classColor then
 		charColored = "|c"..classColor.colorStr..charColored.."|r"
 	end

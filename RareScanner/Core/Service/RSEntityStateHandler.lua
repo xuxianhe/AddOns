@@ -60,14 +60,6 @@ function RSEntityStateHandler.SetDeadNpcByZone(npcID, mapID, loadingAddon)
 	elseif (npcInfo and npcInfo.resetTimer) then
 		RSLogger:PrintDebugMessage(string.format("NPC [%s]. Resetea pasados [%s]segundos", npcID, npcInfo.resetTimer))
 		RSNpcDB.SetNpcKilled(npcID, time() + npcInfo.resetTimer)
-	-- If its a world quest reseteable rare
-	elseif (RSMapDB.IsEntityInReseteableZone(npcID, mapID, alreadyFoundInfo)) then
-		RSLogger:PrintDebugMessage(string.format("NPC [%s]. Resetea con las misiones del mundo (por pertenecer a una zona reseteable)", npcID))
-		RSNpcDB.SetNpcKilled(npcID, time() + GetQuestResetTime())
-	-- If it wont ever be a rare anymore
-	elseif (RSMapDB.IsEntityInPermanentZone(npcID, mapID, alreadyFoundInfo)) then
-		RSLogger:PrintDebugMessage(string.format("NPC [%s]. Deja de ser un rare NPC", npcID))
-		RSNpcDB.SetNpcKilled(npcID)
 	-- If it has an associated quest and if its completed
 	elseif (npcInfo and npcInfo.questID) then
 		for i, questID in ipairs (npcInfo.questID) do
@@ -136,18 +128,6 @@ function RSEntityStateHandler.SetDeadNpc(npcID, loadingAddon)
 			end
 		else
 			RSEntityStateHandler.SetDeadNpcByZone(npcID, npcInfo.zoneID, loadingAddon)
-		end
-
-		-- Extracts quest id if we don't have it
-		if (not loadingAddon and RSConstants.DEBUG_MODE) then
-			if (not npcInfo.questID and not RSNpcDB.GetNpcQuestIdFound(npcID)) then
-				RSLogger:PrintDebugMessage(string.format("NPC [%s]. Buscando questID...", npcID))
-				RSQuestTracker.FindCompletedHiddenQuestID(npcID, function(npcID, newQuestID) 
-					RSNpcDB.SetNpcQuestIdFound(npcID, newQuestID) 
-				end)
-			elseif (npcInfo.questID) then
-				RSLogger:PrintDebugMessage(string.format("El NPC [%s] ya dispone de questID [%s]", npcID, unpack(npcInfo.questID)))
-			end
 		end
 	
 		-- Disable guideance icons if enabled
@@ -234,18 +214,10 @@ local function SetContainerOpenByZone(containerID, mapID, loadingAddon)
 		elseif (containerInternalInfo and containerInternalInfo.resetTimer) then
 			RSLogger:PrintDebugMessage(string.format("Contenedor [%s]. Resetea pasados [%s]segundos", containerID, containerInternalInfo.resetTimer))
 			RSContainerDB.SetContainerOpened(containerID, time() + containerInternalInfo.resetTimer)
-		-- If its a world quest reseteable container
-		elseif (RSMapDB.IsEntityInReseteableZone(containerID, mapID, containerAlreadyFoundInfo)) then
-			RSLogger:PrintDebugMessage(string.format("Contenedor [%s]. Resetea con las misiones del mundo (por pertenecer a una zona reseteable)", containerID))
-			RSContainerDB.SetContainerOpened(containerID, time() + GetQuestResetTime())
 		-- If its a world quest reseteable container (detected while playing)
 		elseif (RSContainerDB.IsContainerReseteable(containerID)) then
 			RSLogger:PrintDebugMessage(string.format("Contenedor [%s]. Resetea con las misiones del mundo (detectado al haberse encontrado por segunda vez)", containerID))
 			RSContainerDB.SetContainerOpened(containerID, time() + GetQuestResetTime())
-		-- If it wont ever be open anymore
-		elseif (RSMapDB.IsEntityInPermanentZone(containerID, mapID, containerAlreadyFoundInfo)) then
-			RSLogger:PrintDebugMessage(string.format("Contenedor [%s]. No se puede abrir de nuevo", containerID))
-			RSContainerDB.SetContainerOpened(containerID)
 		-- If it has an associated quest and if its completed
 		elseif (containerInternalInfo and containerInternalInfo.questID) then
 			RSLogger:PrintDebugMessage(string.format("Contenedor [%s]. Detectado que tiene mision asociada, buscando si esta completada", containerID))
@@ -288,8 +260,8 @@ function RSEntityStateHandler.SetContainerOpen(containerID, loadingAddon)
 	end
 	
 	-- Mark as opened
-	local containerInfo = RSContainerDB.GetInternalContainerInfo(containerID)	
-	if (containerInfo) then	
+	local containerInfo = RSContainerDB.GetInternalContainerInfo(containerID)
+	if (containerInfo) then
 		-- Remove recently seen
 		local x, y = RSRecentlySeenTracker.RemoveRecentlySeen(containerID)
 	
@@ -313,20 +285,6 @@ function RSEntityStateHandler.SetContainerOpen(containerID, loadingAddon)
 			end
 		else
 			SetContainerOpenByZone(containerID, containerInfo.zoneID, loadingAddon)
-		end
-
-		-- Extracts quest id if we don't have it
-		if (not loadingAddon and RSConstants.DEBUG_MODE) then
-			if (not containerInfo.questID and not RSContainerDB.GetContainerQuestIdFound(containerID)) then
-				RSLogger:PrintDebugMessage(string.format("Contenedor [%s]. Buscando questID...", containerID))
-				RSQuestTracker.FindCompletedHiddenQuestID(containerID, function(containerID, newQuestID) 
-					RSContainerDB.SetContainerQuestIdFound(containerID, newQuestID) 
-				end)
-			elseif (containerInfo.questID) then
-				RSLogger:PrintDebugMessage(string.format("El Contenedor [%s] ya dispone de questID [%s]", containerID, unpack(containerInfo.questID)))
-			else
-				RSLogger:PrintDebugMessage(string.format("El Contenedor [%s] ya dispone de questID [%s]", containerID, unpack(RSContainerDB.GetContainerQuestIdFound(containerID))))
-			end
 		end
 	
 		-- Disable guideance icons if enabled
@@ -368,30 +326,22 @@ local function SetEventCompletedByZone(eventID, mapID, loadingAddon)
 	if (eventInternalInfo and eventInternalInfo.reset ~= nil and eventInternalInfo.reset == false) then
 		RSLogger:PrintDebugMessage(string.format("Evento [%s]. No se puede completar de nuevo", eventID))
 		RSEventDB.SetEventCompleted(eventID)
-		-- If we know for sure it remains showing up along the day
+	-- If we know for sure it remains showing up along the day
 	elseif (eventInternalInfo and eventInternalInfo.reset) then
 		RSLogger:PrintDebugMessage(string.format("Evento [%s]. Vuelve a aparecer en el mismo día.", eventID))
-		-- If we know for sure it resets with quests
+	-- If we know for sure it resets with quests
 	elseif (eventInternalInfo and eventInternalInfo.questReset) then
 		RSLogger:PrintDebugMessage(string.format("Evento [%s]. Resetea con las misiones del mundo", eventID))
 		RSEventDB.SetEventCompleted(eventID, time() + GetQuestResetTime())
-		-- If we know for sure it resets with every server restart
+	-- If we know for sure it resets with every server restart
 	elseif (eventInternalInfo and eventInternalInfo.weeklyReset) then
 		RSLogger:PrintDebugMessage(string.format("Evento [%s]. Resetea con el reinicio del servidor", eventID))
 		RSEventDB.SetEventCompleted(eventID, time() + C_DateAndTime.GetSecondsUntilWeeklyReset())
-		-- If we know the exact reset timer
+	-- If we know the exact reset timer
 	elseif (eventInternalInfo and eventInternalInfo.resetTimer) then
 		RSLogger:PrintDebugMessage(string.format("Evento [%s]. Resetea pasados [%s]segundos", eventID))
 		RSEventDB.SetEventCompleted(eventID, time() + eventInternalInfo.resetTimer)
-		-- If its a world quest reseteable event
-	elseif (RSMapDB.IsEntityInReseteableZone(eventID, mapID, eventAlreadyFoundInfo)) then
-		RSLogger:PrintDebugMessage(string.format("Evento [%s]. Resetea con las misiones del mundo (por pertenecer a una zona reseteable)", eventID))
-		RSEventDB.SetEventCompleted(eventID, time() + GetQuestResetTime())
-		-- If it wont ever be available anymore
-	elseif (RSMapDB.IsEntityInPermanentZone(eventID, mapID, eventAlreadyFoundInfo)) then
-		RSLogger:PrintDebugMessage(string.format("Evento [%s]. No se puede completar de nuevo", eventID))
-		RSEventDB.SetEventCompleted(eventID)
-		-- If it has an associated quest and if its completed
+	-- If it has an associated quest and if its completed
 	elseif (eventInternalInfo and eventInternalInfo.questID) then
 		for _, questID in ipairs (eventInternalInfo.questID) do
 			if (C_QuestLog.IsQuestFlaggedCompleted(questID)) then
@@ -441,19 +391,6 @@ function RSEntityStateHandler.SetEventCompleted(eventID, loadingAddon)
 			end
 		else
 			SetEventCompletedByZone(eventID, eventInfo.zoneID, loadingAddon)
-		end
-	end
-	
-	-- Extracts quest id if we don't have it
-	-- Avoids shift-left-click events
-	if (not loadingAddon and RSConstants.DEBUG_MODE) then
-		if ((not eventInfo or not eventInfo.questID) and not RSEventDB.GetEventQuestIdFound(eventID)) then
-			RSLogger:PrintDebugMessage(string.format("Evento [%s]. Buscando questID...", eventID))
-			RSQuestTracker.FindCompletedHiddenQuestID(eventID, function(eventID, newQuestID) 
-				RSEventDB.SetEventQuestIdFound(eventID, newQuestID) 
-			end)
-		else
-			RSLogger:PrintDebugMessage(string.format("El Evento [%s] ya dispone de questID [%s]", eventID, unpack(eventInfo.questID)))
 		end
 	end
 

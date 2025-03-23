@@ -5,23 +5,20 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Send = TSM.Mailing:NewPackage("Send") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local Table = TSM.LibTSMUtil:Include("Lua.Table")
-local Money = TSM.LibTSMUtil:Include("UI.Money")
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local SlotId = TSM.LibTSMWoW:Include("Type.SlotId")
-local ItemString = TSM.LibTSMTypes:Include("Item.ItemString")
-local Theme = TSM.LibTSMService:Include("UI.Theme")
-local ChatMessage = TSM.LibTSMService:Include("UI.ChatMessage")
-local Container = TSM.LibTSMWoW:Include("API.Container")
-local Group = TSM.LibTSMTypes:Include("Group")
-local Threading = TSM.LibTSMTypes:Include("Threading")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
-local BagTracking = TSM.LibTSMService:Include("Inventory.BagTracking")
-local Inbox = TSM.LibTSMWoW:Include("API.Inbox")
+local Send = TSM.Mailing:NewPackage("Send")
+local L = TSM.Include("Locale").GetTable()
+local Table = TSM.Include("Util.Table")
+local Money = TSM.Include("Util.Money")
+local SlotId = TSM.Include("Util.SlotId")
+local Log = TSM.Include("Util.Log")
+local ItemString = TSM.Include("Util.ItemString")
+local Theme = TSM.Include("Util.Theme")
+local Container = TSM.Include("Util.Container")
+local Threading = TSM.Include("Service.Threading")
+local ItemInfo = TSM.Include("Service.ItemInfo")
+local InventoryInfo = TSM.Include("Service.InventoryInfo")
+local BagTracking = TSM.Include("Service.BagTracking")
 local private = {
-	settings = nil,
 	thread = nil,
 	bagUpdate = nil,
 }
@@ -35,10 +32,7 @@ local PLAYER_NAME_REALM = gsub(PLAYER_NAME.."-"..GetRealmName(), "%s+", "")
 -- Module Functions
 -- ============================================================================
 
-function Send.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
-		:AddKey("global", "mailingOptions", "sendItemsIndividually")
-		:AddKey("global", "mailingOptions", "sendMessages")
+function Send.OnInitialize()
 	private.thread = Threading.New("MAIL_SENDING", private.SendMailThread)
 	BagTracking.RegisterCallback(private.BagUpdate)
 end
@@ -80,16 +74,13 @@ function private.SendMailThread(recipient, subject, body, money, items, isGroup,
 
 	local query = BagTracking.CreateQueryBags()
 		:OrderBy("slotId", true)
-		:Or()
-			:Equal("isBound", false)
-			:Equal("isWarBound", true)
-		:End()
 		:Select("bag", "slot", "itemString", "quantity")
+		:Equal("isBoP", false)
 	for _, bag, slot, itemString, quantity in query:Iterator() do
 		if isGroup then
-			itemString = Group.TranslateItemString(itemString)
+			itemString = TSM.Groups.TranslateItemString(itemString)
 		end
-		if items[itemString] and not Container.IsBagSlotLocked(bag, slot) then
+		if items[itemString] and not InventoryInfo.IsBagSlotLocked(bag, slot) then
 			if not itemInfo[itemString] then
 				itemInfo[itemString] = { locations = {} }
 			end
@@ -107,7 +98,7 @@ function private.SendMailThread(recipient, subject, body, money, items, isGroup,
 						Container.PickupItem(info.bag, info.slot)
 						ClickSendMailItemButton()
 
-						if private.GetNumPendingAttachments() == Inbox.GetMaxSendAttachments() or (isGroup and private.settings.sendItemsIndividually) then
+						if private.GetNumPendingAttachments() == ATTACHMENTS_MAX_SEND or (isGroup and TSM.db.global.mailingOptions.sendItemsIndividually) then
 							private.SendMail(recipient, subject, body, money)
 						end
 
@@ -136,7 +127,7 @@ function private.SendMailThread(recipient, subject, body, money, items, isGroup,
 							Container.PickupItem(splitBag, splitSlot)
 							ClickSendMailItemButton()
 
-							if private.GetNumPendingAttachments() == Inbox.GetMaxSendAttachments() then
+							if private.GetNumPendingAttachments() == ATTACHMENTS_MAX_SEND then
 								private.SendMail(recipient, subject, body, money)
 							end
 
@@ -149,7 +140,7 @@ function private.SendMailThread(recipient, subject, body, money, items, isGroup,
 						Container.PickupItem(info.bag, info.slot)
 						ClickSendMailItemButton()
 
-						if private.GetNumPendingAttachments() == Inbox.GetMaxSendAttachments() then
+						if private.GetNumPendingAttachments() == ATTACHMENTS_MAX_SEND then
 							private.SendMail(recipient, subject, body, money)
 						end
 
@@ -159,10 +150,10 @@ function private.SendMailThread(recipient, subject, body, money, items, isGroup,
 				end
 			end
 
-			if isGroup and private.settings.sendItemsIndividually then
+			if isGroup and TSM.db.global.mailingOptions.sendItemsIndividually then
 				private.SendMail(recipient, subject, body, money)
 			end
-			TempTable.Release(emptySlotIds)
+			Threading.ReleaseSafeTempTable(emptySlotIds)
 		end
 	end
 
@@ -170,15 +161,15 @@ function private.SendMailThread(recipient, subject, body, money, items, isGroup,
 		private.SendMail(recipient, subject, body, money)
 	end
 
-	TempTable.Release(itemInfo)
+	Threading.ReleaseSafeTempTable(itemInfo)
 end
 
 function private.PrintMailMessage(money, items, target, isGroup, isDryRun)
-	if not private.settings.sendMessages and not isDryRun then
+	if not TSM.db.global.mailingOptions.sendMessages and not isDryRun then
 		return
 	end
 	if money > 0 and not items then
-		ChatMessage.PrintfUser(L["Sending %s to %s"], Money.ToStringExact(money), target)
+		Log.PrintfUser(L["Sending %s to %s"], Money.ToString(money), target)
 		return
 	end
 
@@ -195,15 +186,15 @@ function private.PrintMailMessage(money, items, target, isGroup, isDryRun)
 
 	if next(items) and money < 0 then
 		if isDryRun then
-			ChatMessage.PrintfUser(L["Would send %s to %s with a COD of %s"], itemList, target, Money.ToStringExact(money, Theme.GetColor("FEEDBACK_RED"):GetTextColorPrefix()))
+			Log.PrintfUser(L["Would send %s to %s with a COD of %s"], itemList, target, Money.ToString(money, Theme.GetColor("FEEDBACK_RED"):GetTextColorPrefix()))
 		else
-			ChatMessage.PrintfUser(L["Sending %s to %s with a COD of %s"], itemList, target, Money.ToStringExact(money, Theme.GetColor("FEEDBACK_RED"):GetTextColorPrefix()))
+			Log.PrintfUser(L["Sending %s to %s with a COD of %s"], itemList, target, Money.ToString(money, Theme.GetColor("FEEDBACK_RED"):GetTextColorPrefix()))
 		end
 	elseif next(items) then
 		if isDryRun then
-			ChatMessage.PrintfUser(L["Would send %s to %s"], itemList, target)
+			Log.PrintfUser(L["Would send %s to %s"], itemList, target)
 		else
-			ChatMessage.PrintfUser(L["Sending %s to %s"], itemList, target)
+			Log.PrintfUser(L["Sending %s to %s"], itemList, target)
 		end
 	end
 end
@@ -248,7 +239,7 @@ function private.HasNewBagUpdate()
 end
 
 function private.HasPendingAttachments()
-	for i = 1, Inbox.GetMaxSendAttachments() do
+	for i = 1, ATTACHMENTS_MAX_SEND do
 		if GetSendMailItem(i) then
 			return true
 		end
@@ -259,7 +250,7 @@ end
 
 function private.GetNumPendingAttachments()
 	local totalAttached = 0
-	for i = 1, Inbox.GetMaxSendAttachments() do
+	for i = 1, ATTACHMENTS_MAX_SEND do
 		if GetSendMailItem(i) then
 			totalAttached = totalAttached + 1
 		end
@@ -276,11 +267,11 @@ function private.GetEmptyBagSlotsThreaded(itemFamily)
 		Threading.Yield()
 	end
 	Table.SortWithValueLookup(emptySlotIds, sortvalue)
-	TempTable.Release(sortvalue)
+	Threading.ReleaseSafeTempTable(sortvalue)
 
 	return emptySlotIds
 end
 
 function private.BagSlotHasItem(bag, slot)
-	return Container.GetItemLink(bag, slot) and true or false
+	return Container.GetItemInfo(bag, slot) and true or false
 end

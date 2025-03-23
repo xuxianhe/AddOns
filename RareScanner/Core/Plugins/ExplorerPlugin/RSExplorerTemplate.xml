@@ -9,10 +9,62 @@
 	<Frame name="RSExplorerUITemplate" virtual="true">
 		<Layers>
 			<Layer level="BACKGROUND">
-				<Texture parentKey="Background" atlas="thewarwithin-landingpage-background" useAtlasSize="true">
+				<Texture parentKey="Background" atlas="GarrLanding-MiddleTile" useAtlasSize="true">
 					<Anchors>
 						<Anchor point="TOPLEFT" x="5" y="-5" />
 						<Anchor point="BOTTOMRIGHT" x="-5" y="5" />
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER" textureSubLevel="4">
+				<Texture parentKey="MainBaseFrameTopEdge" atlas="GarrLanding-Top" useAtlasSize="false">
+					<Size y="91" />
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="TOPLEFT" x="10" y="-1" />
+						<Anchor point="TOPRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" x="-10" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="MainBaseFrameBottomEdge" atlas="GarLanding-Bottom" useAtlasSize="false">
+					<Size y="91" />
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent" relativePoint="BOTTOMLEFT" x="10" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="BOTTOMRIGHT" x="-10" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="MainBaseFrameLeftEdge" atlas="GarLanding-Left" useAtlasSize="false">
+					<Size x="93" />
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="TOPLEFT" y="-10" />
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent" relativePoint="BOTTOMLEFT" y="10" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="MainBaseFrameRightEdge" atlas="GarLanding-Right" useAtlasSize="false">
+					<Size x="93" />
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" y="-10" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="BOTTOMRIGHT" y="10" />
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER" textureSubLevel="5">
+				<Texture parentKey="MainBaseFrameTopLeftCorner" atlas="GarrLanding-upperleft" useAtlasSize="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="MainBaseFrameTopRightCorner" atlas="GarrLanding-upperright" useAtlasSize="true">
+					<Anchors>
+						<Anchor point="TOPRIGHT" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="MainBaseFrameBottomLeftCorner" atlas="GarrLanding-lowerleft" useAtlasSize="true">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="MainBaseFrameBottomRightCorner" atlas="GarrLanding-lowerright" useAtlasSize="true">
+					<Anchors>
+						<Anchor point="BOTTOMRIGHT" />
 					</Anchors>
 				</Texture>
 			</Layer>
@@ -20,81 +72,80 @@
 		<Frames>
 			<Button parentKey="CloseButton" inherits="UIPanelCloseButton" frameLevel="800">
 				<Anchors>
-					<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="-15" Y ="-16"/>
+					<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="5"
+						y="5" />
 				</Anchors>
 			</Button>
-			<Frame parentKey="Border" setAllPoints="true" frameLevel="100">
-				<Layers>
-					<Layer level="OVERLAY">
-						<Texture parentKey="Border" atlas="ui-frame-thewarwithin-border">
-							<Anchors>
-								<Anchor point="TOPLEFT" />
-								<Anchor point="BOTTOMRIGHT" />
-							</Anchors>
-						</Texture>
-						<Texture parentKey="BottomEmbellishment" atlas="ui-frame-thewarwithin-embellishmentbottom" useAtlasSize="true">
-							<Anchors>
-								<Anchor point="BOTTOM"/>
-							</Anchors>
-						</Texture>
-						<Texture parentKey="TopEmbellishment" atlas="ui-frame-thewarwithin-embellishmentbottom" useAtlasSize="true" rotation="180">
-							<Anchors>
-								<Anchor point="TOP"/>
-							</Anchors>
-						</Texture>
-					</Layer>
-				</Layers>
-			</Frame>
 		</Frames>
 	</Frame>
+	
 	<Frame name="RSExplorerRareInfoBaseFrameTemplate" virtual="true">
 		<Layers>
-			<Layer level="BORDER">
-				<Texture parentKey="BaseFrameBackground" atlas="thewarwithin-landingpage-background" horizTile="true" vertTile="true">
+			<Layer level="BORDER" textureSubLevel="4">
+				<Texture parentKey="BaseFrameTopEdge" atlas="GarrLanding-Top" useAtlasSize="false">
+					<Size y="15" />
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="TOPLEFT" x="2" />
+						<Anchor point="TOPRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" x="-2" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="BaseFrameBottomEdge" atlas="GarLanding-Bottom" useAtlasSize="false">
+					<Size y="15" />
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent" relativePoint="BOTTOMLEFT" x="2" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="BOTTOMRIGHT" x="-2" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="BaseFrameLeftEdge" atlas="GarLanding-Left" useAtlasSize="false">
+					<Size x="15" />
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="TOPLEFT" y="-2" />
+						<Anchor point="BOTTOMLEFT" relativeKey="$parent" relativePoint="BOTTOMLEFT" y="2" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="BaseFrameRightEdge" atlas="GarLanding-Right" useAtlasSize="false">
+					<Size x="15" />
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent" relativePoint="TOPRIGHT" y="-2" />
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="BOTTOMRIGHT" y="2" />
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER" textureSubLevel="5">
+				<Texture parentKey="BaseFrameTopLeftCorner" atlas="GarrLanding-upperleft" useAtlasSize="false">
+					<Size>
+						<AbsDimension x="32" y="32" />
+					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="BaseFrameTopRightCorner" atlas="GarrLanding-upperright" useAtlasSize="false">
+					<Size>
+						<AbsDimension x="32" y="32" />
+					</Size>
+					<Anchors>
+						<Anchor point="TOPRIGHT" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="BaseFrameBottomLeftCorner" atlas="GarrLanding-lowerleft" useAtlasSize="false">
+					<Size>
+						<AbsDimension x="32" y="32" />
+					</Size>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" />
+					</Anchors>
+				</Texture>
+				<Texture parentKey="BaseFrameBottomRightCorner" atlas="GarrLanding-lowerright" useAtlasSize="false">
+					<Size>
+						<AbsDimension x="32" y="32" />
+					</Size>
+					<Anchors>
 						<Anchor point="BOTTOMRIGHT" />
 					</Anchors>
 				</Texture>
 			</Layer>
-			<Layer level="BORDER" textureSubLevel="1">
-				<Texture parentKey="BoardDropShadow" atlas="thewarwithin-landingpage-background">
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeKey="$parent" relativePoint="TOPLEFT" />
-						<Anchor point="BOTTOMRIGHT" relativeKey="$parent" relativePoint="BOTTOMRIGHT" />
-					</Anchors>
-				</Texture>
-			</Layer>
 		</Layers>
-		<Frames>
-			<Frame parentKey="Border" setAllPoints="true" frameLevel="100">
-				<Layers>
-					<Layer level="OVERLAY">
-						<Texture parentKey="Border" atlas="ui-frame-thewarwithin-border">
-							<Anchors>
-								<Anchor point="TOPLEFT" x="-8" />
-								<Anchor point="BOTTOMRIGHT" />
-							</Anchors>
-						</Texture>
-						<Texture parentKey="BottomEmbellishment" atlas="ui-frame-thewarwithin-embellishmentbottom" useAtlasSize="true">
-							<Anchors>
-								<Anchor point="BOTTOM"/>
-							</Anchors>
-						</Texture>
-						<Texture parentKey="TopEmbellishment" atlas="ui-frame-thewarwithin-embellishmentbottom" useAtlasSize="true" rotation="180">
-							<Anchors>
-								<Anchor point="TOP"/>
-							</Anchors>
-						</Texture>
-					</Layer>
-				</Layers>
-				<Scripts>
-					<OnLoad>
-						self:SetScale(0.4)
-					</OnLoad>
-				</Scripts>
-			</Frame>
-		</Frames>
 	</Frame>
 
 	<Frame name="RSMapCanvasDetailLayerTemplate" mixin="RSExplorerDetailMap" useParentLevel="true" virtual="true">
@@ -158,7 +209,7 @@
 	<Frame name="RSExplorerRareInfoLootTemplate" virtual="true">
 		<Layers>
 			<Layer level="BACKGROUND">
-				<Texture parentKey="Background1" atlas="UI-Frame-Kyrian-CardParchmentWider">
+				<Texture parentKey="Background1" atlas="UI-Frame-Neutral-CardParchmentWider">
 					<Anchors>
 						<Anchor point="TOPLEFT" />
 						<Anchor point="BOTTOMRIGHT" />
@@ -190,7 +241,7 @@
 			<Layer level="BORDER" textureSubLevel="3">
 				<Texture parentKey="Header">
 					<Anchors>
-						<Anchor point="TOPLEFT" x="18" y="0" />
+						<Anchor point="TOPLEFT" x="0" y="0" />
 						<Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" x="0" y="-66" />
 					</Anchors>
 					<Color r="0" g="0" b="0" a=".35" />
@@ -201,8 +252,8 @@
 					<Size x="0" y="18" />
 					<Color r="1.0" g="1.0" b="1.0" />
 					<Anchors>
-						<Anchor point="TOPLEFT" x="30" y="-5" />
-						<Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" y="-70" />
+						<Anchor point="TOPLEFT" x="26" y="5" />
+						<Anchor point="BOTTOMRIGHT" relativePoint="TOPRIGHT" y="-83" />
 					</Anchors>
 				</FontString>
 			</Layer>
@@ -211,7 +262,7 @@
 			<Button parentKey="AchievementIcon" hidden="true">
 				<Size x="54" y="54" />
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.Header" relativePoint="TOPRIGHT" x="-70" y="-20" />
+					<Anchor point="TOPLEFT" relativeKey="$parent.Header" relativePoint="TOPRIGHT" x="-60" y="-20" />
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
@@ -227,42 +278,36 @@
 			</Button>
 			<Frame parentKey="Map">
 				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativeKey="$parent.Header" relativePoint="BOTTOMLEFT" x="-10" />
-					<Anchor point="TOPRIGHT" x="-10" y="-450" />
+					<Anchor point="BOTTOMLEFT" relativeKey="$parent.Header" relativePoint="BOTTOMLEFT" />
+					<Anchor point="TOPRIGHT" x="0" y="-450" />
 				</Anchors>
 			</Frame>
 			<Frame parentKey="Mounts" inherits="RSExplorerRareInfoLootTemplate">
-				<Size x="147" y="47"/>
+				<Size x="186" y="47"/>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.Map" relativePoint="BOTTOMLEFT" y="-5" x="0" />
+					<Anchor point="TOPLEFT" relativeKey="$parent.Map" relativePoint="BOTTOMLEFT" y="7" x="5" />
 				</Anchors>
 			</Frame>
 			<Frame parentKey="Pets" inherits="RSExplorerRareInfoLootTemplate">
-				<Size x="147" y="47"/>
+				<Size x="186" y="47"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.Mounts" relativePoint="TOPRIGHT" x="-2" />
 				</Anchors>
 			</Frame>
 			<Frame parentKey="Toys" inherits="RSExplorerRareInfoLootTemplate">
-				<Size x="147" y="47"/>
+				<Size x="186" y="47"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.Pets" relativePoint="TOPRIGHT" x="-2" />
 				</Anchors>
 			</Frame>
-			<Frame parentKey="Drakewatcher" inherits="RSExplorerRareInfoLootTemplate">
-				<Size x="147" y="47"/>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.Toys" relativePoint="TOPRIGHT" x="-2" />
-				</Anchors>
-			</Frame>
 			<Frame parentKey="Custom" inherits="RSExplorerRareInfoLootTemplate">
-				<Size x="296" y="144"/>
+				<Size x="281" y="144"/>
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.Mounts" relativePoint="BOTTOMLEFT" y="2" x="-3" />
 				</Anchors>
 			</Frame>
 			<Frame parentKey="Appearances" inherits="RSExplorerRareInfoLootTemplate">
-				<Size x="296" />
+				<Size x="281" />
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeKey="$parent.Custom" relativePoint="TOPRIGHT" x="-4" />
 					<Anchor point="BOTTOM" relativeKey="$parent.Custom" relativePoint="BOTTOM" />
@@ -286,13 +331,10 @@
 					</OnLeave>
 				</Scripts>
 			</CheckButton>
-			<Button parentKey="ApplyFiltersButton" inherits="SharedButtonSmallTemplate">
+			<Button parentKey="ApplyFiltersButton" inherits="StaticPopupButtonTemplate">
 				<Anchors>
 					<Anchor point="RIGHT" x="-20" y="5" />
 				</Anchors>
-				<KeyValues>
-					<KeyValue key="atlasName" value="128-RedButton" type="string" />
-				</KeyValues>
 				<Scripts>
 					<OnClick>
 						self:GetParent():ApplyFilters(self, button)
@@ -322,7 +364,7 @@
 	</Frame>
 
 	<Frame name="RSExplorerFrame" hidden="true" inherits="RSExplorerUITemplate" mixin="RSExplorerMixin" enableMouse="true" movable="true" frameLevel="1" frameStrata="HIGH" parent="UIParent" topLevel="true">
-		<Size x="1000" y="785" />
+		<Size x="962" y="762" />
 		<Anchors>
 			<Anchor point="CENTER" />
 		</Anchors>
@@ -334,7 +376,7 @@
 				</Anchors>
 				<Layers>
 					<Layer level="BORDER">
-						<Texture parentKey="CloseButtonBorder" atlas="UI-Frame-Oribos-ExitButtonBorder" useAtlasSize="true">
+						<Texture parentKey="CloseButtonBorder" atlas="UI-Frame-Neutral-ExitButtonBorder" useAtlasSize="true">
 							<Anchors>
 								<Anchor point="CENTER" relativeKey="$parent.CloseButton" x="0" y="0" />
 							</Anchors>
@@ -368,26 +410,10 @@
 							<Anchor point="LEFT" relativeKey="$parent.FilterDropDown" relativePoint="RIGHT" x="10" y="0" />
 						</Anchors>
 					</DropdownButton>
-					<CheckButton parentKey="LockCurrentZoneCheckButton" inherits="ChatConfigCheckButtonTemplate">
+					<Button parentKey="RestartScanningButton" inherits="StaticPopupButtonTemplate">
 						<Anchors>
-							<Anchor point="LEFT" relativeKey="$parent.ContinentDropDown" relativePoint="RIGHT" x="10" y="0" />
-						</Anchors>
-						<Scripts>
-							<OnEnter>
-								self:GetParent():GetParent():ShowTooltip(self)
-							</OnEnter>
-							<OnLeave>
-								self:GetParent():GetParent():HideTooltip(self)
-							</OnLeave>
-						</Scripts>
-					</CheckButton>
-					<Button parentKey="RestartScanningButton" inherits="SharedButtonSmallTemplate">
-						<Anchors>
-							<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="-5" y="-2" />
-						</Anchors>
-						<KeyValues>
-							<KeyValue key="atlasName" value="128-RedButton" type="string" />
-						</KeyValues>
+		      				<Anchor point="TOPRIGHT" relativePoint="TOPRIGHT" x="-5" y="-2" />
+	    				</Anchors>
 						<Scripts>
 							<OnClick>
 								self:GetParent():RestartScanning(self, button)
@@ -409,15 +435,15 @@
 				</Anchors>
 			</Frame>
 			<Frame parentKey="RareInfo" hidden="true" inherits="RSExplorerRareInfoTemplate" frameLevel="3">
-				<Size x="600" y="655" />
+				<Size x="565" y="638" />
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.RareNPCList" relativePoint="TOPRIGHT" x="5" y="0" />
+					<Anchor point="TOPRIGHT" x="-58" y="-65" />
 				</Anchors>
 			</Frame>
 			<Frame parentKey="Control" inherits="RSExplorerControlTemplate" mixin="RSExplorerControl" hidden="true" frameLevel="4">
 				<Size x="574" y="60" />
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.RareNPCList" relativePoint="BOTTOMLEFT" x="0" y="-20" />
+					<Anchor point="TOPLEFT" relativeKey="$parent.RareNPCList" relativePoint="BOTTOMLEFT" x="0" y="0" />
 					<Anchor point="BOTTOMRIGHT" x="-38" y="20" />
 				</Anchors>
 			</Frame>
@@ -450,7 +476,7 @@
 					</Layer>
 				</Layers>
 				<Frames>
-					<Button parentKey="StartScanningButton" inherits="SharedButtonLargeTemplate">
+					<Button parentKey="StartScanningButton" inherits="StaticPopupButtonTemplate">
 						<Anchors>
 							<Anchor point="TOP" relativeKey="$parent.ScanRequiredText" relativePoint="BOTTOM" x="0" y="-15" />
 						</Anchors>

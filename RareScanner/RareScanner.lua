@@ -16,7 +16,6 @@ local LibAboutPanel = LibStub:GetLibrary("LibAboutPanel-2.0RS", true)
 local RSNpcDB = private.ImportLib("RareScannerNpcDB")
 local RSContainerDB = private.ImportLib("RareScannerContainerDB")
 local RSEventDB = private.ImportLib("RareScannerEventDB")
-local RSDragonGlyphDB = private.ImportLib("RareScannerDragonGlyphDB")
 local RSGeneralDB = private.ImportLib("RareScannerGeneralDB")
 local RSConfigDB = private.ImportLib("RareScannerConfigDB")
 local RSMapDB = private.ImportLib("RareScannerMapDB")
@@ -27,7 +26,6 @@ local RSConstants = private.ImportLib("RareScannerConstants")
 local RSLogger = private.ImportLib("RareScannerLogger")
 local RSTimeUtils = private.ImportLib("RareScannerTimeUtils")
 local RSUtils = private.ImportLib("RareScannerUtils")
-local RSQuestTracker = private.ImportLib("RareScannerQuestTracker")
 local RSRoutines = private.ImportLib("RareScannerRoutines")
 local RSProvider = private.ImportLib("RareScannerProvider")
 local RSHyperlinks = private.ImportLib("RareScannerHyperlinks")
@@ -44,7 +42,6 @@ local RSEntityStateHandler = private.ImportLib("RareScannerEntityStateHandler")
 local RSCommandLine = private.ImportLib("RareScannerCommandLine")
 local RSTargetUnitTracker = private.ImportLib("RareScannerTargetUnitTracker")
 local RSRecentlySeenTracker = private.ImportLib("RareScannerRecentlySeenTracker")
-local RSWaypoints = private.ImportLib("RareScannerWaypoints")
 
 -- RareScanner other addons integration services
 local RSTomtom = private.ImportLib("RareScannerTomtom")
@@ -57,7 +54,7 @@ scanner_button:SetFrameStrata("MEDIUM")
 scanner_button:SetFrameLevel(200)
 scanner_button:SetSize(200, 50)
 scanner_button:SetScale(0.8)
-scanner_button:RegisterForClicks("AnyUp","AnyDown")
+scanner_button:RegisterForClicks("RightButtonUp", "LeftButtonUp")
 scanner_button:SetAttribute("type1", "macro")
 scanner_button:SetAttribute("type2", "closebutton")
 scanner_button:SetScript("PostClick", function(self, button)
@@ -84,9 +81,6 @@ scanner_button:SetScript("PostClick", function(self, button)
 	-- Add waypoints
 	if (RSConfigDB.IsTomtomSupportEnabled() and not RSConfigDB.IsAddingTomtomWaypointsAutomatically()) then
 		RSTomtom.AddTomtomWaypoint(self.mapID, self.x, self.y, self.name)
-	end
-	if (RSConfigDB.IsWaypointsSupportEnabled() and not RSConfigDB.IsAddingWaypointsAutomatically()) then
-		RSWaypoints.AddWaypoint(self.mapID, self.x, self.y, self.name)
 	end
 end)
 scanner_button.closebutton = function(self)
@@ -174,31 +168,10 @@ scanner_button.CloseButton:HookScript("OnClick", function(self)
 end)
 
 -- Filter disabled button
-scanner_button.FilterEntityButton = CreateFrame("Button", "FilterEntityButton", scanner_button, "UIPanelCloseButtonNoScripts")
+scanner_button.FilterEntityButton = CreateFrame("Button", "FilterEntityButton", scanner_button, "GameMenuButtonTemplate")
 scanner_button.FilterEntityButton:SetPoint("BOTTOMLEFT", 5, 5)
 scanner_button.FilterEntityButton:SetSize(16, 16)
-
-local FilterEntityButtonTexture = scanner_button.FilterEntityButton:CreateTexture()
-FilterEntityButtonTexture:SetTexture("Interface\\AddOns\\RareScanner\\Media\\Textures\\stop_icons.blp")
-FilterEntityButtonTexture:SetSize(16, 16)
-FilterEntityButtonTexture:SetTexCoord(0, 0.3, 0, 0.3)
-FilterEntityButtonTexture:SetPoint("CENTER")
-scanner_button.FilterEntityButton:SetNormalTexture(FilterEntityButtonTexture)
-
-FilterEntityButtonTexture = scanner_button.FilterEntityButton:CreateTexture()
-FilterEntityButtonTexture:SetTexture("Interface\\AddOns\\RareScanner\\Media\\Textures\\stop_icons.blp")
-FilterEntityButtonTexture:SetSize(16, 16)
-FilterEntityButtonTexture:SetTexCoord(0, 0.3, 0.35, 0.65)
-FilterEntityButtonTexture:SetPoint("CENTER")
-scanner_button.FilterEntityButton:SetDisabledTexture(FilterEntityButtonTexture)
-
-FilterEntityButtonTexture = scanner_button.FilterEntityButton:CreateTexture()
-FilterEntityButtonTexture:SetTexture("Interface\\AddOns\\RareScanner\\Media\\Textures\\stop_icons.blp")
-FilterEntityButtonTexture:SetSize(16, 16)
-FilterEntityButtonTexture:SetTexCoord(0, 0.3, 0.65, 0.95)
-FilterEntityButtonTexture:SetPoint("CENTER")
-scanner_button.FilterEntityButton:SetPushedTexture(FilterEntityButtonTexture)
-
+scanner_button.FilterEntityButton:SetNormalTexture([[Interface\WorldMap\Dash_64]])
 scanner_button.FilterEntityButton:SetScript("OnClick", function(self)
 	local entityID = self:GetParent().entityID
 	if (entityID) then
@@ -208,63 +181,87 @@ scanner_button.FilterEntityButton:SetScript("OnClick", function(self)
 			else
 				RSConfigDB.SetNpcFiltered(entityID)
 			end
+			RSLogger:PrintMessage(AL["DISABLED_SEARCHING_RARE"]..self:GetParent().Title:GetText())
 		elseif (RSConstants.IsContainerAtlas(self:GetParent().atlasName)) then
-			-- Filter every container with the same name
-			local containerName = RSContainerDB.GetContainerName(entityID)
-			if (containerName) then
-				for containerID, name in pairs(RSContainerDB.GetAllContainerNames()) do
-					if (name == containerName) then
-						if (RSConfigDB.GetDefaultContainerFilter() == RSConstants.ENTITY_FILTER_WORLDMAP) then
-							RSConfigDB.SetContainerFiltered(containerID, RSConstants.ENTITY_FILTER_ALL)
-						else
-							RSConfigDB.SetContainerFiltered(containerID)
-						end
-					end
-				end
-			-- Filter only this container
-			else			
-				if (RSConfigDB.GetDefaultContainerFilter() == RSConstants.ENTITY_FILTER_WORLDMAP) then
-					RSConfigDB.SetContainerFiltered(entityID, RSConstants.ENTITY_FILTER_ALL)
-				else
-					RSConfigDB.SetContainerFiltered(entityID)
-				end
+			if (RSConfigDB.GetDefaultContainerFilter() == RSConstants.ENTITY_FILTER_WORLDMAP) then
+				RSConfigDB.SetContainerFiltered(entityID, RSConstants.ENTITY_FILTER_ALL)
+			else
+				RSConfigDB.SetContainerFiltered(entityID)
 			end
+			RSLogger:PrintMessage(string.format(AL["DISABLED_SEARCHING_CONTAINER"], self:GetParent().Title:GetText()))
 		else
-			-- Filter every event with the same name
-			local eventName = RSEventDB.GetEventName(entityID)
-			if (eventName) then
-				for eventID, name in pairs(RSEventDB.GetAllEventNames()) do
-					if (name == eventName) then
-						if (RSConfigDB.GetDefaultEventFilter() == RSConstants.ENTITY_FILTER_WORLDMAP) then
-							RSConfigDB.SetEventFiltered(eventID, RSConstants.ENTITY_FILTER_ALL)
-						else
-							RSConfigDB.SetEventFiltered(eventID)
-						end
-					end
-				end
+			if (RSConfigDB.GetDefaultEventFilter() == RSConstants.ENTITY_FILTER_WORLDMAP) then
+				RSConfigDB.SetEventFiltered(entityID, RSConstants.ENTITY_FILTER_ALL)
+			else
+				RSConfigDB.SetEventFiltered(entityID)
 			end
+			RSLogger:PrintMessage(string.format(AL["DISABLED_SEARCHING_EVENT"], self:GetParent().Title:GetText()))
 		end
 		
-		RSLogger:PrintMessage(string.format(AL["ENTITY_FILTERED"], self:GetParent().Title:GetText()))
-		self:Disable()
+		self:Hide()
+		self:GetParent().UnfilterEnabledButton:Show()
 	end
 end)
 scanner_button.FilterEntityButton:SetScript("OnEnter", function(self)
-	if (not self.tooltip) then
-		self.tooltip = CreateFrame("GameTooltip", "StopTooltip", scanner_button, "GameTooltipTemplate");
-		self.tooltip:SetMinimumWidth(150)
-		self.tooltip:SetScale(0.8)
+	GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+	if (RSConstants.IsNpcAtlas(self:GetParent().atlasName)) then
+		GameTooltip:SetText(AL["DISABLE_SEARCHING_RARE_TOOLTIP"])
+	elseif (RSConstants.IsContainerAtlas(self:GetParent().atlasName)) then
+		GameTooltip:SetText(AL["DISABLE_SEARCHING_CONTAINER_TOOLTIP"])
+	else
+		GameTooltip:SetText(AL["DISABLE_SEARCHING_EVENT_TOOLTIP"])
 	end
-
-	self.tooltip:SetOwner(scanner_button, "ANCHOR_LEFT")
-	self.tooltip:SetText(AL["DISABLE_SEARCHING_TOOLTIP"])
-	self.tooltip:AddLine(AL["DISABLE_SEARCHING_TOOLTIP_DESC"], 1, 1, 1, true)
-	self.tooltip:Show()
+	GameTooltip:Show()
 end)
 
 scanner_button.FilterEntityButton:SetScript("OnLeave", function(self)
-	self.tooltip:Hide()
+	GameTooltip:Hide()
 end)
+
+-- Filter enabled button
+scanner_button.UnfilterEnabledButton = CreateFrame("Button", "UnfilterEnabledButton", scanner_button, "GameMenuButtonTemplate")
+scanner_button.UnfilterEnabledButton:SetPoint("BOTTOMLEFT", 5, 5)
+scanner_button.UnfilterEnabledButton:SetSize(16, 16)
+scanner_button.UnfilterEnabledButton:SetScript("OnClick", function(self)
+	local entityID = self:GetParent().entityID
+	if (entityID) then
+		if (RSConstants.IsNpcAtlas(self:GetParent().atlasName)) then
+			RSConfigDB.DeleteNpcFiltered(entityID)
+			RSLogger:PrintMessage(AL["ENABLED_SEARCHING_RARE"]..self:GetParent().Title:GetText())
+		elseif (RSConstants.IsContainerAtlas(self:GetParent().atlasName)) then
+			RSConfigDB.DeleteContainerFiltered(entityID)
+			RSLogger:PrintMessage(string.format(AL["ENABLED_SEARCHING_CONTAINER"], self:GetParent().Title:GetText()))
+		else
+			RSConfigDB.DeleteEventFiltered(entityID)
+			RSLogger:PrintMessage(string.format(AL["ENABLED_SEARCHING_EVENT"], self:GetParent().Title:GetText()))
+		end
+		self:Hide()
+		self:GetParent().FilterEntityButton:Show()
+	end
+end)
+scanner_button.UnfilterEnabledButton:SetScript("OnEnter", function(self)
+	GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+	if (RSConstants.IsNpcAtlas(self:GetParent().atlasName)) then
+		GameTooltip:SetText(AL["ENABLE_SEARCHING_RARE_TOOLTIP"])
+	elseif (RSConstants.IsContainerAtlas(self:GetParent().atlasName)) then
+		GameTooltip:SetText(AL["ENABLE_SEARCHING_CONTAINER_TOOLTIP"])
+	else
+		GameTooltip:SetText(AL["ENABLE_SEARCHING_EVENT_TOOLTIP"])
+	end
+	GameTooltip:Show()
+end)
+
+scanner_button.UnfilterEnabledButton:SetScript("OnLeave", function(self)
+	GameTooltip:Hide()
+end)
+
+scanner_button.FilterEnabledTexture = scanner_button.UnfilterEnabledButton:CreateTexture()
+scanner_button.FilterEnabledTexture:SetTexture([[Interface\WorldMap\Skull_64]])
+scanner_button.FilterEnabledTexture:SetSize(12, 12)
+scanner_button.FilterEnabledTexture:SetTexCoord(0,0.5,0,0.5)
+scanner_button.FilterEnabledTexture:SetPoint("CENTER")
+scanner_button.UnfilterEnabledButton:SetNormalTexture(scanner_button.FilterEnabledTexture)
+scanner_button.UnfilterEnabledButton:Hide()
 
 -- Loot bar
 scanner_button.LootBar = CreateFrame("Frame", "LootBar", scanner_button)
@@ -339,7 +336,7 @@ scanner_button.LootBar.itemFramesPool.UpdateCacheItem = function(self, itemID, e
 	if (not item) then
 		return
 	end
-	
+
 	item:ContinueOnItemLoad(function()
 		if (not item:GetItemID()) then
 			return
@@ -400,16 +397,15 @@ scanner_button.PreviousButton:Hide()
 -- Register events
 RSEventHandler.RegisterEvents(scanner_button, RareScanner)
 
-function scanner_button:SimulateRareFound(npcID, objectGUID, name, x, y, atlasName, trackingSystem)
+function scanner_button:SimulateRareFound(npcID, objectGUID, name, x, y, atlasName)
 	local vignetteInfo = {}
 	vignetteInfo.atlasName = atlasName
 	vignetteInfo.id = npcID
 	vignetteInfo.name = name
-	vignetteInfo.objectGUID = objectGUID or string.format("a-a-a-a-a-%s-%s", npcID, time())
+	vignetteInfo.objectGUID = objectGUID or string.format("a-a-a-a-a-%s-a", npcID)
 	vignetteInfo.x = x
 	vignetteInfo.y = y
 	vignetteInfo.simulated = true
-	vignetteInfo.trackingSystem = trackingSystem
 	self:DetectedNewVignette(self, vignetteInfo)
 end
 
@@ -484,8 +480,12 @@ function scanner_button:ShowButton()
 
 		-- show model
 		if (self.displayID and RSConfigDB.IsDisplayingModel()) then
-			self.ModelView:SetDisplayInfo(self.displayID)
-			self.ModelView:Show()
+			self.ModelView:SetCreature(self.entityID, self.displayID)
+			
+			C_Timer.After(0.5, function()
+				self.ModelView:SetCreature(self.entityID, self.displayID)
+				self.ModelView:Show() 
+			end)
 		else
 			self.ModelView:Hide()
 		end
@@ -504,13 +504,14 @@ function scanner_button:ShowButton()
 	end
 	
 	self:SetAttribute("macrotext", macrotext);
-		
+	
 	-- Toggle filter buttons
-	self.FilterEntityButton:Show()
 	if ((RSConstants.IsNpcAtlas(self.atlasName) and RSConfigDB.GetNpcFiltered(self.entityID) == nil) or (RSConstants.IsContainerAtlas(self.atlasName) and RSConfigDB.GetContainerFiltered(self.entityID) == nil) or (RSConstants.IsEventAtlas(self.atlasName))) then
-		self.FilterEntityButton:Enable()
+		self.UnfilterEnabledButton:Hide()
+		self.FilterEntityButton:Show()
 	else
-		self.FilterEntityButton:Disable()
+		self.UnfilterEnabledButton:Show()
+		self.FilterEntityButton:Hide()
 	end
 	
 	-- show button
@@ -602,12 +603,6 @@ function RareScanner:OnInitialize()
 	
 	-- Add minimap icon
 	RSMinimap.LoadMinimapButton()
-
-	-- Load completed quests
-	RSQuestTracker.CacheAllCompletedQuestIDs()
-
-	-- Initialize special events
-	self:InitializeSpecialEvents()
 	
 	-- Hook hyperlink
 	RSHyperlinks.HookHyperLinks()
@@ -621,10 +616,6 @@ function RareScanner:OnInitialize()
 	RSCommandLine.Initialize(self)
 
 	RSLogger:PrintDebugMessage("Cargado")
-end
-
-function RareScanner:InitializeSpecialEvents()
-	RareScanner:ShadowlandsPrePatch_Initialize()
 end
 
 local function RefreshDatabaseData(previousDbVersion)
@@ -807,248 +798,7 @@ local function RefreshDatabaseData(previousDbVersion)
 		table.insert(routines, cleanCompletedEvents)
 		RSGeneralDB.SetLastCleanDb()
 	end
-	
-	-- Update dragon glyph names database
-	local dragonGlyphsNamesRoutine = RSRoutines.LoopRoutineNew()
-	dragonGlyphsNamesRoutine:Init(RSDragonGlyphDB.GetAllInternalDragonGlyphInfo, 10,
-		function(context, glyphID)
-			if (not RSDragonGlyphDB.GetDragonGlyphName(glyphID)) then
-				local _, name, _, completed, _, _, _, _, _, _, _, _ = GetAchievementInfo(glyphID)
-				if (name) then
-					RSDragonGlyphDB.SetDragonGlyphName(glyphID, name)
-					RSDragonGlyphDB.SetDragonGlyphCollected(completed)
-				end
-			end
-		end, 
-		function(context)			
-			RSLogger:PrintDebugMessage("Actualizada la base de datos de glifos del dragon")
-		end
-	)
-	table.insert(routines, dragonGlyphsNamesRoutine)
-	
-	-- Update entities state that are part of an achievement with criteria
-	local achievementCriteriaRoutine = RSRoutines.LoopRoutineNew()
-	achievementCriteriaRoutine:Init(function() return private.ACHIEVEMENT_WITH_CRITERIA end, 10,
-		function(context, _, achievementID)
-			for i=1, GetAchievementNumCriteria(achievementID) do
-				local _, _, completed = GetAchievementCriteriaInfo(achievementID, i)
-			   	if (completed) then
-					for _, entityID in ipairs(private.ACHIEVEMENT_TARGET_IDS[achievementID]) do
-						local containerInfo = RSContainerDB.GetInternalContainerInfo(entityID)
-						if (containerInfo) then
-							if (containerInfo.criteria == i and not RSContainerDB.IsContainerOpened(entityID)) then
-								RSContainerDB.SetContainerOpened(entityID)
-							end
-						else
-							local npcInfo = RSNpcDB.GetInternalNpcInfo(entityID)
-							if (npcInfo) then
-								if (npcInfo.criteria == i and not RSNpcDB.IsNpcKilled(entityID)) then
-									RSNpcDB.SetNpcKilled(entityID)
-								end
-							end
-						end
-					end
-				end
-			end
-		end, 
-		function(context)			
-			RSLogger:PrintDebugMessage("Actualizado el estado de entidades que son parte de un logro con criteria")
-		end
-	)
-	table.insert(routines, achievementCriteriaRoutine)
-	
-	-- Update older container filters system to newer (10.0.5)
-	if (RSUtils.GetTableLength(private.db.general.filteredContainers) > 0) then
-		-- Set default behaviour
-		if (private.db.containerFilters.filterOnlyMap) then
-			RSConfigDB.SetDefaultContainerFilter(RSConstants.ENTITY_FILTER_WORLDMAP)
-		elseif (private.db.containerFilters.filterOnlyAlerts) then
-			RSConfigDB.SetDefaultContainerFilter(RSConstants.ENTITY_FILTER_ALERTS)
-		else
-			RSConfigDB.SetDefaultContainerFilter(RSConstants.ENTITY_FILTER_ALL)
-		end
-		
-		local fixContainerFilters = RSRoutines.LoopRoutineNew()
-		fixContainerFilters:Init(function() return private.db.general.filteredContainers end, 100,
-			function(context, containerID, value)
-				if (private.db.general.filtersFixed and value == true) then
-					RSConfigDB.SetContainerFiltered(containerID)
-				elseif (not private.db.general.filtersFixed and value == false) then
-					RSConfigDB.SetContainerFiltered(containerID)
-				end
-			end, 
-			function(context)			
-				private.db.containerFilters.filterOnlyMap = nil
-				private.db.containerFilters.filterOnlyAlerts = nil
-				private.db.general.filteredContainers = nil
-				RSLogger:PrintDebugMessage("Migrados filtros de contenedores")
-			end
-		)
-		table.insert(routines, fixContainerFilters)
-	end
 
-	-- Update older npc filters system to newer (10.0.5)
-	if (RSUtils.GetTableLength(private.db.general.filteredRares) > 0) then
-		-- Set default behaviour
-		if (private.db.rareFilters.filterOnlyMap) then
-			RSConfigDB.SetDefaultNpcFilter(RSConstants.ENTITY_FILTER_WORLDMAP)
-		else
-			RSConfigDB.SetDefaultNpcFilter(RSConstants.ENTITY_FILTER_ALL)
-		end
-		
-		local fixNpcFilters = RSRoutines.LoopRoutineNew()
-		fixNpcFilters:Init(function() return private.db.general.filteredRares end, 100,
-			function(context, npcID, value)
-				if (private.db.general.filtersFixed and value == true) then
-					RSConfigDB.SetNpcFiltered(npcID)
-				elseif (not private.db.general.filtersFixed and value == false) then
-					RSConfigDB.SetNpcFiltered(npcID)
-				end
-			end, 
-			function(context)			
-				private.db.rareFilters.filterOnlyMap = nil
-				private.db.general.filteredRares = nil
-				RSLogger:PrintDebugMessage("Migrados filtros de NPCs")
-			end
-		)
-		table.insert(routines, fixNpcFilters)
-	end
-
-	-- Update older event filters system to newer (10.0.5)
-	if (RSUtils.GetTableLength(private.db.general.filteredEvents) > 0) then
-		-- Set default behaviour
-		if (private.db.eventFilters.filterOnlyMap) then
-			RSConfigDB.SetDefaultEventFilter(RSConstants.ENTITY_FILTER_WORLDMAP)
-		else
-			RSConfigDB.SetDefaultEventFilter(RSConstants.ENTITY_FILTER_ALL)
-		end
-		
-		local fixEventFilters = RSRoutines.LoopRoutineNew()
-		fixEventFilters:Init(function() return private.db.general.filteredEvents end, 100,
-			function(context, eventID, value)
-				if (private.db.general.filtersFixed and value == true) then
-					RSConfigDB.SetEventFiltered(eventID)
-				elseif (not private.db.general.filtersFixed and value == false) then
-					RSConfigDB.SetEventFiltered(eventID)
-				end
-			end, 
-			function(context)			
-				private.db.eventFilters.filterOnlyMap = nil
-				private.db.general.filteredEvents = nil
-				RSLogger:PrintDebugMessage("Migrados filtros de Eventos")
-			end
-		)
-		table.insert(routines, fixEventFilters)
-	end
-
-	-- Update older zone filters system to newer (10.1.0)
-	if (RSUtils.GetTableLength(private.db.general.filteredZones) > 0) then
-		-- Set default behaviour
-		if (private.db.zoneFilters.filterOnlyMap) then
-			RSConfigDB.SetDefaultZoneFilter(RSConstants.ENTITY_FILTER_WORLDMAP)
-		else
-			RSConfigDB.SetDefaultZoneFilter(RSConstants.ENTITY_FILTER_ALL)
-		end
-		
-		local fixZoneFilters = RSRoutines.LoopRoutineNew()
-		fixZoneFilters:Init(function() return private.db.general.filteredZones end, 100,
-			function(context, zoneID, value)
-				if (private.db.general.filtersFixed and value == true) then
-					RSConfigDB.SetZoneFiltered(zoneID)
-				elseif (not private.db.general.filtersFixed and value == false) then
-					RSConfigDB.SetZoneFiltered(zoneID)
-				end
-			end, 
-			function(context)			
-				private.db.zoneFilters.filterOnlyMap = nil
-				private.db.general.filteredZones = nil
-				RSLogger:PrintDebugMessage("Migrados filtros de Zonas")
-			end
-		)
-		table.insert(routines, fixZoneFilters)
-	end
-	
-	-- Update older custom NPCs to newer (10.2.0)
-	if (RSUtils.GetTableLength(private.dbglobal.custom_npcs) > 0) then
-		local needFix = false
-		for customNpcID, customNpcInfo in pairs (private.dbglobal.custom_npcs) do
-			if (not private.dbglobal.custom_npcs.custom or not private.dbglobal.custom_npcs.noVignette) then
-				needFix = true
-				break;
-			end
-		end
-		
-		local fixCustomNpcs = RSRoutines.LoopRoutineNew()
-		fixCustomNpcs:Init(function() return private.dbglobal.custom_npcs end, 100,
-			function(context, customNpcID, customNpcInfo)
-				customNpcInfo.custom = true
-				customNpcInfo.noVignette = true
-				customNpcInfo.nameplate = nil
-				-- If decimal values (older custom NPCs), transform to newer coord system
-				if (type(customNpcInfo.zoneID) == "table") then
-					for zoneID, zoneInfo in pairs (customNpcInfo.zoneID) do
-						if (zoneID ~= RSConstants.ALL_ZONES_CUSTOM_NPC and zoneInfo.x and zoneInfo.y) then
-							customNpcInfo.zoneID[zoneID].x = RSUtils.Rpad(tostring(zoneInfo.x):gsub('(0%.)',''), 4, '0')
-							customNpcInfo.zoneID[zoneID].y = RSUtils.Rpad(tostring(zoneInfo.y):gsub('(0%.)',''), 4, '0')
-						end
-					end
-				else
-					if (customNpcInfo.zoneID ~= RSConstants.ALL_ZONES_CUSTOM_NPC and customNpcInfo.x and customNpcInfo.y) then
-						customNpcInfo.x = RSUtils.Rpad(tostring(customNpcInfo.x):gsub('(0%.)',''), 4, '0')
-						customNpcInfo.y = RSUtils.Rpad(tostring(customNpcInfo.y):gsub('(0%.)',''), 4, '0')
-					end
-				end
-				
-				private.dbglobal.custom_npcs[customNpcID] = customNpcInfo
-			end, 
-			function(context)			
-				RSLogger:PrintDebugMessage("Migrados NPCs personalizados")
-			end
-		)
-		table.insert(routines, fixCustomNpcs)
-	end
-	
-	-- Fix X offset introduced in 11.1 in Ringing Deeps
-	
-	
-	-- Launches a forced vignette scan
-	local firstScanRoutine = RSRoutines.LoopRoutineNew()
-	firstScanRoutine:Init(function() return C_VignetteInfo.GetVignettes() end, 100,
-		function(context, index, vignetteGUID)
-			local vignetteInfo = C_VignetteInfo.GetVignetteInfo(vignetteGUID);
-			if (vignetteInfo) then
-				if (vignetteInfo.onWorldMap and RSConfigDB.IsScanningWorldMapVignettes()) then
-					vignetteInfo.id = vignetteGUID
-					scanner_button:DetectedNewVignette(scanner_button, vignetteInfo)	
-				elseif (vignetteInfo.onMinimap) then
-					vignetteInfo.id = vignetteGUID
-					scanner_button:DetectedNewVignette(scanner_button, vignetteInfo)
-				end
-			end
-		end, 
-		function(context)
-			RSLogger:PrintDebugMessage("Lanzado primer scan de vignettes")
-		end
-	)
-	table.insert(routines, firstScanRoutine)
-
-	-- Fix X offset added in 11.1 in the Ringing Deeps
-	if (not previousDbVersion or previousDbVersion < RSConstants.FIX_RINGING_DEEPS_X_OFFSET_VERSION) then
-		local fixOffsetXRingingDeepsRoutine = RSRoutines.LoopRoutineNew()
-		fixOffsetXRingingDeepsRoutine:Init(function() return RSGeneralDB.GetAlreadyFoundEntities() end, 100,
-			function(context, entityID, entityInfo)
-				if (RSGeneralDB.IsAlreadyFoundEntityInZone(entityID, RSConstants.RINGING_DEEPS)) then
-					entityInfo.coordX = entityInfo.coordX - RSConstants.FIX_RINGING_DEEPS_X_OFFSET
-					private.dbglobal.rares_found[entityID] = entityInfo
-				end
-			end, 
-			function(context)
-				RSLogger:PrintDebugMessage("Corregido X offset en Ringing Deeps")
-			end
-		)
-		table.insert(routines, fixOffsetXRingingDeepsRoutine)
-	end
-		
 	-- Launch all the routines in order
 	local chainRoutines = RSRoutines.ChainLoopRoutineNew()
 	chainRoutines:Init(routines)
@@ -1107,15 +857,6 @@ local function UpdateRareNamesDB(currentDbVersion)
 				end
 			end
 			
-			-- Sets already found Containers as Containers if they were found as NPCs
-			for _, containerID in ipairs (RSConstants.CONTAINER_WITH_NPC_VIGNETTE) do
-				local containerInfo = RSGeneralDB.GetAlreadyFoundEntity(containerID)
-				if (containerInfo and containerInfo.atlasName ~= RSConstants.CONTAINER_VIGNETTE) then
-					containerInfo.atlasName = RSConstants.CONTAINER_VIGNETTE
-					RSLogger:PrintDebugMessage(string.format("Contenedor [%s]. Estaba marcado como un rare, Corregido!.", containerID))
-				end
-			end
-			
 			-- Remove already found entities that might be a pre event
 			for preEntityID, _ in pairs (RSConstants.NPCS_WITH_PRE_EVENT) do
 				RSGeneralDB.RemoveAlreadyFoundEntity(preEntityID)
@@ -1124,23 +865,10 @@ local function UpdateRareNamesDB(currentDbVersion)
 				RSGeneralDB.RemoveAlreadyFoundEntity(preEntityID)
 			end
 			
-			-- Remove ancestral spirit
-			RSGeneralDB.RemoveAlreadyFoundEntity(RSConstants.FORBIDDEN_REACH_ANCESTRAL_SPIRIT)
-			
 			-- Remove ignored entities
 			for _, entityID in ipairs (RSConstants.IGNORED_VIGNETTES) do
 				RSGeneralDB.RemoveAlreadyFoundEntity(entityID)
 			end
-			
-			-- Clean database after update 11.0.2
-			private.dbchar.not_colleted_appearances_item_ids = nil
-			
-			-- Reset current collections database because it isn't compatible anymore
-			if (private.dbglobal.lastCollectionsScanVersion and private.dbglobal.entity_collections_loot) then
-				if (type(private.dbglobal.lastCollectionsScanVersion) == "table") then
-					private.dbglobal.entity_collections_loot = {}
-				end
-			end			
 			
 			-- Reset cached questIDs
 			RSGeneralDB.ResetCompletedQuestDB()
@@ -1188,7 +916,6 @@ function RareScanner:InitializeDataBase()
 	RSNpcDB.InitNpcKilledDB()
 	RSContainerDB.InitContainerOpenedDB()
 	RSEventDB.InitEventCompletedDB()
-	RSDragonGlyphDB.InitDragonGlyphsCollectedDB()
 
 	-- Initialize global database
 	RSGeneralDB.InitItemInfoDB()
@@ -1203,7 +930,6 @@ function RareScanner:InitializeDataBase()
 	RSContainerDB.InitContainerLootFoundDB()
 	RSContainerDB.InitContainerQuestIdFoundDB()
 	RSContainerDB.InitReseteableContainersDB()
-	RSDragonGlyphDB.InitDragonGlyphsNamesDB()
 	RSEventDB.InitEventNamesDB()
 	RSEventDB.InitEventQuestIdFoundDB()
 

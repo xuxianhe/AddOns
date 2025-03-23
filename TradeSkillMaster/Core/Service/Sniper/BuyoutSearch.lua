@@ -6,18 +6,16 @@
 
 local TSM = select(2, ...) ---@type TSM
 local BuyoutSearch = TSM.Sniper:NewPackage("BuyoutSearch")
-local SoundAlert = TSM.LibTSMWoW:Include("UI.SoundAlert")
-local ClientInfo = TSM.LibTSMWoW:Include("Util.ClientInfo")
-local Group = TSM.LibTSMTypes:Include("Group")
-local Threading = TSM.LibTSMTypes:Include("Threading")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
-local SniperOperation = TSM.LibTSMSystem:Include("SniperOperation")
+local Environment = TSM.Include("Environment")
+local L = TSM.Include("Locale").GetTable()
+local Log = TSM.Include("Util.Log")
+local Threading = TSM.Include("Service.Threading")
+local ItemInfo = TSM.Include("Service.ItemInfo")
 local private = {
-	settings = nil,
 	scanThreadId = nil,
 	searchContext = nil,
+	itemList = {},
 }
-local RESCAN_DELAY = ClientInfo.IsRetail() and 30 or 0
 
 
 
@@ -25,9 +23,7 @@ local RESCAN_DELAY = ClientInfo.IsRetail() and 30 or 0
 -- Module Functions
 -- ============================================================================
 
-function BuyoutSearch.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
-		:AddKey("global", "sniperOptions", "sniperSound")
+function BuyoutSearch.OnInitialize()
 	private.scanThreadId = Threading.New("SNIPER_BUYOUT_SEARCH", private.ScanThread)
 	private.searchContext = TSM.Sniper.SniperSearchContext(private.scanThreadId, private.MarketValueFunction, "BUYOUT")
 end
@@ -42,58 +38,69 @@ end
 -- Scan Thread
 -- ============================================================================
 
----@param auctionScan AuctionScanManager
 function private.ScanThread(auctionScan)
 	local numQueries = auctionScan:GetNumQueries()
 	if numQueries == 0 then
-		local query = auctionScan:NewQuery()
-			:AddCustomFilter(private.QueryFilter)
-		if not ClientInfo.IsRetail() then
-			query:SetPage("LAST")
+		if Environment.IsRetail() then
+			wipe(private.itemList)
+			if not TSM.Sniper.PopulateItemList(private.itemList) then
+				-- scan the entire AH
+				auctionScan:NewQuery()
+					:AddCustomFilter(private.QueryFilter)
+			elseif #private.itemList == 0 then
+				Log.PrintUser(L["Failed to start sniper. No groups have a Sniper operation applied."])
+				return false
+			else
+				-- scan for the list of items
+				auctionScan:AddItemListQueriesThreaded(private.itemList)
+				for _, query in auctionScan:QueryIterator() do
+					query:AddCustomFilter(private.QueryFilter)
+				end
+			end
+		else
+			auctionScan:NewQuery()
+				:AddCustomFilter(private.QueryFilter)
+				:SetPage("LAST")
 		end
 	end
-	auctionScan:SetScript("OnQueryDone", private.OnQueryDone)
-	-- Just constantly rerun the scan until the thread is killed (don't care if it fails)
-	while true do
-		auctionScan:ScanQueriesThreaded()
-		auctionScan:SleepThreaded(RESCAN_DELAY)
-	end
+	-- don't care if the scan fails for sniper since it's rerun constantly
+	auctionScan:ScanQueriesThreaded()
+	return true
 end
 
-function private.QueryFilter(_, subRow, isSubRow, itemKey)
+function private.QueryFilter(_, subRow)
 	local baseItemString = subRow:GetBaseItemString()
 	local itemString = subRow:GetItemString()
-	local maxPrice = itemString and SniperOperation.GetMaxPrice(itemString) or nil
+	local maxPrice = itemString and TSM.Operations.Sniper.GetBelowPrice(itemString) or nil
 	if itemString and not maxPrice then
-		-- No Sniper operation applies to this item, so filter it out
+		-- no Shopping operation applies to this item, so filter it out
 		return true
 	end
 	local auctionBuyout, itemBuyout, minItemBuyout = subRow:GetBuyouts()
 	itemBuyout = itemBuyout or minItemBuyout
 	if not itemBuyout then
-		-- Don't have buyout info yet, so don't filter
+		-- don't have buyout info yet, so don't filter
 		return false
 	elseif auctionBuyout == 0 then
-		-- No buyout, so filter it out
+		-- no buyout, so filter it out
 		return true
 	elseif itemString then
-		-- Filter if the buyout is too high
+		-- filter if the buyout is too high
 		return itemBuyout > maxPrice
-	elseif ClientInfo.IsRetail() or not ItemInfo.CanHaveVariations(baseItemString) then
-		-- Check the buyout against the base item
-		maxPrice = SniperOperation.GetMaxPrice(baseItemString) or 0
-		return itemBuyout > maxPrice
+	elseif not ItemInfo.CanHaveVariations(baseItemString) then
+		-- check the buyout against the base item
+		return itemBuyout > (TSM.Operations.Sniper.GetBelowPrice(baseItemString) or 0)
 	end
 
-	-- Check if any variant of this item is in a group and could potentially be worth scanning
+	-- check if any variant of this item is in a group and could potentially be worth scnaning
 	local hasPotentialItem = false
-	for _, groupItemString in Group.ItemByBaseItemStringIterator(baseItemString) do
-		hasPotentialItem = hasPotentialItem or itemBuyout < (SniperOperation.GetMaxPrice(groupItemString) or 0)
+	for _, groupItemString in TSM.Groups.ItemByBaseItemStringIterator(baseItemString) do
+		hasPotentialItem = hasPotentialItem or itemBuyout < (TSM.Operations.Sniper.GetBelowPrice(groupItemString) or 0)
 	end
 	if hasPotentialItem then
 		return false
-	elseif not SniperOperation.HasOperation(baseItemString) then
-		-- No potential other variants we care about
+	elseif not TSM.Operations.Sniper.HasOperation(baseItemString) then
+		-- no potential other variants we care about
 		return true
 	end
 	return false
@@ -101,11 +108,5 @@ end
 
 function private.MarketValueFunction(row)
 	local itemString = row:GetItemString()
-	return itemString and SniperOperation.GetMaxPrice(itemString) or nil
-end
-
-function private.OnQueryDone(_, _, numNewResults)
-	if numNewResults > 0 then
-		SoundAlert.Play(private.settings.sniperSound)
-	end
+	return itemString and TSM.Operations.Sniper.GetBelowPrice(itemString) or nil
 end

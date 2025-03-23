@@ -56,50 +56,10 @@ end
 -- Adds extra information to loot tooltips
 ---============================================================================
 
-local function AddTSMInfo(tooltip, source, itemLink, itemID, separatorAdded)
-	if (TSM_API and TSM_API.GetCustomPriceValue) then
-		local value
-		local status, res = pcall(TSM_API.GetCustomPriceValue, source, TSM_API.ToItemString(itemLink))
-		if (status and res) then
-			value = tonumber(res)
-		else
-			-- If pet check for the NPC, not the cage
-			local name, _, _, _, _, _, _, _, _, _, _, _ = C_PetJournal.GetPetInfoByItemID(itemID)
-			if (name) then
-				local speciesId, _ = C_PetJournal.FindPetIDByName(name)
-				if (speciesId) then
-			  		status, res = pcall(TSM_API.GetCustomPriceValue, source, string.format("p:%s:1:3", speciesId))
-					if (status and res) then
-						value = tonumber(res)
-					end
-				end
-			end
-		end
-		
-		if (value) then
-			if (not separatorAdded) then
-				tooltip:AddLine(" ")
-			end
-			tooltip:AddLine(string.format("%s: %s", RSUtils.TextColor(string.format("TSM (%s)", source), "FFFF00"), TSM_API.FormatMoneyString(value)))
-			return true
-		end
-	end	
-end
-
 function RSLootTooltip.AddRareScannerInformation(tooltip, itemLink, itemID, itemClassID, itemSubClassID)
 	-- Adds transmog unknown appearance message if the game doesnt add it
 	if (not RSTooltipScanners.ScanLoot(itemLink, TRANSMOGRIFY_TOOLTIP_APPEARANCE_UNKNOWN) and RSCollectionsDB.IsNotcollectedAppearance(itemID)) then
 		GameTooltip_AddColoredLine(tooltip, TRANSMOGRIFY_TOOLTIP_APPEARANCE_UNKNOWN, LIGHTBLUE_FONT_COLOR);
-	end
-	
-	-- Adds TSM price
-	if (RSConfigDB.IsShowingLootTSMTooltip()) then
-		local added = false
-		for _, source in ipairs(RSConstants.TSM_SOURCES) do
-			if (AddTSMInfo(tooltip, source, itemLink, itemID, added)) then
-				added = true
-			end
-		end
 	end
 
 	-- Adds commands	
@@ -107,19 +67,6 @@ function RSLootTooltip.AddRareScannerInformation(tooltip, itemLink, itemID, item
 		tooltip:AddLine(" ")
 		tooltip:AddLine("|TInterface\\AddOns\\RareScanner\\Media\\Textures\\tooltip_shortcuts:18:60:::256:256:0:96:0:32|t "..RSUtils.TextColor(string.format(AL["LOOT_TOGGLE_FILTER"], C_Item.GetItemClassInfo(itemClassID), C_Item.GetItemSubClassInfo(itemClassID, itemSubClassID)), "00FF00"))
 		tooltip:AddLine("|TInterface\\AddOns\\RareScanner\\Media\\Textures\\tooltip_shortcuts:18:60:::256:256:0:96:128:160|t "..RSUtils.TextColor(AL["LOOT_TOGGLE_INDIVIDUAL_FILTER"], "FFFF00"))
-	end
-	
-	-- Adds covenant requirement
-	if (RSConfigDB.IsShowingCovenantRequirement()) then
-		if (RSUtils.Contains(RSConstants.ITEMS_REQUIRE_NECROLORD, itemID)) then
-			tooltip:AddLine(string.format(AL["LOOT_COVENANT_REQUIREMENT"], AL["NOTE_NECROLORDS"]), 0.3,0.7,0.2)
-		elseif (RSUtils.Contains(RSConstants.ITEMS_REQUIRE_NIGHT_FAE, itemID)) then
-			tooltip:AddLine(string.format(AL["LOOT_COVENANT_REQUIREMENT"], AL["NOTE_NIGHT_FAE"]), 0.6,0.2,0.7)
-		elseif (RSUtils.Contains(RSConstants.ITEMS_REQUIRE_VENTHYR, itemID)) then
-			tooltip:AddLine(string.format(AL["LOOT_COVENANT_REQUIREMENT"], AL["NOTE_VENTHYR"]), 0.7,0,0)
-		elseif (RSUtils.Contains(RSConstants.ITEMS_REQUIRE_KYRIAN, itemID)) then
-			tooltip:AddLine(string.format(AL["LOOT_COVENANT_REQUIREMENT"], AL["NOTE_KYRIAN"]), 0,0.7,1)
-		end
 	end
 	
 	-- Adds DEBUG information

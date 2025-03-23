@@ -506,31 +506,6 @@ local function AddOverlayTooltip(tooltip, pin, addSeparator)
 	return false
 end
 
-local function AddExtraInfoTooltip(tooltip, pin)
-	if (not RSConfigDB.IsShowingTooltipsExtraInfo()) then
-		return false
-	end
-	
-	if (pin.GetObjectiveString or pin.GetRecommendedGroupSizeString) then
-		local objectiveString = pin:GetObjectiveString()
-		local recommendedGroupSize = pin:GetRecommendedGroupSizeString()
-		
-		if (objectiveString) then
-			local line = tooltip:AddLine()	
-			tooltip:SetCell(line, 1, objectiveString, nil, "LEFT", 10, nil, nil, nil, RSConstants.TOOLTIP_MAX_WIDTH, RSConstants.TOOLTIP_MAX_WIDTH)
-		end
-		
-		if (recommendedGroupSize) then
-			local line = tooltip:AddLine()	
-			tooltip:SetCell(line, 1, RSUtils.TextColor(recommendedGroupSize, "19ff19"), nil, "LEFT", 10, nil, nil, nil, RSConstants.TOOLTIP_MAX_WIDTH, RSConstants.TOOLTIP_MAX_WIDTH)
-		end
-		
-		return true
-	end
-	
-	return false
-end
-
 local function AddFilterStateTooltip(tooltip, pin, addSeparator)
 	if (not RSConfigDB.IsShowingTooltipsFilterState()) then
 		return false
@@ -560,7 +535,7 @@ local function AddFilterStateTooltip(tooltip, pin, addSeparator)
 		end
 		
 		local line = tooltip:AddLine()
-		tooltip:SetCell(line, 1, "|A:perks-warning-small:16:16::::|a "..RSUtils.TextColor(filterText, "FFA500"), nil, "RIGHT", 10, nil, nil, nil, RSConstants.TOOLTIP_MAX_WIDTH, RSConstants.TOOLTIP_MAX_WIDTH)
+		tooltip:SetCell(line, 1, "|A:gmchat-icon-alert:16:16::::|a "..RSUtils.TextColor(filterText, "FFA500"), nil, "RIGHT", 10, nil, nil, nil, RSConstants.TOOLTIP_MAX_WIDTH, RSConstants.TOOLTIP_MAX_WIDTH)
 		return true
 	end
 	
@@ -569,11 +544,6 @@ end
 
 local function AddFilterTooltip(tooltip, pin, addSeparator)
 	if (not RSConfigDB.IsShowingTooltipsCommands()) then
-		return false
-	end
-	
-	-- Skip if dragon glyph
-	if (pin.POI.isDragonGlyph) then
 		return false
 	end
 	
@@ -588,14 +558,12 @@ end
 
 local function AddWaypointsTooltip(tooltip, pin, onShift, addSeparator, isLink)
 	if (isLink) then
-		if (not RSConfigDB.IsShowingChatTooltipsCommands()) then
-			return false
-		elseif (not RSConfigDB.IsAddingchatTomtomWaypoints() and not RSConfigDB.IsAddingchatIngameWaypoints()) then
+		if (not RSConfigDB.IsAddingchatTomtomWaypoints()) then
 			return false
 		end
 	elseif (not RSConfigDB.IsShowingTooltipsCommands()) then
 		return false
-	elseif (not RSConfigDB.IsAddingWorldMapTomtomWaypoints() and not RSConfigDB.IsAddingWorldMapIngameWaypoints()) then
+	elseif (not RSConfigDB.IsAddingWorldMapTomtomWaypoints()) then
 		return false
 	end
 	
@@ -711,9 +679,6 @@ function RSTooltip.ShowSimpleTooltip(pin, parentTooltip)
 
 	-- State
 	AddStateTooltip(tooltip, pin)
-	
-	-- Extra information added in world map ingame tooltips
-	AddExtraInfoTooltip(tooltip, pin)
 
 	-- Notes
 	AddNotesTooltip(tooltip, pin)

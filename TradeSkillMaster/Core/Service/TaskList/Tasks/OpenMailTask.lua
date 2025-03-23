@@ -5,10 +5,9 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local LibTSMClass = LibStub("LibTSMClass")
-local OpenMailTask = LibTSMClass.DefineClass("OpenMailTask", TSM.TaskList.ItemTask)
-local L = TSM.Locale.GetTable()
-local DefaultUI = TSM.LibTSMWoW:Include("UI.DefaultUI")
+local OpenMailTask = TSM.Include("LibTSMClass").DefineClass("OpenMailTask", TSM.TaskList.ItemTask)
+local L = TSM.Include("Locale").GetTable()
+local DefaultUI = TSM.Include("Service.DefaultUI")
 TSM.TaskList.OpenMailTask = OpenMailTask
 local private = {
 	activeTasks = {},

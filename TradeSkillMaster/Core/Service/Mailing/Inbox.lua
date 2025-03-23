@@ -6,10 +6,10 @@
 
 local TSM = select(2, ...) ---@type TSM
 local Inbox = TSM.Mailing:NewPackage("Inbox")
-local Database = TSM.LibTSMUtil:Include("Database")
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local Mail = TSM.LibTSMService:Include("Mail")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
+local Database = TSM.Include("Util.Database")
+local TempTable = TSM.Include("Util.TempTable")
+local MailTracking = TSM.Include("Service.MailTracking")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
 	itemsQuery = nil,
 }
@@ -21,13 +21,13 @@ local private = {
 -- ============================================================================
 
 function Inbox.OnInitialize()
-	private.itemsQuery = Mail.NewItemQuery()
+	private.itemsQuery = MailTracking.CreateMailItemQuery()
 		:Equal("index", Database.BoundQueryParam())
 end
 
 function Inbox.CreateQuery()
-	return Mail.NewMailQuery()
-		:VirtualField("itemList", "string", private.GetItemListVirtualField)
+	return MailTracking.CreateMailInboxQuery()
+		:VirtualField("itemList", "string", private.GetItemLinkVirtualField)
 end
 
 
@@ -36,7 +36,7 @@ end
 -- Private Helper Functions
 -- ============================================================================
 
-function private.GetItemListVirtualField(row)
+function private.GetItemLinkVirtualField(row)
 	private.itemsQuery:BindParams(row:GetField("index"))
 
 	local items = TempTable.Acquire()

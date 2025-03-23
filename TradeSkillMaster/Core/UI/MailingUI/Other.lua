@@ -5,19 +5,18 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local Groups = TSM.UI.MailingUI:NewPackage("Other") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local FSM = TSM.LibTSMUtil:Include("FSM")
-local Event = TSM.LibTSMWoW:Include("Service.Event")
-local Money = TSM.LibTSMUtil:Include("UI.Money")
-local String = TSM.LibTSMUtil:Include("Lua.String")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
-local BagTracking = TSM.LibTSMService:Include("Inventory.BagTracking")
-local PlayerInfo = TSM.LibTSMApp:Include("Service.PlayerInfo")
-local UIElements = TSM.LibTSMUI:Include("Util.UIElements")
-local UIUtils = TSM.LibTSMUI:Include("Util.UIUtils")
+local Groups = TSM.UI.MailingUI:NewPackage("Other")
+local L = TSM.Include("Locale").GetTable()
+local FSM = TSM.Include("Util.FSM")
+local Event = TSM.Include("Util.Event")
+local Money = TSM.Include("Util.Money")
+local String = TSM.Include("Util.String")
+local ItemInfo = TSM.Include("Service.ItemInfo")
+local BagTracking = TSM.Include("Service.BagTracking")
+local PlayerInfo = TSM.Include("Service.PlayerInfo")
+local UIElements = TSM.Include("UI.UIElements")
+local UIUtils = TSM.Include("UI.UIUtils")
 local private = {
-	settings = nil,
 	frame = nil,
 	fsm = nil,
 }
@@ -31,12 +30,7 @@ local PLAYER_NAME_REALM = gsub(PLAYER_NAME.."-"..GetRealmName(), "%s+", "")
 -- Module Functions
 -- ============================================================================
 
-function Groups.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
-		:AddKey("factionrealm", "internalData", "mailDisenchantablesChar")
-		:AddKey("factionrealm", "internalData", "mailExcessGoldChar")
-		:AddKey("factionrealm", "internalData", "mailExcessGoldLimit")
-		:AddKey("global", "mailingOptions", "deMaxQuality")
+function Groups.OnInitialize()
 	private.FSMCreate()
 	TSM.UI.MailingUI.RegisterTopLevelPage(OTHER, private.GetOtherFrame)
 end
@@ -78,7 +72,7 @@ function private.GetOtherFrame()
 				:SetMargin(0, 8, 0, 0)
 				:SetAutoComplete(PlayerInfo.GetConnectedAlts())
 				:SetClearButtonEnabled(true)
-				:SetValue(private.settings.mailDisenchantablesChar)
+				:SetValue(TSM.db.factionrealm.internalData.mailDisenchantablesChar)
 				:SetScript("OnValueChanged", private.EchantRecipientOnValueChanged)
 			)
 			:AddChild(UIElements.New("ActionButton", "send")
@@ -127,7 +121,7 @@ function private.GetOtherFrame()
 				:SetMargin(0, 8, 0, 0)
 				:SetAutoComplete(PlayerInfo.GetConnectedAlts())
 				:SetClearButtonEnabled(true)
-				:SetValue(private.settings.mailExcessGoldChar)
+				:SetValue(TSM.db.factionrealm.internalData.mailExcessGoldChar)
 				:SetScript("OnValueChanged", private.GoldRecipientOnValueChanged)
 			)
 			:AddChild(UIElements.New("Input", "limit")
@@ -136,7 +130,7 @@ function private.GetOtherFrame()
 				:SetBackgroundColor("PRIMARY_BG_ALT")
 				:SetJustifyH("RIGHT")
 				:SetValidateFunc(private.LimitValidateFunc)
-				:SetValue(Money.ToStringForUIShort(private.settings.mailExcessGoldLimit))
+				:SetValue(Money.ToString(TSM.db.factionrealm.internalData.mailExcessGoldLimit, nil, "OPT_TRIM"))
 				:SetScript("OnValueChanged", private.LimitOnValueChanged)
 			)
 			:AddChild(UIElements.New("ActionButton", "send")
@@ -177,10 +171,10 @@ end
 
 function private.EchantRecipientOnValueChanged(input)
 	local value = input:GetValue()
-	if value == private.settings.mailDisenchantablesChar then
+	if value == TSM.db.factionrealm.internalData.mailDisenchantablesChar then
 		return
 	end
-	private.settings.mailDisenchantablesChar = value
+	TSM.db.factionrealm.internalData.mailDisenchantablesChar = value
 	private.UpdateEnchantButton()
 end
 
@@ -189,31 +183,32 @@ function private.EnchantSendBtnOnClick(button)
 	local query = BagTracking.CreateQueryBags()
 		:OrderBy("slotId", true)
 		:Select("itemString", "quantity")
-		:Equal("isBound", false)
+		:Equal("isBoP", false)
+		:Equal("isBoA", false)
 	for _, itemString, quantity in query:Iterator() do
 		if ItemInfo.IsDisenchantable(itemString) then
 			local quality = ItemInfo.GetQuality(itemString)
-			if quality <= private.settings.deMaxQuality then
+			if quality <= TSM.db.global.mailingOptions.deMaxQuality then
 				items[itemString] = (items[itemString] or 0) + quantity
 			end
 		end
 	end
 	query:Release()
-	private.fsm:ProcessEvent("EV_BUTTON_CLICKED", private.settings.mailDisenchantablesChar, 0, items)
+	private.fsm:ProcessEvent("EV_BUTTON_CLICKED", TSM.db.factionrealm.internalData.mailDisenchantablesChar, 0, items)
 end
 
 function private.GoldRecipientOnValueChanged(input)
 	local value = input:GetValue()
-	if value == private.settings.mailExcessGoldChar then
+	if value == TSM.db.factionrealm.internalData.mailExcessGoldChar then
 		return
 	end
-	private.settings.mailExcessGoldChar = value
+	TSM.db.factionrealm.internalData.mailExcessGoldChar = value
 	private.UpdateGoldButton()
 end
 
 function private.GoldSendBtnOnClick(button)
 	local money = private.GetSendMoney()
-	private.fsm:ProcessEvent("EV_BUTTON_CLICKED", private.settings.mailExcessGoldChar, money)
+	private.fsm:ProcessEvent("EV_BUTTON_CLICKED", TSM.db.factionrealm.internalData.mailExcessGoldChar, money)
 end
 
 function private.ConvertLimitValue(value)
@@ -232,10 +227,10 @@ end
 function private.LimitOnValueChanged(input)
 	local value = private.ConvertLimitValue(input:GetValue())
 	assert(value)
-	if value == private.settings.mailExcessGoldLimit then
+	if value == TSM.db.factionrealm.internalData.mailExcessGoldLimit then
 		return
 	end
-	private.settings.mailExcessGoldLimit = value
+	TSM.db.factionrealm.internalData.mailExcessGoldLimit = value
 	private.UpdateGoldButton()
 end
 
@@ -246,7 +241,7 @@ end
 -- ============================================================================
 
 function private.GetSendMoney()
-	local money = GetMoney() - 30 - private.settings.mailExcessGoldLimit
+	local money = GetMoney() - 30 - TSM.db.factionrealm.internalData.mailExcessGoldLimit
 	if money < 0 then
 		money = 0
 	end
@@ -255,7 +250,7 @@ function private.GetSendMoney()
 end
 
 function private.UpdateEnchantButton()
-	local recipient = private.settings.mailDisenchantablesChar
+	local recipient = TSM.db.factionrealm.internalData.mailDisenchantablesChar
 	local enchantButton = private.frame:GetElement("enchantHeader.send")
 
 	if recipient == "" or recipient == PLAYER_NAME or recipient == PLAYER_NAME_REALM then
@@ -269,7 +264,7 @@ function private.UpdateEnchantButton()
 end
 
 function private.UpdateGoldButton()
-	local recipient = private.settings.mailExcessGoldChar
+	local recipient = TSM.db.factionrealm.internalData.mailExcessGoldChar
 	local goldButton = private.frame:GetElement("goldHeader.send")
 
 	if recipient == "" or recipient == PLAYER_NAME or recipient == PLAYER_NAME_REALM then
@@ -295,9 +290,7 @@ end
 
 function private.FSMCreate()
 	Event.Register("PLAYER_MONEY", function()
-		private.fsm:SetLoggingEnabled(false)
 		private.fsm:ProcessEvent("EV_PLAYER_MONEY_UPDATE")
-		private.fsm:SetLoggingEnabled(true)
 	end)
 
 	local fsmContext = {

@@ -5,17 +5,13 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local GroupsSync = TSM.Groups:NewPackage("Sync") ---@type AddonPackage
-local L = TSM.Locale.GetTable()
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local Math = TSM.LibTSMUtil:Include("Lua.Math")
-local Operation = TSM.LibTSMTypes:Include("Operation")
-local Sync = TSM.LibTSMService:Include("Sync")
-local ChatMessage = TSM.LibTSMService:Include("UI.ChatMessage")
-local private = {
-	settingsDB = nil,
-	settings = nil,
-}
+local GroupsSync = TSM.Groups:NewPackage("Sync")
+local L = TSM.Include("Locale").GetTable()
+local TempTable = TSM.Include("Util.TempTable")
+local Math = TSM.Include("Util.Math")
+local Log = TSM.Include("Util.Log")
+local Sync = TSM.Include("Service.Sync")
+local private = {}
 
 
 
@@ -23,36 +19,31 @@ local private = {
 -- New Modules Functions
 -- ============================================================================
 
-function GroupsSync.OnInitialize(settingsDB)
-	private.settingsDB = settingsDB
-	private.settings = settingsDB:NewView()
-		:AddKey("profile", "userData", "groups")
-		:AddKey("profile", "userData", "items")
-		:AddKey("profile", "userData", "operations")
+function GroupsSync.OnInitialize()
 	Sync.RegisterRPC("CREATE_PROFILE", private.RPCCreateProfile)
 end
 
 function GroupsSync.SendCurrentProfile(targetPlayer)
-	local profileName = private.settingsDB:GetCurrentProfile()
+	local profileName = TSM.db:GetCurrentProfile()
 	local data = TempTable.Acquire()
 	data.groups = TempTable.Acquire()
-	for groupPath, moduleOperations in pairs(private.settings:GetForScopeKey("groups", profileName)) do
+	for groupPath, moduleOperations in pairs(TSM.db:Get("profile", profileName, "userData", "groups")) do
 		data.groups[groupPath] = {}
-		for _, module in Operation.TypeIterator() do
+		for _, module in TSM.Operations.ModuleIterator() do
 			local operations = moduleOperations[module]
 			if operations.override then
 				data.groups[groupPath][module] = operations
 			end
 		end
 	end
-	data.items = private.settings:GetForScopeKey("items", profileName)
-	data.operations = private.settings:GetForScopeKey("operations", profileName)
+	data.items = TSM.db:Get("profile", profileName, "userData", "items")
+	data.operations = TSM.db:Get("profile", profileName, "userData", "operations")
 	local result, estimatedTime = Sync.CallRPC("CREATE_PROFILE", targetPlayer, private.RPCCreateProfileResultHandler, profileName, UnitName("player"), data)
 	if result then
 		estimatedTime = max(Math.Round(estimatedTime, 60), 60)
-		ChatMessage.PrintfUser(L["Sending your '%s' profile to %s. Please keep both characters online until this completes. This will take approximately: %s"], profileName, targetPlayer, SecondsToTime(estimatedTime))
+		Log.PrintfUser(L["Sending your '%s' profile to %s. Please keep both characters online until this completes. This will take approximately: %s"], profileName, targetPlayer, SecondsToTime(estimatedTime))
 	else
-		ChatMessage.PrintUser(L["Failed to send profile. Ensure both characters are online and try again."])
+		Log.PrintUser(L["Failed to send profile. Ensure both characters are online and try again."])
 	end
 	TempTable.Release(data.groups)
 	TempTable.Release(data)
@@ -71,34 +62,38 @@ function private.CopyTable(srcTbl, dstTbl)
 end
 
 function private.RPCCreateProfile(profileName, playerName, data)
-	assert(private.settingsDB:IsValidProfileName(profileName))
-	if private.settingsDB:ProfileExists(profileName) then
+	assert(TSM.db:IsValidProfileName(profileName))
+	if TSM.db:ProfileExists(profileName) then
 		return false, L["A profile with that name already exists on the target account. Rename it first and try again."]
 	end
 
-	-- Create the new profile
-	private.settingsDB:CreateProfile(profileName)
+	-- create and switch to the new profile
+	local currentProfile = TSM.db:GetCurrentProfile()
+	TSM.db:SetProfile(profileName)
 
-	-- Copy all the data into this new profile
-	private.CopyTable(data.groups, private.settings:GetForScopeKey("groups", profileName))
-	private.CopyTable(data.items, private.settings:GetForScopeKey("items", profileName))
-	private.CopyTable(data.operations, private.settings:GetForScopeKey("operations", profileName))
+	-- copy all the data into this profile
+	private.CopyTable(data.groups, TSM.db.profile.userData.groups)
+	private.CopyTable(data.items, TSM.db.profile.userData.items)
+	TSM.Operations.ReplaceProfileOperations(data.operations)
 
-	ChatMessage.PrintfUser(L["Added '%s' profile which was received from %s."], profileName, playerName)
+	-- switch back to our previous profile
+	TSM.db:SetProfile(currentProfile)
+
+	Log.PrintfUser(L["Added '%s' profile which was received from %s."], profileName, playerName)
 
 	return true, profileName, UnitName("player")
 end
 
 function private.RPCCreateProfileResultHandler(_, _, success, ...)
 	if success == nil then
-		ChatMessage.PrintUser(L["Failed to send profile."].." "..L["Ensure both characters are online and try again."])
+		Log.PrintUser(L["Failed to send profile."].." "..L["Ensure both characters are online and try again."])
 		return
 	elseif not success then
 		local errMsg = ...
-		ChatMessage.PrintUser(L["Failed to send profile."].." "..errMsg)
+		Log.PrintUser(L["Failed to send profile."].." "..errMsg)
 		return
 	end
 
 	local profileName, targetPlayer = ...
-	ChatMessage.PrintfUser(L["Successfully sent your '%s' profile to %s!"], profileName, targetPlayer)
+	Log.PrintfUser(L["Successfully sent your '%s' profile to %s!"], profileName, targetPlayer)
 end

@@ -6,18 +6,14 @@
 
 local TSM = select(2, ...) ---@type TSM
 local Banking = TSM:NewPackage("Banking")
-local ClientInfo = TSM.LibTSMWoW:Include("Util.ClientInfo")
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local String = TSM.LibTSMUtil:Include("Lua.String")
-local Log = TSM.LibTSMUtil:Include("Util.Log")
-local ItemString = TSM.LibTSMTypes:Include("Item.ItemString")
-local ChatMessage = TSM.LibTSMService:Include("UI.ChatMessage")
-local Container = TSM.LibTSMWoW:Include("API.Container")
-local Guild = TSM.LibTSMWoW:Include("API.Guild")
-local DefaultUI = TSM.LibTSMWoW:Include("UI.DefaultUI")
-local Threading = TSM.LibTSMTypes:Include("Threading")
-local ItemInfo = TSM.LibTSMService:Include("Item.ItemInfo")
-local Event = TSM.LibTSMWoW:Include("Service.Event")
+local Environment = TSM.Include("Environment")
+local TempTable = TSM.Include("Util.TempTable")
+local String = TSM.Include("Util.String")
+local Log = TSM.Include("Util.Log")
+local ItemString = TSM.Include("Util.ItemString")
+local DefaultUI = TSM.Include("Service.DefaultUI")
+local Threading = TSM.Include("Service.Threading")
+local ItemInfo = TSM.Include("Service.ItemInfo")
 local private = {
 	moveThread = nil,
 	moveItems = {},
@@ -38,17 +34,8 @@ local MOVE_WAIT_TIMEOUT = 2
 function Banking.OnInitialize()
 	private.moveThread = Threading.New("BANKING_MOVE", private.MoveThread)
 
-	if ClientInfo.IsRetail() then
-		Event.Register("BANKFRAME_OPENED", private.BankFrameOpened)
-		Event.Register("BANKFRAME_CLOSED", private.BankFrameClosed)
-		hooksecurefunc("BankFrame_ShowPanel", function()
-			local isWarBank = Container.CanAccessWarbank() and BankFrame:GetActiveBankType() == Enum.BankType.Account or false
-			private.BankVisibilityChanged(true, isWarBank)
-		end)
-	end
-
 	DefaultUI.RegisterBankVisibleCallback(private.BankVisibilityChanged)
-	if ClientInfo.HasFeature(ClientInfo.FEATURES.GUILD_BANK) then
+	if Environment.HasFeature(Environment.FEATURES.GUILD_BANK) then
 		DefaultUI.RegisterGuildBankVisibleCallback(private.GuildBankVisibilityChanged)
 	end
 end
@@ -65,19 +52,15 @@ function Banking.IsBankOpen()
 	return private.openFrame == "BANK"
 end
 
-function Banking.IsWarBankOpen()
-	return private.openFrame == "WARBANK"
-end
-
 function Banking.MoveToBag(items, callback)
 	assert(private.openFrame)
-	local context = Banking.IsGuildBankOpen() and Banking.MoveContext.GetGuildBankToBag() or (Banking.IsWarBankOpen() and Banking.MoveContext.GetWarbankToBag() or Banking.MoveContext.GetBankToBag())
+	local context = Banking.IsGuildBankOpen() and Banking.MoveContext.GetGuildBankToBag() or Banking.MoveContext.GetBankToBag()
 	private.StartMove(items, context, callback)
 end
 
 function Banking.MoveToBank(items, callback)
 	assert(private.openFrame)
-	local context = Banking.IsGuildBankOpen() and Banking.MoveContext.GetBagToGuildBank() or (Banking.IsWarBankOpen() and Banking.MoveContext.GetBagToWarbank() or Banking.MoveContext.GetBagToBank())
+	local context = Banking.IsGuildBankOpen() and Banking.MoveContext.GetBagToGuildBank() or Banking.MoveContext.GetBagToBank()
 	private.StartMove(items, context, callback)
 end
 
@@ -90,15 +73,16 @@ function Banking.EmptyBags(callback)
 	wipe(private.restoreItems)
 	private.restoreFrame = private.openFrame
 	private.callback = callback
-	local context = Banking.IsGuildBankOpen() and Banking.MoveContext.GetBagToGuildBank() or (Banking.IsWarBankOpen() and Banking.MoveContext.GetBagToWarbank() or Banking.MoveContext.GetBagToBank())
+	local context = Banking.IsGuildBankOpen() and Banking.MoveContext.GetBagToGuildBank() or Banking.MoveContext.GetBagToBank()
 	private.StartMove(items, context, private.EmptyBagsThreadCallbackWrapper)
 	TempTable.Release(items)
 end
 
 function Banking.RestoreBags(callback)
 	assert(private.openFrame)
+	assert(Banking.CanRestoreBags())
 	private.callback = callback
-	local context = Banking.IsGuildBankOpen() and Banking.MoveContext.GetGuildBankToBag() or (Banking.IsWarBankOpen() and Banking.MoveContext.GetWarbankToBag() or Banking.MoveContext.GetBankToBag())
+	local context = Banking.IsGuildBankOpen() and Banking.MoveContext.GetGuildBankToBag() or Banking.MoveContext.GetBankToBag()
 	private.StartMove(private.restoreItems, context, private.RestoreBagsThreadCallbackWrapper)
 end
 
@@ -121,7 +105,7 @@ function Banking.PutByFilter(filterStr)
 
 	for itemString in pairs(items) do
 		if not private.MatchesFilter(itemString, filterStr, filterItemString) then
-			-- Remove this item
+			-- remove this item
 			items[itemString] = nil
 		end
 	end
@@ -144,7 +128,7 @@ function Banking.GetByFilter(filterStr)
 
 	for itemString in pairs(items) do
 		if not private.MatchesFilter(itemString, filterStr, filterItemString) then
-			-- Remove this item
+			-- remove this item
 			items[itemString] = nil
 		end
 	end
@@ -170,8 +154,8 @@ function private.MoveThread(context, callback)
 	for itemString, numQueued in pairs(private.moveItems) do
 		for _, slotId, quantity in context:SlotIdIterator(itemString) do
 			if numQueued > 0 then
-				-- Find a suitable empty slot
-				local targetSlotId = context:GetTargetSlotId(itemString, emptySlotIds, slotId)
+				-- find a suitable empty slot
+				local targetSlotId = context:GetTargetSlotId(itemString, emptySlotIds)
 				if targetSlotId then
 					assert(not slotIds[slotId])
 					slotIds[slotId] = targetSlotId
@@ -193,7 +177,7 @@ function private.MoveThread(context, callback)
 	local numDone = 0
 	while next(slotIds) do
 		local movedSlotId = nil
-		-- Do all the pending moves
+		-- do all the pending moves
 		for slotId, targetSlotId in pairs(slotIds) do
 			context:MoveSlot(slotId, targetSlotId, slotMoveQuantity[slotId])
 			Threading.Yield()
@@ -203,11 +187,11 @@ function private.MoveThread(context, callback)
 			end
 		end
 
-		-- Wait for at least one to finish or the timeout to elapse
+		-- wait for at least one to finish or the timeout to elapse
 		local didMove = false
 		local timeout = GetTime() + MOVE_WAIT_TIMEOUT
 		while not didMove and GetTime() < timeout do
-			-- Check which moves are done
+			-- check which moves are done
 			for slotId in pairs(slotIds) do
 				if private.openFrame ~= "GUILD_BANK" or slotId == movedSlotId then
 					if context:GetSlotQuantity(slotId) <= slotEndQuantity[slotId] then
@@ -230,14 +214,14 @@ function private.MoveThread(context, callback)
 	end
 
 	if private.openFrame == "GUILD_BANK" then
-		Guild.QueryTab(Guild.GetCurrentTab())
+		QueryGuildBankTab(GetCurrentGuildBankTab())
 	end
 
-	TempTable.Release(slotIds)
-	TempTable.Release(slotItemString)
-	TempTable.Release(slotMoveQuantity)
-	TempTable.Release(slotEndQuantity)
-	TempTable.Release(emptySlotIds)
+	Threading.ReleaseSafeTempTable(slotIds)
+	Threading.ReleaseSafeTempTable(slotItemString)
+	Threading.ReleaseSafeTempTable(slotMoveQuantity)
+	Threading.ReleaseSafeTempTable(slotEndQuantity)
+	Threading.ReleaseSafeTempTable(emptySlotIds)
 	callback("DONE")
 end
 
@@ -247,27 +231,13 @@ end
 -- Private Helper Functions
 -- ============================================================================
 
-function private.GlobalMouseUp(_, button)
-	if button == "LeftButton" then
-		local isWarBank = Container.CanAccessWarbank() and BankFrame:GetActiveBankType() == Enum.BankType.Account or false
-		private.BankVisibilityChanged(BankFrame:IsShown(), isWarBank)
-	end
-end
-
-function private.BankFrameOpened()
-	Event.Register("GLOBAL_MOUSE_UP", private.GlobalMouseUp)
-end
-
-function private.BankFrameClosed()
-	Event.Unregister("GLOBAL_MOUSE_UP", private.GlobalMouseUp)
-end
-
-function private.BankVisibilityChanged(visible, isWarBank)
+function private.BankVisibilityChanged(visible)
 	if visible then
-		if private.openFrame == (isWarBank and "WARBANK" or "BANK") then
+		if private.openFrame == "BANK" then
 			return
 		end
-		private.openFrame = isWarBank and "WARBANK" or "BANK"
+		assert(not private.openFrame)
+		private.openFrame = "BANK"
 	else
 		if not private.openFrame then
 			return
@@ -334,7 +304,7 @@ end
 
 function private.GetPutCallback(event)
 	if event == "DONE" then
-		ChatMessage.PrintUser(DONE)
+		Log.PrintUser(DONE)
 	end
 end
 

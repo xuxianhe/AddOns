@@ -5,17 +5,18 @@
 -- ------------------------------------------------------------------------------ --
 
 local TSM = select(2, ...) ---@type TSM
-local CraftingSync = TSM.Crafting:NewPackage("Sync") ---@type AddonPackage
-local ClientInfo = TSM.LibTSMWoW:Include("Util.ClientInfo")
-local L = TSM.Locale.GetTable()
-local DelayTimer = TSM.LibTSMWoW:IncludeClassType("DelayTimer")
-local TempTable = TSM.LibTSMUtil:Include("BaseType.TempTable")
-local MatString = TSM.LibTSMTypes:Include("Crafting.MatString")
-local Log = TSM.LibTSMUtil:Include("Util.Log")
-local Sync = TSM.LibTSMService:Include("Sync")
-local Theme = TSM.LibTSMService:Include("UI.Theme")
-local SessionInfo = TSM.LibTSMWoW:Include("Util.SessionInfo")
-local Hash = TSM.LibTSMUtil:Include("Util.Hash")
+local CraftingSync = TSM.Crafting:NewPackage("Sync")
+local Environment = TSM.Include("Environment")
+local L = TSM.Include("Locale").GetTable()
+local Delay = TSM.Include("Util.Delay")
+local TempTable = TSM.Include("Util.TempTable")
+local MatString = TSM.Include("Util.MatString")
+local Log = TSM.Include("Util.Log")
+local Theme = TSM.Include("Util.Theme")
+local Wow = TSM.Include("Util.Wow")
+local Math = TSM.Include("Util.Math")
+local Sync = TSM.Include("Service.Sync")
+local Settings = TSM.Include("Service.Settings")
 local private = {
 	settings = nil,
 	hashesTemp = {},
@@ -30,6 +31,8 @@ local private = {
 		baseRecipeDifficulties = {},
 		baseRecipeQualities = {},
 		maxRecipeQualities = {},
+		inspirationAmounts = {},
+		inspirationChances = {},
 	},
 	accountLookup = {},
 	accountStatus = {},
@@ -49,11 +52,11 @@ local QUALITY_INFO_SEP = ","
 -- Module Functions
 -- ============================================================================
 
-function CraftingSync.OnInitialize(settingsDB)
-	private.settings = settingsDB:NewView()
+function CraftingSync.OnInitialize()
+	private.settings = Settings.NewView()
 		:AddKey("factionrealm", "internalData", "crafts")
 		:AddKey("factionrealm", "internalData", "mats")
-	private.retryTimer = DelayTimer.New("CRAFTING_SYNC_RETRY", private.RetryGetHashesRPC)
+	private.retryTimer = Delay.CreateTimer("CRAFTING_SYNC_RETRY", private.RetryGetHashesRPC)
 	Sync.RegisterConnectionChangedCallback(private.ConnectionChangedHandler)
 	Sync.RegisterRPC("CRAFTING_GET_HASHES", private.RPCGetHashes)
 	Sync.RegisterRPC("CRAFTING_GET_CRAFTS", private.RPCGetCrafts)
@@ -81,7 +84,7 @@ end
 
 function private.RPCGetHashes()
 	wipe(private.hashesTemp)
-	local player = SessionInfo.GetCharacterName()
+	local player = Wow.GetCharacterName()
 	private.GetPlayerProfessionHashes(player, private.hashesTemp)
 	return private.hashesTemp
 end
@@ -115,7 +118,7 @@ end
 
 function private.RPCGetCrafts(profession)
 	wipe(private.craftStrings)
-	local player = SessionInfo.GetCharacterName()
+	local player = Wow.GetCharacterName()
 	local query = TSM.Crafting.CreateRawCraftsQuery()
 		:Select("craftString", "itemString")
 		:Equal("profession", profession)
@@ -123,9 +126,9 @@ function private.RPCGetCrafts(profession)
 		:OrderBy("craftString", true)
 	for _, craftString, itemString in query:Iterator() do
 		local hash = private.GetCraftHash(craftString, player, itemString)
-		local baseRecipeDifficulty, baseRecipeQuality, maxRecipeQuality = TSM.Crafting.GetQualityInfo(craftString, player)
+		local baseRecipeDifficulty, baseRecipeQuality, maxRecipeQuality, inspirationAmount, inspirationChance = TSM.Crafting.GetQualityInfo(craftString, player)
 		if baseRecipeQuality then
-			private.craftStrings[craftString] = strjoin(QUALITY_INFO_SEP, hash, baseRecipeDifficulty, baseRecipeQuality, maxRecipeQuality)
+			private.craftStrings[craftString] = strjoin(QUALITY_INFO_SEP, hash, baseRecipeDifficulty, baseRecipeQuality, maxRecipeQuality, inspirationAmount, inspirationChance)
 		else
 			private.craftStrings[craftString] = private.GetCraftHash(craftString, player, itemString)
 		end
@@ -162,9 +165,9 @@ function private.RPCGetCraftsResultHandler(success, player, profession, craftStr
 			-- Already have this craft so make sure this player is added / updated
 			local hash = nil
 			if type(info) == "string" then
-				local hashStr, baseRecipeDifficulty, baseRecipeQuality, maxRecipeQuality = strsplit(QUALITY_INFO_SEP, info)
+				local hashStr, baseRecipeDifficulty, baseRecipeQuality, maxRecipeQuality, inspirationAmount, inspirationChance = strsplit(QUALITY_INFO_SEP, info)
 				hash = tonumber(hashStr)
-				TSM.Crafting.CreateOrUpdatePlayer(craftString, player, tonumber(baseRecipeDifficulty), tonumber(baseRecipeQuality), tonumber(maxRecipeQuality))
+				TSM.Crafting.CreateOrUpdatePlayer(craftString, player, tonumber(baseRecipeDifficulty), tonumber(baseRecipeQuality), tonumber(maxRecipeQuality), tonumber(inspirationAmount), tonumber(inspirationChance))
 			else
 				hash = info
 				TSM.Crafting.CreateOrUpdatePlayer(craftString, player)
@@ -193,7 +196,7 @@ function private.RPCGetCraftInfo(profession, craftStrings)
 	for _, tbl in pairs(private.craftInfoTemp) do
 		wipe(tbl)
 	end
-	local player = SessionInfo.GetCharacterName()
+	local player = Wow.GetCharacterName()
 	for i, craftString in ipairs(craftStrings) do
 		local craftInfo = private.settings.crafts[craftString]
 		private.craftInfoTemp.craftStrings[i] = craftString
@@ -202,10 +205,12 @@ function private.RPCGetCraftInfo(profession, craftStrings)
 		private.craftInfoTemp.names[i] = craftInfo.name
 		private.craftInfoTemp.numResults[i] = craftInfo.numResult
 		private.craftInfoTemp.hasCDs[i] = craftInfo.hasCD
-		if ClientInfo.HasFeature(ClientInfo.FEATURES.CRAFTING_QUALITY) and type(craftInfo.players[player]) == "table" then
+		if Environment.HasFeature(Environment.FEATURES.CRAFTING_QUALITY) and type(craftInfo.players[player]) == "table" then
 			private.craftInfoTemp.baseRecipeDifficulties[i] = craftInfo.players[player].baseRecipeDifficulty
 			private.craftInfoTemp.baseRecipeQualities[i] = craftInfo.players[player].baseRecipeQuality
 			private.craftInfoTemp.maxRecipeQualities[i] = craftInfo.players[player].maxRecipeQuality
+			private.craftInfoTemp.inspirationAmounts[i] = craftInfo.players[player].inspirationAmount
+			private.craftInfoTemp.inspirationChances[i] = craftInfo.players[player].inspirationChance
 		end
 	end
 	Log.Info("Sent %d crafts for %s", #private.craftInfoTemp.craftStrings, profession)
@@ -220,7 +225,7 @@ function private.RPCGetCraftInfoResultHandler(success, player, profession, info)
 
 	TSM.Crafting.SetSpellDBQueryUpdatesPaused(true)
 	for i, craftString in ipairs(info.craftStrings) do
-		TSM.Crafting.CreateOrUpdate(craftString, info.itemStrings[i], profession, info.rootCategoryId[i], info.names[i], info.numResults[i], player, info.hasCDs[i] and true or false, info.baseRecipeDifficulties[i], info.baseRecipeQualities[i], info.maxRecipeQualities[i])
+		TSM.Crafting.CreateOrUpdate(craftString, info.itemStrings[i], profession, info.names[i], info.numResults[i], player, info.hasCDs[i] and true or false, info.baseRecipeDifficulties[i], info.baseRecipeQualities[i], info.maxRecipeQualities[i], info.inspirationAmounts[i], info.inspirationChances[i])
 		for matString in pairs(info.mats[i]) do
 			for matItemString in MatString.ItemIterator(matString) do
 				private.settings.mats[matItemString] = private.settings.mats[matItemString] or {}
@@ -267,19 +272,21 @@ function private.GetPlayerProfessionHashes(player, resultTbl)
 		:ListContains("players", player)
 		:OrderBy("craftString", true)
 	for _, craftString, profession, itemString in query:Iterator() do
-		resultTbl[profession] = Hash.Calculate(private.GetCraftHash(craftString, player, itemString), resultTbl[profession])
+		resultTbl[profession] = Math.CalculateHash(private.GetCraftHash(craftString, player, itemString), resultTbl[profession])
 	end
 	query:Release()
 end
 
 function private.GetCraftHash(craftString, player, itemString)
-	local hash = Hash.Calculate(craftString)
-	hash = Hash.Calculate(itemString, hash)
-	local baseRecipeDifficulty, baseRecipeQuality, maxRecipeQuality = TSM.Crafting.GetQualityInfo(craftString, player)
+	local hash = Math.CalculateHash(craftString)
+	hash = Math.CalculateHash(itemString, hash)
+	local baseRecipeDifficulty, baseRecipeQuality, maxRecipeQuality, inspirationAmount, inspirationChance = TSM.Crafting.GetQualityInfo(craftString, player)
 	if baseRecipeQuality then
-		hash = Hash.Calculate(floor(baseRecipeDifficulty + 0.5), hash)
-		hash = Hash.Calculate(floor(baseRecipeQuality * 1000 + 0.5), hash)
-		hash = Hash.Calculate(floor(maxRecipeQuality + 0.5), hash)
+		hash = Math.CalculateHash(floor(baseRecipeDifficulty + 0.5), hash)
+		hash = Math.CalculateHash(floor(baseRecipeQuality * 1000 + 0.5), hash)
+		hash = Math.CalculateHash(floor(maxRecipeQuality + 0.5), hash)
+		hash = Math.CalculateHash(floor(inspirationAmount + 0.5), hash)
+		hash = Math.CalculateHash(floor(inspirationChance * 1000 + 0.5), hash)
 	end
 	return hash
 end
