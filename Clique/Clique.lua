@@ -418,8 +418,6 @@ local function shouldApply(global, entry)
     end
 end
 
-local allSpecSets = {"spec1", "spec2", "spec3", "spec4", "spec5"}
-
 function addon:EntryIsCorrectSpec(entry)
     -- Classic era doesn't have talents, simplify here
     if not addon:GameVersionHasTalentSpecs() then
@@ -432,9 +430,10 @@ function addon:EntryIsCorrectSpec(entry)
         return true
     end
 
-    -- If there are any spec sets at all, then fail this
-    for _, specKey in ipairs(allSpecSets) do
-        if entry.sets[specKey] then
+    -- Need to check the other spec sets to ensure this shouldn't be
+    -- deactivated
+    for i = 1, addon:GetNumTalentSpecs() do
+        if entry.sets["spec" .. tostring(i)] then
             return false
         end
     end
@@ -599,7 +598,7 @@ function addon:GetClickAttributes(global)
                 rembits[#rembits + 1] = REMATTR(prefix, "type", suffix)
                 rembits[#rembits + 1] = REMATTR(prefix, "spell", suffix)
             -- Macros aren't available on The War Within and above
-            elseif entry.type == "macro" and self.settings.stopcastingfix and entry.macrotext then
+            elseif entry.type == "macro" and self.settings.stopcastingfix then
                 local macrotext = string.format("/click %s\n%s", self.stopbutton.name, entry.macrotext)
                 bits[#bits + 1] = ATTR(indent, prefix, "type", suffix, entry.type)
                 bits[#bits + 1] = ATTR(indent, prefix, "macrotext", suffix, macrotext)

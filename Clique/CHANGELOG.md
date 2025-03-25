@@ -1,6 +1,6 @@
 # Clique
 
-## [v4.1.0-release](https://github.com/jnwhiteh/Clique/tree/v4.1.0-release) (2025-03-15)
-[Full Changelog](https://github.com/jnwhiteh/Clique/compare/v4.0.37-release...v4.1.0-release) [Previous Releases](https://github.com/jnwhiteh/Clique/releases)
+## [v4.0.31-release](https://github.com/jnwhiteh/Clique/tree/v4.0.31-release) (2024-10-06)
+[Full Changelog](https://github.com/jnwhiteh/Clique/compare/v4.0.29-release...v4.0.31-release) [Previous Releases](https://github.com/jnwhiteh/Clique/releases)
 
-- Fix an issue with off-spec spells being activated on game load  
+- Remove propagate fix, it breaks too many things  
