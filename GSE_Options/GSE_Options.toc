@@ -3,7 +3,7 @@
 ## Title: |cFFFFFFFFGS|r|cFF00FFFFE|r |cFF808080Configuration Options|r
 ## Notes: GSE Configuration Options
 ## Author: TimothyLuke
-## Version: 3.2.24
+## Version: 3.2.25
 ## Dependencies: GSE_Utils
 ## IconTexture: Interface\Addons\GSE_GUI\Assets\GSE_Logo_Dark_512
 ## Category-enUS: Combat

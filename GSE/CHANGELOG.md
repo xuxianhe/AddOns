@@ -1,17 +1,59 @@
 # GSE
 
-## [3.2.24](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/tree/3.2.24) (2025-03-18)
-[Full Changelog](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/compare/3.2.23...3.2.24) [Previous Releases](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/releases)
+## [3.2.25](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/tree/3.2.25) (2025-03-27)
+[Full Changelog](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/compare/3.2.24...3.2.25) [Previous Releases](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/releases)
 
-- #1751 Fix resetting sequence out of combat if  
-- #1742 Change Icon spacer to Label  
-- #1747 More editor cleanup  
-- #1747 Fix word wrap on Macro feedback  
-- #1747 Editor content enhancements  
-- #1752 allow the editor to open in combat  
-- #1750 Compile Template window not growing vertically.  
-- #1749 Cache spell list to improve performance of Editor Autocomplete  
-- #1747 Remove debug print  
-- #1742 More work on sizing and scaling  
-- #1742 Make windows open in sane configuration  
-- #1747 FIx delete opening a new window  
+- #1758 Fix keybinding popupmenu deletes  
+- #1758 Update all class icons  
+- #1758 Update Death Knight Icon  
+- #1758 Update Death Knight icon to frozen runeblade  
+- #1762 Luscheck updates  
+- Merge branch 'master' of github.com:TimothyLuke/GSE-Advanced-Macro-Compiler  
+- #1762 Increase tree control size  
+- #1763 Increase tree control size  
+- #1762 Re-add toolbar to scroll window for editor  
+- #1760 Merge Macro panel in to editor  
+- #1758 Import fix  
+- #1758 Classic fixes  
+- #1759 Merge Variables into Editor  
+- #1762 Add class colours to Class entries in Sequence Tree  
+- #1762 flatten sequence tree  
+- #1498 Castsequence Condition Resets Not working when using GSE Sequence  
+- #1762 Fix Sequence Version deletions  
+- #1758 Fix Sequence Deletes  
+- #1758 Deleting Actiounbar override  
+- #1758 Keybind right click menu  
+- #1758 stop opening new windows  
+- #1758 Put Keybinding option second  
+- #1758 fix loading directly into version  
+- #1756 Use new menu icon for core logo  
+- #1756 Menu and UI Component Overhaul  
+- #1762 Fix Raw edit  
+- #1762 Fix sequence saving and renaming  
+- #1762 fix variable specialization is unused  
+- #1762 Fix unused variable  
+- #1762 Fix erroneous delete of new sequence  
+- #1769 Sanity check to ensure interval is a number.  
+- #1762 PErformance enhancements for Editor  
+- #1762 fix errant print statement  
+- #1762 Fix calling new sequence  
+- #1762 Fix New Sequence  
+- #1762 fix shadow header reference  
+- #1762 #1747 fix editor content popping out of window. and more performance improvements rendering the editor  
+- #1762 Performance improvements  
+- #1766 Lua check for editor merge  
+- #1766 Merge Sequence Editor and Keybinding frames.  
+- #1767 prevent alpha character being added to numeric interval field  
+- #1762 fix null pointer for New Actionbar Override  
+- #1762 Remove redundant widget references  
+- #1761 Fix new Keybind Menu to work in SoD  
+- #1761 fix ability to bind - key  
+- #1761 Keybind Luacheck  
+- #1761 Change Keybinding to use AceGUI Tree  
+- #1747 Fix missing Luacheck references  
+- #1755 Add labels to Sequence Versions  
+- #1747 Working Editor  
+- #1747 Rewrite all editor rendering so it never pops out of the screen  
+- #1742 Convert Editor to AceGUI Tree control  
+- #1754 Fix Editor Block Icon selector not showing when an Icon has been previously set  
+- #1753 fix editor errors resizing after a forceclean  
