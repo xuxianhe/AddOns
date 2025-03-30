@@ -370,7 +370,7 @@ if not E.Retail then
 	avgilvl:RegisterEvent("PLAYER_ENTERING_WORLD")
 	avgilvl:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 	avgilvl:SetScript("OnEvent", function()
-		CharacterFrame.Text2:SetText((math.floor(ElvUI_EltreumUI:GetUnitItemLevel("player")*100))/100)
+		--CharacterFrame.Text2:SetText((math.floor(ElvUI_EltreumUI:GetUnitItemLevel("player")*100))/100)
 	end)
 
 	if E.Cata then
@@ -1855,9 +1855,9 @@ function ElvUI_EltreumUI:ExpandedCharacterStats()
 
 		--gradient colors to categories other
 		if E.db.ElvUI_EltreumUI.skins.characterskingradients then
-			CharacterFrame.Text:SetText(ElvUI_EltreumUI:GradientName(L["Item Level"], E.myclass)) ---ilvl
-			CharacterFrame.Text3:SetText(ElvUI_EltreumUI:GradientName(L["Attributes"], E.myclass)) ---attributes
-			CharacterFrame.Text4:SetText(ElvUI_EltreumUI:GradientName(L["Specialization"], E.myclass)) ---specialization
+			--CharacterFrame.Text:SetText(ElvUI_EltreumUI:GradientName(L["Item Level"], E.myclass)) ---ilvl
+			--CharacterFrame.Text3:SetText(ElvUI_EltreumUI:GradientName(L["Attributes"], E.myclass)) ---attributes
+			--CharacterFrame.Text4:SetText(ElvUI_EltreumUI:GradientName(L["Specialization"], E.myclass)) ---specialization
 		end
 
 		--color stats with a class gradient
@@ -2089,7 +2089,7 @@ function ElvUI_EltreumUI:ExpandedCharacterStats()
 			CharacterModelFrame:SetPosition(0, 0, 0) -- zoom, x, y
 			CharacterModelFrame:SetPosition(E.db.ElvUI_EltreumUI.skins.charactermodelcam.zoomclassic, E.db.ElvUI_EltreumUI.skins.charactermodelcam.xclassic, E.db.ElvUI_EltreumUI.skins.charactermodelcam.yclassic)
 
-			CharacterFrame.Text6:SetSize(418, 72)
+			--CharacterFrame.Text6:SetSize(418, 72)
 			CharacterFrame.Text6:SetPoint("TOP", CharacterFrame, "TOP", 0, -50)
 			CharacterFrame.Text6:SetParent(CharacterFrame)
 			CharacterFrame.Text6:SetTextColor(1, 0, 0, 1)

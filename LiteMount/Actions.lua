@@ -509,9 +509,6 @@ ACTIONS['Mount'] = {
                         local mounts = filteredList:ExpressionSearch(expr)
                         LM.Debug("  * found " .. #mounts .. " mounts.")
                         m = mounts:Random(context.random, randomStyle)
-                        if context.rule.strict and info.condition ~= '[]' and not m then
-                            return
-                        end
                     end
                 end
             else

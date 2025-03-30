@@ -1,10 +1,11 @@
 # BigWigs
 
-## [v378.4](https://github.com/BigWigsMods/BigWigs/tree/v378.4) (2025-03-24)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v378.3...v378.4) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
+## [v379.1](https://github.com/BigWigsMods/BigWigs/tree/v379.1) (2025-03-30)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v379...v379.1) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
 
-- Core/PluginPrototype: Create event table prior to enabling plugins  
-- Update zhTW (#1967)  
-- LiberationOfUndermine/Bandit: Tweak Stage 1 timer handling  
-- Update koKR (#1964)  
-- Update frFR (#1961)  
+- Loader: Remove a locale print  
+- Plugins/Pull: remove more old code  
+- Update esES (#1986)  
+- Update esES (#1983)  
+- LiberationOfUndermine/Cauldron: Add a note to the Static Charge option  
+- Update esES (#1982)  

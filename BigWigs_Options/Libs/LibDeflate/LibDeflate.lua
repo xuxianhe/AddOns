@@ -75,9 +75,9 @@ Their original licenses shall be comply when used.
 ]] --[[
 	Curseforge auto-packaging replacements:
 
-	Project Date: 2025-03-24T21:59:45Z
-	Project Hash: f84403f07eade8e18ec9fde962bad114856cb684
-	Project Version: v378.4
+	Project Date: 2025-03-30T00:20:00Z
+	Project Hash: ee99a58b3581931b06dfe0bd1b81fe94633b98d3
+	Project Version: v379.1
 --]] local LibDeflate
 
 do

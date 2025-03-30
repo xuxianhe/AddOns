@@ -1540,7 +1540,7 @@ function E:UpdateActionBars(skipCallback)
 	ActionBars:UpdatePetCooldownSettings()
 
 	if E.Retail or E.Cata or E.Wrath then
-		ActionBars:UpdateExtraButtons()
+		--ActionBars:UpdateExtraButtons()
 	end
 
 	if (E.Cata or E.Wrath) and E.myclass == 'SHAMAN' then

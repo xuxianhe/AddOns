@@ -2946,7 +2946,7 @@ function GSE.CreateEditor()
                             end
                             destination = GSE_C["KeyBindings"][tostring(specialization)]["LoadOuts"][loadout]
                         end
-                        if initialbind and bind ~= initialbind then
+                        if initialbind and bind ~= initialbind and not InCombatLockdown() then
                             SetBinding(initialbind)
                             destination[bind] = nil
                         end
@@ -2969,18 +2969,22 @@ function GSE.CreateEditor()
                         end
 
                         editframe.ManageTree()
+                        local keypath
                         if loadout ~= "ALL" and loadout then
                             if GetSpecialization then
-                                treeContainer:SelectByPath("KB", specialization, loadout, bind, button)
+                                keypath = table.concat({"KEYBINDINGS", "KB", specialization, loadout, bind}, "\001")
                             else
-                                treeContainer:SelectByPath("KB", loadout, bind, button)
+                                keypath = table.concat({"KEYBINDINGS", "KB", loadout, bind}, "\001")
                             end
                         else
                             if GetSpecialization then
-                                treeContainer:SelectByPath("KB", specialization, bind, button)
+                                keypath = table.concat({"KEYBINDINGS", "KB", specialization, bind}, "\001")
                             else
-                                treeContainer:SelectByPath("KB", bind, button)
+                                keypath = table.concat({"KEYBINDINGS", "KB", bind}, "\001")
                             end
+                        end
+                        if keypath then
+                            treeContainer:SelectByValue(keypath)
                         end
                     end
                 end
@@ -2992,7 +2996,7 @@ function GSE.CreateEditor()
             delbutton:SetCallback(
                 "OnClick",
                 function()
-                    if initialbind then
+                    if initialbind and not InCombatLockdown() then
                         SetBinding(initialbind)
                     end
 
@@ -3283,15 +3287,15 @@ function GSE.CreateEditor()
                         editframe.ManageTree()
                         if loadout ~= "ALL" and loadout then
                             if GetSpecialization then
-                                treeContainer:SelectByPath("AO", specialization, loadout, bind, button)
+                                treeContainer:SelectByPath("KEYBINDINGS", "AO", specialization, loadout, bind)
                             else
-                                treeContainer:SelectByPath("AO", loadout, bind, button)
+                                treeContainer:SelectByPath("KEYBINDINGS", "AO", loadout, bind)
                             end
                         else
                             if GetSpecialization then
-                                treeContainer:SelectByPath("AO", specialization, bind, button)
+                                treeContainer:SelectByPath("KEYBINDINGS", "AO", specialization, bind)
                             else
-                                treeContainer:SelectByPath("AO", bind, button)
+                                treeContainer:SelectByPath("KEYBINDINGS", "AO", bind)
                             end
                         end
                     end
@@ -3651,8 +3655,9 @@ end]],
                             local loadout = C_Traits.GetConfigInfo(i)
                             local specnode = {
                                 value = i,
-                                text = loadout.name,
-                                children = {}
+                                text = "|cff808080" .. loadout.name .. Statics.StringReset,
+                                children = {},
+                                icon = Statics.Icons.Talents
                             }
 
                             for l, m in GSE.pairsByKeys(j) do
@@ -3710,8 +3715,9 @@ end]],
                             local loadout = C_Traits.GetConfigInfo(i)
                             local specnode = {
                                 value = i,
-                                text = loadout.name,
-                                children = {}
+                                text = "|cffffcc00" .. loadout.name .. Statics.StringReset,
+                                children = {},
+                                icon = Statics.Icons.Talents
                             }
 
                             for l, m in GSE.pairsByKeys(j) do
@@ -3762,7 +3768,7 @@ end]],
         for k, _ in pairs(GSEVariables) do
             local node = {
                 value = k,
-                text = k
+                text = "|CFFFFFFFF" .. k .. Statics.StringReset
             }
             table.insert(tree.children, node)
         end
@@ -4296,16 +4302,18 @@ end]],
                 local area = unique[1]
 
                 if area == "Sequences" then
-                    elements = GSE.split(unique[3], ",")
-                    if #elements >= 3 then
-                        classid = elements[1]
-                        sequencename = elements[3]
+                    if unique[3] then
+                        elements = GSE.split(unique[3], ",")
+                        if #elements >= 3 then
+                            classid = elements[1]
+                            sequencename = elements[3]
+                        end
                     end
                 end
 
                 local mbutton = GetMouseButtonClicked()
                 if mbutton == "RightButton" then
-                    if area == "KEYBINDINGS" and #unique >= 3 then
+                    if area == "KEYBINDINGS" and #unique > 3 then
                         MenuUtil.CreateContextMenu(
                             editframe.frame,
                             function(ownerRegion, rootDescription)
@@ -4502,39 +4510,34 @@ end]],
                         GSE.GUILoadEditor(editframe)
                     elseif area == "Import" then
                         GSE.ShowImport()
-                    elseif area == "KEYBINDINGS" then
+                    elseif area == "KEYBINDINGS" and #unique >= 2 then
                         local bind, loadout, type, button
                         type = unique[2]
                         local specialization = unique[3]
                         if GetSpecialization then
                             bind = unique[4]
-
                             if #unique == 6 then
-                                loadout = unique[6]
-                                if type == "AO" and bind then
+                                loadout = unique[4]
+                                bind = unique[5]
+                                if unique[2] == "AO" and bind then
                                     button = GSE_C["ActionBarBinds"]["LoadOuts"][specialization][loadout][bind]
+                                else
+                                    button = unique[6]
                                 end
                             else
-                                button = unique[5]
-                                if type == "AO" and bind then
+                                if unique[2] == "AO" and bind then
                                     button = GSE_C["ActionBarBinds"]["Specialisations"][specialization][bind]
+                                else
+                                    button = unique[5]
                                 end
                             end
                         else
                             specialization = "1"
-                            if #unique == 5 then
-                                loadout = unique[5]
-                                bind = unique[4]
-                                if type == "AO" and bind then
-                                    button = GSE_C["ActionBarBinds"]["LoadOuts"][specialization][loadout][bind]
-                                end
-                            else
-                                bind = unique[3]
-                                button = unique[4]
+                            bind = unique[3]
+                            button = unique[4]
 
-                                if type == "AO" and bind then
-                                    button = GSE_C["ActionBarBinds"]["Specialisations"][specialization][bind]
-                                end
+                            if type == "AO" and bind then
+                                button = GSE_C["ActionBarBinds"]["Specialisations"][specialization][bind]
                             end
                         end
                         if unique[#unique] == "NKB" then
@@ -4576,7 +4579,7 @@ end]],
                                 editframe:SetTitle(L["Sequence Editor"] .. ": " .. L["Keybind"])
                             end
                         end
-                    elseif area == "Sequences" then
+                    elseif area == "Sequences" and #unique >= 3 then
                         local path = GSE.CloneSequence(unique)
                         table.remove(path, #path)
                         local editOptionsbutton = AceGUI:Create("Button")
@@ -5046,6 +5049,7 @@ function GSE.ShowSequences()
     if not InCombatLockdown() or (GSE.PlayerSpellsLoaded and GSE.PlayerSpellsLoaded()) then
         local editframe = GSE.CreateEditor()
         editframe.ManageTree()
+        editframe.treeContainer:SelectByValue("Sequences\001" .. GSE.GetCurrentClassID())
         editframe:Show()
     else
         GSE.Print(
@@ -5168,24 +5172,11 @@ function GSE.GUILoadEditor(editor, key, recordedstring)
             {
                 "Sequences",
                 classid,
-                GSE.GetCurrentSpecID(),
                 classid .. "," .. GSE.GetCurrentSpecID() .. "," .. sequenceName .. ",0",
                 "config"
             },
             "\001"
         )
-        if not GetSpecialization then
-            selpath =
-                table.concat(
-                {
-                    "Sequences",
-                    classid,
-                    classid .. "," .. GSE.GetCurrentSpecID() .. "," .. sequenceName .. ",0",
-                    "config"
-                },
-                "\001"
-            )
-        end
         editor.treeContainer:SelectByValue(selpath)
     end
 end
