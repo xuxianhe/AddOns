@@ -1874,7 +1874,7 @@ function ElvUI_EltreumUI:ExpandedCharacterStats()
 					end
 				end
 			end
-			_G.CharacterArmorFrameLabel:SetFont(E.LSM:Fetch('font', E.db.general.font), E.db.ElvUI_EltreumUI.skins.armoryfontsize, ElvUI_EltreumUI:FontFlag(E.db.general.fontStyle))
+			--_G.CharacterArmorFrameLabel:SetFont(E.LSM:Fetch('font', E.db.general.font), E.db.ElvUI_EltreumUI.skins.armoryfontsize, ElvUI_EltreumUI:FontFlag(E.db.general.fontStyle))
 			if not _G.CharacterArmorFrameLabel:GetText():match("|r") then
 				if E.db.ElvUI_EltreumUI.skins.characterskingradients then
 					_G.CharacterArmorFrameLabel:SetText(ElvUI_EltreumUI:GradientName(_G.CharacterArmorFrameLabel:GetText(), E.myclass))
@@ -2089,7 +2089,7 @@ function ElvUI_EltreumUI:ExpandedCharacterStats()
 			CharacterModelFrame:SetPosition(0, 0, 0) -- zoom, x, y
 			CharacterModelFrame:SetPosition(E.db.ElvUI_EltreumUI.skins.charactermodelcam.zoomclassic, E.db.ElvUI_EltreumUI.skins.charactermodelcam.xclassic, E.db.ElvUI_EltreumUI.skins.charactermodelcam.yclassic)
 
-			--CharacterFrame.Text6:SetSize(418, 72)
+			CharacterFrame.Text6:SetSize(418, 72)
 			CharacterFrame.Text6:SetPoint("TOP", CharacterFrame, "TOP", 0, -50)
 			CharacterFrame.Text6:SetParent(CharacterFrame)
 			CharacterFrame.Text6:SetTextColor(1, 0, 0, 1)
