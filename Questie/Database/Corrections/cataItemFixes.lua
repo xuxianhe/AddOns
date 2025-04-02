@@ -222,11 +222,20 @@ function CataItemFixes.Load()
         [22978] = { -- Emitter Spare Part
             [itemKeys.npcDrops] = {},
         },
+        [23726] = { -- Fel Ember
+            [itemKeys.objectDrops] = {181679},
+        },
+        [23735] = { -- Grand Warlock's Amulet
+            [itemKeys.npcDrops] = {16807},
+        },
         [23777] = { -- Diabolical Plans
             [itemKeys.startQuest] = 26443,
         },
         [23798] = { -- Diabolical Plans
             [itemKeys.startQuest] = 26447,
+        },
+        [23901] = { -- Nazan's Head
+            [itemKeys.npcDrops] = {17307},
         },
         [24025] = { -- Deathclaw's Paw
             [itemKeys.npcDrops] = {17661},
@@ -255,6 +264,9 @@ function CataItemFixes.Load()
         [24416] = { -- Corrupted Flower
             [itemKeys.npcDrops] = {},
         },
+        [27480] = { -- Soul Device
+            [itemKeys.objectDrops] = {182940},
+        },
         [31880] = { -- Blood Elf Orphan Whistle
             [itemKeys.class] = itemClasses.QUEST,
         },
@@ -263,6 +275,9 @@ function CataItemFixes.Load()
         },
         [33009] = { -- Tender Strider Meat
             [itemKeys.npcDrops] = {2956,2957},
+        },
+        [33833] = { -- Nazan's Riding Crop
+            [itemKeys.npcDrops] = {17307},
         },
         [34130] = { -- Recovery Diver's Potion
             [itemKeys.class] = itemClasses.QUEST,
@@ -1014,6 +1029,9 @@ function CataItemFixes.Load()
         [63686] = { -- Daggerspine Attack Plans
             [itemKeys.startQuest] = 28356,
         },
+        [64313] = { -- Elemental-Imbued Weapon
+            [itemKeys.npcDrops] = {8889,8890,8891,8892,8893,8894,8898,8903,24818,24819},
+        },
         [64318] = { -- Fine Dark Cloth
             [itemKeys.npcDrops] = {},
         },
@@ -1130,6 +1148,9 @@ function CataItemFixes.Load()
         },
         [71716] = { -- Soothsayer's Runes
             [itemKeys.class] = itemClasses.QUEST,
+        },
+        [72160] = { -- Hellfire Supplies
+            [itemKeys.objectDrops] = {209347},
         },
         [73269] = { -- Great Sea Herring
             [itemKeys.npcDrops] = {},

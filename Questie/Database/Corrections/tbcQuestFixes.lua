@@ -1512,8 +1512,14 @@ function QuestieTBCQuestFixes:Load()
         [9808] = {
             [questKeys.requiredMinRep] = {970,0},
         },
+        [9824] = {
+            [questKeys.objectives] = {{{18161,nil,Questie.ICON_TYPE_EVENT},{18162,nil,Questie.ICON_TYPE_EVENT}}},
+        },
         [9830] = {
             [questKeys.requiredMinRep] = {978,0},
+        },
+        [9831] = {
+            [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Open the container"), 0, {{"object", 182196}}}},
         },
         [9833] = {
             [questKeys.requiredMinRep] = {978,0},
@@ -2854,7 +2860,7 @@ function QuestieTBCQuestFixes:Load()
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Open the prison"), 0, {{"object", 185001}}}},
         },
         [10977] = {
-            [questKeys.objectives] = {nil,{{185002,"Mana-Tombs Stasis Chamber Investigated"}}},
+            [questKeys.objectives] = {nil,{{185519,"Mana-Tombs Stasis Chamber Investigated"}}},
             [questKeys.requiredMinRep] = {933,21000},
         },
         [10981] = {
@@ -2902,10 +2908,10 @@ function QuestieTBCQuestFixes:Load()
             },
         },
         [11002] = {
-            [questKeys.startedBy] = {{17257},nil,{33102,},},
+            [questKeys.startedBy] = {{17257},nil,{32385}},
         },
         [11003] = {
-            [questKeys.startedBy] = {{17257},nil,{33102,},},
+            [questKeys.startedBy] = {{17257},nil,{32386}},
         },
         [11007] = {
             [questKeys.startedBy] = {{19622},nil,{32405}},
