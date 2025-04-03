@@ -1,0 +1,7 @@
+## Interface: 11503, 40400
+## Notes: Checks your hotbars for missing spells and highlights them in your spellbook.
+## Title: Highlight Missing Hotbar Spells
+## Author: Novaspark-Arugal OCE
+## Version: 1.4
+
+HightlightMissingHotbarSpells.lua
