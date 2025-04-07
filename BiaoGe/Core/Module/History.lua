@@ -12,11 +12,9 @@ local RGB = ns.RGB
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local HopeMaxn = ns.HopeMaxn
 local HopeMaxb = ns.HopeMaxb
 local HopeMaxi = ns.HopeMaxi
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local RGB_16 = ns.RGB_16
 local GetItemID = ns.GetItemID
@@ -94,7 +92,7 @@ function BG.HistoryUI()
         BG.UpdateHistoryButton()
         -- 单击触发
         bt:SetScript("OnClick", function(self)
-            FrameHide(2)
+            BG.FrameHide(2)
             if BG.History.SaveButton:GetButtonState() ~= "DISABLED" then
                 BG.CreatHistoryListButton(BG.FB1)
             end
@@ -116,7 +114,7 @@ function BG.HistoryUI()
             BiaoGe.History[FB][DT].tradeTbl = {}
             for b = 1, Maxb[FB] + 2 do
                 BiaoGe.History[FB][DT]["boss" .. b] = {}
-                for i = 1, Maxi[FB] do
+                for i = 1, BG.Maxi do
                     local zhuangbei = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
                     if zhuangbei then
                         if zhuangbei:GetText() ~= "" then
@@ -205,7 +203,7 @@ function BG.HistoryUI()
 
         -- 单击触发
         bt:SetScript("OnClick", function(self)
-            FrameHide(2)
+            BG.FrameHide(2)
             self:SetEnabled(false) -- 点击后按钮变灰2秒
             C_Timer.After(0.5, function()
                 bt:SetEnabled(true)
@@ -252,7 +250,7 @@ function BG.HistoryUI()
                 end
             end)
 
-            FrameHide(2)
+            BG.FrameHide(2)
 
             local text = ""
             local playerFullName, server = UnitFullName("player")
@@ -357,7 +355,7 @@ function BG.HistoryUI()
                 local bosscolor = BG.Boss[FB]["boss" .. b].color
                 text = "|cff" .. bosscolor .. bossname2 .. RN
                 BG.frameWenBen.edit:Insert(text) -- BOSS名字
-                for i = 1, Maxi[FB] do
+                for i = 1, BG.Maxi do
                     if Frame[FB]["boss" .. b]["zhuangbei" .. i] then
                         if Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText() ~= "" or Frame[FB]["boss" .. b]["maijia" .. i]:GetText() ~= "" or Frame[FB]["boss" .. b]["jine" .. i]:GetText() ~= "" then
                             text = Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText() .. " " .. RGB_16(Frame[FB]["boss" .. b]["maijia" .. i]) .. " " .. Frame[FB]["boss" .. b]["jine" .. i]:GetText() .. "\n"
@@ -387,7 +385,7 @@ function BG.HistoryUI()
                 if tonumber(_date) == tonumber(BiaoGe.HistoryList[FB][num][1]) then
                     local DT = BiaoGe.HistoryList[FB][num][1]
                     for b = 1, Maxb[FB] + 2 do
-                        for i = 1, Maxi[FB] do
+                        for i = 1, BG.Maxi do
                             if BG.Frame[FB]["boss" .. b]["zhuangbei" .. i] then
                                 BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]:SetText(BiaoGe.History[FB][DT]["boss" .. b]["zhuangbei" .. i] or "")
                                 BG.Frame[FB]["boss" .. b]["maijia" .. i]:SetText(BiaoGe.History[FB][DT]["boss" .. b]["maijia" .. i] or "")
@@ -530,7 +528,7 @@ function BG.HistoryUI()
         BG.History.EscButton = bt
 
         bt:SetScript("OnClick", function(self)
-            FrameHide(2)
+            BG.FrameHide(2)
             BG.FBMainFrame:Show()
             BG.UpdateAuctionLogFrame()
             BG.PlaySound(1)
@@ -689,7 +687,7 @@ do
 
             -- 单击触发
             bt:SetScript("OnMouseUp", function(self, button)
-                FrameHide(2)
+                BG.FrameHide(2)
 
                 if IsAltKeyDown() then
                     if button == "RightButton" then -- 删除
@@ -697,7 +695,7 @@ do
                         BG.DeleteHistory(FB, i)
                         BG.History.GaiMingFrame:Hide()
                         for b = 1, Maxb[FB] + 2 do
-                            for i = 1, Maxi[FB] do
+                            for i = 1, BG.Maxi do
                                 if BG.HistoryFrame[FB]["boss" .. b]["zhuangbei" .. i] then
                                     BG.HistoryFrame[FB]["boss" .. b]["zhuangbei" .. i]:SetText("")
                                     BG.HistoryFrame[FB]["boss" .. b]["maijia" .. i]:SetText("")
@@ -743,7 +741,7 @@ do
                 local DT = BiaoGe.HistoryList[FB][i][1]
                 for b = 1, Maxb[FB] + 2 do
                     if BiaoGe.History[FB][DT]["boss" .. b] then
-                        for i = 1, Maxi[FB] do
+                        for i = 1, BG.Maxi do
                             if BG.HistoryFrame[FB]["boss" .. b]["zhuangbei" .. i] then
                                 BG.HistoryFrame[FB]["boss" .. b]["zhuangbei" .. i]:SetText(BiaoGe.History[FB][DT]["boss" .. b]["zhuangbei" .. i] or "")
                                 BG.HistoryFrame[FB]["boss" .. b]["maijia" .. i]:SetText(BiaoGe.History[FB][DT]["boss" .. b]["maijia" .. i] or "")

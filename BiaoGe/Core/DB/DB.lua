@@ -24,8 +24,10 @@ BINDING_NAME_RoleOverview = L["打开/关闭角色总览"]
 
 
 local realmID = GetRealmID()
-local player = UnitName("player")
+local player = BG.playerName
 local realmName = GetRealmName()
+local GetAddOnMetadata = GetAddOnMetadata or C_AddOns.GetAddOnMetadata
+local IsAddOnLoaded = IsAddOnLoaded or C_AddOns.IsAddOnLoaded
 
 -- 全局变量
 do
@@ -34,6 +36,7 @@ do
     BG.FBIDtable = {}
     BG.lootQuality = {}
     BG.difficultyTable = {}
+    BG.diffIDTbl = {}
     BG.phaseFBtable = {}
     BG.bossPositionStartEnd = {}
     BG.FBfromBossPosition = {}
@@ -47,12 +50,15 @@ do
     BG.otherEditAlpha = 0.3
     BG.scrollStep = 80
     BG.borderAlpha = .5
-    BG.ver = ns.ver
-    BG.instructionsText = ns.instructionsText
-    BG.updateText = ns.updateText
+    BG.ver = "v" .. GetAddOnMetadata(AddonName, "Version")
     BG.BG = "|cff00BFFF<BiaoGe>|r "
     BG.rareIcon = "|A:nameplates-icon-elite-silver:0:0|a"
     BG.iconTexCoord = { .03, .97, .03, .97 }
+    if BG.IsRetail then
+        BG.CloseButtonOffset = 0
+    else
+        BG.CloseButtonOffset = 2
+    end
 
     BG.blackListPlayer = {}
     if BG.IsWLK then
@@ -79,27 +85,43 @@ do
         }
     end
 
-
-    if BG.blackListPlayer[realmName] and BG.blackListPlayer[realmName][UnitName("player")] then
+    if BG.blackListPlayer[realmName] and BG.blackListPlayer[realmName][BG.GN()] then
         BG.IsBlackListPlayer = true
     end
 end
 -- 初始化
 do
-    BG.Maxi                                                               = 30
-    local mainFrameWidth                                                  = 1295
-    local Width, Height, Maxt, Maxb, Maxi, BossNumtbl, HopeMaxb, HopeMaxn = {}, {}, {}, {}, {}, {}, {}, {}
+    BG.Maxi                              = 30
+    BG.FBWidth                           = {}
+    BG.FBHeight                          = {}
+    BG.BossNumtbl                        = {}
+    local mainFrameWidth                 = 1295
+    local Maxt, Maxb, HopeMaxb, HopeMaxn = {}, {}, {}, {}
     do
-        local function AddDB(FB, width, height, maxt, maxb, bossNumtbl, hopemaxn)
-            Width[FB] = width
-            Height[FB] = height
+        local function AddDB(FB, width, height, maxt, maxb, bossNumTbl, diffTbl, diffIDTbl)
+            BG.FBWidth[FB] = width
+            BG.FBHeight[FB] = height
             Maxt[FB] = maxt
             Maxb[FB] = maxb
-            Maxi[FB] = BG.Maxi
-            BossNumtbl[FB] = bossNumtbl
+            BG.BossNumtbl[FB] = bossNumTbl
             HopeMaxb[FB] = maxb - 1
-            HopeMaxn[FB] = hopemaxn or 1
+            BG.difficultyTable[FB] = diffTbl or { "N" }
+            HopeMaxn[FB] = #BG.difficultyTable[FB]
+            BG.diffIDTbl[FB] = diffIDTbl or {
+                [3] = "N",
+                [175] = "N",
+                [4] = "N",
+                [176] = "N",
+                [5] = "H",
+                [193] = "H",
+                [6] = "H",
+                [194] = "H",
+                [14] = "N",
+                [15] = "H",
+                [16] = "M",
+            }
         end
+
         if BG.IsVanilla_Sod then
             AddDB("BD", mainFrameWidth, 810, 3, 9, { 0, 5, 9 })
             AddDB("Gno", mainFrameWidth, 810, 3, 8, { 0, 5, 8 })
@@ -116,21 +138,58 @@ do
             AddDB("TAQ", mainFrameWidth, 810, 3, 11, { 0, 6, 10 })
             AddDB("NAXX", 1715, 810, 4, 17, { 0, 6, 12, 16 })
         elseif BG.IsWLK then
-            AddDB("ICC", mainFrameWidth, 875, 3, 15, { 0, 7, 13 }, 4)
-            AddDB("TOC", mainFrameWidth, 835, 3, 9, { 0, 5, 8 }, 4)
-            AddDB("ULD", mainFrameWidth, 875, 3, 16, { 0, 7, 13 }, 2)
-            AddDB("NAXX", 1715, 945, 4, 19, { 0, 6, 12, 16 }, 2)
+            local difTbl1 = {
+                [3] = "N10",
+                [175] = "N10",
+                [4] = "N25",
+                [176] = "N25",
+                [5] = "N10",
+                [193] = "N10",
+                [6] = "N25",
+                [194] = "N25",
+            }
+            local difTbl2 = {
+                [3] = "N10",
+                [175] = "N10",
+                [4] = "N25",
+                [176] = "N25",
+                [5] = "H10",
+                [193] = "H10",
+                [6] = "H25",
+                [194] = "H25",
+            }
+            local difTbl3 = {
+                [3] = "N",
+                [175] = "N",
+                [4] = "N",
+                [176] = "N",
+                [5] = "N",
+                [193] = "N",
+                [6] = "N",
+                [194] = "N",
+            }
+            AddDB("ICC", mainFrameWidth, 875, 3, 15, { 0, 7, 13 }, { "N10", "N25", "H10", "H25", }, difTbl2)
+            AddDB("TOC", mainFrameWidth, 835, 3, 9, { 0, 5, 8 }, { "N10", "N25", "H10", "H25", }, difTbl2)
+            AddDB("ULD", mainFrameWidth, 875, 3, 16, { 0, 7, 13 }, { "N10", "N25" }, difTbl1)
+            AddDB("NAXX", 1715, 945, 4, 19, { 0, 6, 12, 16 }, { "N10", "N25" }, difTbl1)
             -- TBC
-            AddDB("SW", mainFrameWidth, 835, 3, 8, { 0, 5, 8 })
-            AddDB("BT", mainFrameWidth, 835, 3, 11, { 0, 5, 9 })
-            AddDB("BWL", mainFrameWidth, 810, 3, 10, { 0, 5, 9 })
+            AddDB("SW", mainFrameWidth, 835, 3, 8, { 0, 5, 8 }, nil, difTbl3)
+            AddDB("BT", mainFrameWidth, 835, 3, 11, { 0, 5, 9 }, nil, difTbl3)
+            AddDB("HS", mainFrameWidth, 835, 2, 7, { 0, 5, }, nil, difTbl3)
+            AddDB("SSC", mainFrameWidth, 835, 3, 12, { 0, 6, 10 }, nil, difTbl3)
+            AddDB("BWL", mainFrameWidth, 810, 3, 10, { 0, 5, 9 }, nil, difTbl3)
         elseif BG.IsCTM then
-            AddDB("BOT", 1715, 930, 4, 15, { 0, 5, 10, 14 }, 2)
+            AddDB("BOT", 1715, 930, 4, 15, { 0, 5, 10, 14 }, { "N", "H" })
+            AddDB("FL", mainFrameWidth, 770, 3, 9, { 0, 4, 8 }, { "N", "H" })
+            AddDB("DS", mainFrameWidth, 770, 3, 10, { 0, 4, 8 }, { "N", "H" })
+        elseif BG.IsRetail then
+            AddDB("NP", mainFrameWidth, 950, 3, 10, { 0, 4, 8 }, { "R", "N", "H", "M" })
         end
     end
 
     do
-        local function AddDB(FB, instanceID, phase, maxplayers, lootQuality, difficultyTable, phaseTable, bossPositionTbl)
+        local function AddDB(FB, instanceID, phase, maxplayers, lootQuality,
+                             phaseTable, bossPositionTbl, shortName)
             tinsert(BG.FBtable, FB)
             tinsert(BG.FBtable2,
                 {
@@ -139,10 +198,10 @@ do
                     localName = GetRealZoneText(instanceID),
                     phase = phase,
                     maxplayers = maxplayers,
+                    shortName = shortName,
                 })
             BG.FBIDtable[instanceID] = FB
             BG.lootQuality[FB] = lootQuality or 4
-            BG.difficultyTable[FB] = difficultyTable or { "N", "H" }
             BG.phaseFBtable[FB] = phaseTable or { FB }
             BG.bossPositionStartEnd[instanceID] = bossPositionTbl or { 1, Maxb[FB] - 2 }
             BG.FBfromBossPosition[FB] = {}
@@ -184,7 +243,7 @@ do
             BG.FB1 = "MC"
             BG.fullLevel = 60
             BG.theEndBossID = { 672, 617, 793, 723, 717, 1114 } --MC BWL ZUG AQL TAQ NAXX
-            AddDB("MC", 409, "P1-P2", 40, nil, nil, nil, { 1, 10 })
+            AddDB("MC", 409, "P1-P2", 40, nil, nil, { 1, 10 })
             AddDB("BWL", 469, "P3", 40)
             AddDB("ZUG", 309, "P4", 20, 3)
             AddDB("AQL", 509, "P5", 20, 3)
@@ -199,10 +258,11 @@ do
             BG.FB1 = "NAXX"
             BG.fullLevel = 80
             BG.theEndBossID = { 1114, 756, 645, 856, }
-            AddDB("NAXX", 533, "P1", nil, nil, { "H25", "N25", "H10", "N10" }, nil, { 1, 15 })
-            AddDB("ULD", 603, "P2", nil, nil, { "H25", "N25", "H10", "N10" })
-            AddDB("TOC", 649, "P3", nil, nil, { "H25", "N25", "H10", "N10" }, nil, { 1, 6 })
-            AddDB("ICC", 631, "P4", nil, nil, { "H25", "N25", "H10", "N10" }, nil, { 1, 12 })
+
+            AddDB("NAXX", 533, "P1", nil, nil, nil, { 1, 15 })
+            AddDB("ULD", 603, "P2")
+            AddDB("TOC", 649, "P3", nil, nil, nil, { 1, 6 })
+            AddDB("ICC", 631, "P4", nil, nil, nil, { 1, 12 })
 
             BG.FBIDtable[615] = "NAXX" -- 黑曜石圣殿
             BG.bossPositionStartEnd[615] = { 16, 16 }
@@ -226,23 +286,30 @@ do
 
             -- TBC
             do
-                AddDB("BWL", 469, "")
-                AddDB("BT", 564, "")
-                AddDB("SW", 580, "")
+                AddDB("BWL", 469, "", nil, nil, nil, nil, L["黑翼之巢"])
+                AddDB("SSC", 548, "", nil, nil, nil, nil, L["毒蛇风暴"])
+                AddDB("HS", 534, "", nil, nil, nil, nil, L["海加尔山"])
+                AddDB("BT", 564, "", nil, nil, nil, nil, L["黑暗神殿"])
+                AddDB("SW", 580, "", nil, nil, nil, nil, L["太阳井"])
+
+                BG.FBIDtable[550] = "SSC" -- 风暴要塞
+                BG.bossPositionStartEnd[550] = { 7, 10 }
+                for i = 7, 10 do
+                    BG.FBfromBossPosition["SSC"][i] = { name = "TK", localName = GetRealZoneText(550) }
+                    BG.instanceIDfromBossPosition["SSC"][i] = 550
+                end
             end
         elseif BG.IsCTM then
             BG.FB1 = "BOT"
             BG.fullLevel = 85
-            BG.theEndBossID = { 1082, 1026, 1034, 1203, 1299, }   -- BOT BWD TOF FL DS
-            AddDB("BOT", 671, "P1", nil, nil, nil, nil, { 1, 5 }) -- 暮光堡垒
-
-            BG.FBIDtable[669] = "BOT"                             -- 黑翼血环
+            BG.theEndBossID = { 1082, 1026, 1034, 1203, 1299, } -- BOT BWD TOF FL DS
+            AddDB("BOT", 671, "P1", nil, nil, nil, { 1, 5 })    -- 暮光堡垒
+            BG.FBIDtable[669] = "BOT"                           -- 黑翼血环
             BG.bossPositionStartEnd[669] = { 6, 11 }
             for i = 6, 11 do
                 BG.FBfromBossPosition["BOT"][i] = { name = "BWD", localName = GetRealZoneText(669) }
                 BG.instanceIDfromBossPosition["BOT"][i] = 669
             end
-
             BG.FBIDtable[754] = "BOT" -- 风神王座
             BG.bossPositionStartEnd[754] = { 12, 13 }
             for i = 12, 13 do
@@ -250,8 +317,13 @@ do
                 BG.instanceIDfromBossPosition["BOT"][i] = 754
             end
 
-            -- AddDB("FL", 720, "P2") -- 火焰之地
-            -- AddDB("DS", 967, "P3") -- 巨龙之魂
+            AddDB("FL", 720, "P2") -- 火焰之地
+            AddDB("DS", 967, "P3") -- 巨龙之魂
+        elseif BG.IsRetail then
+            BG.FB1 = "NP"
+            BG.fullLevel = 80
+            BG.theEndBossID = { 2922, }
+            AddDB("NP", 2657, "P1", 20)
         end
     end
 
@@ -262,16 +334,12 @@ do
         HopeMaxi = 3
     end
     do
-        ns.Width      = Width
-        ns.Height     = Height
-        ns.Maxt       = Maxt
-        ns.Maxb       = Maxb
-        ns.Maxi       = Maxi
-        ns.HopeMaxi   = HopeMaxi
-        ns.HopeMaxb   = HopeMaxb
-        ns.HopeMaxn   = HopeMaxn
-        ns.BossNumtbl = BossNumtbl
-        BG.Maxb       = Maxb
+        ns.Maxt     = Maxt
+        ns.Maxb     = Maxb
+        ns.HopeMaxi = HopeMaxi
+        ns.HopeMaxb = HopeMaxb
+        ns.HopeMaxn = HopeMaxn
+        BG.Maxb     = Maxb
     end
 
     local function UnitRealm(unit)
@@ -412,10 +480,12 @@ do
     -- 掉落
     do
         BG.Loot = {}
-        for key, FB in pairs(BG.FBtable) do
+        for _, FB in pairs(BG.FBtable) do
             BG.Loot[FB] = {
                 N = { Quest = {}, },
                 H = { Quest = {}, },
+                M = { Quest = {}, },
+
                 N10 = { Quest = {}, },
                 N25 = { Quest = {}, },
                 H10 = { Quest = {}, },
@@ -431,6 +501,9 @@ do
                 MAGE = {},
                 WARLOCK = {},
                 PRIEST = {},
+                EVOKER={},
+                DEMONHUNTER={},
+                MONK={},
 
                 Team = {},         -- 5人本
                 World = {},        -- 世界掉落
@@ -628,6 +701,7 @@ do
             { ID = "uploaded", name = "账单上传成功.mp3" },
             { ID = "countDownStop", name = "倒数暂停.mp3" },
             { ID = "HusbandComeOn", name = "老公加油.mp3" },
+            { ID = "qiankuan", name = "未收欠款.mp3" },
         }
         for _, vv in ipairs(BG.soundTbl) do
             local name = vv.ID

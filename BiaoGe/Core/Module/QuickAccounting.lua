@@ -14,17 +14,14 @@ local RGB_16 = ns.RGB_16
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local GetText_T = ns.GetText_T
-local FrameDongHua = ns.FrameDongHua
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local GetItemID = ns.GetItemID
 
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 
 local pt = print
 local realmID = GetRealmID()
-local player = UnitName("player")
+local player = BG.playerName
 local realmName = GetRealmName()
 
 BG.Init(function()
@@ -39,7 +36,7 @@ BG.Init(function()
         parent.buttons = {}
         local framedown
         local frameright = f
-        local raid = BG.PaiXuRaidRosterInfo()
+        local raid = BG.SortRaidRosterInfo()
         for t = 1, 4 do
             for i = 1, 10 do
                 local bt = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
@@ -58,9 +55,9 @@ BG.Init(function()
                     bt:SetPoint("TOPLEFT", framedown, "BOTTOMLEFT", 0, -2)
                 end
                 if not IsInRaid(1) and t == 1 and i == 1 then     -- 单人时
-                    bt:SetText(UnitName("player"))
+                    bt:SetText(BG.GN())
                     bt:SetCursorPosition(0)
-                    bt:SetTextColor(GetClassRGB(UnitName("player")))
+                    bt:SetTextColor(GetClassRGB(BG.GN()))
                     bt.hasName = true
                     for k, v in pairs(BG.playerClass) do
                         bt[k] = select(v.select, v.func("player"))
@@ -140,7 +137,7 @@ BG.Init(function()
     local function HasEmptyGeZi(link)
         local FB = BG.FB1
         for b = 1, Maxb[FB] do
-            for i = 1, Maxi[FB] do
+            for i = 1, BG.Maxi do
                 local zhuangbei = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
                 local maijia = BG.Frame[FB]["boss" .. b]["maijia" .. i]
                 local jine = BG.Frame[FB]["boss" .. b]["jine" .. i]
@@ -171,7 +168,7 @@ BG.Init(function()
         updateFrame.time = 0
         local FB = BG.FB1
         for b = 1, Maxb[FB] do
-            for i = 1, Maxi[FB] do
+            for i = 1, BG.Maxi do
                 local zhuangbei = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
                 local maijia = BG.Frame[FB]["boss" .. b]["maijia" .. i]
                 local jine = BG.Frame[FB]["boss" .. b]["jine" .. i]
@@ -266,8 +263,7 @@ BG.Init(function()
             GameTooltip:ClearLines()
             local itemID = GetItemInfoInstant(link)
             if itemID then
-                GameTooltip:SetItemByID(itemID)
-                GameTooltip:Show()
+                GameTooltip:SetHyperlink(BG.SetSpecIDToLink(link))
             end
         end)
         f:SetScript("OnHyperlinkLeave", GameTooltip_Hide)
@@ -603,7 +599,6 @@ BG.Init(function()
             ChatFrame1EditBox:Hide()
             ChatFrame1EditBox:SetText("")
 
-            name = strsplit("-", name)
             local num
             local raid = BG.raidRosterInfo
             for i, v in ipairs(raid) do

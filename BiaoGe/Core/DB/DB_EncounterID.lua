@@ -238,6 +238,25 @@ if BG.IsWLK then
         608,
         609,
     }
+    BG.Loot.encounterID.HS = {
+        618,
+        619,
+        620,
+        621,
+        622,
+    }
+    BG.Loot.encounterID.SSC = {
+        623,
+        624,
+        625,
+        626,
+        627,
+        628,
+        730,
+        731,
+        732,
+        733,
+    }
     BG.Loot.encounterID.BWL = {
         610,
         611,
@@ -347,5 +366,19 @@ if BG.IsCTM then
         1298,
         1291,
         1299,
+    }
+end
+
+-- Retail
+if BG.IsRetail then
+    BG.Loot.encounterID.NP = {
+        2902,
+        2917,
+        2898,
+        2918,
+        2919,
+        2920,
+        2921,
+        2922,
     }
 end

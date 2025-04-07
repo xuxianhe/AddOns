@@ -6,7 +6,6 @@ local L = ns.L
 local RR = ns.RR
 local NN = ns.NN
 local RN = ns.RN
-local FrameHide = ns.FrameHide
 local SetClassCFF = ns.SetClassCFF
 local RGB_16 = ns.RGB_16
 
@@ -94,7 +93,6 @@ local function GetWCLinfo(name)
     -- test
     -- WP_Database["苍刃"] = "RT:(鲜血)148.26/57.8%LD:(鲜血)130.91/98.8%|13"
     -- STOP_Database["苍刃"] = "1血DK,3符文DK,3血DKDPS"
-
     local tbl = {}
     local wclText = WP_Database[name]
     local pmText
@@ -163,11 +161,11 @@ local function CreateListTable()
     local wclInfo = {}
     if IsInRaid(1) then
         for i = 1, GetNumGroupMembers() do
-            local name = UnitName("raid" .. i)
+            local name = BG.GN("raid" .. i)
             tinsert(wclInfo, GetWCLinfo(name))
         end
     else
-        local name = UnitName("player")
+        local name = BG.GN()
         tinsert(wclInfo, GetWCLinfo(name))
     end
     sort(wclInfo, function(a, b)
@@ -197,14 +195,14 @@ function BG.WCLUI(lastbt)
             end
             GameTooltip:AddLine(L["更新日期"] .. ":" .. WP_Database.LASTUPDATE)
         else
-            GameTooltip:AddLine(L["读取不到数据，你可能没安装WclPlayerScore-WotLK插件"], 1, 0, 0, true)
+            GameTooltip:AddLine(L["错误"], 1, 0, 0, true)
+            GameTooltip:AddLine(L["你没有安装WclPlayerScore-WotLK-CN插件。"], 1, .82, 0, true)
         end
-
         GameTooltip:Show()
     end)
     bt:SetScript("OnLeave", GameTooltip_Hide)
     bt:SetScript("OnClick", function(self)
-        FrameHide(0)
+        BG.FrameHide(0)
         if not IsInRaid(1) then
             SendSystemMessage(L["不在团队，无法通报"])
             BG.PlaySound(1)
@@ -243,7 +241,6 @@ local function AddWCLColor(self, event, msg, player, l, cs, t, flag, channelId, 
     local num, name, wcl, pm = strsplit(" ", msg)
     if num and name and wcl then
         name = SetClassCFF(name)
-
         local newwcl = ""
         for k, str in pairs { strsplit("%", wcl) } do
             local topfen = tonumber(str:match("%)(%d+)"))

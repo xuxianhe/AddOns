@@ -12,15 +12,13 @@ local RGB = ns.RGB
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local BossNum = ns.BossNum
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local GetItemID = ns.GetItemID
 
 local pt = print
 local RealmId = GetRealmID()
-local player = UnitName("player")
+local player = BG.playerName
 
 local p = {}
 BG.Frame.p = p
@@ -35,7 +33,7 @@ function BG.GetTotalIncome(FB)
     local FB = FB or BG.FB1
     local sum = 0
     for b = 1, Maxb[FB] do
-        for i = 1, Maxi[FB] do
+        for i = 1, BG.Maxi do
             if BG.Frame[FB]["boss" .. b]["jine" .. i] then
                 sum = sum + (tonumber(BG.Frame[FB]["boss" .. b]["jine" .. i]:GetText()) or 0)
             end
@@ -47,7 +45,7 @@ end
 function BG.GetTotalExpenditure(FB)
     local FB = FB or BG.FB1
     local sum = 0
-    for i = 1, Maxi[FB] do
+    for i = 1, BG.Maxi do
         if BG.Frame[FB]["boss" .. Maxb[FB] + 1]["jine" .. i] then
             sum = sum + (tonumber(BG.Frame[FB]["boss" .. Maxb[FB] + 1]["jine" .. i]:GetText()) or 0)
         end
@@ -79,7 +77,7 @@ local function HighlightBiaoGeSameItems(itemID, self)
     local tbl = {}
     local FB = BG.FB1
     for b = 1, Maxb[FB], 1 do
-        for i = 1, Maxi[FB], 1 do
+        for i = 1, BG.Maxi, 1 do
             local zb = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
             local jine = BG.Frame[FB]["boss" .. b]["jine" .. i]
             if zb then
@@ -160,7 +158,7 @@ local function ShowTardeHighLightItem(self)
     if tradeInfo then
         for _, v in ipairs(tradeInfo) do
             for b = 1, Maxb[FB] do
-                for i = 1, Maxi[FB] do
+                for i = 1, BG.Maxi do
                     local zb = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
                     local jine = BG.Frame[FB]["boss" .. b]["jine" .. i]
                     if zb and FB == v.FB and b == v.b and i == v.i then
@@ -259,65 +257,64 @@ local function OnTextChanged(self)
     local i = self.i
     local bossnum = self.bossnum
     local itemText = self:GetText()
-    local itemID = GetItemInfoInstant(itemText)
-    local name, link, quality, level, _, _, _, _, _, Texture, _, typeID, _, bindType = GetItemInfo(itemText)
-
-    if link and itemText:find("item:") then
-        if FB == "ULD" then
-            local hard
-            for index, value in ipairs(BG.Loot.ULD.Hard10) do
-                if itemID == value then
-                    self:SetText(link .. "H")
-                    hard = true
-                end
-            end
-            if not hard then
-                for index, value in ipairs(BG.Loot.ULD.Hard25) do
+    local itemID = GetItemID(itemText)
+    if itemID then
+        local item = Item:CreateFromItemID(itemID)
+        item:ContinueOnItemLoad(function()
+            local name, link, quality, level, _, _, _, _, _, Texture,
+            _, typeID, _, bindType = GetItemInfo(itemText)
+            if FB == "ULD" and not itemText:match("H$") then
+                local hard
+                for index, value in ipairs(BG.Loot.ULD.Hard10) do
                     if itemID == value then
-                        self:SetText(link .. "H")
+                        self:SetText(itemText .. "H")
+                        hard = true
+                        break
                     end
                 end
+                if not hard then
+                    for index, value in ipairs(BG.Loot.ULD.Hard25) do
+                        if itemID == value then
+                            self:SetText(itemText .. "H")
+                            break
+                        end
+                    end
+                end
+            elseif FB == "ICC" and not itemText:match("H$") then
+                if itemID == 52030 or itemID == 52029 or itemID == 52028 then
+                    self:SetText(link .. "H")
+                end
             end
-        elseif FB == "ICC" then
-            if itemID == 52030 or itemID == 52029 or itemID == 52028 then
-                self:SetText(link .. "H")
-            end
-        end
-        BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["itemLevel" .. i] = level
-        -- 装备图标
-        self.icon:SetTexture(Texture)
+            self.icon:SetTexture(Texture)
+            BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["itemLevel" .. i] = level
+            BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["bindOnEquip" .. i] = bindType == 2 and true or nil
+            BG.BindOnEquip(self, bindType)
+            BG.LevelText(self, level, typeID)
+            BG.IsHave(self)
+        end)
     else
-        BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["itemLevel" .. i] = nil
         self.icon:SetTexture(nil)
-    end
-
-    if bindType == 2 then
-        BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["bindOnEquip" .. i] = true
-    else
+        BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["itemLevel" .. i] = nil
         BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["bindOnEquip" .. i] = nil
+        BG.BindOnEquip(self)
+        BG.LevelText(self)
+        BG.IsHave(self)
     end
 
     BG.UpdateFilter(self)
 
     if bossnum ~= Maxb[FB] and bossnum ~= Maxb[FB] + 1 and bossnum ~= Maxb[FB] + 2 then
-        BG.DuiZhangFrame[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i]:SetText(self:GetText())
+        BG.DuiZhangFrame[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i]:SetText(itemText)
     end
 
-    if self:GetText() ~= "" then
-        BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i] = self:GetText() -- 储存文本
+    if itemText ~= "" then
+        BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i] = itemText
     else
         BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i] = nil
         BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["guanzhu" .. i] = nil
         BG.Frame[FB]["boss" .. BossNum(FB, b, t)]["guanzhu" .. i]:Hide()
         BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["loot" .. i] = nil
     end
-
-    -- 装绑图标
-    BG.BindOnEquip(self, bindType)
-    -- 在按钮右边增加装等显示
-    BG.LevelText(self, level, typeID)
-    -- 已拥有图标
-    BG.IsHave(self)
 
     -- 支出百分比
     if bossnum == Maxb[FB] + 1 then
@@ -374,7 +371,6 @@ function BG.FBZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
     if BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i] then
         if BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i] ~= "" then
             bt:SetText(BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i])
-            BG.EditItemCache(bt, OnTextChanged)
         else
             BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i] = nil
         end
@@ -472,7 +468,7 @@ function BG.FBZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
         end
         if not tonumber(self:GetText()) then
             local link = self:GetText()
-            local itemID = GetItemInfoInstant(link)
+            local itemID = GetItemID(link)
             BG.Show_AllHighlight(link, "biaoge")
             if itemID then
                 if BG.ButtonIsInRight(self) then
@@ -481,8 +477,7 @@ function BG.FBZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
                     GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
                 end
                 GameTooltip:ClearLines()
-                GameTooltip:SetItemByID(itemID)
-                GameTooltip:Show()
+                GameTooltip:SetHyperlink(BG.SetSpecIDToLink(link))
 
                 local _r, _g, _b = BG.Frame[FB]["boss" .. BossNum(FB, b, t)]["maijia" .. i]:GetTextColor()
                 BG.SetHistoryMoney(
@@ -494,10 +489,12 @@ function BG.FBZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
 
                 HighlightBiaoGeSameItems(itemID, self)
 
+                BG.DressUpLastButton = self
                 if IsAltKeyDown() and IsControlKeyDown() then
                     SetCursor(nil)
                 elseif IsControlKeyDown() then
                     SetCursor("Interface/Cursor/Inspect")
+                    BG.DressUp()
                 elseif IsAltKeyDown() then
                     if BG.IsML then
                         if BiaoGe.options["autoAuctionStart"] == 1 then
@@ -527,10 +524,14 @@ function BG.FBZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
         BG.canShowTrunToItemLibCursor = false
         BG.canShowStartAuctionCursor = false
         BG.canShowHopeCursor = false
+        if BG.DressUpFrame then
+            BG.DressUpFrame:Hide()
+        end
+        BG.DressUpLastButton = nil
     end)
     -- 获得光标时
     bt:SetScript("OnEditFocusGained", function(self)
-        FrameHide(1)
+        BG.FrameHide(1)
         self:HighlightText()
         BG.lastfocuszhuangbei = self
         BG.lastfocus = self
@@ -583,7 +584,7 @@ function BG.FBZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
                         b = Maxb[FB] + 2
                     end
                     local i
-                    for ii = Maxi[FB], 1, -1 do
+                    for ii = BG.Maxi, 1, -1 do
                         if BG.Frame[FB]["boss" .. b - 1]["zhuangbei" .. ii] then
                             i = ii
                             break
@@ -620,7 +621,7 @@ function BG.FBZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
                     BG.Frame[FB]["boss" .. b - 1]["zhuangbei" .. i]:SetFocus()
                 else
                     local i
-                    for ii = Maxi[FB], 1, -1 do
+                    for ii = BG.Maxi, 1, -1 do
                         if BG.Frame[FB]["boss" .. b - 1]["zhuangbei" .. ii] then
                             i = ii
                             break
@@ -637,7 +638,7 @@ function BG.FBZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
                     BG.Frame[FB]["boss" .. b + 1]["zhuangbei" .. i]:SetFocus()
                 else
                     local i
-                    for ii = Maxi[FB], 1, -1 do
+                    for ii = BG.Maxi, 1, -1 do
                         if BG.Frame[FB]["boss" .. b + 1]["zhuangbei" .. ii] then
                             i = ii
                             break
@@ -752,7 +753,7 @@ function BG.FBMaiJiaUI(FB, t, b, bb, i, ii)
     end)
     -- 获得光标时
     bt:SetScript("OnEditFocusGained", function(self)
-        FrameHide(1)
+        BG.FrameHide(1)
         bt:HighlightText()
         BG.lastfocus = self
         BG.maijiaButton = self
@@ -803,7 +804,7 @@ function BG.FBMaiJiaUI(FB, t, b, bb, i, ii)
                         b = Maxb[FB] + 1
                     end
                     local i
-                    for ii = Maxi[FB], 1, -1 do
+                    for ii = BG.Maxi, 1, -1 do
                         if BG.Frame[FB]["boss" .. b - 1]["maijia" .. ii] then
                             i = ii
                             break
@@ -836,7 +837,7 @@ function BG.FBMaiJiaUI(FB, t, b, bb, i, ii)
                     BG.Frame[FB]["boss" .. b - 1]["maijia" .. i]:SetFocus()
                 else
                     local i
-                    for ii = Maxi[FB], 1, -1 do
+                    for ii = BG.Maxi, 1, -1 do
                         if BG.Frame[FB]["boss" .. b - 1]["maijia" .. ii] then
                             i = ii
                             break
@@ -853,7 +854,7 @@ function BG.FBMaiJiaUI(FB, t, b, bb, i, ii)
                     BG.Frame[FB]["boss" .. b + 1]["maijia" .. i]:SetFocus()
                 else
                     local i
-                    for ii = Maxi[FB], 1, -1 do
+                    for ii = BG.Maxi, 1, -1 do
                         if BG.Frame[FB]["boss" .. b + 1]["maijia" .. ii] then
                             i = ii
                             break
@@ -933,7 +934,7 @@ function BG.FBJinEUI(FB, t, b, bb, i, ii)
             BG.UpdateZhiChuPercent(zhuangbei, self)
         end
         if self == BG.Frame[FB]["boss" .. Maxb[FB] + 2]["jine1"] then
-            for i = 1, Maxi[FB] do
+            for i = 1, BG.Maxi do
                 local zhuangbei = BG.Frame[FB]["boss" .. Maxb[FB] + 1]["zhuangbei" .. i]
                 local jine = BG.Frame[FB]["boss" .. Maxb[FB] + 1]["jine" .. i]
                 if zhuangbei then
@@ -945,7 +946,7 @@ function BG.FBJinEUI(FB, t, b, bb, i, ii)
     bt:SetScript("OnMouseDown", function(self, enter)
         if enter == "RightButton" and self ~= BG.Frame[FB]["boss" .. Maxb[FB] + 2]["jine" .. i] then
             UpdateCancelDelete(self, FB, BossNum(FB, b, t), i, self.type)
-            FrameHide(1)
+            BG.FrameHide(1)
             self:SetEnabled(false)
             self:SetText("")
             return
@@ -985,7 +986,7 @@ function BG.FBJinEUI(FB, t, b, bb, i, ii)
     end)
     -- 获得光标时
     bt:SetScript("OnEditFocusGained", function(self)
-        FrameHide(1)
+        BG.FrameHide(1)
         bt:HighlightText()
         BG.lastfocus = self
         BG.maijiaButton = BG.Frame[FB]["boss" .. BossNum(FB, b, t)]["maijia" .. i]
@@ -1054,7 +1055,7 @@ function BG.FBJinEUI(FB, t, b, bb, i, ii)
                         b = Maxb[FB] + 2
                     end
                     local i
-                    for ii = Maxi[FB], 1, -1 do
+                    for ii = BG.Maxi, 1, -1 do
                         if BG.Frame[FB]["boss" .. b - 1]["jine" .. ii] then
                             i = ii
                             break
@@ -1091,7 +1092,7 @@ function BG.FBJinEUI(FB, t, b, bb, i, ii)
                     BG.Frame[FB]["boss" .. b - 1]["jine" .. i]:SetFocus()
                 else
                     local i
-                    for ii = Maxi[FB], 1, -1 do
+                    for ii = BG.Maxi, 1, -1 do
                         if BG.Frame[FB]["boss" .. b - 1]["jine" .. ii] then
                             i = ii
                             break
@@ -1108,7 +1109,7 @@ function BG.FBJinEUI(FB, t, b, bb, i, ii)
                     BG.Frame[FB]["boss" .. b + 1]["jine" .. i]:SetFocus()
                 else
                     local i
-                    for ii = Maxi[FB], 1, -1 do
+                    for ii = BG.Maxi, 1, -1 do
                         if BG.Frame[FB]["boss" .. b + 1]["jine" .. ii] then
                             i = ii
                             break
@@ -1188,7 +1189,7 @@ function BG.FBJiShaUI(FB, t, b, bb, i, ii)
     if BossNum(FB, b, t) > Maxb[FB] - 2 then return end
     local text = BG["Frame" .. FB]:CreateFontString()
     local num
-    for i = 1, Maxi[FB] do
+    for i = 1, BG.Maxi do
         if not BG.Frame[FB]["boss" .. BossNum(FB, b, t)]["zhuangbei" .. i + 1] then
             num = i
             break
@@ -1250,7 +1251,7 @@ function BG.FBZhiChuZongLanGongZiUI(FB)
         end
     end
     -- 设置支出颜色：绿
-    for i = 1, Maxi[FB], 1 do
+    for i = 1, BG.Maxi, 1 do
         if BG.Frame[FB]["boss" .. Maxb[FB] + 1]["zhuangbei" .. i] then
             BG.Frame[FB]["boss" .. Maxb[FB] + 1]["zhuangbei" .. i]:SetTextColor(RGB("00FF00"))
             BG.Frame[FB]["boss" .. Maxb[FB] + 1]["jine" .. i]:SetTextColor(RGB("00FF00"))
@@ -1312,7 +1313,7 @@ function BG.FBZhiChuZongLanGongZiUI(FB)
     BG.Frame[FB]["boss" .. Maxb[FB] + 2]["jine4"]:HookScript("OnEnter", OnEnter)
 
     -- 修复默认支出名称
-    for i = 1, Maxi[FB] do
+    for i = 1, BG.Maxi do
         local zb = BG.Frame[FB]["boss" .. Maxb[FB] + 1]["zhuangbei" .. i]
         if zb then
             zb:SetText(zb:GetText():gsub(L["坦克补贴"], L["T补贴"]))

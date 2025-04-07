@@ -7,12 +7,10 @@ local RR = ns.RR
 local NN = ns.NN
 local RN = ns.RN
 local Size = ns.Size
-local FrameHide = ns.FrameHide
 local SetClassCFF = ns.SetClassCFF
 local RGB_16 = ns.RGB_16
 
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local HopeMaxn = ns.HopeMaxn
 local HopeMaxb = ns.HopeMaxb
 local HopeMaxi = ns.HopeMaxi
@@ -27,7 +25,7 @@ local function CreateListTable(onClick, tbl1)
     local allsum = 0
     local FB = BG.FB1
     for b = 1, Maxb[FB] do
-        for i = 1, Maxi[FB] do
+        for i = 1, BG.Maxi do
             if BG.Frame[FB]["boss" .. b]["qiankuan" .. i] then
                 if BiaoGe[FB]["boss" .. b]["qiankuan" .. i] then
                     local maijia = BG.Frame[FB]["boss" .. b]["maijia" .. i]:GetText() == "" and L["没记买家"]
@@ -139,7 +137,7 @@ function BG.QianKuanUI(lastbt)
     end)
     -- 单击触发
     bt:SetScript("OnClick", function(self)
-        FrameHide(0)
+        BG.FrameHide(0)
         if not IsInRaid(1) then
             SendSystemMessage(L["不在团队，无法通报"])
             BG.PlaySound(1)

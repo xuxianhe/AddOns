@@ -11,14 +11,10 @@ local Size = ns.Size
 local RGB = ns.RGB
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
-local Width = ns.Width
-local Height = ns.Height
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local HopeMaxn = ns.HopeMaxn
 local HopeMaxb = ns.HopeMaxb
 local HopeMaxi = ns.HopeMaxi
-local FrameHide = ns.FrameHide
 
 
 local pt = print
@@ -80,7 +76,7 @@ function BG.ReceiveUI()
             else
                 BG.ReceiveMainFrame:Hide()
                 for b = 1, Maxb[FB] + 2 do
-                    for i = 1, Maxi[FB] do
+                    for i = 1, BG.Maxi do
                         if BG.ReceiveFrame[FB]["boss" .. b]["zhuangbei" .. i] then
                             BG.ReceiveFrame[FB]["boss" .. b]["zhuangbei" .. i]:SetText("")
                             BG.ReceiveFrame[FB]["boss" .. b]["maijia" .. i]:SetText("")
@@ -96,7 +92,7 @@ function BG.ReceiveUI()
                 BG.ReceiveBiaoGe = {}
                 for b = 1, Maxb[FB] + 2 do
                     BG.ReceiveBiaoGe["boss" .. b] = {}
-                    for i = 1, Maxi[FB] do
+                    for i = 1, BG.Maxi do
                         if BG.Frame[FB]["boss" .. b]["zhuangbei" .. i] then
                             BG.ReceiveBiaoGe["boss" .. b]["zhuangbei" .. i] = ""
                             BG.ReceiveBiaoGe["boss" .. b]["maijia" .. i] = ""
@@ -122,11 +118,8 @@ function BG.ReceiveUI()
         f:RegisterEvent("CHAT_MSG_ADDON")
         f:SetScript("OnEvent", function(self, event, ...)
             if not BG.canSendBiaoGe then return end
-
             local prefix, msg, distType, sender = ...
             if prefix ~= "BiaoGe" then return end
-            local sendername = strsplit("-", sender)
-            local playername = UnitName("player")
             local type, FB, historyname = strsplit("-", msg)
             local yes
             for key, _FB in pairs(BG.FBtable) do
@@ -151,7 +144,7 @@ function BG.ReceiveUI()
 
                 for b = 1, Maxb[FB] + 2 do
                     BG.SendBiaoGe["boss" .. b] = {}
-                    for i = 1, Maxi[FB] do
+                    for i = 1, BG.Maxi do
                         if BG.Frame[FB]["boss" .. b]["zhuangbei" .. i] then
                             BG.SendBiaoGe["boss" .. b]["zhuangbei" .. i] = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText()
                             BG.SendBiaoGe["boss" .. b]["maijia" .. i] = BG.Frame[FB]["boss" .. b]["maijia" .. i]:GetText()
@@ -182,7 +175,7 @@ function BG.ReceiveUI()
 
                 for b = 1, Maxb[FB] + 2 do
                     BG.SendBiaoGe["boss" .. b] = {}
-                    for i = 1, Maxi[FB] do
+                    for i = 1, BG.Maxi do
                         if BG.Frame[FB]["boss" .. b]["zhuangbei" .. i] then
                             BG.SendBiaoGe["boss" .. b]["zhuangbei" .. i] = BiaoGe.History[FB][DT]["boss" .. b]["zhuangbei" .. i]
                             BG.SendBiaoGe["boss" .. b]["maijia" .. i] = BiaoGe.History[FB][DT]["boss" .. b]["maijia" .. i]
@@ -208,7 +201,7 @@ function BG.ReceiveUI()
 
             local text = "BG"
             for b = 1, Maxb[FB] + 2 do
-                for i = 1, Maxi[FB] do
+                for i = 1, BG.Maxi do
                     if BG.SendBiaoGe["boss" .. b]["zhuangbei" .. i] then
                         if BG.SendBiaoGe["boss" .. b]["zhuangbei" .. i] ~= "" then
                             local t = { text, "-", "b", b, "zb", i, ":", BG.SendBiaoGe["boss" .. b]["zhuangbei" .. i] }
@@ -281,8 +274,6 @@ function BG.ReceiveUI()
         f:SetScript("OnEvent", function(self, event, ...)
             local prefix, msg, distType, sender = ...
             if prefix ~= "BiaoGe" then return end
-            local sendername = strsplit("-", sender)
-            local playername = UnitName("player")
             local Receive = { strsplit("-", msg) }
             if Receive[1] ~= "BG" then return end
             for index, value in ipairs(Receive) do
@@ -331,7 +322,7 @@ function BG.ReceiveUI()
                     local BiaoTi = BG.ReceiveBiaoGe.BiaoTi
 
                     for b = 1, Maxb[FB] + 2 do
-                        for i = 1, Maxi[FB] do
+                        for i = 1, BG.Maxi do
                             if BG.ReceiveFrame[FB]["boss" .. b]["zhuangbei" .. i] then
                                 BG.ReceiveFrame[FB]["boss" .. b]["zhuangbei" .. i]:SetText(BG.ReceiveBiaoGe["boss" .. b]["zhuangbei" .. i] or "")
                                 BG.ReceiveFrame[FB]["boss" .. b]["maijia" .. i]:SetText(BG.ReceiveBiaoGe["boss" .. b]["maijia" .. i] or "")
@@ -348,8 +339,8 @@ function BG.ReceiveUI()
                     end
 
                     BG.MainFrame:Hide()
-                    BG.ReceiveMainFrame:SetWidth(Width[FB])
-                    BG.ReceiveMainFrame:SetHeight(Height[FB] - 20)
+                    BG.ReceiveMainFrame:SetWidth(BG.FBWidth[FB])
+                    BG.ReceiveMainFrame:SetHeight(BG.FBHeight[FB] - 20)
                     BG.ReceiveMainFrame:Show()
 
                     for i, FB in ipairs(BG.FBtable) do

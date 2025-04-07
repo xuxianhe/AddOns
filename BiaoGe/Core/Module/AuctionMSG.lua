@@ -13,15 +13,10 @@ local RGB_16 = ns.RGB_16
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local GetText_T = ns.GetText_T
-local FrameDongHua = ns.FrameDongHua
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local GetItemID = ns.GetItemID
 
-local Width = ns.Width
-local Height = ns.Height
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local HopeMaxn = ns.HopeMaxn
 local HopeMaxb = ns.HopeMaxb
 local HopeMaxi = ns.HopeMaxi
@@ -76,8 +71,7 @@ BG.Init(function()
             GameTooltip:ClearLines()
             local itemID = GetItemInfoInstant(link)
             if itemID then
-                GameTooltip:SetItemByID(itemID)
-                GameTooltip:Show()
+                GameTooltip:SetHyperlink(BG.SetSpecIDToLink(link))
                 BG.Show_AllHighlight(link)
             end
         end)
@@ -409,8 +403,8 @@ BG.Init(function()
         f:RegisterEvent("CHAT_MSG_RAID")
         f:SetScript("OnEvent", function(self, event, ...)
             local msg, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid = ...
-            playerName = strsplit("-", playerName)
             local ML
+            playerName = BG.GSN(playerName)
             if event == "CHAT_MSG_RAID_WARNING" or event == "CHAT_MSG_RAID_LEADER" then
                 ML = true
             elseif event == "CHAT_MSG_RAID" then

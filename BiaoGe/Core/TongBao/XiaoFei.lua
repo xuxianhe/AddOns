@@ -7,12 +7,10 @@ local RR = ns.RR
 local NN = ns.NN
 local RN = ns.RN
 local Size = ns.Size
-local FrameHide = ns.FrameHide
 local SetClassCFF = ns.SetClassCFF
 local RGB_16 = ns.RGB_16
 
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local HopeMaxn = ns.HopeMaxn
 local HopeMaxb = ns.HopeMaxb
 local HopeMaxi = ns.HopeMaxi
@@ -25,7 +23,7 @@ local function CreateListTable(onClick, tbl1)
     local newtable = {}
     local FB = BG.FB1
     for b = 1, Maxb[FB] do
-        for i = 1, Maxi[FB] do
+        for i = 1, BG.Maxi do
             local maijia = BG.Frame[FB]["boss" .. b]["maijia" .. i]
             local jine = BG.Frame[FB]["boss" .. b]["jine" .. i]
             if maijia then
@@ -108,7 +106,7 @@ function BG.XiaoFeiUI(lastbt)
     end)
     -- 点击通报消费排名
     bt:SetScript("OnClick", function(self)
-        FrameHide(0)
+        BG.FrameHide(0)
         if not IsInRaid(1) then
             SendSystemMessage(L["不在团队，无法通报"])
             BG.PlaySound(1)

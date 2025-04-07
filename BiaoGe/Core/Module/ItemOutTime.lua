@@ -13,26 +13,19 @@ local RGB_16 = ns.RGB_16
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local GetText_T = ns.GetText_T
-local FrameDongHua = ns.FrameDongHua
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local GetItemID = ns.GetItemID
 
-local Maxb = ns.Maxb
-local Maxi = ns.Maxi
-local Width = ns.Width
-local Height = ns.Height
-
 local pt = print
 local RealmID = GetRealmID()
-local player = UnitName("player")
+local player = BG.playerName
 
 BG.Init(function()
     BiaoGe.options.showGuoQiFrame = BiaoGe.options.showGuoQiFrame or 0
     BiaoGe.lastGuoQiTime = BiaoGe.lastGuoQiTime or 0
 
     local function GetMaxButton()
-        return floor((Height[BG.FB1]-35)/20-1)
+        return floor((BG.FBHeight[BG.FB1] - 35) / 20 - 1)
     end
     local maxButton = GetMaxButton()
     local notItem
@@ -77,7 +70,7 @@ BG.Init(function()
         })
         f:SetBackdropColor(0, 0, 0, 0.8)
         f:SetBackdropBorderColor(GetClassRGB(nil, "player", BG.borderAlpha))
-        f:SetSize(200, Height[BG.FB1])
+        f:SetSize(200, BG.FBHeight[BG.FB1])
         f:SetPoint("TOPLEFT", BG.MainFrame, "TOPRIGHT", -1, 0)
         f:EnableMouse(true)
         BG.itemGuoQiFrame = f
@@ -107,7 +100,7 @@ BG.Init(function()
         end)
 
         f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-        f.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", 4, 4)
+        f.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT",  BG.IsRetail and 0 or 4,  BG.IsRetail and 0 or 4)
         f.CloseButton:HookScript("OnClick", function(self)
             BiaoGe.options.showGuoQiFrame = 0
         end)
@@ -122,7 +115,7 @@ BG.Init(function()
     BG.itemGuoQiFrame.buttons = {}
 
     local function UpdateFrameSize()
-        BG.itemGuoQiFrame:SetHeight(Height[BG.FB1])
+        BG.itemGuoQiFrame:SetHeight(BG.FBHeight[BG.FB1])
         maxButton = GetMaxButton()
     end
 

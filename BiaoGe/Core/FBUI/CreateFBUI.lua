@@ -9,9 +9,7 @@ local Classpx = ns.Classpx
 local Trade = ns.Trade
 local Maxt = ns.Maxt
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local BossNum = ns.BossNum
-local FrameHide = ns.FrameHide
 
 local pt = print
 
@@ -46,10 +44,18 @@ elseif BG.IsWLK then
     buttonCount.ICC = { 3, 3, 3, 5, 3, 3, 5, 3, 5, 3, 5, 8, 3, 8, 7, }
     -- TBC
     buttonCount.SW = { 5, 5, 5, 6, 5, 6, 10, 11, }
-    buttonCount.BT = { 5, 5, 5, 5, 5, 5, 5, 6, 8, 8, 5, }
+    buttonCount.BT = { 5, 5, 5, 5, 5, 5, 5, 5, 10, 8, 5, }
+    buttonCount.HS = { 5, 5, 5, 5, 5, 7, 5 }
+    buttonCount.SSC = { 4, 4, 4, 4, 4, 5, 5, 5, 5, 10, 8, 5, }
     buttonCount.BWL = { 5, 5, 5, 5, 5, 5, 5, 6, 9, 12, }
 elseif BG.IsCTM then
-    buttonCount.BOT = { 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 8, 24, 5, }
+    buttonCount.BOT = { 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 8, 24, 4, }
+    BG.zaxiang.BOT = { i = 12 }
+    buttonCount.FL = { 6, 6, 6, 6, 6, 6, 6, 6, 10, }
+    buttonCount.DS = { 6, 6, 6, 6, 6, 6, 6, 6, 6, 4, }
+elseif BG.IsRetail then
+    local n = 8
+    buttonCount.NP = { n, n, n, n, n, n, n, n, 5, 5, }
     BG.zaxiang.BOT = { i = 12 }
 end
 

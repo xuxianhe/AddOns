@@ -12,11 +12,9 @@ local RGB = ns.RGB
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local HopeMaxn = ns.HopeMaxn
 local HopeMaxb = ns.HopeMaxb
 local HopeMaxi = ns.HopeMaxi
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local GetItemID = ns.GetItemID
 
@@ -109,28 +107,28 @@ f:RegisterEvent("CHAT_MSG_RAID_WARNING")
 f:RegisterEvent("CHAT_MSG_RAID_LEADER")
 f:RegisterEvent("CHAT_MSG_RAID")
 f:SetScript("OnEvent", function(self, event, msg, playerName, ...)
-    local player = strsplit("-", playerName)
     local IsRaidLedger = BG.FindTableString(msg, locales["RaidLedger:.... 收入 ...."])
     local IsBiaoGe = BG.FindTableString(msg, locales["通报金团账单"])
     local IsBigFoot = BG.FindTableString(msg, locales["事件：.-|c.-|Hitem.-|h|r"])
     local _time = GetServerTime()
+    playerName = BG.GSN(playerName)
     -- 判断是否一个账单
     if IsRaidLedger then -- 金团账本
-        linshi_duizhang = Default(player, _time)
+        linshi_duizhang = Default(playerName, _time)
         linshi_duizhang.yes = 1
         linshi_duizhang.addons = "raidledger"
         tinsert(linshi_duizhang.msgTbl, msg)
         CheckTimeOut(_time)
         return
     elseif IsBiaoGe then -- 金团表格
-        linshi_duizhang = Default(player, _time)
+        linshi_duizhang = Default(playerName, _time)
         linshi_duizhang.yes = 2
         linshi_duizhang.addons = "biaoge"
         tinsert(linshi_duizhang.msgTbl, msg)
         CheckTimeOut(_time)
         return
     elseif not bigfootyes and IsBigFoot then -- 大脚
-        linshi_duizhang = Default(player, _time)
+        linshi_duizhang = Default(playerName, _time)
         linshi_duizhang.addons = "bigfoot"
         bigfoot = {}
         bigfootyes = true
@@ -143,18 +141,18 @@ f:SetScript("OnEvent", function(self, event, msg, playerName, ...)
     if not linshi_duizhang then return end
 
     -- 保存聊天记录
-    if (linshi_duizhang.yes or bigfootyes) and player == linshi_duizhang.player then
+    if (linshi_duizhang.yes or bigfootyes) and playerName == linshi_duizhang.player then
         tinsert(linshi_duizhang.msgTbl, msg)
     end
 
     -- 识别表格
     local FB = BG.MatchTableString(msg, locales["表格：(.+)"])
-    if linshi_duizhang.yes and player == linshi_duizhang.player and FB then
+    if linshi_duizhang.yes and playerName == linshi_duizhang.player and FB then
         linshi_duizhang.FB = FB
     end
 
     -- 如果已经是账单了，则开始保存每个装备的价格
-    if linshi_duizhang.yes and player == linshi_duizhang.player and strfind(msg, h_item) then
+    if linshi_duizhang.yes and playerName == linshi_duizhang.player and strfind(msg, h_item) then
         local item = strmatch(msg, h_item)
         local jine
 
@@ -203,16 +201,16 @@ f:SetScript("OnEvent", function(self, event, msg, playerName, ...)
             tinsert(linshi_duizhang.zhangdan, a)
         end
         return
-    elseif bigfootyes and player == linshi_duizhang.player and (BG.FindTableString(msg, locales["事件：.-|c.-|Hitem.-|h|r"]) or BG.FindTableString(msg, locales["^收入为："])) then -- 大脚
+    elseif bigfootyes and playerName == linshi_duizhang.player and (BG.FindTableString(msg, locales["事件：.-|c.-|Hitem.-|h|r"]) or BG.FindTableString(msg, locales["^收入为："])) then -- 大脚
         tinsert(bigfoot, msg)
         return
     end
 
     -- 保存完整账单至数据库
     local yes
-    if linshi_duizhang.yes and player == linshi_duizhang.player and (BG.FindTableString(msg, locales["平均每人收入:"]) or BG.FindTableString(msg, locales["感谢使用金团表格"])) then
+    if linshi_duizhang.yes and playerName == linshi_duizhang.player and (BG.FindTableString(msg, locales["平均每人收入:"]) or BG.FindTableString(msg, locales["感谢使用金团表格"])) then
         yes = true
-    elseif bigfootyes and player == linshi_duizhang.player and BG.FindTableString(msg, locales["-感谢使用大脚金团辅助工具-"]) then -- 大脚
+    elseif bigfootyes and playerName == linshi_duizhang.player and BG.FindTableString(msg, locales["-感谢使用大脚金团辅助工具-"]) then -- 大脚
         for i, value in ipairs(bigfoot) do
             if strfind(bigfoot[i], h_item) then
                 if bigfoot[i + 1] and BG.FindTableString(bigfoot[i + 1], locales["^收入为：%d+。"]) then
@@ -254,7 +252,7 @@ f:SetScript("OnEvent", function(self, event, msg, playerName, ...)
 end)
 
 BG.RegisterEvent("CHAT_MSG_ADDON", function(self, event, ...)
-    local prefix, msg, distType, sender = ...
+    local prefix, msg, distType = ...
     if not linshi_duizhang then return end
     if prefix == "BiaoGe" and distType == "RAID" and msg:match("^DuiZhang-") then
         linshi_duizhang.tradeTbl = linshi_duizhang.tradeTbl or {}
@@ -389,7 +387,7 @@ function BG.DuiZhangUI()
             local tradeInfo = {}
             BiaoGe[FB].tradeTbl = {}
             for b = 1, Maxb[FB] - 1 do
-                for i = 1, Maxi[FB] do
+                for i = 1, BG.Maxi do
                     local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
                     local myjine = BG.DuiZhangFrame[FB]["boss" .. b]["myjine" .. i]
                     local zhuangbei = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
@@ -533,7 +531,7 @@ function BG.DuiZhangUI()
                     f.nameText = text
 
                     local tex = f:CreateTexture()
-                    tex:SetPoint("CENTER", f, "TOPLEFT", 0, 0)
+                    tex:SetPoint("CENTER", f, "TOPLEFT", 2, -2)
                     tex:SetSize(10, 10)
                     f.icon = tex
                 end
@@ -614,8 +612,7 @@ function BG.DuiZhangUI()
             GameTooltip:ClearLines()
             local itemID = GetItemInfoInstant(link)
             if itemID then
-                GameTooltip:SetItemByID(itemID)
-                GameTooltip:Show()
+                GameTooltip:SetHyperlink(BG.SetSpecIDToLink(link))
                 BG.Show_AllHighlight(link)
             end
         end)
@@ -702,13 +699,13 @@ function BG.DuiZhangList()
     end
 
     LibBG:UIDropDownMenu_Initialize(BG.DuiZhangDropDown.DropDown, function(self, level)
-        FrameHide(0)
+        BG.FrameHide(0)
         for i, v in ipairs(BiaoGe.duizhang) do
             local title = CreateZhangDanTitle(i)
             local info = LibBG:UIDropDownMenu_CreateInfo()
             info.text = title
             info.func = function()
-                FrameHide(0)
+                BG.FrameHide(0)
                 BG.lastduizhangNum = i
                 BG.DuiZhangSet(i)
                 LibBG:UIDropDownMenu_SetText(BG.DuiZhangDropDown.DropDown, title)
@@ -721,7 +718,7 @@ function BG.DuiZhangList()
         local info = LibBG:UIDropDownMenu_CreateInfo()
         info.text = L["无"]
         info.func = function()
-            FrameHide(0)
+            BG.FrameHide(0)
             BG.lastduizhangNum = nil
             BG.DuiZhang0()
             LibBG:UIDropDownMenu_SetText(BG.DuiZhangDropDown.DropDown, L["无"])
@@ -789,7 +786,7 @@ function BG.DuiZhangSet(num)
             local jine = v.jine
             local yes
             for b = 1, Maxb[FB] - 1 do
-                for i = 1, Maxi[FB] do
+                for i = 1, BG.Maxi do
                     local zhuangbei = BG.DuiZhangFrame[FB]["boss" .. b]["zhuangbei" .. i]
                     local myjine = BG.DuiZhangFrame[FB]["boss" .. b]["myjine" .. i]
                     local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
@@ -811,7 +808,7 @@ function BG.DuiZhangSet(num)
             -- 漏记
             if not yes then
                 local b = Maxb[FB]
-                for i = 1, Maxi[FB] do
+                for i = 1, BG.Maxi do
                     local zhuangbei = BG.DuiZhangFrame[FB]["boss" .. b]["zhuangbei" .. i]
                     local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
                     if zhuangbei then
@@ -832,7 +829,7 @@ function BG.DuiZhangSet(num)
             for _, v in ipairs(BiaoGe.duizhang[num].tradeTbl[ii]) do
                 local yes
                 for b = 1, Maxb[FB] do
-                    for i = 1, Maxi[FB] do
+                    for i = 1, BG.Maxi do
                         local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
                         if otherjine and not (otherjine.hasTradeTbl or otherjine.tradeTbl) then
                             local maijia = BG.DuiZhangFrame[FB]["boss" .. b]["maijia" .. i]
@@ -860,7 +857,7 @@ function BG.DuiZhangSet(num)
     -- 设置打钩/叉叉材质
     C_Timer.After(0, function()
         for b = 1, Maxb[FB] + 1 do
-            for i = 1, Maxi[FB] do
+            for i = 1, BG.Maxi do
                 local zhuangbei = BG.DuiZhangFrame[FB]["boss" .. b]["zhuangbei" .. i]
                 local myjine = BG.DuiZhangFrame[FB]["boss" .. b]["myjine" .. i]
                 local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
@@ -894,7 +891,7 @@ end
 function BG.DuiZhang0()
     local FB = BG.FB1
     for b = 1, Maxb[FB] + 1 do
-        for i = 1, Maxi[FB] do
+        for i = 1, BG.Maxi do
             local zhuangbei = BG.DuiZhangFrame[FB]["boss" .. b]["zhuangbei" .. i]
             local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
             local tx = BG.DuiZhangFrame[FB]["boss" .. b]["yes" .. i]
@@ -914,7 +911,7 @@ function BG.DuiZhang0()
 
     -- 漏记装备
     local b = Maxb[FB]
-    for i = 1, Maxi[FB] do
+    for i = 1, BG.Maxi do
         local zhuangbei = BG.DuiZhangFrame[FB]["boss" .. b]["zhuangbei" .. i]
         local myjine = BG.DuiZhangFrame[FB]["boss" .. b]["myjine" .. i]
         if zhuangbei then

@@ -18,7 +18,9 @@ local GetItemID = ns.GetItemID
 
 local pt = print
 local RealmID = GetRealmID()
-local player = UnitName("player")
+local player = BG.playerName
+local GetAddOnMetadata = GetAddOnMetadata or C_AddOns.GetAddOnMetadata
+local IsAddOnLoaded = IsAddOnLoaded or C_AddOns.IsAddOnLoaded
 
 BG.Init2(function()
     BG.MeetingHorn = {}
@@ -454,7 +456,7 @@ BG.Init2(function()
                 end
             end)
             f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-            f.CloseButton:SetPoint("TOPRIGHT", 3, 3)
+            f.CloseButton:SetPoint("TOPRIGHT", BG.CloseButtonOffset, BG.CloseButtonOffset)
             f.CloseButton:HookScript("OnClick", function()
                 BiaoGe.MeetingHornWhisper.WhisperFrame = nil
                 BG.PlaySound(1)
@@ -980,6 +982,13 @@ BG.Init2(function()
             -- 聊天框右键菜单
             if BG.IsNewUI then
                 if BiaoGe.options["MeetingHorn_whisper"] == 1 then
+                    if not BG.IsVanilla then
+                        Menu.ModifyMenu("MENU_UNIT_FRIEND", function(owner, rootDescription, contextData)
+                            rootDescription:CreateButton(L["装等+职业"], function()
+                                SendWhisper(contextData.name, "onlylevel")
+                            end)
+                        end)
+                    end
                     Menu.ModifyMenu("MENU_UNIT_FRIEND", function(owner, rootDescription, contextData)
                         rootDescription:CreateDivider()
                         -- rootDescription:CreateTitle("My Addon")
@@ -987,11 +996,13 @@ BG.Init2(function()
                             SendWhisper(contextData.name)
                         end)
                     end)
-                    Menu.ModifyMenu("MENU_UNIT_FRIEND", function(owner, rootDescription, contextData)
-                        rootDescription:CreateButton(L["装等+职业"], function()
-                            SendWhisper(contextData.name, "onlylevel")
+                    if BG.IsVanilla then
+                        Menu.ModifyMenu("MENU_UNIT_FRIEND", function(owner, rootDescription, contextData)
+                            rootDescription:CreateButton(L["装等+职业"], function()
+                                SendWhisper(contextData.name, "onlylevel")
+                            end)
                         end)
-                    end)
+                    end
                 end
             else
                 hooksecurefunc("UnitPopup_ShowMenu", function(arg1, which)
@@ -1184,8 +1195,7 @@ BG.Init2(function()
             local isChannel = text:find("|Hchannel:channel:%d+.-|h")
             local name = text:match("|Hplayer:(.-):.-|h")
             if not (isChannel and name) then return self.oldFunc_BiaoGe(self, text, ...) end
-            name = strsplit("-", name)
-            local currentLevel = MeetingHorn.db.realm.starRegiment.regimentData[name]
+            local currentLevel = MeetingHorn.db.realm.starRegiment.regimentData[BG.GSN(name)]
             if not currentLevel then return self.oldFunc_BiaoGe(self, text, ...) end
             currentLevel = currentLevel.level
             text = gsub(text, "(|Hchannel:channel:%d+|h.-|h)%s-(|Hplayer:.+|h.+|h)",
@@ -1202,59 +1212,10 @@ BG.Init2(function()
             end
         end
 
-        -- 右键菜单
---[[         local function OnShow(...)
-            if BiaoGe.options["MeetingHorn_starRaidLeader"] ~= 1 then return end
-            if (UIDROPDOWNMENU_MENU_LEVEL > 1) then return end
-            local arg1, arg2, arg3, arg4, arg5 = ...
-            local which                        = arg2
-            local name, realm
-            if BG.IsNewUI then
-                local contextData = arg3
-                local unit = contextData.unit
-                if unit then
-                    name = UnitNameUnmodified(unit)
-                    contextData.name = name
-                    contextData.server = realm
-                else
-                    name = contextData.name
-                    if name then
-                        local name2, server2 = strmatch(name, "^([^-]+)-(.*)")
-                        if name2 then
-                            contextData.name = name2
-                            contextData.server = server2
-                        end
-                    end
-                end
-                if not name then return end
-            else
-                local unit = arg3
-                local _name = arg4
-                if unit then
-                    name, realm = UnitName(unit)
-                elseif _name then
-                    name, realm = strsplit("-", _name)
-                end
-                if not name then return end
-                if realm and realm ~= GetRealmName() then return end
-            end
-
-            local currentLevel = MeetingHorn.db.realm.starRegiment.regimentData[name]
-            if not currentLevel then return end
-            currentLevel = currentLevel.level
-            local bt = _G.DropDownList1Button1
-            bt:SetText(bt:GetText() .. "|T" .. StarTexture(currentLevel) .. ":17:50:0:0:100:100:0:60:10:90|t")
-        end
-        if BG.IsNewUI then
-            hooksecurefunc(UnitPopupManager, "OpenMenu", OnShow)
-        else
-            hooksecurefunc("UnitPopup_ShowMenu", OnShow)
-        end ]]
-
         -- 鼠标悬停
         local CD
         local function SetTooltip(unit)
-            local name = UnitName(unit)
+            local name = BG.GN(unit)
             local currentLevel = MeetingHorn.db.realm.starRegiment.regimentData[name]
             if not currentLevel then return end
             currentLevel = currentLevel.level
@@ -1316,9 +1277,8 @@ BG.Init2(function()
         end
         hooksecurefunc(MeetingHorn.MainPanel.Browser.ActivityList, "update", Set)
 
-        hooksecurefunc("SendChatMessage", function(msg, chatType, _, playerName)
+        hooksecurefunc("SendChatMessage", function(msg, chatType, _, name)
             if chatType == "WHISPER" and BiaoGe.options["MeetingHorn_isSend"] == 1 then
-                local name = strsplit("-", playerName)
                 isSend[name] = time()
                 if MeetingHorn.MainPanel.Browser.ActivityList:IsVisible() then
                     Set()

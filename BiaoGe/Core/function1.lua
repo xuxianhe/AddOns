@@ -7,18 +7,14 @@ local RR = ns.RR
 local NN = ns.NN
 local RN = ns.RN
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local HopeMaxn = ns.HopeMaxn
 local HopeMaxb = ns.HopeMaxb
 local HopeMaxi = ns.HopeMaxi
-local Width = ns.Width
-local Height = ns.Height
 local RGB = ns.RGB
-local BossNumtbl = ns.BossNumtbl
 
 local pt = print
-local RealmId = GetRealmID()
-local player = UnitName("player")
+local RealmID = GetRealmID()
+local player = BG.playerName
 BG.After = C_Timer.After
 
 ------------------函数：四舍五入------------------ 数字，小数点数
@@ -78,7 +74,7 @@ end
 
 -- 第几个BOSS
 local function BossNum(FB, b, t)
-    local tbl = BossNumtbl[FB]
+    local tbl = BG.BossNumtbl[FB]
     local bb
     if tbl[t + 1] then
         bb = tbl[t + 1] - tbl[t]
@@ -90,7 +86,7 @@ end
 ns.BossNum = BossNum
 
 function BG.GetBossNumInfo(FB, bossNum)
-    local tbl = BossNumtbl[FB]
+    local tbl = BG.BossNumtbl[FB]
     for i = 1, #tbl do
         if (not tbl[i + 1]) or (tbl[i] < bossNum and tbl[i + 1] >= bossNum) then
             local t = i
@@ -191,7 +187,7 @@ local function GetClassRGB(name, player, Alpha)
     if player then
         _, class = UnitClass(player)
     else
-        _, class = UnitClass(name)
+        _, class = UnitClass(BG.GSN(name))
     end
     local c1, c2, c3 = 1, 1, 1
     if class then
@@ -208,7 +204,7 @@ local function SetClassCFF(name, player, type)
     if player then
         _, class = UnitClass(player)
     else
-        _, class = UnitClass(name)
+        _, class = UnitClass(BG.GSN(name))
     end
     if class then
         local color = select(4, GetClassColor(class))
@@ -231,9 +227,7 @@ end
 ------------------函数：仅提取链接文本------------------
 local function GetItemID(text)
     if not text then return end
-    local h_item = "item:(%d+):"
-    local item = tonumber(strmatch(text, h_item))
-    return item
+    return tonumber(text:match("item:(%d+):"))
 end
 ns.GetItemID = GetItemID
 
@@ -252,7 +246,7 @@ function BG.RegisterEvent(Event, OnEvent)
 end
 
 ------------------函数：隐藏窗口------------------   -- 0：隐藏焦点+全部框架，1：隐藏全部框架，2：隐藏除历史表格外的框架
-local function FrameHide(num)
+function BG.FrameHide(num)
     if num == 0 then
         if BG.lastfocus then
             BG.lastfocus:ClearFocus()
@@ -286,13 +280,7 @@ local function FrameHide(num)
     if BG.auctionLogFrame and BG.auctionLogFrame.changeFrame then
         BG.auctionLogFrame.changeFrame:Hide()
     end
-
-    -- if BG.FrameNewBee then
-    --     BG.FrameNewBee:Hide()
-    -- end
 end
-ns.FrameHide = FrameHide
-BG.FrameHide = FrameHide
 
 ------------------当前表格已经有东西了------------------
 function BG.BiaoGeHavedItem(FB, _type, instanceID)
@@ -305,7 +293,7 @@ function BG.BiaoGeHavedItem(FB, _type, instanceID)
         endB = BG.bossPositionStartEnd[instanceID][2]
     end
     for b = startB, endB do
-        for i = 1, Maxi[FB] do
+        for i = 1, BG.Maxi do
             if BG.Frame[FB]["boss" .. b]["zhuangbei" .. i] then
                 if b ~= Maxb[FB] + 1 and BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText() ~= "" then
                     return true
@@ -438,7 +426,6 @@ function BG.dropDownToggle(dropDown)
     end)
     BG.SkinDropDown(dropDown)
 end
-
 
 ------------------是国服或亚服吗------------------
 function BG.IsCN()
@@ -625,11 +612,11 @@ function BG.Copy(table)
     end
 end
 
-function BG.DeletePlayerData(realmID,player)
+function BG.DeletePlayerData(realmID, player)
     if BiaoGe.Hope and BiaoGe.Hope[realmID] then
         BiaoGe.Hope[realmID][player] = nil
     end
-    if BiaoGe.FilterClassItemDB and  BiaoGe.FilterClassItemDB[realmID] then
+    if BiaoGe.FilterClassItemDB and BiaoGe.FilterClassItemDB[realmID] then
         BiaoGe.FilterClassItemDB[realmID][player] = nil
     end
     if BiaoGe.filterClassNum and BiaoGe.filterClassNum[realmID] then
@@ -659,6 +646,14 @@ function BG.DeletePlayerData(realmID,player)
     if BiaoGe.playerInfo and BiaoGe.playerInfo[realmID] then
         BiaoGe.playerInfo[realmID][player] = nil
     end
+    if BiaoGeVIP and BiaoGeVIP.RoleOverviewSort and BiaoGeVIP.RoleOverviewSort[realmID] then
+        for i, v in ipairs(BiaoGeVIP.RoleOverviewSort[realmID]) do
+            if v.player == player then
+                tremove(BiaoGeVIP.RoleOverviewSort[realmID], i)
+                break
+            end
+        end
+    end
 end
 
 --获取副本tbl某个value
@@ -669,3 +664,57 @@ function BG.GetFBinfo(FB, info)
         end
     end
 end
+
+function BG.GetSpecID()
+    return GetSpecializationInfo(GetSpecialization())
+end
+
+function BG.SetSpecIDToLink(link)
+    if BG.IsRetail then
+        local k = link:match("item:%d+:[%d-:]+")
+        local _, s = k:find("item:%d+:%d-:%d-:%d-:%d-:%d-:%d-:%d-:")
+        local _, e = k:find("item:%d+:%d-:%d-:%d-:%d-:%d-:%d-:%d-:%d-:%d-:")
+        k = k:sub(1, s) .. "80:" .. BG.GetSpecID() .. k:sub(e, #k)
+        return link:gsub("item:%d+:[%d-:]+", k)
+    else
+        return link
+    end
+end
+
+-- function BG.GsubLink(link1,link2)
+--     return link1:gsub("(item:)%d+:[%d-:]+","%1"..link2)
+-- end
+
+local function Get(link)
+    local tbl = { strsplit(":", link) }
+    tremove(tbl, 1)
+    local itemID = tbl[1]
+    local bonus = {}
+    for i = 13, #tbl do
+        tinsert(bonus, tbl[i])
+    end
+    return itemID, bonus
+end
+function BG.IsSameItem(link1, link2)
+    if BG.IsRetail then
+        local itemID1, bonus1 = Get(link1)
+        local itemID2, bonus2 = Get(link2)
+        if not (itemID1 == itemID2 and #bonus1 == #bonus2) then
+            return
+        end
+        for i = 1, #bonus1 do
+            if bonus1[i] ~= bonus2[i] then
+                return
+            end
+        end
+        return true
+    else
+        return GetItemID(link1)==GetItemID(link2)
+    end
+end
+
+-- function BG.()
+
+-- end
+
+

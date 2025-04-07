@@ -15,22 +15,17 @@ local RGB_16 = ns.RGB_16
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local GetText_T = ns.GetText_T
-local FrameDongHua = ns.FrameDongHua
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local GetItemID = ns.GetItemID
 
-local Width = ns.Width
-local Height = ns.Height
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local HopeMaxn = ns.HopeMaxn
 local HopeMaxb = ns.HopeMaxb
 local HopeMaxi = ns.HopeMaxi
 
 local pt = print
 local RealmId = GetRealmID()
-local player = UnitName("player")
+local player = BG.playerName
 
 local UPLOADTIME = 30
 
@@ -58,21 +53,21 @@ BG.Init(function()
         -- 时间戳
         BiaoGe.newbee_report.time = GetServerTime()
         -- 插件版本
-        BiaoGe.newbee_report.ver = ns.ver
+        BiaoGe.newbee_report.ver = BG.ver
         -- 表格
         BiaoGe.newbee_report.biaoge = BG.FB1
         -- 团长
         BiaoGe.newbee_report.raidLeader = {}
         if IsInRaid(1) then
             for i = 1, GetNumGroupMembers() do
-                local name, rank, subgroup, level, classlocalized, class, zone,
+                local fullName, rank, subgroup, level, classlocalized, class, zone,
                 online, isDead, role, isML, combatRole = GetRaidRosterInfo(i)
-                if name then
-                    local name, realm = strsplit("-", name)
+                if fullName then
+                    local name, realm = strsplit("-", fullName)
                     if not realm then realm = GetRealmName() end
                     local unit = "raid" .. i
                     if rank == 2 then
-                        BiaoGe.newbee_report.raidLeader.name = name
+                        BiaoGe.newbee_report.raidLeader.name = fullName
                         for k, v in pairs(BG.playerClass) do
                             BiaoGe.newbee_report.raidLeader[k] = select(v.select, v.func(unit))
                         end
@@ -84,7 +79,7 @@ BG.Init(function()
         -- 上传者
         local unit = "player"
         BiaoGe.newbee_report.uploader = {}
-        BiaoGe.newbee_report.uploader.name = UnitName(unit) -- 玩家名字
+        BiaoGe.newbee_report.uploader.name = BG.GN(unit) -- 玩家名字
         for k, v in pairs(BG.playerClass) do
             BiaoGe.newbee_report.uploader[k] = select(v.select, v.func(unit))
         end
@@ -106,7 +101,7 @@ BG.Init(function()
             end
             if name then
                 local tbl = {}
-                for i = 1, Maxi[FB] do
+                for i = 1, BG.Maxi do
                     local zb = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
                     local mj = BG.Frame[FB]["boss" .. b]["maijia" .. i]
                     local je = BG.Frame[FB]["boss" .. b]["jine" .. i]

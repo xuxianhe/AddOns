@@ -13,22 +13,17 @@ local RGB_16 = ns.RGB_16
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local GetText_T = ns.GetText_T
-local FrameDongHua = ns.FrameDongHua
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local GetItemID = ns.GetItemID
 
-local Width = ns.Width
-local Height = ns.Height
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 local HopeMaxn = ns.HopeMaxn
 local HopeMaxb = ns.HopeMaxb
 local HopeMaxi = ns.HopeMaxi
 
 local pt = print
 local RealmId = GetRealmID()
-local player = UnitName("player")
+local player = BG.playerName
 
 local saveZaXiangNum = 0
 local saveZaXiangTbl = {}
@@ -98,8 +93,7 @@ BG.Init(function()
             if itemID then
                 GameTooltip:SetOwner(self, "ANCHOR_CURSOR", 0, 0)
                 GameTooltip:ClearLines()
-                GameTooltip:SetItemByID(itemID)
-                GameTooltip:Show()
+                GameTooltip:SetHyperlink(BG.SetSpecIDToLink(link))
             end
         end
     end)
@@ -293,9 +287,9 @@ BG.Init(function()
         if typeID == 2 or typeID == 4 then
             levelText = "(" .. level .. ")"
         end
-        local startI, endI, addI = 1, Maxi[FB], 1
+        local startI, endI, addI = 1, BG.Maxi, 1
         if fromLast then
-            startI, endI, addI = Maxi[FB], 1, -1
+            startI, endI, addI = BG.Maxi, 1, -1
         end
         for i = startI, endI, addI do
             local zb = BG.Frame[FB]["boss" .. numb]["zhuangbei" .. i]
@@ -339,7 +333,7 @@ BG.Init(function()
                 local inSertItem = ""
                 if numb ~= Maxb[FB] - 1 then
                     local has
-                    for i = 1, Maxi[FB] do
+                    for i = 1, BG.Maxi do
                         local zb = BG.Frame[FB]["boss" .. Maxb[FB] - 1]["zhuangbei" .. i]
                         if zb and zb:GetText() == "" then
                             has = true
@@ -387,7 +381,7 @@ BG.Init(function()
             levelText = "(" .. level .. ")"
         end
         for b = 1, Maxb[FB] do
-            for i = 1, Maxi[FB] do
+            for i = 1, BG.Maxi do
                 local zb = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
                 local duizhangzb = BG.DuiZhangFrame[FB]["boss" .. b]["zhuangbei" .. i]
                 if zb then
@@ -480,7 +474,7 @@ BG.Init(function()
         if buy and not lootplayer then return end   -- 你是否刚购买了物品
         if quest and not lootplayer then return end -- 是否获得了任务物品
         if not link then return end
-        if not lootplayer then lootplayer = UnitName("player") end
+        if not lootplayer then lootplayer = BG.GN() end
         if not count then count = 1 end
 
         local name, _, quality, level, _, _, _, stackCount, _, Texture, _, typeID, subclassID, bindType = GetItemInfo(link)

@@ -14,25 +14,23 @@ local RGB_16 = ns.RGB_16
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local GetText_T = ns.GetText_T
-local FrameDongHua = ns.FrameDongHua
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local GetItemID = ns.GetItemID
 
 local Maxb = ns.Maxb
-local Maxi = ns.Maxi
 
 local pt = print
 local realmID = GetRealmID()
-local player = UnitName("player")
+local player = BG.playerName
 local realmName = GetRealmName()
 
---最后更新时间：25/3/18 22:00
-local AFDtbl = {
+--最后更新时间：25/4/1 21:30
+local AFDtbl_360 = {
     -- 1200
     "wlk怀旧-范沃森-Selendis",
-    -- 600
+    -- 780
     "露露缇娅",
+    -- 600
     "陈",
     -- 360
     -- "",
@@ -42,22 +40,33 @@ local AFDtbl = {
     "Funny",
     "全能小霸王",
     "龙之召唤<破冰>粥糟-粥枣",
-    -- 180
+}
+local AFDtbl_180 = {
     -- "",
+    -- "",
+    "恼火",
+    "塬",
+    "阡陌小熊",
+    "阿豆豆",
+    "啧啧啧",
+    "奥金斧-大板栗",
     "三藏骑猪",
     "光",
     "铁血II-书香",
     "铁血II-书香秘密",
     "寒脊山小径-起点-花舞",
-    "霜语-丑死我了", -- 满心欢喜
+    "霜语-丑死我了",
     "伊梅尔达",
     "超级小奶爸",
     "水晶之牙-Rich Only",
-    -- 90
+}
+local AFDtbl_90 = {
     "超能力领域-展开",
     "小戆戆",
 }
+
 -- 30
+local AFDtbl_30 = {}
 local tbl = {
     -- "",
     -- "",
@@ -68,11 +77,55 @@ local tbl = {
     -- "",
     -- "",
     -- "",
-    -- "",
-    -- "",
+    "龙牙-犍为翘脚儿",
+    "死亡猎手-萨神一姑苏",
+    "异灵-红玉圣殿",
+    "平静丶心",
+    "灰灰丶",
+    "水晶",
+    "死亡猎手-Dark-Wings-長安一一",
+    "风涧",
+    "KTHOPE",
+    "大都市",
+    "龙牙-愿此行",
+    "霜语-猫空半日-萬神殿",
+    "神神叨叨",
+    "好好学习",
+    "震地者丨四合一",
+    "xy8888",
+    "比斯巨兽-Story-风暴行者",
+    "富贵",
+    "帕奇维克-友谊长存-鸽子一骑",
+    "何处不相逢",
+    "xbrave",
+    "雪见月十九",
+    "小兔晶",
+    "罐头",
+    "赤水断苍山",
+    "不再留恋",
+    "Damon",
+    "凌菡如枫",
+    "维希度斯-自己",
+    "璀璨橙光-祈福-橙光公会",
+    "消失的远方",
+    "Bill",
+    "死亡猎手部落小羽吃西瓜",
+    "魔剑美神",
+    "风神之怒",
+    "ybwywen",
+    "HH",
+    "哥哥有一手",
+    "ImTheW",
+    "抹茶慕斯",
+    "刚刚好",
+    "godcat",
+    "DEE",
+    "弑神死骑",
+    "维克尼拉斯-年事梦中休",
+    "lyl",
 }
 for _, name in ipairs(tbl) do
-    tinsert(AFDtbl, name)
+    tinsert(AFDtbl_30, name)
 end
 
 do
@@ -137,7 +190,7 @@ do
         "長門有希",
         "大鸟甩甩",
         "爱萝莉的格雷福斯",
-        "<狮心>圣火喵喵教---阿壶金团",
+        "<狮心>圣火喵喵教-阿壶金团",
         "我是读书人",
         "比格沃斯-面包",
         "咖啡",
@@ -189,13 +242,11 @@ do
         "老周不想取名",
         "埃提耶什-<夜宴>-正夏",
         "单脚跳",
-        "霜语-猫空半日-萬神殿",
         "铁血-诺诺吖",
         "法尔班克斯-<骚年远征军>-雪见月十九",
         "水晶之牙-Equipo Octavo",
         "维系度斯-你看我牛牛吗",
         "关青龙",
-        "灰灰丶",
         "好好学习",
         "吉安娜小蜡烛",
         "大栓",
@@ -208,7 +259,7 @@ do
         L["以及多个没有留名的爱发电用户"],
     }
     for _, name in ipairs(tbl) do
-        tinsert(AFDtbl, name)
+        tinsert(AFDtbl_30, name)
     end
 end
 
@@ -289,7 +340,7 @@ BG.Init(function()
                 BiaoGeTooltip2:ClearLines()
                 BiaoGeTooltip2:AddLine(L["报错"], 1, 0, 0, true)
                 BiaoGeTooltip2:AddLine(L["请你把该报错截图发给作者"], 1, 0.82, 0, true)
-                BiaoGeTooltip2:AddLine(L["版本："] .. ns.ver, 1, 0.82, 0, true)
+                BiaoGeTooltip2:AddLine(L["版本："] .. BG.ver, 1, 0.82, 0, true)
                 BiaoGeTooltip2:AddLine(L["游戏："] .. gameVer, 1, 0.82, 0, true)
                 BiaoGeTooltip2:AddLine(L["时间："] .. e.time, 1, 0.82, 0, true)
                 BiaoGeTooltip2:AddLine(L["错误："] .. e.counter .. "x " .. e.message, .5, .5, .5, true)
@@ -381,32 +432,73 @@ BG.Init(function()
         bt:SetHighlightFontObject(BG.FontWhite13)
         bt:SetText(AddTexture("Interface\\AddOns\\BiaoGe\\Media\\icon\\AFD") .. L["爱发电"])
         bt:SetWidth(bt:GetFontString():GetStringWidth())
-        bt.maxLine = 40
+        bt.texts = {}
+        bt.w = 50
         BG.ButtonAFD = bt
         lastBt = bt
 
-        bt:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
-            GameTooltip:ClearLines()
-            GameTooltip:AddLine(self:GetText(), 1, 1, 1, true)
-            GameTooltip:AddLine(L["感谢以下玩家的发电："], 1, 1, 1, true)
-            local text = ""
-            for i, name in ipairs(AFDtbl) do
-                if name:find(realmName, 1, true) then
-                    name = BG.STC_g1(name)
+        local function AddText(self, tbl, r, g, b)
+            local f = self.frame
+            local w = self.w
+            local text
+            if type(tbl) == "table" then
+                local same = {}
+                local remove={}
+                for i = 1, #tbl do
+                    if tbl[i]:find(realmName, 1, true) then
+                        tbl[i] = BG.STC_g1(tbl[i])
+                    end
+                    if not same[tbl[i]] then
+                        same[tbl[i]] = true
+                    else
+                        remove[i]=true
+                    end
                 end
-                if i == #AFDtbl then
-                    text = text .. name
-                else
-                    text = text .. name .. BG.STC_dis("，")
+                for k, v in pairs(remove) do
+                    tremove(tbl, k)
                 end
+                text = table.concat(tbl, BG.STC_dis("，"))
+            else
+                text = tbl
             end
-            GameTooltip:AddLine(text, 1, 0.82, 0, true)
-            GameTooltip:AddLine(L["你可以在这里订阅我的账号苍穹之霜，提前体验订阅模块和同步模块。"], 1, 1, 1, true)
-            GameTooltip:AddLine(L["（点击复制网址）"], 1, 0.82, 0, true)
-            GameTooltip:Show()
+
+            local t = self.child:CreateFontString()
+            t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+            t:SetText(text)
+            t:SetWidth(f:GetWidth() - w * 3)
+            if not next(self.texts) then
+                t:SetPoint("TOPLEFT", w, -20)
+            else
+                t:SetPoint("TOPLEFT", self.texts[#self.texts], "BOTTOMLEFT", 0, -15)
+            end
+            t:SetJustifyH("LEFT")
+            t:SetTextColor(r, g, b)
+            t:SetText(text)
+            tinsert(self.texts, t)
+        end
+        bt:SetScript("OnEnter", function(self)
+            wipe(self.texts)
+            local w, h = BG.MainFrame:GetWidth(), BG.MainFrame:GetHeight() - 40
+            local f, child = BG.CreateScrollFrame(self, w, h)
+            f:SetBackdrop({
+                bgFile = "Interface/ChatFrame/ChatFrameBackground",
+                insets = { left = 3, right = 3, top = 3, bottom = 3 }
+            })
+            f:SetBackdropColor(0, 0, 0, .9)
+            f:SetPoint("TOPLEFT", BG.MainFrame, "TOPLEFT", 0, -20)
+            f:SetFrameLevel(320)
+            f:EnableMouse(false)
+            self.frame = f
+            self.child = child
+            AddText(self, L["感谢以下玩家的发电："], 1, 1, 1)
+            AddText(self, AFDtbl_360, 1, .82, 0)
+            AddText(self, AFDtbl_180, 1, .82, 0)
+            AddText(self, AFDtbl_90, 1, .82, 0)
+            AddText(self, AFDtbl_30, 1, .82, 0)
+            AddText(self, L["你可以在这里订阅我的账号苍穹之霜，提前体验订阅模块和同步模块。"]..L["（点击复制网址）"], 1, 1, 1)
         end)
         bt:SetScript("OnLeave", function(self)
+            self.frame:Hide()
             GameTooltip:Hide()
             BiaoGeTooltip2:Hide()
         end)
