@@ -48,7 +48,6 @@ function BG.RoleOverviewUI()
                 ["OLsod"] = 1,
                 ["SC"] = 1,
                 ["TTS"] = 1,
-                -- ["huiguweek"] = 1,
                 ["alchemy"] = 1,
                 ["leatherworking"] = 1,
                 ["tailor"] = 1,
@@ -80,7 +79,8 @@ function BG.RoleOverviewUI()
                 ["BOT"] = 1,
                 ["BWD"] = 1,
                 ["TOF"] = 1,
-                ["BH"] = 1,
+                ["25BH"] = 1,
+                ["10BH"] = 1,
             }
         elseif BG.IsRetail then
             BiaoGe.FBCDchoice = {
@@ -154,6 +154,11 @@ function BG.RoleOverviewUI()
             BG.Once("FBCDchoice", 250405, function()
                 BiaoGe.FBCDchoice["DS"] = 1
                 BiaoGe.FBCDchoice["FL"] = 1
+            end)
+            BG.Once("FBCDchoice", 250407, function()
+                BiaoGe.FBCDchoice["25BH"] = 1
+                BiaoGe.FBCDchoice["10BH"] = 1
+                BiaoGe.FBCDchoice["BH"] = nil
             end)
         end
     end
@@ -282,12 +287,13 @@ function BG.RoleOverviewUI()
         elseif BG.IsCTM then
             BG.FBCDall_table = {
                 -- CTM
-                { name = "DS", name2 = GetRealZoneText(967),color = "9370DB", fbId = 967, type = "fb" },
-                { name = "FL", name2 = GetRealZoneText(720),color = "FF4500", fbId = 720, type = "fb" },
-                { name = "BOT",name2 = GetRealZoneText(671), color = "FFFF00", fbId = 671, type = "fb" },
-                { name = "BWD",name2 = GetRealZoneText(669), color = "FF1493", fbId = 669, type = "fb" },
-                { name = "TOF",name2 = GetRealZoneText(754), color = "87CEFA", fbId = 754, type = "fb" },
-                { name = "BH", name2 = GetRealZoneText(757), color = "FFA500", fbId = 757, type = "fb" },
+                { name = "DS", name2 = GetRealZoneText(967), color = "9370DB", fbId = 967, type = "fb" },
+                { name = "FL", name2 = GetRealZoneText(720), color = "FF4500", fbId = 720, type = "fb" },
+                { name = "BOT", name2 = GetRealZoneText(671), color = "FFFF00", fbId = 671, type = "fb" },
+                { name = "BWD", name2 = GetRealZoneText(669), color = "FF1493", fbId = 669, type = "fb" },
+                { name = "TOF", name2 = GetRealZoneText(754), color = "87CEFA", fbId = 754, type = "fb" },
+                { name = "25BH", name2 = GetRealZoneText(757), color = "FFA500", fbId = 757, num = 25, type = "fb" },
+                { name = "10BH", name2 = GetRealZoneText(757), color = "FFA500", fbId = 757, num = 10, type = "fb" },
                 --WLK
                 { name = "25RS", name2 = L["25红玉"], color = "FF4500", fbId = 724, num = 25, type = "fb" },
                 { name = "10RS", name2 = L["10红玉"], color = "FF4500", fbId = 724, num = 10, type = "fb" },
@@ -2226,10 +2232,12 @@ function BG.RoleOverviewUI()
                     end
                 else
                     BiaoGe.playerInfo[realmID] = nil
+                    BiaoGe.equip[realmID] = nil
                 end
             end
         end
-
+-- /run BiaoGe.equip=nil
+        -- 删除角色总览旧角色
         local function DeleteOldData(db)
             for realmID, v in pairs(BiaoGe[db]) do
                 if type(realmID) == "number" and type(v) == "table" then
@@ -2248,75 +2256,19 @@ function BG.RoleOverviewUI()
         DeleteOldData("FBCD")
         DeleteOldData("Money")
     end
-end
 
--- todo
--- 当前角色货币面板
---[[
-    do
-        function BG.MoneyBannerUpdate()
-            if not BG.MainFrame:IsVisible() then return end
-            -- 根据你选择的货币，生成table
-            MONEYchoice_table = {}
-            for i, v in ipairs(BG.MONEYall_table) do
-                for id, yes in pairs(BiaoGe.MONEYchoice) do
-                    if v.id == id then
-                        tinsert(MONEYchoice_table, v)
+    -- 删除重复角色装备数据
+    for realmID, v in pairs(BiaoGe.equip) do
+        if type(realmID) == "number" and type(v) == "table" then
+            if BiaoGe.playerInfo[realmID] then
+                for player in pairs(BiaoGe.equip[realmID]) do
+                    if not BiaoGe.playerInfo[realmID][player] then
+                        BiaoGe.equip[realmID][player]=nil
                     end
                 end
+            else
+                BiaoGe.equip[realmID] = nil
             end
-
-            BG.MONEYupdate()
-            local g = BiaoGe.Money[realmID][player]
-            local t = {}
-            local a = g.colorplayer .. "  "
-            tinsert(t, a) -- 玩家
-
-            for i, v in ipairs(MONEYchoice_table) do
-                if v.id ~= "money" then
-                    local a = g[v.id].count .. " " .. AddTexture(v.tex)
-                    tinsert(t, a) -- 牌子
-                else
-                    local a = g.money .. " " .. AddTexture(v.tex)
-                    tinsert(t, a) -- 金币
-                end
-            end
-            local text = table.concat(t, "   ")
-            BG.ButtonMoney:SetText(text)
-            BG.ButtonMoney.text = BG.ButtonMoney:GetFontString()
-            BG.ButtonMoney.text:SetPoint("RIGHT", -20, 0)
-            BG.ButtonMoney:SetWidth(BG.ButtonMoney.text:GetWidth() + 30)
-            BG.ButtonMoney.tex:SetWidth(BG.ButtonMoney.text:GetWidth() + 100)
-        end
-
-        do -- 创建UI
-            local f = CreateFrame("Button", nil, BG.MainFrame)
-            f:SetSize(0, 24)
-            f:SetPoint("BOTTOMRIGHT", -1, 1)
-            f:SetNormalFontObject(BG.FontWhite13)
-            BG.ButtonMoney = f
-
-            f.tex = f:CreateTexture()
-            f.tex:SetSize(0, 24)
-            f.tex:SetPoint("BOTTOMRIGHT")
-            f.tex:SetTexture("Interface\\Buttons\\WHITE8x8")
-            local c1, c2, c3 = GetClassRGB(nil, "player")
-            f.tex:SetGradient("HORIZONTAL", CreateColor(c1, c2, c3, 0), CreateColor(c1, c2, c3, 0.25))
-
-            f:SetScript("OnEnter", function(self)
-                BG.SetFBCD()
-                BG.FBCDFrame:ClearAllPoints()
-                BG.FBCDFrame:SetPoint("BOTTOMRIGHT", BG.ButtonMoney, "TOPRIGHT", 0, 0)
-                BG.FBCDFrame:Show()
-            end)
-            f:SetScript("OnLeave", function(self)
-                BG.FBCDFrame:Hide()
-            end)
-            f:SetScript("OnMouseUp", function(self)
-                ns.InterfaceOptionsFrame_OpenToCategory("|cff00BFFFBiaoGe|r")
-                BG.MainFrame:Hide()
-                BG.PlaySound(1)
-            end)
         end
     end
- ]]
+end

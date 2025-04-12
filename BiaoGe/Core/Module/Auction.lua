@@ -966,8 +966,8 @@ BG.Init(function()
         end
         f.itemFrame2.guanzhu:Hide()
         for _, FB in ipairs(BG.GetAllFB()) do
-            for b = 1, Maxb[FB] do
-                for i = 1, BG.Maxi do
+for b = 1, Maxb[FB] do
+ for i = 1, BG.GetMaxi(FB, b) do
                     local zb = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
                     if zb and f.itemID == GetItemID(zb:GetText()) and BiaoGe[FB]["boss" .. b]["guanzhu" .. i] then
                         f.itemFrame2.guanzhu:Show()
