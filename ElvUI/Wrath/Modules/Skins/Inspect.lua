@@ -15,8 +15,10 @@ local function Update_InspectPaperDollItemSlotButton(button)
 	local unit = button.hasItem and _G.InspectFrame.unit
 	if not unit then return end
 
-	local itemID = GetInventoryItemID(unit, button:GetID())
+	local itemLink = GetInventoryItemLink(unit, button:GetID())
+	local itemID = itemLink and string.match(itemLink, "item:(%d+):")
 	if itemID then
+		itemID = tonumber(itemID)
 		local _, _, quality = GetItemInfo(itemID)
 		if quality and quality > 1 then
 			local r, g, b = GetItemQualityColor(quality)

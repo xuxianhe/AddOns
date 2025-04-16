@@ -1539,7 +1539,7 @@ function E:UpdateActionBars(skipCallback)
 	ActionBars:UpdateMicroButtons()
 	ActionBars:UpdatePetCooldownSettings()
 
-	if E.Retail or E.Cata or E.Wrath then
+	if E.Retail or E.Cata then
 		ActionBars:UpdateExtraButtons()
 	end
 
