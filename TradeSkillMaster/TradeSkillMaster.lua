@@ -33,7 +33,7 @@ local private = {
 local LOGOUT_TIME_WARNING_THRESHOLD = 0.02
 do
 	-- show a message if we were updated
-	if GetAddOnMetadata("TradeSkillMaster", "Version") ~= "v4.13.25" then
+	if GetAddOnMetadata("TradeSkillMaster", "Version") ~= "v4.13.21" then
 		Wow.ShowBasicMessage("TSM was just updated and may not work properly until you restart WoW.")
 	end
 end
@@ -271,7 +271,7 @@ function TSM.OnInitialize()
 	SlashCommands.Register("get", TSM.Banking.GetByFilter, L["Gets items from the bank or guild bank matching the item or partial text entered."])
 	SlashCommands.Register("put", TSM.Banking.PutByFilter, L["Puts items matching the item or partial text entered into the bank or guild bank."])
 	SlashCommands.Register("restock_help", TSM.Crafting.RestockHelp, L["Tells you why a specific item is not being restocked and added to the queue."])
-	SlashCommands.Register("scan", TSM.AuctionDB.RunScan, "全局扫描")
+
 	-- create / register the minimap button
 	local dataObj = LibStub("LibDataBroker-1.1"):NewDataObject("TradeSkillMaster", {
 		type = "launcher",

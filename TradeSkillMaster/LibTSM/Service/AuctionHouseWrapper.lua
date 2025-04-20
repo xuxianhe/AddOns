@@ -375,7 +375,7 @@ function AuctionHouseWrapper.PostAuction(bag, slot, bid, buyout, postTime, stack
 	ClearCursor()
 	Container.PickupItem(bag, slot)
 	ClickAuctionSellItemButton(AuctionsItemButton, "LeftButton")
-	local result = private.wrappers.PostAuction:Start(bid, buyout, postTime, stackSize, quantity)
+	local result = private.wrappers.PostAuction:Start(bid, buyout, postTime, stackSize, quantity, true)
 	ClearCursor()
 	return result
 end

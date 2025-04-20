@@ -39,7 +39,7 @@ do
 			Enum.ItemClass.Questitem,
 			Enum.ItemClass.Miscellaneous,
 		}
-	elseif Environment.IsWrathClassic() or Environment.IsCataClassic() then
+	elseif Environment.IsWrathClassic() then
 		ITEM_CLASS_IDS = {
 			Enum.ItemClass.Weapon,
 			Enum.ItemClass.Armor,

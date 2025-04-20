@@ -1,5 +1,5 @@
-## v4.13.25 Changes
+## v4.13.21 Changes
 
-* [Cata] Ink conversion and enchanting vellum updates
+* [Wrath] Fixed issue related to the gold cap being increased
 
 [Known Issues](https://support.tradeskillmaster.com/en_US/known_issues)
