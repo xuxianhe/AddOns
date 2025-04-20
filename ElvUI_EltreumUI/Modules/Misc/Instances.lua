@@ -8,14 +8,14 @@ local select = _G.select
 local GetInstanceInfo = _G.GetInstanceInfo
 local C_ChallengeMode = _G.C_ChallengeMode
 local classcolors = E:ClassColor(E.myclass, true)
-local textgradient,backuptext
+local textgradient, backuptext
 
 local instancedifficulty = CreateFrame("FRAME")
 instancedifficulty:SetSize(10, 10)
 instancedifficulty:SetPoint("CENTER", Minimap , -50, 50)
 instancedifficulty:SetParent(Minimap)
 instancedifficulty:Hide()
-instancedifficulty.Text = instancedifficulty:CreateFontString(nil,"ARTWORK")
+instancedifficulty.Text = instancedifficulty:CreateFontString(nil, "ARTWORK")
 instancedifficulty.Text:SetPoint("CENTER", instancedifficulty)
 instancedifficulty:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 instancedifficulty:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -24,13 +24,14 @@ if E.Retail then
 	instancedifficulty:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
 	instancedifficulty:RegisterEvent("GUILD_PARTY_STATE_UPDATED")
 end
+E:CreateMover(instancedifficulty, "MoverEltruismInstanceDifficulty", "EltruismInstanceDifficulty", nil, nil, nil, "ALL, SOLO, ELTREUMUI, PARTY, RAID", nil, "ElvUI_EltreumUI, party, instances")
 
 local garrisons = {
 	[1662] = true,
 	[582] = true,
 	[590] = true,
-	[947] = true, --azeroth itself
-	[572] = true, --draenor
+	--[947] = true, --azeroth itself
+	--[572] = true, --draenor
 }
 
 local AllowedInstances = {
@@ -45,12 +46,6 @@ instancedifficulty:SetScript("OnEvent", function()
 	if not E.db.ElvUI_EltreumUI then return end
 	if not E.db.ElvUI_EltreumUI.skins then return end
 	if not E.db.ElvUI_EltreumUI.skins.instances then return end
-
-	--create mover only if setting is enabled
-	if not instancedifficulty.movercreated then
-		E:CreateMover(instancedifficulty, "MoverEltruismInstanceDifficulty", "EltruismInstanceDifficulty", nil, nil, nil, "ELTREUMUI,PARTY,RAID", nil, 'ElvUI_EltreumUI,party,instances')
-		instancedifficulty.movercreated = true
-	end
 
 	local _, instanceType = IsInInstance()
 	local mapID = WorldMapFrame:GetMapID()
@@ -289,8 +284,6 @@ instancedifficulty:SetScript("OnEvent", function()
 				end
 			elseif E.db.ElvUI_EltreumUI.skins.instances.classcolor then --class color
 				if E.db.ElvUI_EltreumUI.skins.instances.gradient then
-					--textgradient = E:TextGradient(" "..backuptext, classcolors.r, classcolors.g, classcolors.b, classcolors.r + E.db.ElvUI_EltreumUI.skins.instances.redoffset, classcolors.g + E.db.ElvUI_EltreumUI.skins.instances.greenoffset, classcolors.b + E.db.ElvUI_EltreumUI.skins.instances.blueoffset)
-					--instancedifficulty.Text:SetText(textgradient)
 					instancedifficulty.Text:SetText(ElvUI_EltreumUI:GradientName(backuptext, E.myclass))
 				else
 					instancedifficulty.Text:SetTextColor(classcolors.r, classcolors.g, classcolors.b)
@@ -336,6 +329,8 @@ instancedifficulty:SetScript("OnEvent", function()
 	else
 		instancedifficulty:Hide()
 		instancedifficulty.Text:Hide()
+		MiniMapInstanceDifficulty:Show()
+		MiniMapInstanceDifficulty:SetAlpha(1)
 	end
 
 	if garrisons[mapID] then

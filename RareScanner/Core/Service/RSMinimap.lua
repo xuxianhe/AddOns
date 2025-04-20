@@ -27,7 +27,6 @@ local RSGuideDB = private.ImportLib("RareScannerGuideDB")
 local RSMap = private.ImportLib("RareScannerMap")
 local RSNpcPOI = private.ImportLib("RareScannerNpcPOI")
 local RSContainerPOI = private.ImportLib("RareScannerContainerPOI")
-local RSEventPOI = private.ImportLib("RareScannerEventPOI")
 local RSGuidePOI = private.ImportLib("RareScannerGuidePOI")
 
 -- RareScanner general libraries
@@ -52,9 +51,7 @@ function RSMinimap.LoadMinimapButton()
 		icon = RSConstants.NORMAL_NPC_TEXTURE,
 		OnClick = function(self, button) 
 			if (button == "LeftButton") then
-				if (not InCombatLockdown()) then
-					RSExplorerFrame:Show()
-				end
+				RSExplorerFrame:Show()
 			elseif (button == "RightButton") then
 				Settings.OpenToCategory("RareScanner")
 			end
@@ -179,54 +176,18 @@ function RSMinimap.RefreshEntityState(entityID)
 			if (POI.entityID == entityID) then
 				HBD_Pins:RemoveMinimapIcon(RSMinimap, pin)
 				
-				local isFiltered = false
 				if (POI.isNpc) then
-					-- If the entity spawns in multiple places use the POIs coordinates
-					local alreadyFoundInfo = RSGeneralDB.GetAlreadyFoundEntity(entityID)
-					if (RSUtils.Contains(RSConstants.NPCS_WITH_MULTIPLE_SPAWNS, entityID)) then
-						alreadyFoundInfo.coordX = POI.x
-						alreadyFoundInfo.coordY = POI.y
-					end
-					
 					POI = RSNpcPOI.GetNpcPOI(entityID, POI.mapID, RSNpcDB.GetInternalNpcInfo(entityID), alreadyFoundInfo)
-					if (POI.isDead and not RSConfigDB.IsShowingAlreadyKilledNpcs()) then
-						isFiltered = true
-					end
 				elseif (POI.isContainer) then
-					-- If the entity spawns in multiple places use the POIs coordinates
-					local alreadyFoundInfo = RSGeneralDB.GetAlreadyFoundEntity(entityID)
-					if (RSUtils.Contains(RSConstants.CONTAINERS_WITH_MULTIPLE_SPAWNS, entityID)) then
-						alreadyFoundInfo.coordX = POI.x
-						alreadyFoundInfo.coordY = POI.y
-					end
-					
 					POI = RSContainerPOI.GetContainerPOI(entityID, POI.mapID, RSContainerDB.GetInternalContainerInfo(entityID), alreadyFoundInfo)
-					if (POI.isOpened and not RSConfigDB.IsShowingAlreadyOpenedContainers()) then
-						isFiltered = true
-					end
-				elseif (POI.isEvent) then
-					POI = RSEventPOI.GetEventPOI(entityID, POI.mapID, RSEventDB.GetInternalEventInfo(entityID), RSGeneralDB.GetAlreadyFoundEntity(entityID))
-					if (POI.isCompleted and not RSConfigDB.IsShowingCompletedEvents()) then
-						isFiltered = true
-					end
 				end
 				
-				if (isFiltered) then
-					RSLogger:PrintDebugMessage(string.format("RSMinimap.RefreshEntityState[RELEASED][%s,x=%s,y=%s]", entityID, POI.x, POI.y))
-					pinFramesPool:Release(pin)
-				else
-					RSLogger:PrintDebugMessage(string.format("RSMinimap.RefreshEntityState[ADDED][%s,x=%s,y=%s]", entityID, POI.x, POI.y))
-					pin.Texture:SetTexture(POI.Texture)
-					pin.Texture:SetScale(RSConfigDB.GetIconsMinimapScale())
-					pin.IconTexture:SetAtlas(POI.iconAtlas)
-					pin:SetFrameLevel(ENTITY_FRAME_LEVEL)
-					HBD_Pins:AddMinimapIconMap(RSMinimap, pin, POI.mapID, RSUtils.FixCoord(POI.x), RSUtils.FixCoord(POI.y), false, false)
-				end
-				
-				-- If the entity spawns in multiple places keep checking the rest of entities in the list
-				if (not RSUtils.Contains(RSConstants.NPCS_WITH_MULTIPLE_SPAWNS, entityID) and not RSUtils.Contains(RSConstants.CONTAINERS_WITH_MULTIPLE_SPAWNS, entityID)) then
-					break
-				end
+				RSLogger:PrintDebugMessage(string.format("RSMinimap.RefreshEntityState[ADDED][%s,x=%s,y=%s]", entityID, POI.x, POI.y))
+				pin.Texture:SetTexture(POI.Texture)
+				pin.Texture:SetScale(RSConfigDB.GetIconsMinimapScale())
+				pin.IconTexture:SetAtlas(POI.iconAtlas)
+				pin:SetFrameLevel(ENTITY_FRAME_LEVEL)
+				HBD_Pins:AddMinimapIconMap(RSMinimap, pin, POI.mapID, RSUtils.FixCoord(POI.x), RSUtils.FixCoord(POI.y), false, false)
 			end
 		end
 	end

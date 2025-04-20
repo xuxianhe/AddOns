@@ -2,7 +2,6 @@
 -- AddOn namespace.
 -----------------------------------------------------------------------
 local ADDON_NAME, private = ...
-local AL = LibStub("AceLocale-3.0"):GetLocale("RareScanner", false)
 
 local RSMapDB = private.NewLib("RareScannerMapDB")
 
@@ -63,71 +62,14 @@ function RSMapDB.GetContinentInfo(mapID)
 	return nil
 end
 
-function RSMapDB.GetActiveMapIDsWithNamesByMapID(mapID)
-	local mapIDs = {}
-	
-	-- Ignore world maps
-	if (mapID == RSConstants.AZEROTH) then
-		return
-	end
-		
-	-- If a continent
-	local continentInfo = RSMapDB.GetContinents()[mapID]
-	if (continentInfo) then
-		mapIDs = continentInfo.zones
-	-- If not a continent
-	else
-		tinsert(mapIDs, mapID)
-	end
-	
-	-- Add subzones
-	for _, mapID_ in ipairs(mapIDs) do
-		local subMapIDs = private.SUBZONES_IDS[mapID_];
-		if (subMapIDs) then
-			for _, subMapID in ipairs (subMapIDs) do 
-				if (not RSUtils.Contains(mapIDs, subMapID)) then
-					tinsert(mapIDs, subMapID)
-				end
-			end
-		end
-	end
-	
-	local mapIDsWithNames = {}
-	for _, mapID_ in ipairs (mapIDs) do
-		local mapName = RSMapDB.GetMapName(mapID_)
-		if (mapName) then
-			mapIDsWithNames[mapID_] = string.format("%s (%s)", mapName, mapID_)
-		else
-			mapIDsWithNames[mapID_] = tostring(mapID_)
-		end
-	end
-	
-	return mapIDsWithNames
-end
-
-local cachedContinentMapIDs = {}
 function RSMapDB.GetContinentOfMap(mapID)
 	if (mapID) then
-		-- Check first cached list
-		if (cachedContinentMapIDs[mapID]) then
-			return cachedContinentMapIDs[mapID]
-		end
-		
-		-- Otherwise load
 		for continentID, info in pairs(RSMapDB.GetContinents()) do
-			if (RSUtils.Contains(info.zones, mapID)) then
+			if (RSUtils.Contains(info, mapID)) then
 				if (info.zonefilter and info.npcfilter) then
-					cachedContinentMapIDs[mapID] = continentID
 					return continentID
 				else
 					break
-				end
-			else
-				for parentMapID, childMapIDs in pairs(private.SUBZONES_IDS) do
-					if (RSUtils.Contains(childMapIDs, mapID) and RSUtils.Contains(info.zones, parentMapID)) then
-						cachedContinentMapIDs[mapID] = continentID
-						return continentID
-					end
 				end
 			end
 		end
@@ -181,23 +123,3 @@ function RSMapDB.IsMapInParentMap(parentMapID, subzoneMapID)
 
 	return false
 end
-
----============================================================================
--- Map names
----============================================================================
-
-function RSMapDB.GetMapName(mapID)
-	local mapInfo = C_Map.GetMapInfo(mapID)
-	if (mapInfo) then
-		-- For those zones with the same name, add a comment
-		if (AL["ZONE_"..mapID] ~= "ZONE_"..mapID) then
-			return string.format(AL["ZONE_"..mapID], mapInfo.name)
-		else
-			return mapInfo.name
-		end
-	end
-	
-	return AL["ZONES_CONTINENT_LIST"][mapID]
-end
-
-

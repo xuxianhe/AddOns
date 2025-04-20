@@ -940,16 +940,28 @@ function SeasonOfDiscovery:LoadNPCs()
             [npcKeys.zoneID] = zoneIDs.EASTERN_PLAGUELANDS,
             [npcKeys.spawns] = {[zoneIDs.EASTERN_PLAGUELANDS] = {{93.81,90.07}}},
         },
-        [240811] = { -- Balnazzar, SoD Scarlet Enclave Raid Boss
-            [npcKeys.zoneID] = zoneIDs.SCARLET_ENCLAVE,
-            [npcKeys.spawns] = {[zoneIDs.SCARLET_ENCLAVE] = {{-1,-1}}},
-        },
         [241664] = { -- Malorie
             [npcKeys.zoneID] = zoneIDs.EASTERN_PLAGUELANDS,
             [npcKeys.spawns] = {[zoneIDs.EASTERN_PLAGUELANDS] = {{95.29,78.80}}},
             [npcKeys.npcFlags] = npcFlags.VENDOR,
             [npcKeys.friendlyToFaction] = "AH",
             [npcKeys.subName] = "Food & Drink",
+        },
+        [241768] = { -- Herod
+            [npcKeys.zoneID] = zoneIDs.SCARLET_ENCLAVE,
+            [npcKeys.spawns] = {[zoneIDs.SCARLET_ENCLAVE]={{-1,-1}}},
+        },
+        [241769] = { -- Arcanist Doan
+            [npcKeys.zoneID] = zoneIDs.SCARLET_ENCLAVE,
+            [npcKeys.spawns] = {[zoneIDs.SCARLET_ENCLAVE]={{-1,-1}}},
+        },
+        [241770] = { -- Interrogator Vishas
+            [npcKeys.zoneID] = zoneIDs.SCARLET_ENCLAVE,
+            [npcKeys.spawns] = {[zoneIDs.SCARLET_ENCLAVE]={{-1,-1}}},
+        },
+        [241772] = { -- Grand Crusader Caldoran
+            [npcKeys.zoneID] = zoneIDs.SCARLET_ENCLAVE,
+            [npcKeys.spawns] = {[zoneIDs.SCARLET_ENCLAVE]={{-1,-1}}},
         },
         [241862] = { -- Scarlet Stash
             [npcKeys.zoneID] = zoneIDs.EASTERN_PLAGUELANDS,
@@ -982,11 +994,19 @@ function SeasonOfDiscovery:LoadNPCs()
             [npcKeys.friendlyToFaction] = "AH",
             [npcKeys.subName] = "Repair",
         },
+        [243021] = { -- Lillian Voss
+            [npcKeys.zoneID] = zoneIDs.SCARLET_ENCLAVE,
+            [npcKeys.spawns] = {[zoneIDs.SCARLET_ENCLAVE]={{-1,-1}}},
+        },
         [243023] = { -- Inquisitor Jociphine
             [npcKeys.zoneID] = zoneIDs.EASTERN_PLAGUELANDS,
             [npcKeys.spawns] = {[zoneIDs.EASTERN_PLAGUELANDS] = {{68.2,82.4}}},
             [npcKeys.questStarts] = {90510},
             [npcKeys.questEnds] = {90510},
+        },
+        [243269] = { -- Solistrasza
+            [npcKeys.zoneID] = zoneIDs.SCARLET_ENCLAVE,
+            [npcKeys.spawns] = {[zoneIDs.SCARLET_ENCLAVE]={{-1,-1}}},
         },
         [243386] = { -- Leonid Barthalomew the Revered, terrordale
             [npcKeys.zoneID] = zoneIDs.EASTERN_PLAGUELANDS,

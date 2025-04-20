@@ -2,7 +2,7 @@ local E = unpack(ElvUI)
 
 -- Experimental Thin Layout
 function ElvUI_EltreumUI:SetupLayoutThin()
-	if (E.Cata or E.Retail or E.ClassicSOD) and E.data:IsDualSpecEnabled() then
+	if (E.Retail or E.Cata or E.Wrath or E.ClassicSOD) and E.data:IsDualSpecEnabled() then
 		E.data:SetDualSpecProfile('Eltreum Thin ('..E.mynameRealm..')', E.Libs.DualSpec.currentSpec)
 	else
 		E.data:SetProfile('Eltreum Thin ('..E.mynameRealm..')')

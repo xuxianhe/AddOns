@@ -204,8 +204,6 @@ function BG.HistoryUI()
         bt:SetScript("OnLeave", function(self)
             GameTooltip:Hide()
         end)
-
-        -- 单击触发
         bt:SetScript("OnClick", function(self)
             BG.FrameHide(2)
             self:SetEnabled(false) -- 点击后按钮变灰2秒
@@ -213,6 +211,7 @@ function BG.HistoryUI()
                 bt:SetEnabled(true)
             end)
             BG.SaveBiaoGe()
+            BG.ClearBiaoGe("biaoge", BG.FB1)
             BG.PlaySound(2)
         end)
     end

@@ -7,11 +7,9 @@
 	<Include file="RSCustomNpcsOptions.lua"/>
 	<Include file="RSNpcFiltersOptions.lua"/>
 	<Include file="RSContainerFiltersOptions.lua"/>
-	<Include file="RSEventFiltersOptions.lua"/>
 	<Include file="RSZoneFiltersOptions.lua"/>
 	<Include file="RSLootOptions.lua"/>
 	<Include file="RSMapOptions.lua"/>
-	<Include file="RSChatOptions.lua"/>
 	
 	<!-- Options -->
 	<Include file="RSOptions.lua"/>

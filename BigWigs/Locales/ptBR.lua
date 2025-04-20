@@ -38,7 +38,7 @@ L.warnOldBase = "Você está usando uma versão de guilda do BigWigs (%d), mas s
 L.tooltipHint = "|cffeda55fClique-Direito|r para acessar as opções."
 L.activeBossModules = "Módulos de chefes ativos:"
 
---L.oldVersionsInGroup = "There are people in your group with |cffff0000older versions|r of BigWigs. You can get more details with /bwv."
+L.oldVersionsInGroup = "Há pessoas com |cffff0000versões antigas|r do BigWigs. Você pode conseguir mais detalhes usando /bwv."
 L.upToDate = "Atualizado:"
 L.outOfDate = "Desatualizado:"
 L.dbmUsers = "Usuários do DBM:"
@@ -48,7 +48,7 @@ L.offline = "Desconectado"
 L.missingAddOnPopup = "O addon |cFF436EEE%s|r está faltando!"
 L.missingAddOnRaidWarning = "Está faltando o |cFF436EEE%s|r addon! Nenhum temporizador será mostrado nesta área!"
 L.outOfDateAddOnPopup = "O |cFF436EEE%s|r addon está desatualizado!"
---L.outOfDateAddOnRaidWarning = "O |cFF436EEE%s|r addon está desatualizado! You have v%d.%d.%d but the latest is v%d.%d.%d!"
+L.outOfDateAddOnRaidWarning = "O |cFF436EEE%s|r addon está desatualizado! Você tem v%d.%d.%d a versão mais nova é v%d.%d.%d!"
 L.disabledAddOn = "Você desabilitou o addOn |cFF436EEE%s|r, contadores não serão exibidos."
 L.removeAddOn = "Por favor remova '|cFF436EEE%s|r' porque este foi substituído por '|cFF436EEE%s|r'."
 L.alternativeName = "%s (|cFF436EEE%s|r)"
@@ -94,7 +94,6 @@ L.compartmentMenu = "Sem icone de compartimento"
 L.compartmentMenu_desc = "Desativar esta opção fará com que BigWigs apareça no menu do compartimento de Addons. Recomendamos deixar esta opção habilitada."
 L.configure = "Configurar"
 L.resetPositions = "Resetar posições"
-L.colors = "Cores"
 L.selectEncounter = "Selecionar Encontro"
 L.privateAuraSounds = "Sons de Auras Privadas"
 L.privateAuraSounds_desc = "Auras privadas não podem ser rastreadas normalmente, mas você pode definir um som para ser reproduzido quando você for alvo da habilidade."
@@ -154,7 +153,7 @@ L.CASTBAR_COUNTDOWN = "Contagem regressiva (Apenas barras de lançamento)"
 L.CASTBAR_COUNTDOWN_desc = "Se ativado, uma contagem regressiva vocal e visual será adicionada nos últimos 5 segundos das barras de lançamento."
 L.INFOBOX = L.infobox
 L.INFOBOX_desc = L.infobox_desc
-L.SOUND = "Som"
+L.SOUND = L.sound
 L.SOUND_desc = "Habilidades de chefe normalmente tocam sons para lhe ajudar a vê-las. Se você desabilitar esta opção, nenhum dos sons anexados a ele irão tocar."
 L.CASTBAR = "Barras de Conjuração"
 L.CASTBAR_desc = "Barras de Conjuração são mostradas as vezes em alguns chefes, normalmente para chamar a atenção para uma habilidade crítica. Se essa habilidade vem acompanhada de uma barra de conjuração que você quer esconder, desabilite essa opção."
@@ -167,7 +166,7 @@ L.NAMEPLATE_desc = "Se habilitado, recursos como ícones e texto relacionados a 
 L.PRIVATE = "Aura Privada"
 L.PRIVATE_desc = "Auras privadas não podem ser rastreadas normalmente, mas o som \"em você\" (Aviso) pode ser definido na guia Som."
 
-L.advanced = "Opções Avançadas"
+L.advanced_options = "Opções Avançadas"
 L.back = "<< Voltar"
 
 L.tank = "|cFFFF0000Alertas para Tanques apenas.|r "
@@ -358,7 +357,7 @@ L.emphasizeAt = "Enfatizar em... (segundos)"
 L.growingUpwards = "Crescimento para cima"
 L.growingUpwardsDesc = "Alterna crescimento para cima ou para baixo a partir da âncora."
 L.texture = "Textura"
-L.emphasize = "Enfatizar"
+L.emphasize = L.EMPHASIZE
 L.emphasizeMultiplier = "Multiplicador de Tamanho"
 L.emphasizeMultiplierDesc = "Se você desabilitar as barras movendo-as para a âncora em destaque, esta opção irá decidir qual tamanho as barras em destaque terão, ao se multiplicar o tamanho das barras normais."
 
@@ -369,9 +368,6 @@ L.emphasizedBars = "Barras enfatizadas"
 L.align = "Alinhamento"
 L.alignText = "Alinhar texto"
 L.alignTime = "Alinhar tempo"
-L.left = "Esquerda"
-L.center = "Centro"
-L.right = "Direita"
 L.time = "Tempo"
 L.timeDesc = "Mostra ou oculta o tempo restante nas barras."
 L.textDesc = "Quando mostrar ou esconder o texto mostrado nas barras."
@@ -475,7 +471,7 @@ L.colors = "Cores"
 
 L.text = "Texto"
 L.textShadow = "Sombra do texto"
-L.normal = "Normal"
+L.expiring_normal = "Normal"
 L.emphasized = "Enfatizado"
 
 L.reset = "Reiniciar"
@@ -518,7 +514,7 @@ L.resetAllCountdownDesc = "Se você selecionou alguma voz customizada de contage
 -- InfoBox.lua
 --
 
-L.infoBox = "Caixa de Informações"
+L.infobox_short = "Caixa de Informações"
 
 -----------------------------------------------------------------------
 -- Messages.lua
@@ -612,8 +608,8 @@ L.fixate_test = "Teste de Fixar" -- Texto que exibe para testar no quadro
 L.resetNameplateTextDesc = "Reiniciar todas as opções relacionadas ao texto da placa de identificação."
 L.glowAt = "Começar brilho (segundos)"
 L.glowAt_desc = "Escolha quantos segundos no tempo de recarga devem restar quando o brilho começar."
---L.headerIconSizeTarget = "Icon size of your current target"
---L.headerIconSizeOthers = "Icon size of all other targets"
+L.headerIconSizeTarget = "Tamanho do íncone do seu alvo atual"
+L.headerIconSizeOthers = "Tamanho do íncone de todos os outros alvos"
 
 -- Tipos de brilho como parte de LibCustomGlow
 L.pixelGlow = "Brilho de Pixel"
@@ -715,8 +711,6 @@ L.Warning = "Aviso"
 L.onyou = "Um feitiço, buff, ou debuff em você"
 L.underyou = "Você precisa se mover do feitiço embaixo de você"
 L.privateaura = "Sempre que uma 'Aura Privada' está em você"
-
-L.sound = "Som"
 
 L.customSoundDesc = "Reproduzir um som personalizado ao invés do padrão do módulo."
 L.resetSoundDesc = "Reinicia os sons acima para os padrões."

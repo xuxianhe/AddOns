@@ -53,7 +53,7 @@ local function RGB_16(name, r, g, b)
 end
 ns.RGB_16 = RGB_16
 
-function SetColorName(name, r, g, b)
+local function SetColorName(name, r, g, b)
     if not (r and g and b) then
         return name
     end
@@ -71,6 +71,7 @@ function SetColorName(name, r, g, b)
     end
     return "|cff" .. r .. g .. b .. name .. "|r"
 end
+ns.SetColorName = SetColorName
 
 -- 第几个BOSS
 local function BossNum(FB, b, t)

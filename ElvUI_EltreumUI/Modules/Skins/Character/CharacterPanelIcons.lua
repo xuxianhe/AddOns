@@ -15,7 +15,7 @@ local numCharacters = 3 --number of letters in the name
 
 if E.Retail then
 	CharacterLevelText:SetWidth(300) --new
-elseif E.Classic or E.Cata then
+elseif E.Classic or E.Cata or E.Wrath then
 	CharacterLevelText:SetWidth(280) --new
 end
 
@@ -23,7 +23,7 @@ function ElvUI_EltreumUI:ClassIconsOnCharacterPanel()
 	if E.db.ElvUI_EltreumUI.skins.classiconsoncharacterpanel and E.private.skins.blizzard.enable and E.private.skins.blizzard.character then
 		classsymbolonframe = ElvUI_EltreumUI:GetClassIcons(E.db.ElvUI_EltreumUI.skins.classiconsstyle,E.myclass,false,"32")
 
-		if not E.Retail and not E.Cata then
+		if not (E.Retail or E.Cata) then
 			if _G.CharacterFrameTitleText and _G.CharacterFrameTitleText:GetText() ~= nil and not (_G.CharacterFrameTitleText:GetText():match("|T")) then
 				CharacterNameText:SetFont(E.LSM:Fetch('font', E.db.general.font), E.db.ElvUI_EltreumUI.skins.armorynamefontsize, ElvUI_EltreumUI:FontFlag(E.db.general.fontStyle))
 				CharacterNameText:SetShadowColor(0, 0, 0, 0.8)

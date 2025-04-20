@@ -28,26 +28,12 @@ end
 
 function LM.Mount:Get(className, ...)
     local class = LM[className]
-
     local m = class:Get(...)
-    if not m then return end
-
-    if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
-        for familyName, familyMounts in pairs(LM.MOUNTFAMILY) do
-            if familyMounts[m.spellID] then
-                m.family = familyName
-            end
-        end
-
+    if m then
         if not m.family then
-            m.family = UNKNOWN
-            LM.MOUNTFAMILY["Unknown"][m.spellID] = true
-            --[==[@debug@
-            LM.PrintError('No family: %s (%d)', m.name, m.spellID)
-            --@end-debug@]==]
+            m.family = NONE
         end
     end
-
     return m
 end
 
@@ -127,7 +113,7 @@ function LM.Mount:MatchesOneFilter(flags, groups, f)
     elseif f == "ENABLED" then
         return self:GetPriority() > 0
     elseif f == "DISABLED" then
-        return self:GetPeiority() == 0
+        return self:GetPriority() == 0
     elseif f == "ZONEMATCH" then
         local zone = GetZoneText()
         return self:IsFromZone(zone)

@@ -3,6 +3,7 @@ local _G = _G
 local CreateFrame = _G.CreateFrame
 local IsAddOnLoaded = _G.C_AddOns and _G.C_AddOns.IsAddOnLoaded or _G.IsAddOnLoaded
 local EltruismExpandedTalents = CreateFrame("Frame")
+local LoadAddOn = _G.C_AddOns and _G.C_AddOns.LoadAddOn or _G.LoadAddOn
 
 --Reskin Blizzard Talent frame
 function ElvUI_EltreumUI:ExpandedTalents()
@@ -12,7 +13,7 @@ function ElvUI_EltreumUI:ExpandedTalents()
 		EltruismExpandedTalents:RegisterEvent("PLAYER_STARTED_MOVING")
 		EltruismExpandedTalents:RegisterEvent("FIRST_FRAME_RENDERED")
 		EltruismExpandedTalents:RegisterEvent("PLAYER_LOGIN")
-		EltruismExpandedTalents:SetScript("OnEvent", function(_,_,arg)
+		EltruismExpandedTalents:SetScript("OnEvent", function(_, _, arg)
 			if (arg == "Blizzard_PlayerSpells") or IsAddOnLoaded("Blizzard_PlayerSpells") then
 				EltruismExpandedTalents:UnregisterAllEvents()
 
@@ -42,7 +43,7 @@ function ElvUI_EltreumUI:ExpandedTalents()
 		EltruismExpandedTalents:RegisterEvent("PLAYER_STARTED_MOVING")
 		EltruismExpandedTalents:RegisterEvent("FIRST_FRAME_RENDERED")
 		EltruismExpandedTalents:RegisterEvent("PLAYER_LOGIN")
-		EltruismExpandedTalents:SetScript("OnEvent", function(_,_,arg)
+		EltruismExpandedTalents:SetScript("OnEvent", function(_, _, arg)
 			if (arg == "Blizzard_TalentUI") or IsAddOnLoaded("Blizzard_TalentUI") then
 				EltruismExpandedTalents:UnregisterAllEvents()
 
@@ -61,7 +62,7 @@ function ElvUI_EltreumUI:ExpandedTalents()
 		if E.db.ElvUI_EltreumUI.skins.tbctalents and E.private.skins.blizzard.enable and E.private.skins.blizzard.talent then
 			EltruismExpandedTalents:RegisterEvent("ADDON_LOADED")
 			EltruismExpandedTalents:RegisterEvent("PLAYER_ENTERING_WORLD")
-			EltruismExpandedTalents:SetScript("OnEvent", function(_,_,arg)
+			EltruismExpandedTalents:SetScript("OnEvent", function(_, _, arg)
 				if arg == "Blizzard_TalentUI" or IsAddOnLoaded("Blizzard_TalentUI") then
 					local PlayerTalentFrame = _G.PlayerTalentFrame
 					local PlayerTalentFrameScrollFrameScrollBar = _G.PlayerTalentFrameScrollFrameScrollBar
@@ -81,11 +82,16 @@ function ElvUI_EltreumUI:ExpandedTalents()
 
 					--increase the size of the whole frame
 					if PlayerTalentFrame then
-						PlayerTalentFrame:SetSize(376, 670)
+						--PlayerTalentFrame:SetScale(0.8, 0.8) --should be around this scale for wrath
+						if E.Wrath then
+							PlayerTalentFrame:SetSize(384, 780)
+						elseif E.Classic then
+							PlayerTalentFrame:SetSize(376, 670)
+						end
 					end
 
 					--fix rank size
-					for i =1, MAX_NUM_TALENTS do
+					for i = 1, MAX_NUM_TALENTS do
 						if _G["PlayerTalentFrameTalent"..i.."Rank"] then
 							_G["PlayerTalentFrameTalent"..i.."Rank"]:SetFont(E.LSM:Fetch('font', E.db.general.font), E.db.general.fontSize+4, ElvUI_EltreumUI:FontFlag(E.db.general.fontStyle))
 						end
@@ -93,20 +99,51 @@ function ElvUI_EltreumUI:ExpandedTalents()
 
 					if PlayerTalentFrameScrollFrame then
 						--increase the size of the actual frame that has the talent buttons
-						if E.Classic then
-							PlayerTalentFrameScrollFrame:SetSize( 280 , 470)
+						if E.Wrath then
+							PlayerTalentFrameScrollFrame:SetSize(280, 720)
+						elseif E.Classic then
+							PlayerTalentFrameScrollFrame:SetSize(280, 470)
 						end
 						--set the position
 						PlayerTalentFrameScrollFrame:ClearAllPoints()
-						if E.Classic then
+						if E.Wrath then
+							PlayerTalentFrameScrollFrame:SetPoint("CENTER", PlayerTalentFrame, -4, 20)
+						else
 							PlayerTalentFrameScrollFrame:SetPoint("TOP", PlayerTalentFrame, "TOP", -22, -37)
 						end
 					end
 
 					--increase the size of the background
 					if PlayerTalentFrameBackgroundTopLeft then
-						if E.Classic then
-							--PlayerTalentFrameBackgroundTopLeft:SetSize(310 , 490)
+						if E.Wrath then
+							if PlayerTalentFrameScrollFrame.backdrop then
+								PlayerTalentFrameScrollFrame.backdrop:Kill()
+							end
+
+							PlayerTalentFrameScrollFrame:SetScale(0.85)
+
+							PlayerTalentFrameBackgroundTopLeft:ClearAllPoints()
+							PlayerTalentFrameBackgroundTopLeft:SetParent(PlayerTalentFrame)
+							PlayerTalentFrameBackgroundTopLeft:SetPoint("TOPLEFT", PlayerTalentFrameScrollFrame, "TOPLEFT", -15, -2)
+							PlayerTalentFrameBackgroundTopLeft:SetSize(203, 467)
+
+							PlayerTalentFrameBackgroundBottomLeft:ClearAllPoints()
+							PlayerTalentFrameBackgroundBottomLeft:SetParent(PlayerTalentFrame)
+							PlayerTalentFrameBackgroundBottomLeft:SetPoint("BOTTOMLEFT", PlayerTalentFrameScrollFrame, "BOTTOMLEFT", -15, 23)
+							PlayerTalentFrameBackgroundBottomLeft:SetSize(203, 120)
+
+							PlayerTalentFrameBackgroundTopRight:ClearAllPoints()
+							PlayerTalentFrameBackgroundTopRight:SetParent(PlayerTalentFrame)
+							PlayerTalentFrameBackgroundTopRight:SetPoint("TOPRIGHT", PlayerTalentFrameScrollFrame, "TOPRIGHT", 0, -2)
+							PlayerTalentFrameBackgroundTopRight:SetSize(50, 467)
+
+							PlayerTalentFrameBackgroundBottomRight:ClearAllPoints()
+							PlayerTalentFrameBackgroundBottomRight:SetParent(PlayerTalentFrame)
+							PlayerTalentFrameBackgroundBottomRight:SetPoint("BOTTOMRIGHT", PlayerTalentFrameScrollFrame, "BOTTOMRIGHT", 0, 23)
+							PlayerTalentFrameBackgroundBottomRight:SetSize(50, 120)
+
+						elseif E.Classic then
+							--PlayerTalentFrameBackgroundTopLeft:SetSize(310, 490)
 							if PlayerTalentFrameScrollFrame.backdrop then
 								PlayerTalentFrameScrollFrame.backdrop:Kill()
 							end
@@ -134,6 +171,40 @@ function ElvUI_EltreumUI:ExpandedTalents()
 					--hide the close button (only shows up for some people?)
 					if PlayerTalentFrameCancelButton then
 						PlayerTalentFrameCancelButton:Hide()
+					end
+
+					-- fix glyph size
+					if E.Wrath then
+						LoadAddOn("Blizzard_GlyphUI")
+						_G.GlyphFrame:SetParent(_G.PlayerTalentFrame)
+
+						_G.GlyphFrame:HookScript("OnShow", function()
+
+							--fix the button being behind the frame
+							if _G.PlayerTalentFrameCloseButton then
+								_G.PlayerTalentFrameCloseButton:SetFrameStrata("HIGH")
+							end
+
+							PlayerTalentFrame:SetSize(384, 512)
+							_G.GlyphFrame:Show()
+							PlayerTalentFrameBackgroundTopLeft:Hide()
+							PlayerTalentFrameBackgroundBottomLeft:Hide()
+							PlayerTalentFrameBackgroundTopRight:Hide()
+							PlayerTalentFrameBackgroundBottomRight:Hide()
+							_G.PlayerTalentFrameStatusFrame:Hide()
+							_G.GlyphFrame:ClearAllPoints()
+							_G.GlyphFrame:SetPoint("CENTER", _G.PlayerTalentFrame, "CENTER", 0, 4)
+							_G.GlyphFrame:SetFrameStrata("HIGH")
+						end)
+						_G.GlyphFrame:HookScript("OnHide", function()
+							PlayerTalentFrame:SetSize(384, 780)
+							_G.GlyphFrame:Hide()
+							_G.PlayerTalentFrameStatusFrame:Show()
+							PlayerTalentFrameBackgroundTopLeft:Show()
+							PlayerTalentFrameBackgroundBottomLeft:Show()
+							PlayerTalentFrameBackgroundTopRight:Show()
+							PlayerTalentFrameBackgroundBottomRight:Show()
+						end)
 					end
 
 					-- fix talent frame position due to expanded character bg

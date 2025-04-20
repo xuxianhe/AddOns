@@ -58,22 +58,18 @@ function RSContainerPOI.GetContainerPOI(containerID, mapID, containerInfo, alrea
 	POI.grouping = true
 	POI.name = RSContainerDB.GetContainerName(containerID) or AL["CONTAINER"]
 	POI.mapID = mapID
-	POI.foundTime = alreadyFoundInfo and alreadyFoundInfo.foundTime
-	POI.isOpened = RSContainerDB.IsContainerOpened(containerID)
-	POI.isDiscovered = POI.isOpened or alreadyFoundInfo ~= nil
-	POI.achievementIDs = RSAchievementDB.GetNotCompletedAchievementIDsByMap(containerID, mapID, true)
-	
-	if (containerInfo) then
-		POI.worldmap = containerInfo.worldmap
-		POI.factionID = containerInfo.factionID
-	end
-	
-	-- Coordinates
 	if (alreadyFoundInfo and alreadyFoundInfo.mapID == mapID) then
 		POI.x = alreadyFoundInfo.coordX
 		POI.y = alreadyFoundInfo.coordY
 	else
 		POI.x, POI.y = RSContainerDB.GetInternalContainerCoordinates(containerID, mapID)
+	end
+	POI.foundTime = alreadyFoundInfo and alreadyFoundInfo.foundTime
+	POI.isDiscovered = POI.isOpened or alreadyFoundInfo ~= nil
+	POI.achievementIDs = RSAchievementDB.GetNotCompletedAchievementIDsByMap(containerID, mapID, true)
+	
+	if (containerInfo) then
+		POI.worldmap = containerInfo.worldmap
 	end
 
 	-- Textures
@@ -88,9 +84,7 @@ function RSContainerPOI.GetContainerPOI(containerID, mapID, containerInfo, alrea
 	end
 	
 	-- Mini icons
-	if (RSUtils.Contains(RSConstants.CONTAINERS_WITHOUT_VIGNETTE, containerID)) then
-		POI.iconAtlas = RSConstants.NOT_TRACKABLE_ICON_ATLAS
-	elseif (RSUtils.GetTableLength(POI.achievementIDs) > 0) then
+	if (RSUtils.GetTableLength(POI.achievementIDs) > 0) then
 		POI.iconAtlas = RSConstants.ACHIEVEMENT_ICON_ATLAS
 	end
 
@@ -99,18 +93,6 @@ end
 
 local function IsContainerPOIFiltered(containerID, mapID, zoneQuestID, onWorldMap, onMinimap)
 	local name = RSContainerDB.GetContainerName(containerID) or AL["CONTAINER"]
-	
-	-- Skip if part of a disabled event
-	if (RSContainerDB.IsDisabledEvent(containerID)) then
-		RSLogger:PrintDebugMessageEntityID(containerID, string.format("Saltado Contenedor [%s]: Parte de un evento desactivado.", containerID))
-		return true
-	end
-	
-	-- Skip if filtering by name in the world map search box
-	if (name and RSGeneralDB.GetWorldMapTextFilter() and not RSUtils.Contains(name, RSGeneralDB.GetWorldMapTextFilter())) then
-		RSLogger:PrintDebugMessageEntityID(containerID, string.format("Saltado Contenedor [%s]: Filtrado por nombre [%s][%s].", containerID, name, RSGeneralDB.GetWorldMapTextFilter()))
-		return true
-	end
 
 	-- Skip if the entity is filtered
 	if (RSConfigDB.IsContainerFiltered(containerID) or RSConfigDB.IsContainerFilteredOnlyWorldmap(containerID)) then
@@ -118,22 +100,15 @@ local function IsContainerPOIFiltered(containerID, mapID, zoneQuestID, onWorldMa
 		return true
 	end
 	
-	-- Skip if not completed achievement and is filtered
-	local isNotCompletedAchievement = RSUtils.GetTableLength(RSAchievementDB.GetNotCompletedAchievementIDsByMap(containerID, mapID, true)) > 0;
-	if (not RSConfigDB.IsShowingAchievementContainers() and isNotCompletedAchievement) then
+	-- Skip if achievement and is filtered
+	local isAchievement = RSUtils.GetTableLength(RSAchievementDB.GetNotCompletedAchievementIDsByMap(containerID, mapID, true)) > 0;
+	if (not RSConfigDB.IsShowingAchievementContainers() and isAchievement) then
 		RSLogger:PrintDebugMessageEntityID(containerID, string.format("Saltado Contenedor [%s]: Filtrado contenedor con logro.", containerID))
 		return true
 	end
 	
-	-- Skip if not trackeable and filtered
-	if (not RSConfigDB.IsShowingNotTrackeableContainers() and RSUtils.Contains(RSConstants.CONTAINERS_WITHOUT_VIGNETTE, containerID)) then
-		RSLogger:PrintDebugMessageEntityID(containerID, string.format("Saltado Contenedor [%s]: Filtrado contenedor no rastreable.", containerID))
-		return true
-	end
-	
-	-- Skip if other (trackeable) filtered
-	local isNotTrackable = RSUtils.Contains(RSConstants.CONTAINERS_WITHOUT_VIGNETTE, containerID)
-	if (not RSConfigDB.IsShowingOtherContainers() and not isNotCompletedAchievement and not isNotTrackable) then
+	-- Skip if other (trackeable and not prof) filtered
+	if (not RSConfigDB.IsShowingOtherContainers() and not isAchievement) then
 		RSLogger:PrintDebugMessageEntityID(containerID, string.format("Saltado Contenedor [%s]: Filtrado otro contenedor.", containerID))
 		return true
 	end
@@ -152,15 +127,6 @@ local function IsContainerPOIFiltered(containerID, mapID, zoneQuestID, onWorldMa
 			RSLogger:PrintDebugMessageEntityID(containerID, string.format("Saltado Contenedor [%s]: Evento asociado no esta activo.", containerID))
 			return true
 		end
-	end
-
-	-- A 'not discovered' container will be setted as opened when the action is detected while loading the addon and its questID is completed
-	local containerOpened = RSContainerDB.IsContainerOpened(containerID)
-
-	-- Skip if opened and not showing opened entities
-	if (containerOpened and not RSConfigDB.IsShowingAlreadyOpenedContainers()) then
-		RSLogger:PrintDebugMessageEntityID(containerID, string.format("Saltado Contenedor [%s]: Esta abierto.", containerID))
-		return true
 	end
 
 	return false
@@ -183,7 +149,7 @@ function RSContainerPOI.GetMapNotDiscoveredContainerPOIs(mapID, onWorldMap, onMi
 		local containerInfo = RSContainerDB.GetInternalContainerInfo(containerID)
 
 		-- Skip if it was discovered in this session
-		if (not filtered and RSGeneralDB.GetAlreadyFoundEntity(containerID)) then
+		if (RSGeneralDB.GetAlreadyFoundEntity(containerID)) then
 			RemoveNotDiscoveredContainer(containerID)
 			RSLogger:PrintDebugMessageEntityID(containerID, string.format("Saltado Contenedor N/D [%s]: Ya no es 'no descubierto'.", containerID))
 			filtered = true
@@ -212,14 +178,6 @@ function RSContainerPOI.GetMapAlreadyFoundContainerPOI(containerID, alreadyFound
 	end
 
 	local containerInfo = RSContainerDB.GetInternalContainerInfo(containerID)
-	local containerOpened = RSContainerDB.IsContainerOpened(containerID)
-
-	-- Skip if the entity has been seen before the max amount of time that the player want to see the icon on the map
-	-- This filter doesnt apply to opened entities or worldmap containers
-	if (not containerOpened and (containerInfo and not containerInfo.worldmap) and RSConfigDB.IsMaxSeenTimeContainerFilterEnabled() and time() - alreadyFoundInfo.foundTime > RSTimeUtils.MinutesToSeconds(RSConfigDB.GetMaxSeenContainerTimeFilter())) then
-		RSLogger:PrintDebugMessageEntityID(containerID, string.format("Saltado Contenedor [%s]: Visto hace demasiado tiempo.", containerID))
-		return
-	end
 
 	-- Skip if the entity belongs to a different map that the one displaying
 	-- First checks with the already found information

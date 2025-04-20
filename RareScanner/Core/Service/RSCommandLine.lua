@@ -19,7 +19,6 @@ local RSLogger = private.ImportLib("RareScannerLogger")
 
 -- RareScanner services
 local RSRecentlySeenTracker = private.ImportLib("RareScannerRecentlySeenTracker")
-local RSCustomNpcs = private.ImportLib("RareScannerCustomNpcs")
 
 -- RareScanner other addons integration services
 local RSTomtom = private.ImportLib("RareScannerTomtom")
@@ -29,7 +28,6 @@ local RSTomtom = private.ImportLib("RareScannerTomtom")
 ---============================================================================
 
 local RARESCANNER_CMD = "rarescanner"
-local RARESCANNERS_CMD = "rs"
 
 function RSCommandLine.SlashCommand(command, ...)
 	if (command == RSConstants.CMD_TOGGLE_MAP_ICONS) then
@@ -52,16 +50,10 @@ function RSCommandLine.SlashCommand(command, ...)
 		RSCommandLine.CmdToggleRares()
 	elseif (command == RSConstants.CMD_TOGGLE_RARES_ALERTS) then
 		RSCommandLine.CmdToggleRaresAlerts()
-	elseif (command == RSConstants.CMD_TOGGLE_EVENTS) then
-		RSCommandLine.CmdToggleEvents()
-	elseif (command == RSConstants.CMD_TOGGLE_EVENTS_ALERTS) then
-		RSCommandLine.CmdToggleEventsAlerts()
 	elseif (command == RSConstants.CMD_TOGGLE_TREASURES) then
 		RSCommandLine.CmdToggleTreasures()
 	elseif (command == RSConstants.CMD_TOGGLE_TREASURES_ALERTS) then
 		RSCommandLine.CmdToggleTreasuresAlerts()
-	elseif (command == RSConstants.CMD_TOGGLE_SCANNING_WORLD_MAP_VIGNETTES) then
-		RSCommandLine.CmdToggleScanningWorldmapVignettes()
 	elseif (RSUtils.Contains(command, RSConstants.CMD_TOMTOM_WAYPOINT)) then
 		local _, mapID, x, y, name = strsplit(";", command)
 		if (RSConfigDB.IsTomtomSupportEnabled() and not RSConfigDB.IsAddingTomtomWaypointsAutomatically()) then
@@ -70,38 +62,14 @@ function RSCommandLine.SlashCommand(command, ...)
 	elseif (RSUtils.Contains(command, RSConstants.CMD_RECENTLY_SEEN)) then
 		local _, entityID, mapID, x, y = strsplit(";", command)
 		RSRecentlySeenTracker.AddPendingAnimation(tonumber(entityID), mapID, x, y, true)
-	elseif (command == RSConstants.CMD_OPEN_EXPLORER) then
-		RSExplorerFrame:Show()
-	elseif (RSUtils.Contains(command, RSConstants.CMD_IMPORT)) then
-		local _, text = strsplit(" ", command, 2)
-		if (text) then
-			RSCustomNpcs.ImportNpcs(text, nil, function(output)
-				if (output) then
-					for i, value in ipairs(output) do
-						if ((i == 1 and RSUtils.GetTableLength(output) == 1) or i > 1) then
-							RSLogger:PrintMessage(value)
-						end
-					end
-					
-					-- Refresh the options panel
-					private.refreshCustomNpcs = true
-					LibStub("AceConfigRegistry-3.0"):NotifyChange("RareScanner Custom NPCs")
-				end
-			end)
-		end
 	else
 		print("|cFFFBFF00"..AL["CMD_HELP1"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_OPEN_EXPLORER.." |cFF00FFFB"..AL["CMD_HELP12"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_TOGGLE_MAP_ICONS.." |cFF00FFFB"..AL["CMD_HELP2"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_TOGGLE_EVENTS.." |cFF00FFFB"..AL["CMD_HELP3"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_TOGGLE_TREASURES.." |cFF00FFFB"..AL["CMD_HELP4"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_TOGGLE_RARES.." |cFF00FFFB"..AL["CMD_HELP5"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_TOGGLE_ALERTS.." |cFF00FFFB"..AL["CMD_HELP6"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_TOGGLE_EVENTS_ALERTS.." |cFF00FFFB"..AL["CMD_HELP7"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_TOGGLE_TREASURES_ALERTS.." |cFF00FFFB"..AL["CMD_HELP8"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_TOGGLE_RARES_ALERTS.." |cFF00FFFB"..AL["CMD_HELP9"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_TOGGLE_SCANNING_WORLD_MAP_VIGNETTES.." |cFF00FFFB"..AL["CMD_HELP10"])
-		print("|cFFFBFF00   /"..RARESCANNERS_CMD.." "..RSConstants.CMD_IMPORT.." |cFFFFFFFBstring".." |cFF00FFFB"..AL["CMD_HELP13"])
+		print("|cFFFBFF00   /"..RARESCANNER_CMD.." "..RSConstants.CMD_TOGGLE_MAP_ICONS.." |cFF00FFFB"..AL["CMD_HELP2"])
+		print("|cFFFBFF00   /"..RARESCANNER_CMD.." "..RSConstants.CMD_TOGGLE_TREASURES.." |cFF00FFFB"..AL["CMD_HELP4"])
+		print("|cFFFBFF00   /"..RARESCANNER_CMD.." "..RSConstants.CMD_TOGGLE_RARES.." |cFF00FFFB"..AL["CMD_HELP5"])
+		print("|cFFFBFF00   /"..RARESCANNER_CMD.." "..RSConstants.CMD_TOGGLE_ALERTS.." |cFF00FFFB"..AL["CMD_HELP6"])
+		print("|cFFFBFF00   /"..RARESCANNER_CMD.." "..RSConstants.CMD_TOGGLE_TREASURES_ALERTS.." |cFF00FFFB"..AL["CMD_HELP8"])
+		print("|cFFFBFF00   /"..RARESCANNER_CMD.." "..RSConstants.CMD_TOGGLE_RARES_ALERTS.." |cFF00FFFB"..AL["CMD_HELP9"])
 	end
 end
 
@@ -153,26 +121,6 @@ function RSCommandLine.CmdToggleRaresAlerts()
 	end
 end
 
-function RSCommandLine.CmdToggleEvents()
-	if (private.db.map.displayEventIcons) then
-		private.db.map.displayEventIcons = false
-		RSLogger:PrintMessage(AL["CMD_HIDE_EVENTS"])
-	else
-		private.db.map.displayEventIcons = true
-		RSLogger:PrintMessage(AL["CMD_SHOW_EVENTS"])
-	end
-end
-
-function RSCommandLine.CmdToggleEventsAlerts()
-	if (private.db.general.scanEvents) then
-		private.db.general.scanEvents = false
-		RSLogger:PrintMessage(AL["CMD_DISABLE_EVENTS_ALERTS"])
-	else
-		private.db.general.scanEvents = true
-		RSLogger:PrintMessage(AL["CMD_ENABLE_EVENTS_ALERTS"])
-	end
-end
-
 function RSCommandLine.CmdToggleTreasures()
 	if (private.db.map.displayContainerIcons) then
 		private.db.map.displayContainerIcons = false
@@ -193,17 +141,6 @@ function RSCommandLine.CmdToggleTreasuresAlerts()
 	end
 end
 
-function RSCommandLine.CmdToggleScanningWorldmapVignettes()
-	if (private.db.general.scanWorldmapVignette) then
-		private.db.general.scanWorldmapVignette = false
-		RSLogger:PrintMessage(AL["CMD_DISABLE_SCANNING_WORLDMAP_VIGNETTES"])
-	else
-		private.db.general.scanWorldmapVignette = true
-		RSLogger:PrintMessage(AL["CMD_ENABLE_SCANNING_WORLDMAP_VIGNETTES"])
-	end
-end
-
 function RSCommandLine.Initialize(addon) 
 	addon:RegisterChatCommand(RARESCANNER_CMD, RSCommandLine.SlashCommand)
-	addon:RegisterChatCommand(RARESCANNERS_CMD, RSCommandLine.SlashCommand)
 end

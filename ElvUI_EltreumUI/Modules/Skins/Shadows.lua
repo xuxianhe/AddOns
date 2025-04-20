@@ -286,7 +286,7 @@ function ElvUI_EltreumUI:Shadows()
 						end
 					end
 					if (arg == "Blizzard_MacroUI") or IsAddOnLoaded("Blizzard_MacroUI") then
-						if E.Retail or E.Cata then
+						if E.Retail or E.Cata or E.Wrath then
 							if not _G.MacroFrame.shadow then
 								_G.MacroFrame:CreateShadow(E.db.ElvUI_EltreumUI.skins.shadow.length)
 								ElvUI_EltreumUI:ShadowColor(_G.MacroFrame.shadow)
@@ -1116,7 +1116,7 @@ function ElvUI_EltreumUI:Shadows()
 			end)
 
 			--mirror timer shadow
-			if E.Cata then
+			if E.Cata or E.Wrath then
 				hooksecurefunc('TimerTracker_StartTimerOfType', function() --from elvui
 					for _, frame in pairs(_G.TimerTracker.timerList) do
 						if frame and frame.bar and not frame.bar.shadow then
@@ -1496,7 +1496,7 @@ function ElvUI_EltreumUI:Shadows()
 			end
 
 			--Shaman Totem things
-			if E.Cata then
+			if E.Cata or E.Wrath then
 				if E.myclass == "SHAMAN" and not (E.db.ElvUI_EltreumUI.borders.borders and E.db.ElvUI_EltreumUI.borders.totembar) and E.db.actionbar.totemBar.enable then
 					local totemframes = {
 						_G.MultiCastSummonSpellButton,

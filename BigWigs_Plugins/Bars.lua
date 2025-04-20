@@ -299,7 +299,9 @@ do
 				desc = L.testBarsBtn_desc,
 				func = function()
 					testCount = testCount + 1
-					plugin:SendMessage("BigWigs_StartBar", plugin, nil, BigWigsAPI:GetLocale("BigWigs: Common").count:format(L.test, testCount), random(11, 30), testIcons[(testCount%3)+1])
+					local time = random(11, 30)
+					plugin:SendMessage("BigWigs_StartBar", plugin, nil, BigWigsAPI:GetLocale("BigWigs: Common").count:format(L.test, testCount), time, testIcons[(testCount%3)+1])
+					plugin:SendMessage("BigWigs_Timer", plugin, nil, time, time, BigWigsAPI:GetLocale("BigWigs: Common").count:format(L.test, testCount), 0, testIcons[(testCount%3)+1], false, true)
 				end,
 				width = 1.5,
 				order = 0.4,
@@ -449,9 +451,9 @@ do
 						name = L.alignText,
 						order = 11,
 						values = {
-							LEFT = L.left,
-							CENTER = L.center,
-							RIGHT = L.right,
+							LEFT = L.LEFT,
+							CENTER = L.CENTER,
+							RIGHT = L.RIGHT,
 						},
 					},
 					textSpacer = {
@@ -470,9 +472,9 @@ do
 						name = L.alignTime,
 						order = 14,
 						values = {
-							LEFT = L.left,
-							CENTER = L.center,
-							RIGHT = L.right,
+							LEFT = L.LEFT,
+							CENTER = L.CENTER,
+							RIGHT = L.RIGHT,
 						},
 					},
 					timeSpacer = {
@@ -492,8 +494,8 @@ do
 						desc = L.iconPositionDesc,
 						order = 17,
 						values = {
-							LEFT = L.left,
-							RIGHT = L.right,
+							LEFT = L.LEFT,
+							RIGHT = L.RIGHT,
 						},
 						disabled = function() return not db.icon end,
 					},

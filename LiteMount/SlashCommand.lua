@@ -240,6 +240,32 @@ COMMANDS['mockdata'] =
         C_UI.Reload()
     end
 
+COMMANDS['fam'] =
+    function (argstr, ...)
+        local name = table.concat({ ... }, ' ')
+        local families = LM.UIFilter.GetFamilies()
+        local newFamily
+        if tContains(families, name) then
+            newFamily = name
+        else
+            local currentIndex = 0
+            for i, family in ipairs(families) do
+                if LM.UIFilter.IsFamilyChecked(family) then
+                    currentIndex = i
+                    break
+                end
+            end
+            local nextIndex = currentIndex % #families + 1
+            newFamily = families[nextIndex]
+        end
+
+        LM.UIFilter.SetOtherFilter('HIDDEN', true)
+        LM.UIFilter.SetOtherFilter('UNUSABLE', true)
+        LM.UIFilter.SetAllFamilyFilters(false)
+        LM.UIFilter.SetFamilyFilter(newFamily, true)
+        LM.Print(newFamily)
+    end
+
 --@end-debug@]==]
 
 local function PrintUsage()

@@ -20,9 +20,6 @@ local RSUtils = private.ImportLib("RareScannerUtils")
 local RSTooltipScanners = private.ImportLib("RareScannerTooltipScanners")
 local RSRoutines = private.ImportLib("RareScannerRoutines")
 
--- RareScanner service libraries
-local RSMinimap = private.ImportLib("RareScannerMinimap")
-
 -----------------------------------------------------------------------
 -- Functions to delete custom NPCs
 -----------------------------------------------------------------------
@@ -62,9 +59,6 @@ function RSCustomNpcs.DeleteCustomNpc(npcID, options)
 			private.options_cnpcs[groupKey] = nil
 		end
 	end
-	
-	-- Update minimap
-	RSMinimap.HideIcon(tonumber(npcID))
 end
 
 -----------------------------------------------------------------------
@@ -117,8 +111,6 @@ function RSCustomNpcs.ImportNpcs(text, options, callback)
 					AddLineError(npcErrorLines, s, AL["CUSTOM_NPC_ERROR1_NPCID"])
 				elseif (tonumber(npcID) == nil) then
 					AddLineError(npcErrorLines, s, string.format(AL["CUSTOM_NPC_ERROR2_NPCID"], npcID))
-				elseif (not RSNpcDB.GetCustomNpcInfo(tonumber(npcID)) and RSNpcDB.GetInternalNpcInfo(tonumber(npcID))) then
-					AddLineError(npcErrorLines, s, string.format(AL["CUSTOM_NPC_ERROR4_NPCID"], npcID))
 				else
 					npcIDcorrect = true
 				end
@@ -248,20 +240,12 @@ function RSCustomNpcs.ImportNpcs(text, options, callback)
 				
 				-- Check if NPC exists
 				if (npcIDcorrect) then
-					local imported = false
 					RSTooltipScanners.ScanNpcName(npcID, function(npcName)
-						-- In Classic this callback is summoned twice
-						if (imported) then
-							return
-						end
-						
 						if (not npcName) then
 							AddLineError(npcErrorLines, s, string.format(AL["CUSTOM_NPC_ERROR3_NPCID"], npcID))
 						elseif (RSUtils.GetTableLength(npcErrorLines) == 0) then
 							-- Deletes just in case it already exists
-							if (options) then
-								RSCustomNpcs.DeleteCustomNpc(npcID, options)
-							end
+							RSCustomNpcs.DeleteCustomNpc(npcID, options)
 							
 							-- If the group doesn't exist, create it first
 							if (not newNpcInfo.group and not RSNpcDB.GetCustomNpcGroupByValue(groupName)) then
@@ -276,7 +260,6 @@ function RSCustomNpcs.ImportNpcs(text, options, callback)
 								RSCollectionsDB.UpdateEntityCollectibles(tonumber(npcID), newNpcInfo.items, RSConstants.ITEM_SOURCE.NPC)
 							end
 						
-							imported = true						
 							tinsert(output, string.format("# |A:common-icon-checkmark:10:10::::|a %s", string.format(AL["CUSTOM_NPC_IMPORT_OK"], s)))
 						else
 							for _, string in pairs(npcErrorLines) do

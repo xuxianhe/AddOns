@@ -1,9 +1,6 @@
 # GSE
 
-## [3.2.26-c](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/tree/3.2.26-c) (2025-04-08)
-[Full Changelog](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/compare/3.2.26-b...3.2.26-c) [Previous Releases](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/releases)
+## [3.2.27-1-g1507411](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/tree/15074113a162bae410fca18074ca0fd073e98598) (2025-04-16)
+[Full Changelog](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/compare/3.2.27...15074113a162bae410fca18074ca0fd073e98598) [Previous Releases](https://github.com/TimothyLuke/GSE-Advanced-Macro-Compiler/releases)
 
-- #1786 TOC Updates for SoD Phase 8  
-- #1756 code in internal deserialisation  
-- #1779 Fix Advanced Editor Lua errors with Global Sequences  
-- #1777 Fix sending of sequences via "Send"  
+- #1757 Fix Curseforge build  

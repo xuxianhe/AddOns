@@ -6,7 +6,7 @@ local ADDON_NAME, private = ...
 local LibStub = _G.LibStub
 local RareScanner = LibStub("AceAddon-3.0"):GetAddon("RareScanner")
 local AL = LibStub("AceLocale-3.0"):GetLocale("RareScanner", false)
-local LibDialog = LibStub("LibDialog-1.0RS")
+local LibDialog = LibStub("LibDialog-1.0")
 
 local RSGeneralOptions = private.NewLib("RareScannerGeneralOptions")
 
@@ -95,7 +95,7 @@ function RSGeneralOptions.GetGeneralOptions()
 					type = "range",
 					name = AL["RESCAN_TIMER"],
 					desc = AL["RESCAN_TIMER_DESC"],
-					min	= 1,
+					min	= 3,
 					max	= 60,
 					step = 1,
 					bigStep = 1,
@@ -127,30 +127,8 @@ function RSGeneralOptions.GetGeneralOptions()
 					end,
 					width = "full",
 				},
-				scanEvents = {
-					order = 3,
-					name = AL["ENABLE_SCAN_EVENTS"],
-					desc = AL["ENABLE_SCAN_EVENTS_DESC"],
-					type = "toggle",
-					get = function() return RSConfigDB.IsScanningForEvents() end,
-					set = function(_, value)
-						RSConfigDB.SetScanningForEvents(value)
-					end,
-					width = "full",
-				},
-				scanChatAlerts = {
-					order = 4,
-					name = AL["ENABLE_SCAN_CHAT"],
-					desc = AL["ENABLE_SCAN_CHAT_DESC"],
-					type = "toggle",
-					get = function() return RSConfigDB.IsScanningChatAlerts() end,
-					set = function(_, value)
-						RSConfigDB.SetScanningChatAlerts(value)
-					end,
-					width = "full",
-				},
 				scanInstances = {
-					order = 5,
+					order = 3,
 					name = AL["ENABLE_SCAN_IN_INSTANCE"],
 					desc = AL["ENABLE_SCAN_IN_INSTANCE_DESC"],
 					type = "toggle",
@@ -161,7 +139,7 @@ function RSGeneralOptions.GetGeneralOptions()
 					width = "full",
 				},
 				scanOnTaxi = {
-					order = 6,
+					order = 4,
 					name = AL["ENABLE_SCAN_ON_TAXI"],
 					desc = AL["ENABLE_SCAN_ON_TAXI_DESC"],
 					type = "toggle",
@@ -172,7 +150,7 @@ function RSGeneralOptions.GetGeneralOptions()
 					width = "full",
 				},
 				scanTargetUnit = {
-					order = 7,
+					order = 5,
 					name = AL["ENABLE_SCAN_TARGET_UNIT"],
 					desc = AL["ENABLE_SCAN_TARGET_UNIT_DESC"],
 					type = "toggle",
@@ -182,39 +160,12 @@ function RSGeneralOptions.GetGeneralOptions()
 							LibDialog:Spawn(RSConstants.TARGET_UNIT_WARNING)
 						else
 							RSConfigDB.SetScanningTargetUnit(value)
-            	
-			            	-- Unmutes the dialog sound
-							if (RSConfigDB.IsMutingTargetUnitSound()) then
-								UnmuteSoundFile(RSConstants.ERROR_SOUND_CLOSE_ID)
-								UnmuteSoundFile(RSConstants.ERROR_SOUND_OPEN_ID)
-							end
-							RSConfigDB.SetMutingTargetUnitSound(value)
 						end
 					end,
 					width = "full",
-				},
-				muteTargetUnit = {
-					order = 8,
-					name = AL["MUTE_TARGET_UNIT_SOUND"],
-					desc = AL["MUTE_TARGET_UNIT_SOUND_DESC"],
-					type = "toggle",
-					get = function() return RSConfigDB.IsMutingTargetUnitSound() end,
-					set = function(_, value)
-						RSConfigDB.SetMutingTargetUnitSound(value)
-							
-						if (value) then
-							MuteSoundFile(RSConstants.ERROR_SOUND_CLOSE_ID)
-							MuteSoundFile(RSConstants.ERROR_SOUND_OPEN_ID)
-						else
-							UnmuteSoundFile(RSConstants.ERROR_SOUND_CLOSE_ID)
-							UnmuteSoundFile(RSConstants.ERROR_SOUND_OPEN_ID)
-						end
-					end,
-					width = "full",
-					disabled = function() return not RSConfigDB.IsScanningTargetUnit() end,
 				},
 				showMaker = {
-					order = 9,
+					order = 6,
 					name = AL["ENABLE_MARKER"],
 					desc = AL["ENABLE_MARKER_DESC"],
 					type = "toggle",
@@ -225,7 +176,7 @@ function RSGeneralOptions.GetGeneralOptions()
 					width = "full",
 				},
 				marker = {
-					order = 10,
+					order = 7,
 					type = "select",
 					dialogControl = 'RS_Markers',
 					name = AL["MARKER"],
@@ -239,12 +190,12 @@ function RSGeneralOptions.GetGeneralOptions()
 					disabled = function() return not RSConfigDB.IsDisplayingMarkerOnTarget() end,
 				},
 				separatorTomtomWaypoints = {
-					order = 11,
+					order = 8,
 					type = "header",
 					name = AL["TOMTOM_WAYPOINTS"],
 				},
 				enableTomtomSupport = {
-					order = 12,
+					order = 9,
 					name = AL["ENABLE_TOMTOM_SUPPORT"],
 					desc = AL["ENABLE_TOMTOM_SUPPORT_DESC"],
 					type = "toggle",
@@ -259,7 +210,7 @@ function RSGeneralOptions.GetGeneralOptions()
 					disabled = function() return not TomTom end,
 				},
 				autoTomtomWaypoints = {
-					order = 13,
+					order = 10,
 					name = AL["ENABLE_AUTO_TOMTOM_WAYPOINTS"],
 					desc = AL["ENABLE_AUTO_TOMTOM_WAYPOINTS_DESC"],
 					type = "toggle",

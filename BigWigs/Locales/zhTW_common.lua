@@ -66,9 +66,14 @@ L.cancelled = "%s取消" -- Spell Cancelled
 L.you_die = "你將死亡" -- You will die
 L.you_die_sec = "你將在%d秒後死亡" -- "You die in 15 sec" (sec = seconds)
 L.next_ability = "下個技能" -- We don't know what ability will be next, we only know when it will happen (showing a bar)
-L.landing = "%s即將著陸" -- "NPC_NAME is landing" Used when a flying NPC/dragon/boss is landing 即將著陸、正在降落
+L.boss_landing = "%s即將著陸" -- "NPC_NAME is landing" Used when a flying NPC/dragon/boss is landing 即將著陸、正在降落
+--L.landing = "Landing" -- Used when a flying NPC/dragon/boss is landing
 L.flying_available = "可以飛行"
 --L.bosses_too_close = "Bosses are too close" -- When 2 or more bosses are too close to each other, buffing each other with a shield, extra damage, etc.
+--L.keep_moving = "Keep moving" -- An ability that forces you to keep moving or you will take damage
+--L.stand_still = "Stand still" -- An ability that forces you to stand still or you will take damage
+--L.safe_to_stop = "Safe to stop" -- When an ability that forces you to keep moving fades from you, allowing you to stop moving
+--L.safe_to_move = "Safe to move" -- When an ability to forces you to stand still fades from you, allowing you to move again
 
 -- Add related
 L.add_spawned = "增援出現" -- singular 小怪OR增援，開發者要求用增援
@@ -126,6 +131,7 @@ L.marker = "%s標記"
 L.marker_player_desc = "將受到%s影響的玩家標記為%s，需要權限。" -- Mark players affected by 'SPELL_NAME' with SKULL_ICON
 L.marker_npc_desc = "標記%s為%s，需要權限。" -- Mark NPC_NAME with SKULL_ICON
 L.marker_npc_aura_desc = "將受到%s影響的 NPC 標記為%s，需要權限。" -- Mark NPCs affected by 'SPELL_NAME' with SKULL_ICON
+L.disabled = "被停用"
 
 -- Ability where two players have to move close to each other
 L.link = "連結"
@@ -146,10 +152,14 @@ L.seconds = "%.1f秒" -- 1.1 seconds
 
 -- Directions
 L.top = "上"
+L.top_right = "右上"
+L.top_left = "左上"
 L.up = "向上"
 L.middle = "中"
 L.down = "向下"
 L.bottom = "下"
+L.bottom_right = "右下"
+L.bottom_left = "左下"
 L.left = "左"
 L.right = "右"
 L.north = "北方"
@@ -177,7 +187,6 @@ L.autotalk_generic_desc = "自動選擇使地城進入下一階段的對話選�
 L.absorb = "吸收" -- Used for shield-like abilities that absorb damage or healing
 L.heal_absorb = "治療吸收盾" -- Used for shield-like abilities that absorb healing only
 L.heal_absorbs = "治療吸收盾" -- Plural of L.heal_absorb
-L.tank_combo = "坦克連擊" -- Used for tank swap mechanics where the boss casts a sequence of tank buster attacks
 L.laser = "雷射" -- Used for abilities that act like a laser. Usually from the boss to a player, or, from the boss to a specific area
 L.lasers = "雷射" -- Plural of L.lasers
 L.beam = "射線" -- Similar to "Laser" (a beam from boss to player/boss to area) but can be used to better describe certain abilities that don't look like a Laser
@@ -191,7 +200,6 @@ L.traps = "陷阱" -- Used for abilities that act like traps on the floor e.g. m
 L.meteor = "隕石" -- This one will probably only ever be used for actual meteors
 L.shield = "護盾" -- Abilities that absorb damage/healing creating a "shield" around the boss/player e.g. "Shield on boss" or "Shield remaining"
 L.teleport = "傳送" -- A boss/add/etc teleported somewhere
-L.fear = "恐懼" -- For abilities that cause you to flee in fear
 L.breath = "吐息" -- When a boss breathes fire/frost/etc on to a player or the raid e.g. a Dragon breathing fire on everyone
 L.roar = "咆哮" -- When a boss opens their mouth to let out a loud roar, sometimes used to inflict damage on the raid
 L.leap = "跳躍" -- When a boss leaps through the air from one location to another location, or from a location to a player, etc
@@ -219,28 +227,38 @@ L.spirits = "靈魂" -- Plural of L.spirit
 L.tornado = "旋風" -- 'A tornado is a violently rotating column of air that is in contact with both the surface of the Earth and a cloud' - Wikipedia
 L.tornadoes = "旋風" -- Plural of L.tornado
 L.frontal_cone = "正面技能" -- 正面衝擊 Usually a bad Area-of-Effect ability cast by the boss in a cone/triangle/pizza shape in front of them, don't stand in front of the boss!
-L.fear = "恐懼術" -- Similar to a warlock or priest ability, when a boss casts a fear on a player or multiple players, that makes them run around out of control
 L.mark = "標記" -- Short name for abilites with "Mark" in the name, for example "Mark of Death" or "Toxic Mark" or "Mark of Frost" etc.
 L.marks = "標記" -- Plural of L.marks
 L.mind_control = "精神控制" -- Any kind of Mind Control ability, where a player loses control of their character
 L.mind_control_short = "精神控制" -- Short version of Mind Control, mainly for bars
-L.soak = "分攤" -- Abilities you have to stand in on purpose to soak the damage, like a sponge soaks water. Commonly for abilities that split damage between everyone standing in them.
-L.soaks = "分攤" -- Plural of L.soak
 L.spell_reflection = "法術反射" -- Any ability that reflects spells
-L.parasite = "寄生" -- Any ability where a parasite is involved e.g. "Parasitic Infection", "Parasitic Growth", etc
 L.rooted = "被定身" -- Any ability that roots you in place, preventing you from moving
 
 -- Common ability name replacements A-Z
+L.blind = "致盲" -- Any ability that blinds or disorientates you. Usually an ability a boss casts and you need to turn away from the boss or it will blind you.
 L.dodge = "躲開" -- 躲開/躲避/閃避/躲圈? When you need to continually run around to dodge abilities, like missiles landing on the ground under you
 L.enrage = "狂怒" -- Any enrage buff that can be removed by players using abilities like Soothe (Druid), Tranquilizing Shot (Hunter) and Shiv (Rogue)
+L.fear = "恐懼" -- Similar to a warlock or priest ability, when a boss casts a fear on a player or multiple players, that makes them run around out of control
 L.fixate = "鎖定" -- Used when a boss or add is chasing/fixated on a player
 L.fixates = "鎖定" -- Plural of L.fixate
 --L.group_damage = "Group Damage" -- Any ability that causes damage to every player in the 5 player group
 L.health_drain = "吸血" -- Any ability that drains health from the player 吸血類的技能，就是術士的吸取生命那種直接吸血的法術
+L.parasite = "寄生" -- Any ability where a parasite is involved e.g. "Parasitic Infection", "Parasitic Growth", etc
+L.parasites = "寄生" -- Plural of L.parasite
+L.pull_in = "拉扯" -- An ability that pulls you in towards the boss against your will
 --L.raid_damage = "Raid Damage" -- Any ability that causes damage to every player in the raid
 L.smash = "重擊" -- Short for any ability with the name "smash" in it e.g. "Darkrift Smash" or "Seismic Smash" or "Arcing Smash"
+L.soak = "分攤" -- Abilities you have to stand in on purpose to soak the damage, like a sponge soaks water. Commonly for abilities that split damage between everyone standing in them.
+L.soaks = "分攤" -- Plural of L.soak
 L.spike = "尖刺" -- Short for any ability with the name "spike" in it e.g. "Glacial Spike" or "Fel Spike" or "Volatile Spike"
 L.spikes = "尖刺" -- Plural of L.spike
+L.spread = "分散" -- An ability that forces you to spread out away from other players, or you might damage them
+L.tank_combo = "坦克連擊" -- Used for tank swap mechanics where the boss casts a sequence of tank buster attacks
+--L.tank_debuff = "Tank Debuff" -- Used for debuffs that only apply to tanks, usually an indicator that you need to taunt
+--L.tank_frontal = "Tank Frontal" -- Similar to L.frontal_cone but only applies to tanks
+--L.tank_soak = "Tank Soak" -- Similar to L.soak but only applies to tanks
 L.tentacle = "觸手" -- Used for bosses that summon tentacles
 L.tentacles = "觸手" -- Plural of L.tentacle
 L.waves = "波浪" -- Multiple waves of a bad ability coming from a boss, like waves in the ocean
+L.whelp = "幼龍" -- Short for Whelpling, a baby dragonkin (Dragon Whelp)
+L.whelps = "幼龍" -- Plural of L.whelp

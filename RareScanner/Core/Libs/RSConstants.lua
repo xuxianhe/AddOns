@@ -5,9 +5,6 @@ local ADDON_NAME, private = ...
 
 local RSConstants = private.NewLib("RareScannerConstants")
 
--- Locales
-local AL = LibStub("AceLocale-3.0"):GetLocale("RareScanner");
-
 ---============================================================================
 -- DEBUG MODE
 ---============================================================================
@@ -28,22 +25,21 @@ RSConstants.LOOT_ITEM_ID = nil
 ---============================================================================
 
 RSConstants.CURRENT_DB_VERSION = 2
-RSConstants.CURRENT_LOOT_DB_VERSION = 1
+RSConstants.CURRENT_LOOT_DB_VERSION = 7
 
 ---============================================================================
 -- Current maps (newer)
 ---============================================================================
 
-RSConstants.CURRENT_MAP_ID = 1414 --Kalimdor
-RSConstants.CURRENT_SUBMAP_ID = 1411 --Durotar
+RSConstants.CURRENT_MAP_ID = 113 --Northrend
+RSConstants.CURRENT_SUBMAP_ID = 115 --Dragon Cementery
 
 ---============================================================================
--- Default filtered entities by version
+-- Special events
 ---============================================================================
 
-RSConstants.DEFAULT_FILTERED_ENTITIES = {
-	version = 1,
-	containers = {}
+RSConstants.EVENTS = {
+
 }
 
 ---============================================================================
@@ -53,11 +49,8 @@ RSConstants.DEFAULT_FILTERED_ENTITIES = {
 RSConstants.CHECK_RESET_RECENTLY_SEEN_TIMER = 5 --5 seconds
 RSConstants.RECENTLY_SEEN_RESET_TIMER = 120 --2 minutes
 RSConstants.RECENTLY_SEEN_PING_ANIMATION_TIMER = 5 --5 seconds
-RSConstants.CACHE_ALL_COMPLETED_QUEST_IDS_TIMER = 60 --1 minute
-RSConstants.CHECK_RESPAWN_THRESHOLD = 150 --2.5 minutes
-RSConstants.CHECK_RESPAWN_TIMER = 60 --1 minute
 RSConstants.CHECK_RESET_NOTIFICATIONS_TIMER = 10 --10 seconds
-RSConstants.CHECK_TARGETS_TIMER = 1 --1 seconds
+RSConstants.CHECK_TARGETS_TIMER = 2 --2 seconds
 RSConstants.BUTTON_TIMER = 1 --1 seconds
 
 ---============================================================================
@@ -70,12 +63,9 @@ RSConstants.ITEM_SOURCE = {
 }
 
 RSConstants.ITEM_TYPE = {
-	UNKNOWN = 0,
-	APPEARANCE = 1,
-	TOY = 2,
-	PET = 3,
-	MOUNT = 4,
-	CUSTOM = "c%s"
+	TOY = 1,
+	PET = 2,
+	MOUNT = 3
 }
 
 ---============================================================================
@@ -104,16 +94,16 @@ RSConstants.PROFILE_DEFAULTS = {
 			rescanTimer = 5,
 			scanRares = true,
 			scanContainers = true,
-			scanEvents = true,
-			scanChatAlerts = true,
 			scanInstances = false,
 			scanOnTaxi = true,
 			scanTargetUnit = false,
-			muteTargetUnit = false,
 			showMaker = true,
 			marker = 8,
 			enableTomtomSupport = false,
-			autoTomtomWaypoints = false
+			autoTomtomWaypoints = false,
+			filteredRares = {},
+			filteredContainers = {},
+			filteredZones = {}
 		},
 		sound = {
 			soundDisabled = false,
@@ -133,7 +123,6 @@ RSConstants.PROFILE_DEFAULTS = {
 			lockPosition = false,
 			displayRaidWarning = true,
 			displayChatMessage = true,
-			chatWindowName = nil,
 			displayTimestampChatMessage = true,
 			enableNavigation = true,
 			navigationLockEntity = false,
@@ -148,9 +137,6 @@ RSConstants.PROFILE_DEFAULTS = {
 		containerFilters = {
 			defaultContainerFilterType = RSConstants.ENTITY_FILTER_ALL
 		},
-		eventFilters = {
-			defaultEventFilterType = RSConstants.ENTITY_FILTER_ALL
-		},
 		zoneFilters = {
 			defaultZoneFilterType = RSConstants.ENTITY_FILTER_ALL
 		},
@@ -161,50 +147,34 @@ RSConstants.PROFILE_DEFAULTS = {
 			searchingPets = true,
 			searchingMounts = true,
 			searchingToys = true,
-			searchingAppearances = true,
 			showFiltered = true,
-			showDead = true,
 			showWithoutCollectibles = false,
 			lockingMap = false
 		},
 		map = {
 			displayNpcIcons = true,
 			displayNotDiscoveredNpcIcons = true,
-			displayAlreadyKilledNpcIcons = false,
-			displayProfessionRaresNpcIcons = true,
-			displayAchievementRaresNpcIcons = true,
 			displayCustomGroupNpcIcons = {},
+			displayAchievementRaresNpcIcons = true,
 			displayOtherRaresNpcIcons = true,
 			displayContainerIcons = true,
-			displayAlreadyOpenedContainersIcons = false,
 			displayNotDiscoveredContainerIcons = true,
-			displayNotTrackeableContainerIcons = true,
 			displayAchievementContainerIcons = true,
-			displayProfessionContainerIcons = true,
 			displayOtherContainerIcons = true,
-			displayEventIcons = true,
-			displayNotDiscoveredEventIcons = true,
 			disableLastSeenFilter = false,
-			displayFriendlyNpcIcons = false,
 			displayOldNotDiscoveredMapIcons = true,
-			displayAlreadyCompletedEventIcons = false,
 			maxSeenTime = 0,
 			maxSeenTimeContainer = 0,
-			maxSeenTimeEvent = 5,
 			scale = 0.8,
 			minimapscale = 0.7,
-			showingWorldMapSearcher = true,
 			cleanWorldMapSearcherOnChange = true,
 			displayMinimapIcons = true,
 			waypointTomtom = false,
 			tooltipsScale = 1.0,
-			tooltipsOnIngameIcons = true,
 			tooltipsAchievements = true,
 			tooltipsNotes = true,
-			tooltipsState = true,
 			tooltipsSeen = true,
 			tooltipsCommands = true,
-			tooltipsFilterState = true,
 			lootAchievTooltipsScale = 0.7,
 			lootAchievementsPosition = "ANCHOR_LEFT",
 			overlayMaxColours = 10,
@@ -221,12 +191,7 @@ RSConstants.PROFILE_DEFAULTS = {
 			animationNpcs = true,
 			animationNpcsType = RSConstants.MAP_ANIMATIONS_ON_BOTH,
 			animationContainers = true,
-			animationContainersType = RSConstants.MAP_ANIMATIONS_ON_CLICK,
-			animationEvents = true,
-			animationEventsType = RSConstants.MAP_ANIMATIONS_ON_CLICK,
-			animationVignettes = true,
-			highlightReputation = true,
-			autoGuidanceIcons = true
+			animationContainersType = RSConstants.MAP_ANIMATIONS_ON_CLICK
 		},
 		loot = {
 			filteredLootCategories = {},
@@ -243,33 +208,12 @@ RSConstants.PROFILE_DEFAULTS = {
 			showingMissingMounts = true,
 			showingMissingPets = true,
 			showingMissingToys = true,
-			showingMissingAppearances = true,
 			numItems = 10,
 			numItemsPerRow = 10,
-			tooltipsCommands = true,
-			tooltipsCanImogit = false
-		},
-		chat = {
-			waypointTomtom = false,
-			tooltipsScale = 1,
-			tooltipsAchievements = true,
-			tooltipsNotes = true,
-			tooltipsLoot = true,
-			tooltipsSeen = true,
-			tooltipsCommands = true,
-			tooltipsFilterScale = 0.75,
-			colorNpc = "85c1e9",
-			colorContainer = "d7dbdd",
-			colorEvent = "f7dc6f",
+			tooltipsCommands = true
 		}
 	}
 }
-
----============================================================================
--- Name of the RareScanner's button
----============================================================================
-
-RSConstants.RS_BUTTON_NAME = "RARESCANNER_BUTTON"
 
 ---============================================================================
 -- Sounds
@@ -289,8 +233,6 @@ RSConstants.DEFAULT_SOUNDS = {
 }
 
 RSConstants.EXTERNAL_SOUND_FOLDER = "Interface\\AddOns\\%s\\%s"
-RSConstants.ERROR_SOUND_CLOSE_ID = 567464 --(close), 567490 (open)
-RSConstants.ERROR_SOUND_OPEN_ID = 567490 --(close), 567490 (open)
 
 ---============================================================================
 -- CMD commands
@@ -301,38 +243,17 @@ RSConstants.CMD_TOGGLE_MAP_ICONS = "tmi"
 RSConstants.CMD_TOGGLE_ALERTS = "ta"
 RSConstants.CMD_TOGGLE_RARES = "tr"
 RSConstants.CMD_TOGGLE_RARES_ALERTS = "tra"
-RSConstants.CMD_TOGGLE_EVENTS = "te"
-RSConstants.CMD_TOGGLE_EVENTS_ALERTS = "tea"
 RSConstants.CMD_TOGGLE_TREASURES = "tt"
 RSConstants.CMD_TOGGLE_TREASURES_ALERTS = "tta"
-RSConstants.CMD_TOGGLE_SCANNING_WORLD_MAP_VIGNETTES = "swmv"
 RSConstants.CMD_TOMTOM_WAYPOINT = "waypoint"
-RSConstants.CMD_OPEN_EXPLORER = "explorer"
 RSConstants.CMD_RECENTLY_SEEN = "rseen"
-RSConstants.CMD_IMPORT = "import"
 
 ---============================================================================
 -- AtlasNames
 ---============================================================================
 
 RSConstants.NPC_VIGNETTE = "VignetteKill"
-RSConstants.NPC_VIGNETTE_ELITE = "VignetteKillElite"
-RSConstants.NPC_LEGION_VIGNETTE = "DemonInvasion5"
-RSConstants.NPC_NAZJATAR_VIGNETTE = "nazjatar-nagaevent"
-RSConstants.NPC_WARFRONT_NEUTRAL_HERO_VIGNETTE = "Warfront-NeutralHero"
-RSConstants.NPC_TORMENTORS_VIGNETTE = "Tormentors-Boss"
-RSConstants.NPC_DIABLO_GOBLIN = "BuildanAbomination-32x32"
-RSConstants.NPC_WARLOCK_PORTAL_GOBLIN = "WarlockPortal-Yellow-32x32"
-
 RSConstants.CONTAINER_VIGNETTE = "VignetteLoot"
-RSConstants.CONTAINER_ELITE_VIGNETTE = "VignetteLootElite"
-RSConstants.CONTAINER_LOCKED_VIGNETTE = "vignetteloot-locked"
-RSConstants.CONTAINER_ELITE_LOCKED_VIGNETTE = "vignettelootelite-locked"
-
-RSConstants.EVENT_VIGNETTE = "VignetteEvent"
-RSConstants.EVENT_ELITE_VIGNETTE = "VignetteEventElite"
-RSConstants.EVENT_TORMENTORS_VIGNETTE = "Tormentors-Event"
-RSConstants.EVENT_ZARALEK_CAVERN = "minimap-genericevent-hornicon-small"
 
 ---============================================================================
 -- MapIDS
@@ -341,44 +262,6 @@ RSConstants.EVENT_ZARALEK_CAVERN = "minimap-genericevent-hornicon-small"
 RSConstants.ALL_ZONES_CUSTOM_NPC = 0
 RSConstants.ALL_ZONES = "all"
 RSConstants.UNKNOWN_ZONE_ID = 0
-RSConstants.AZEROTH = 947
-
----============================================================================
--- NpcIDS
----============================================================================
-
-RSConstants.CONTAINERS_WITHOUT_VIGNETTE = {}
-RSConstants.CONTAINER_WITH_NPC_VIGNETTE = {}
-
--- NPCs that spawn after completing an event
-RSConstants.NPCS_WITH_PRE_EVENT = {}
-
--- Contains that spawn after completing an event
-RSConstants.CONTAINERS_WITH_PRE_EVENT = {}
-
--- NPCs that spawn after killing another NPC
-RSConstants.NPCS_WITH_PRE_NPCS = {}
-
--- IDs to ignore completely
-RSConstants.IGNORED_VIGNETTES = {}
-
--- NPCs that appear with an event icon
-RSConstants.NPCS_WITH_EVENT_VIGNETTE = {}
-
--- NPCs that appear with a container icon
-RSConstants.NPCS_WITH_CONTAINER_VIGNETTE = {}
-
--- Containers that appear with a NPC icon
-RSConstants.CONTAINERS_WITH_NPC_VIGNETTE = {}
-
--- Events that appear with a NPC icon
-RSConstants.EVENTS_WITH_NPC_VIGNETTE = {}
-
--- NPCs that spawn at the same time in multiple places
-RSConstants.NPCS_WITH_MULTIPLE_SPAWNS = {}
-
--- Containers that spawn at the same time in multiple places
-RSConstants.CONTAINERS_WITH_MULTIPLE_SPAWNS = {}
 
 ---============================================================================
 -- Custom NPCs
@@ -397,17 +280,11 @@ RSConstants.GROUP_LEFT_TEXTURE_FILE = "GroupL"
 RSConstants.NORMAL_NPC_TEXTURE_FILE = "OriginalSkull"
 RSConstants.RED_NPC_TEXTURE_FILE = "RedSkullDark"
 RSConstants.PINK_NPC_TEXTURE_FILE = "PinkSkullDark"
-RSConstants.BLUE_NPC_TEXTURE_FILE = "BlueSkullDark"
 RSConstants.PURPLE_NPC_TEXTURE_FILE = "CustomSkull"
 RSConstants.LIGHT_BLUE_NPC_TEXTURE_FILE = "BlueSkullLight"
 RSConstants.NORMAL_CONTAINER_TEXTURE_FILE = "OriginalChest"
 RSConstants.RED_CONTAINER_TEXTURE_FILE = "RedChest"
 RSConstants.PINK_CONTAINER_TEXTURE_FILE = "PinkChest"
-RSConstants.BLUE_CONTAINER_TEXTURE_FILE = "BlueChest"
-RSConstants.NORMAL_EVENT_TEXTURE_FILE = "OriginalStar"
-RSConstants.RED_EVENT_TEXTURE_FILE = "RedStar"
-RSConstants.PINK_EVENT_TEXTURE_FILE = "PinkStar"
-RSConstants.BLUE_EVENT_TEXTURE_FILE = "BlueStar"
 RSConstants.OVERLAY_SPOT_TEXTURE_FILE = "Overlay"
 RSConstants.GUIDE_TRANSPORT_FILE = "Transport"
 RSConstants.GUIDE_ENTRANCE_FILE = "Entrance"
@@ -422,9 +299,7 @@ RSConstants.GUIDE_STEP6_FILE = "Number6"
 RSConstants.GUIDE_STEP7_FILE = "Number7"
 RSConstants.GUIDE_STEP8_FILE = "Number8"
 RSConstants.GUIDE_STEP9_FILE = "Number9"
-RSConstants.PROFFESION_ICON_ATLAS = "Vehicle-HammerGold-1"
 RSConstants.ACHIEVEMENT_ICON_ATLAS = "StoryHeader-CheevoIcon"
-RSConstants.NOT_TRACKABLE_ICON_ATLAS = "XMarksTheSpot"
 
 RSConstants.NORMAL_NPC_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.NORMAL_NPC_TEXTURE_FILE);
 RSConstants.GROUP_NORMAL_NPC_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.NORMAL_NPC_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
@@ -438,10 +313,6 @@ RSConstants.PINK_NPC_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstan
 RSConstants.GROUP_PINK_NPC_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.PINK_NPC_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
 RSConstants.GROUP_PINK_NPC_L_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.PINK_NPC_TEXTURE_FILE, RSConstants.GROUP_LEFT_TEXTURE_FILE));
 RSConstants.GROUP_PINK_NPC_R_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.PINK_NPC_TEXTURE_FILE, RSConstants.GROUP_RIGHT_TEXTURE_FILE));
-RSConstants.BLUE_NPC_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.BLUE_NPC_TEXTURE_FILE);
-RSConstants.GROUP_BLUE_NPC_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.BLUE_NPC_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
-RSConstants.GROUP_BLUE_NPC_L_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.BLUE_NPC_TEXTURE_FILE, RSConstants.GROUP_LEFT_TEXTURE_FILE));
-RSConstants.GROUP_BLUE_NPC_R_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.BLUE_NPC_TEXTURE_FILE, RSConstants.GROUP_RIGHT_TEXTURE_FILE));
 RSConstants.LIGHT_BLUE_NPC_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.LIGHT_BLUE_NPC_TEXTURE_FILE);
 RSConstants.GROUP_LIGHT_BLUE_NPC_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.LIGHT_BLUE_NPC_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
 RSConstants.GROUP_LIGHT_BLUE_NPC_L_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.LIGHT_BLUE_NPC_TEXTURE_FILE, RSConstants.GROUP_LEFT_TEXTURE_FILE));
@@ -462,26 +333,6 @@ RSConstants.PINK_CONTAINER_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSC
 RSConstants.GROUP_PINK_CONTAINER_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.PINK_CONTAINER_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
 RSConstants.GROUP_PINK_CONTAINER_L_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.PINK_CONTAINER_TEXTURE_FILE, RSConstants.GROUP_LEFT_TEXTURE_FILE));
 RSConstants.GROUP_PINK_CONTAINER_R_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.PINK_CONTAINER_TEXTURE_FILE, RSConstants.GROUP_RIGHT_TEXTURE_FILE));
-RSConstants.BLUE_CONTAINER_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.BLUE_CONTAINER_TEXTURE_FILE);
-RSConstants.GROUP_BLUE_CONTAINER_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.BLUE_CONTAINER_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
-RSConstants.GROUP_BLUE_CONTAINER_L_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.BLUE_CONTAINER_TEXTURE_FILE, RSConstants.GROUP_LEFT_TEXTURE_FILE));
-RSConstants.GROUP_BLUE_CONTAINER_R_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.BLUE_CONTAINER_TEXTURE_FILE, RSConstants.GROUP_RIGHT_TEXTURE_FILE));
-RSConstants.NORMAL_EVENT_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.NORMAL_EVENT_TEXTURE_FILE);
-RSConstants.GROUP_NORMAL_EVENT_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.NORMAL_EVENT_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
-RSConstants.GROUP_NORMAL_EVENT_L_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.NORMAL_EVENT_TEXTURE_FILE, RSConstants.GROUP_LEFT_TEXTURE_FILE));
-RSConstants.GROUP_NORMAL_EVENT_R_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.NORMAL_EVENT_TEXTURE_FILE, RSConstants.GROUP_RIGHT_TEXTURE_FILE));
-RSConstants.RED_EVENT_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.RED_EVENT_TEXTURE_FILE);
-RSConstants.GROUP_RED_EVENT_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.RED_EVENT_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
-RSConstants.GROUP_RED_EVENT_L_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.RED_EVENT_TEXTURE_FILE, RSConstants.GROUP_LEFT_TEXTURE_FILE));
-RSConstants.GROUP_RED_EVENT_R_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.RED_EVENT_TEXTURE_FILE, RSConstants.GROUP_RIGHT_TEXTURE_FILE));
-RSConstants.PINK_EVENT_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.PINK_EVENT_TEXTURE_FILE);
-RSConstants.GROUP_PINK_EVENT_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.PINK_EVENT_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
-RSConstants.GROUP_PINK_EVENT_L_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.PINK_EVENT_TEXTURE_FILE, RSConstants.GROUP_LEFT_TEXTURE_FILE));
-RSConstants.GROUP_PINK_EVENT_R_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.PINK_EVENT_TEXTURE_FILE, RSConstants.GROUP_RIGHT_TEXTURE_FILE));
-RSConstants.BLUE_EVENT_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.BLUE_EVENT_TEXTURE_FILE);
-RSConstants.GROUP_BLUE_EVENT_T_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.BLUE_EVENT_TEXTURE_FILE, RSConstants.GROUP_TOP_TEXTURE_FILE));
-RSConstants.GROUP_BLUE_EVENT_L_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.BLUE_EVENT_TEXTURE_FILE, RSConstants.GROUP_LEFT_TEXTURE_FILE));
-RSConstants.GROUP_BLUE_EVENT_R_TEXTURE = string.format(RSConstants.TEXTURE_PATH, string.format("%s%s", RSConstants.BLUE_EVENT_TEXTURE_FILE, RSConstants.GROUP_RIGHT_TEXTURE_FILE));
 RSConstants.OVERLAY_SPOT_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.OVERLAY_SPOT_TEXTURE_FILE);
 RSConstants.GUIDE_TRANSPORT_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.GUIDE_TRANSPORT_FILE);
 RSConstants.GUIDE_ENTRANCE_TEXTURE = string.format(RSConstants.TEXTURE_PATH, RSConstants.GUIDE_ENTRANCE_FILE);
@@ -522,9 +373,6 @@ RSConstants.APPLY_COLLECTIONS_LOOT_FILTERS = "RARESCANNER_APPLY_COLLECTIONS_LOOT
 RSConstants.EXPLORER_FILTERING_DIALOG = "RARESCANNER_EXPLORER_FILTERING_DIALOG"
 RSConstants.EXPLORER_SCAN_NOT_DONE = "RARESCANNER_EXPLORER_SCAN_NOT_DONE"
 RSConstants.TARGET_UNIT_WARNING = "RARESCANNER_TARGET_UNIT_WARNING"
-RSConstants.ITEM_LIST_VALIDATION_ERROR = "RARESCANNER_INFO_DIALOG"
-RSConstants.ITEM_LIST_WRONG_IDS_ERROR = "RARESCANNER_ITEM_LIST_WRONG_IDS_ERROR"
-RSConstants.DELETE_GROUP_CONFIRMATION = "RARESCANNER_DELETE_GROUP_CONFIRMATION"
 
 ---============================================================================
 -- Explorer filters
@@ -533,12 +381,9 @@ RSConstants.DELETE_GROUP_CONFIRMATION = "RARESCANNER_DELETE_GROUP_CONFIRMATION"
 RSConstants.EXPLORER_FILTER_DROP_MOUNTS = 1
 RSConstants.EXPLORER_FILTER_DROP_PETS = 2
 RSConstants.EXPLORER_FILTER_DROP_TOYS = 3
-RSConstants.EXPLORER_FILTER_DROP_APPEARANCES = 4
-RSConstants.EXPLORER_FILTER_DROP_CUSTOM = "c%s"
-RSConstants.EXPLORER_FILTER_PART_ACHIEVEMENT = 5
-RSConstants.EXPLORER_FILTER_DEAD = 6
-RSConstants.EXPLORER_FILTER_FILTERED = 7
-RSConstants.EXPLORER_FILTER_WITHOUT_COLLECTIBLES = 8
+RSConstants.EXPLORER_FILTER_PART_ACHIEVEMENT = 4
+RSConstants.EXPLORER_FILTER_FILTERED = 5
+RSConstants.EXPLORER_FILTER_WITHOUT_COLLECTIBLES = 6
 
 ---============================================================================
 -- Others
@@ -553,17 +398,13 @@ RSConstants.TOOLTIP_MAX_WIDTH = 300
 ---============================================================================
 
 function RSConstants.IsScanneableAtlas(atlasName)
-	return RSConstants.IsEventAtlas(atlasName) or RSConstants.IsNpcAtlas(atlasName) or RSConstants.IsContainerAtlas(atlasName)
-end
-
-function RSConstants.IsEventAtlas(atlasName)
-	return atlasName == RSConstants.EVENT_VIGNETTE or atlasName == RSConstants.EVENT_ELITE_VIGNETTE or atlasName == RSConstants.EVENT_TORMENTORS_VIGNETTE or atlasName == RSConstants.EVENT_ZARALEK_CAVERN
+	return RSConstants.IsNpcAtlas(atlasName) or RSConstants.IsContainerAtlas(atlasName)
 end
 
 function RSConstants.IsNpcAtlas(atlasName)
-	return atlasName == RSConstants.NPC_VIGNETTE or atlasName == RSConstants.NPC_LEGION_VIGNETTE or atlasName == RSConstants.NPC_VIGNETTE_ELITE or atlasName == RSConstants.NPC_NAZJATAR_VIGNETTE or atlasName == RSConstants.NPC_WARFRONT_NEUTRAL_HERO_VIGNETTE or atlasName == RSConstants.NPC_TORMENTORS_VIGNETTE or atlasName == RSConstants.NPC_DIABLO_GOBLIN or atlasName == RSConstants.NPC_WARLOCK_PORTAL_GOBLIN
+	return atlasName == RSConstants.NPC_VIGNETTE
 end
 
 function RSConstants.IsContainerAtlas(atlasName)
-	return atlasName == RSConstants.CONTAINER_VIGNETTE or atlasName == RSConstants.CONTAINER_ELITE_VIGNETTE or atlasName == RSConstants.CONTAINER_LOCKED_VIGNETTE or atlasName == RSConstants.CONTAINER_ELITE_LOCKED_VIGNETTE
+	return atlasName == RSConstants.CONTAINER_VIGNETTE
 end

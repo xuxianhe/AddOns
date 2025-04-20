@@ -100,7 +100,7 @@ function ElvUI_EltreumUI:PLAYER_ENTERING_WORLD(_, initLogin)
 			ElvUI_EltreumUI:NewRetailEditModeLayout(true) --check if they dont have a custom edit mode, if not then add a new one to fix the anchor
 		end
 		ElvUI_EltreumUI.Spec = GetSpecializationInfo(GetSpecialization())
-	elseif E.Cata or E.Classic then
+	elseif E.Cata or E.Wrath or E.Classic then
 		if not E.Cata then
 			ElvUI_EltreumUI:DynamicClassicDatatext() --toggles datatext for warlocks/hunters to show soulshards/ammo
 			ElvUI_EltreumUI:UpdateAvgIlvl() --updates the ilvl of the character at login so its not 0
@@ -180,6 +180,11 @@ function ElvUI_EltreumUI:Initialize()
 	if E.Cata then
 		ElvUI_EltreumUI:RegisterEvent('ACHIEVEMENT_EARNED') --for auto screenshot
 		ElvUI_EltreumUI:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+	end
+	if E.Wrath then
+		ElvUI_EltreumUI:RegisterEvent('ACHIEVEMENT_EARNED') --for auto screenshot
+		ElvUI_EltreumUI:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+		ElvUI_EltreumUI:RegisterEvent('PLAYER_AVG_ITEM_LEVEL_UPDATE')
 	end
 	if E.ClassicSOD then
 		ElvUI_EltreumUI:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
@@ -319,16 +324,16 @@ local currenttalentretail = E.Retail and GetSpecialization()
 local currenttalentcata = E.Cata and GetActiveTalentGroup()
 function ElvUI_EltreumUI:ACTIVE_TALENT_GROUP_CHANGED()
 	local newtalentretail = E.Retail and GetSpecialization()
-	local newtalentcata = (E.Cata or E.ClassicSOD) and GetActiveTalentGroup()
+	local newtalentcata = (E.Cata or E.Wrath or E.ClassicSOD) and GetActiveTalentGroup()
 	if E.Retail then
 		ElvUI_EltreumUI.Spec = GetSpecializationInfo(GetSpecialization())
 	end
-	if (E.Retail and currenttalentretail ~= newtalentretail) or ((E.Cata or E.ClassicSOD) and currenttalentcata ~= newtalentcata) then
+	if (E.Retail and currenttalentretail ~= newtalentretail) or ((E.Cata or E.Wrath or E.ClassicSOD) and currenttalentcata ~= newtalentcata) then
 		currenttalentretail = newtalentretail
 		currenttalentcata = newtalentcata
 		ElvUI_EltreumUI:ClassIconsOnCharacterPanel()
 		ElvUI_EltreumUI:FixChatToggles()
-		if E.Retail or (E.Cata or E.ClassicSOD) then
+		if E.Retail or (E.Cata or E.Wrath or E.ClassicSOD) then
 			ElvUI_EltreumUI:NamePlateOptions()
 			ElvUI_EltreumUI:Shadows()
 			if E.private.nameplates.enable then

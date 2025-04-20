@@ -357,6 +357,7 @@ function BG.RoleOverviewUI()
             }
         end
     end
+
     -- 角色总览UI
     local savePoint
     local function ShowAllServer()
@@ -503,7 +504,10 @@ function BG.RoleOverviewUI()
                 tex:SetVertexColor(r, g, b)
                 bt:SetHighlightTexture(tex)
                 bt:SetScript("OnEnter", function(self)
-                    BGV.ShowEquipFrame(nil, bt, isAccounts, realmID, player, colorplayer, level, class, iLevel)
+                    local f = BGV.equipFrame
+                    if not (f and f:IsVisible()) then
+                        BGV.ShowEquipFrame(nil, bt, isAccounts, realmID, player, colorplayer, level, class, iLevel)
+                    end
                 end)
                 bt:SetScript("OnLeave", function(self)
                     if BGV.equipFrame and not BGV.equipFrame.click then
@@ -1422,16 +1426,17 @@ function BG.RoleOverviewUI()
             local newTbl = {}
             for player, v in pairs(BiaoGe.FBCD[realmID]) do
                 local level = BiaoGe.playerInfo[realmID] and BiaoGe.playerInfo[realmID][player] and BiaoGe.playerInfo[realmID][player].level
-                if (level and level >= BiaoGe.options["roleOverviewNotShowLevel"]) then
+                if level and level >= BiaoGe.options["roleOverviewNotShowLevel"] then
                     local class = BiaoGe.playerInfo[realmID][player].class
                     local iLevel = BiaoGe.playerInfo[realmID][player].iLevel
-                    if class and iLevel then
+                    if class and iLevel and iLevel >= BiaoGe.options["roleOverviewNotShowiLevel"] then
                         local colorplayer = "|c" .. select(4, GetClassColor(class)) .. player .. (isAccounts and "*" or "")
                         tinsert(newTbl, {
                             player = player,
                             colorplayer = colorplayer,
                             class = class,
                             iLevel = iLevel,
+                            realmID = realmID,
                             tbl = BG.Copy(v)
                         })
                     end
@@ -2236,7 +2241,7 @@ function BG.RoleOverviewUI()
                 end
             end
         end
--- /run BiaoGe.equip=nil
+        -- /run BiaoGe.equip=nil
         -- 删除角色总览旧角色
         local function DeleteOldData(db)
             for realmID, v in pairs(BiaoGe[db]) do
@@ -2263,7 +2268,7 @@ function BG.RoleOverviewUI()
             if BiaoGe.playerInfo[realmID] then
                 for player in pairs(BiaoGe.equip[realmID]) do
                     if not BiaoGe.playerInfo[realmID][player] then
-                        BiaoGe.equip[realmID][player]=nil
+                        BiaoGe.equip[realmID][player] = nil
                     end
                 end
             else
