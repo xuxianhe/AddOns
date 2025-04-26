@@ -1,4 +1,5 @@
 local E = unpack(ElvUI)
+local L = E.Libs.ACL:GetLocale('ElvUI', E.global.general.locale)
 local _G = _G
 local unpack = _G.unpack
 local select = _G.select
@@ -235,7 +236,7 @@ function ElvUI_EltreumUI:ClassicSockets()
 		[923] = 13931, -- +$k1 Dodge
 		[924] = 7428, -- +$k1 Dodge
 		[925] = 13646, -- +$k1 Dodge
-		[926] = E.Cata and 359895 or 13933, --enchant-shield-frost-resistance
+		[926] = (E.Cata or E.Wrath) and 359895 or 13933, --enchant-shield-frost-resistance
 		[927] = 13939, -- +$k1 Strength
 		[928] = 13824, -- +$13824s1 All Stats
 		[929] = 20020, -- +$k1 Stamina
@@ -289,16 +290,16 @@ function ElvUI_EltreumUI:ClassicSockets()
 		[1884] = 20009, -- +$k1 Spirit
 		[1885] = 20010, -- +$k1 Strength
 		[1886] = 20011, -- +$k1 Stamina
-		[1887] = E.Cata and 20012 or 20023, -- +$k1 Agility
-		[1888] = E.Cata and 359685 or 20014, -- shield resilience? resistance? 46525
+		[1887] = (E.Cata or E.Wrath) and 20012 or 20023, -- +$k1 Agility
+		[1888] = (E.Cata or E.Wrath) and 359685 or 20014, -- shield resilience? resistance? 46525
 		[1889] = 20015, -- +$k1 Armor
 		[1890] = 20016, -- +$k1 Spirit and +$k2 Stamina
 		[1891] = 20025, -- +$19988s1 All Stats
 		[1892] = 20026, -- +$19990s1 Health
 		[1893] = 20028, -- +$k1 Mana
 		[1894] = 20029, -- Icy Chill
-		[1896] = E.Cata and 20030 or 20031, -- +$k1 Weapon Damage
-		[1897] = E.Cata and 13695 or 20031, --enchant-weapon-superior-striking
+		[1896] = (E.Cata or E.Wrath) and 20030 or 20031, -- +$k1 Weapon Damage
+		[1897] = (E.Cata or E.Wrath) and 13695 or 20031, --enchant-weapon-superior-striking
 		[1898] = 20032, -- Lifestealing
 		[1899] = 20033, -- Unholy Weapon
 		[1900] = 20034, -- Crusader
@@ -330,9 +331,9 @@ function ElvUI_EltreumUI:ClassicSockets()
 		[2544] = 22844, -- +$k1 Spell Power
 		[2545] = 22846, -- +$k1 Dodge
 		[2563] = 23799, -- +$k1 Strength
-		[2564] = E.Cata and 25080 or 23800, --enchant-gloves-superior-agility
+		[2564] = (E.Cata or E.Wrath) and 25080 or 23800, --enchant-gloves-superior-agility
 		[2565] = 23801, -- +$k1 Spirit
-		[2566] = E.Cata and 2317 or 23802, -- +13 spellpower
+		[2566] = (E.Cata or E.Wrath) and 2317 or 23802, -- +13 spellpower
 		[2567] = 23803, -- +$k1 Spirit
 		[2568] = 23804, -- +$k1 Intellect
 		[2583] = 24149, -- +$k1 Dodge +$k2 Stamina +$k3 Parry
@@ -354,7 +355,7 @@ function ElvUI_EltreumUI:ClassicSockets()
 		[2616] = 25078, -- +$25065s1 Fire Spell Power
 		[2617] = 25079, -- +$k1 Spell Power
 		[2619] = 25081, --enchant-cloak-greater-fire-resistance
-		[2620] = E.Cata and 359949 or 25082, -- 15 nature res
+		[2620] = (E.Cata or E.Wrath) and 359949 or 25082, -- 15 nature res
 		[2621] = 25084, -- 2% Reduced Threat
 		[2622] = 25086, -- +$k1 Dodge
 		[2628] = 25122, --brilliant-wizard-oil
@@ -1204,7 +1205,7 @@ function ElvUI_EltreumUI:ClassicSockets()
 		self:Hide()
 		self.frame:SetAlpha(1.0)
 		self.frame.icon:SetTexture(textureName)
-		self.frame.icon:SetTexCoord(0.08,0.92,0.08,0.92) --trim the border
+		self.frame.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) --trim the border
 		if overlayAtlas ~= nil then
 			self.frame.overlay:Show()
 			self.frame.overlay:SetAtlas(overlayAtlas, true)
@@ -1326,7 +1327,6 @@ function ElvUI_EltreumUI:ClassicSockets()
 		instance.messages = {
 			contentChanged = 'CharacterFrameAdapter.contentChanged',
 		}
-
 		setmetatable(instance, CharacterFrameAdapterMetaTable)
 		instance:RegisterEvent("UNIT_INVENTORY_CHANGED", function(_, unit)
 			if unit == 'player' then
@@ -1444,7 +1444,7 @@ function ElvUI_EltreumUI:ClassicSockets()
 				ChestSlot = true,
 				WristSlot = true,
 				HandsSlot = true,
-				--WaistSlot = E.Cata and true or false,
+				--WaistSlot = (E.Cata or E.Wrath) and true or false,
 				LegsSlot = true,
 				FeetSlot = true,
 				--Finger0Slot = true,
@@ -1452,7 +1452,7 @@ function ElvUI_EltreumUI:ClassicSockets()
 				-- Trinket0Slot = true,
 				-- Trinket1Slot = true,
 				MainHandSlot = true,
-				--SecondaryHandSlot = E.Cata and true or false,
+				--SecondaryHandSlot = (E.Cata or E.Wrath) and true or false,
 			},
 			itemInfos = nil,
 			parentVisible = false,
@@ -1653,7 +1653,7 @@ function ElvUI_EltreumUI:ClassicSockets()
 			elseif alignment == "RIGHT" then
 				slotIcon.frame:SetPoint("BOTTOMLEFT", parent, "BOTTOMRIGHT", dx, dy)
 			elseif alignment == "TOP" then
-				slotIcon.frame:SetPoint("TOP", parent, "TOP", 0, dy+2)
+				slotIcon.frame:SetPoint("TOP", parent, "TOP", 0, dy + 2)
 			end
 			slotIcon.frame:SetSize(iconSize, iconSize)
 			slotIcon.frame:SetScale(iconScale)
@@ -1688,13 +1688,12 @@ function ElvUI_EltreumUI:ClassicSockets()
 					else
 						tooltip:AddText("Unknown enchant. Please report on Discord this ID: "..enchantInfo.enchantId)
 						--stop errors when the enchant is unknown
-						--[[
-						local spellInfo = ElvUI_EltreumUI.SpellInfo:new("enchant:" .. KIBC_EnchantToSpellID[enchantInfo:getId()])
+						--[[local spellInfo = ElvUI_EltreumUI.SpellInfo:new("enchant:" .. KIBC_EnchantToSpellID[enchantInfo:getId()])
 						tooltip:AddText(string.format("Unknown enchant #%d", enchantInfo:getId()).." ID:"..spellInfo.spellId)]]
 					end
 					self:_AddIcon(slotName, texture, tooltip)
 				elseif self:IsSlotEnchantRequired(slotName) then
-					tooltip:AddText("Missing enchant")
+					tooltip:AddText(L["Missing enchant"] or "Missing enchant")
 					self:_AddIcon(slotName, "INTERFACE/BUTTONS/UI-GROUPLOOT-PASS-UP", tooltip)
 				end
 			end
@@ -1717,7 +1716,7 @@ function ElvUI_EltreumUI:ClassicSockets()
 						tooltip:AddHyperlink(socketInfo:getGem():getLink())
 					else
 						texture = socketInfo:getTextureName()
-						tooltip:AddText(socketInfo:getMissingGemText())
+						tooltip:AddText(L["Missing gem"] or "Missing gem")
 					end
 					if texture then
 						self:_AddIcon(slotName, texture, tooltip, atlas)
@@ -1792,6 +1791,8 @@ function ElvUI_EltreumUI:ClassicSockets()
 		--return UnitLevel(self.adapter:GetUnit()) >= 60
 		if E.Classic then
 			return UnitLevel(self.adapter:GetUnit()) == 60
+		elseif E.Wrath then
+			return UnitLevel(self.adapter:GetUnit()) == 80
 		elseif E.Cata then
 			return UnitLevel(self.adapter:GetUnit()) == 85
 		end
@@ -2032,7 +2033,7 @@ function ElvUI_EltreumUI:ClassicSockets()
 					Tooltips[i]:SetOwner(Tooltips[i - 1], "ANCHOR_NONE")
 					Tooltips[i]:SetPoint("TOPLEFT", Tooltips[i - 1], "TOPRIGHT")
 				end
-				if E.Cata then
+				if E.Cata or E.Wrath then
 					if item[FIELD_TYPE] == TYPE_HYPERLINK then
 						Tooltips[i]:SetHyperlink(item[FIELD_CONTENT])
 						self.link = item[FIELD_CONTENT]
@@ -2073,12 +2074,11 @@ function ElvUI_EltreumUI:ClassicSockets()
 	}
 	SocketInfo.__index = SocketInfo
 	ElvUI_EltreumUI.SocketInfo = SocketInfo
-	function SocketInfo:new(typeId, gemItemInfo, relicType, missingGemText)
+	function SocketInfo:new(typeId, gemItemInfo, relicType)
 		return setmetatable({
 			typeId = typeId,
 			gemItemInfo = gemItemInfo,
 			relicType = relicType,
-			missingGemText = missingGemText,
 		}, self)
 	end
 	function SocketInfo:getTypeId()
@@ -2095,9 +2095,6 @@ function ElvUI_EltreumUI:ClassicSockets()
 	end
 	function SocketInfo:getRelicType()
 		return self.relicType
-	end
-	function SocketInfo:getMissingGemText()
-		return self.missingGemText ~= nil and self.missingGemText or 'Missing gem'
 	end
 	-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------SPELL INFO
 	local SpellInfo = {}
@@ -2126,7 +2123,7 @@ function ElvUI_EltreumUI:ClassicSockets()
 				return GetSpellLink(self.spellId) or ("|cffffd000|Henchant:"..self.spellId.."|h["..spellData.name.."]|h|r")
 			end
 		else
-			return GetSpellLink(self.spellId) or ("|cffffd000|Henchant:"..self.spellId.."|h["..GetSpellInfo(self.spellId).."]|h|r")
+			return GetSpellLink(self.spellId) or ("|cffffd000|Henchant:"..self.spellId.."|h["..tostring(GetSpellInfo(self.spellId)).."]|h|r")
 		end
 	end
 	function SpellInfo:getTextureName()

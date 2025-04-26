@@ -21,6 +21,7 @@ local meltdownCount = 1
 local powercoilCount = 1
 
 local muffledDoomsplosionCount = 0
+local muffledDoomsplosionPlayersHit = {}
 
 local mobCollector = {}
 local mobMark = 0
@@ -31,8 +32,6 @@ local mobMark = 0
 
 local L = mod:GetLocale()
 if L then
-	L.ball_size_medium = "Medium Ball!"
-	L.ball_size_large = "Large Ball!"
 	L.rolled_on_you = "%s rolled over YOU"
 	L.rolled_from_you = "Rolled over %s"
 	L.garbage_dump_message = "YOU hit BOSS for %s"
@@ -41,9 +40,6 @@ if L then
 	L.muffled_doomsplosion = "Bomb Soaked"
 	L.short_fuse = "Bombshell Explosion"
 	L.incinerator = "Fire Circles"
-	L.landing = "Landing" -- Landing down from the sky
-
-	L["467109_desc"] = 467135 -- XXX description fixed in 11.1.5
 end
 
 --------------------------------------------------------------------------------
@@ -51,14 +47,14 @@ end
 --
 
 local rollingRubbishMarkerMapTable = {1, 2, 3, 4} -- Easier to adjust which icons are used
-local rollingRubbishMarker = mod:AddMarkerOption(false, "player", rollingRubbishMarkerMapTable[1], 461536, unpack(rollingRubbishMarkerMapTable))
+local rollingRubbishMarker = mod:AddMarkerOption(false, "player", rollingRubbishMarkerMapTable[1], 461536, unpack(rollingRubbishMarkerMapTable)) -- Rolling Rubbish
 local scrapmasterMarkerMapTable = {8, 7, 6, 5}
 local scrapmasterMarker = mod:AddMarkerOption(false, "npc", scrapmasterMarkerMapTable[1], -31645, unpack(scrapmasterMarkerMapTable))
 function mod:GetOptions()
 	return {
 		"berserk",
 		464399, -- Electromagnetic Sorting
-			{461536, "ME_ONLY_EMPHASIZE", "COUNTDOWN"}, -- Rolling Rubbish
+			{461536, "SAY", "SAY_COUNTDOWN", "ME_ONLY_EMPHASIZE", "COUNTDOWN"}, -- Rolling Rubbish
 				rollingRubbishMarker,
 				465741, -- Garbage Dump
 				465611, -- Rolled!
@@ -99,22 +95,24 @@ function mod:GetOptions()
 		[467117] = "", -- Overdrive
 		[1218704] = CL.mythic,
 	},{ -- Renames
-		[464399] = L.electromagnetic_sorting, -- Electromagnetic Sorting (Balls + Adds)
+		[464399] = L.electromagnetic_sorting, -- Electromagnetic Sorting (Sorting)
+		[461536] = CL.balls, -- Rolling Rubbish (Balls)
 		[465747] = L.muffled_doomsplosion, -- Muffled Doomsplosion (Bomb Soaked)
 		[473119] = L.short_fuse, -- Short Fuse (Bombshell Explosion)
 		[464149] = L.incinerator, -- Incinerator (Fire Circles)
-		[467109] = L.landing, -- Trash Compactor (Landing)
+		[467109] = CL.landing, -- Trash Compactor (Landing)
 	}
 end
 
 function mod:OnRegister()
-	self:SetSpellRename(464399, L.electromagnetic_sorting) -- Electromagnetic Sorting (Balls + Adds)
+	self:SetSpellRename(464399, L.electromagnetic_sorting) -- Electromagnetic Sorting (Sorting)
 	self:SetSpellRename(464149, L.incinerator) -- Incinerator (Fire Circles)
-	self:SetSpellRename(467109, L.landing) -- Trash Compactor (Landing)
+	self:SetSpellRename(467109, CL.landing) -- Trash Compactor (Landing)
 end
 
 function mod:OnBossEnable()
 	self:Log("SPELL_AURA_APPLIED", "SortedApplied", 465346) -- These players will become Rolling Rubbish
+	self:Log("SPELL_AURA_REMOVED", "SortedRemoved", 465346)
 	self:Log("SPELL_AURA_APPLIED", "RollingRubbishApplied", 461536)
 	self:Log("SPELL_AURA_REMOVED", "RollingRubbishRemoved", 461536)
 	self:Log("SPELL_AURA_APPLIED", "RolledApplied", 465611)
@@ -174,7 +172,7 @@ function mod:OnEngage()
 
 	self:Bar(464149, self:Easy() and 10.0 or 11.1, CL.count:format(L.incinerator, incineratorCount)) -- Incinerator -- Fire
 	self:Bar(464112,  self:Easy() and 16.0 or 17.7, CL.count:format(self:SpellName(464112), demolishCount)) -- Demolish
-	self:Bar(464399, self:Easy() and 20.0 or 22.2, CL.count:format(L.electromagnetic_sorting, electromagneticSortingCount)) -- Electromagnetic Sorting -- Balls + Adds
+	self:Bar(464399, self:Easy() and 20.0 or 22.2, CL.count:format(L.electromagnetic_sorting, electromagneticSortingCount)) -- Electromagnetic Sorting
 	if not self:LFR() then
 		self:Bar(1217954, self:Easy() and 41.0 or 45.5, CL.count:format(self:SpellName(1217954), meltdownCount)) -- Meltdown
 	end
@@ -245,14 +243,18 @@ do
 		self:Bar(args.spellId, cd, CL.count:format(L.electromagnetic_sorting, electromagneticSortingCount))
 
 		muffledDoomsplosionCount = 0
+		muffledDoomsplosionPlayersHit = {}
 		mobMark = 1
 		iconList = {}
 	end
 
-	function mod:SortedApplied(args)
+	function mod:SortedApplied(args) -- You're about to become a ball
 		if self:Me(args.destGUID) then
-			self:PersonalMessage(461536) -- Rolling Rubbish
-			self:PlaySound(461536, "warning") -- you're becoming rubbish
+			self:PersonalMessage(461536, nil, CL.ball) -- Rolling Rubbish
+			self:TargetBar(461536, 4.5, args.destName, CL.ball)
+			self:Say(461536, CL.ball, nil, "Ball")
+			self:SayCountdown(461536, 4.5)
+			self:PlaySound(461536, "warning")
 		end
 
 		iconList[#iconList+1] = {
@@ -265,6 +267,12 @@ do
 			scheduled = self:ScheduleTimer("MarkPlayers", 0.1)
 		end
 	end
+
+	function mod:SortedRemoved(args)
+		if self:Me(args.destGUID) then
+			self:CancelSayCountdown(461536)
+		end
+	end
 end
 
 do
@@ -273,7 +281,7 @@ do
 		if self:Me(args.destGUID) then
 			ballSize = 0
 			self:RegisterUnitEvent("UNIT_POWER_UPDATE", nil, "player", "vehicle")
-			self:TargetBar(args.spellId, 24, args.destName)
+			self:TargetBar(args.spellId, 24, args.destName, CL.ball)
 		end
 	end
 
@@ -281,11 +289,10 @@ do
 		if powerType == "ALTERNATE" then
 			local power = UnitPower(unit, 10)
 			if power >= 200 and ballSize < 200 then
-				self:Message(461536, "green", L.ball_size_large) -- Rolling Rubbish
-				self:PlaySound(461536, "info")
+				self:Message(461536, "green", CL.large) -- Rolling Rubbish
+				self:PlaySound(461536, "long")
 			elseif power >= 100 and ballSize < 100 then
-				self:Message(461536, "green", L.ball_size_medium) -- Rolling Rubbish
-				self:PlaySound(461536, "alert")
+				self:Message(461536, "green", CL.medium) -- Rolling Rubbish
 			end
 			ballSize = power
 		end
@@ -293,9 +300,9 @@ do
 
 	function mod:RollingRubbishRemoved(args)
 		if self:Me(args.destGUID) then
-			self:StopBar(args.spellName, args.destName)
-			self:PersonalMessage(461536, "removed")
-			self:PlaySound(461536, "info")
+			self:StopBar(CL.ball, args.destName)
+			self:PersonalMessage(args.spellId, "removed", CL.ball)
+			self:PlaySound(args.spellId, "info")
 			self:UnregisterUnitEvent("UNIT_POWER_UPDATE", "player", "vehicle")
 		end
 		self:CustomIcon(rollingRubbishMarker, args.destName)
@@ -329,15 +336,17 @@ do
 	end
 end
 
-do
-	local prev = 0
-	function mod:MuffledDoomsplosionDamage(args)
-		if args.time - prev > 0.2 then
-			prev = args.time
-			muffledDoomsplosionCount = muffledDoomsplosionCount + 1
+function mod:MuffledDoomsplosionDamage(args)
+	if not muffledDoomsplosionPlayersHit[args.destGUID] then
+		muffledDoomsplosionPlayersHit[args.destGUID] = true
+		if muffledDoomsplosionCount == 0 then
+			muffledDoomsplosionCount = 1
 			self:Message(args.spellId, "green", CL.count_amount:format(L.muffled_doomsplosion, muffledDoomsplosionCount, self:GetStage()))
-			-- self:PlaySound(args.spellId, "info")
 		end
+	elseif muffledDoomsplosionCount == 1 then
+		muffledDoomsplosionCount = 2
+		self:Message(args.spellId, "green", CL.count_amount:format(L.muffled_doomsplosion, muffledDoomsplosionCount, self:GetStage()))
+		self:PlaySound(args.spellId, "info")
 	end
 end
 
@@ -480,9 +489,9 @@ function mod:OverdriveRemoved(args)
 end
 
 function mod:TrashCompactor(args)
-	self:Message(args.spellId, "red", L.landing)
+	self:Message(args.spellId, "red", CL.landing)
 	self:PlaySound(args.spellId, "warning") -- watch drop location
-	self:CastBar(args.spellId, 3.75, L.landing)
+	self:CastBar(args.spellId, 3.75, CL.landing)
 end
 
 function mod:TrashCompactorSuccess(args)

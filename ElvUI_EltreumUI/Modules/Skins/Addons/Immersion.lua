@@ -19,9 +19,10 @@ function ElvUI_EltreumUI:EltruismImmersion()
 	if not E.LSM:Fetch("font", E.db.general.font) then return end
 	if E.db.ElvUI_EltreumUI.skins.immersion then
 		local frames = {
-			_G["ImmersionFrame"].TalkBox.BackgroundFrame,
-			_G["ImmersionFrame"].TalkBox.Elements,
-			_G["ImmersionFrame"].TalkBox.PortraitFrame,
+			_G["ImmersionFrame"].TalkBox.MainFrame,
+			--_G["ImmersionFrame"].TalkBox.BackgroundFrame,
+			--_G["ImmersionFrame"].TalkBox.Elements,
+			--_G["ImmersionFrame"].TalkBox.PortraitFrame,
 		}
 		for _, v in pairs(frames) do
 			S:HandleFrame(v)

@@ -7,14 +7,15 @@ local InCombatLockdown = _G.InCombatLockdown
 
 --based on old addonskins skin
 function ElvUI_EltreumUI:EltruismPallyPower()
-	if E.db.ElvUI_EltreumUI.skins.pallypower and E.Classic then
+	if E.db.ElvUI_EltreumUI.skins.pallypower and (E.Wrath or E.Classic) then
 		if InCombatLockdown() then return end
 
 		--from old addonskins
 		local PallyPowerBlessingsFrame = _G.PallyPowerBlessingsFrame
 		PallyPowerBlessingsFrame:StripTextures()
 		--PallyPowerBlessingsFrame:SetTemplate('Transparent', nil, true)
-		PallyPowerBlessingsFrame:SetTemplate("Transparent", E.media.normTex, true)
+		--PallyPowerBlessingsFrame:SetTemplate("Transparent", E.media.normTex, true)
+		S:HandleFrame(_G["PallyPowerBlessingsFrame"])
 		S:HandleCloseButton(_G.PallyPowerBlessingsFrameCloseButton)
 		S:HandleButton(_G.PallyPowerBlessingsFrameAutoAssign)
 		S:HandleButton(_G.PallyPowerBlessingsFrameClear)
@@ -30,8 +31,9 @@ function ElvUI_EltreumUI:EltruismPallyPower()
 		_G.L_DropDownList2:SetTemplate('Default')]]
 
 		--_G.PallyPowerAura:SetTemplate("Transparent", nil, true)
-		_G.PallyPowerAura:SetTemplate("Transparent", E.media.normTex, true)
+		--_G.PallyPowerAura:SetTemplate("Transparent", E.media.normTex, true)
 		_G.PallyPowerAuraIcon:SetTexCoord(unpack(E.TexCoords))
+		S:HandleFrame(_G["PallyPowerAura"])
 		if E.db.ElvUI_EltreumUI.skins.shadow.enable and not _G.PallyPowerAura.shadow then
 			_G.PallyPowerAura:CreateShadow(E.db.ElvUI_EltreumUI.skins.shadow.length)
 			if _G.PallyPowerAura.shadow then
@@ -53,7 +55,8 @@ function ElvUI_EltreumUI:EltruismPallyPower()
 		end
 
 		--_G.PallyPowerAuto:SetTemplate("Transparent", nil, true)
-		_G.PallyPowerAuto:SetTemplate("Transparent", E.media.normTex, true)
+		--_G.PallyPowerAuto:SetTemplate("Transparent", E.media.normTex, true)
+		S:HandleFrame(_G["PallyPowerAuto"])
 		if E.db.ElvUI_EltreumUI.skins.shadow.enable and not _G.PallyPowerAuto.shadow then
 			_G.PallyPowerAuto:CreateShadow(E.db.ElvUI_EltreumUI.skins.shadow.length)
 			if _G.PallyPowerAuto.shadow then
@@ -68,10 +71,9 @@ function ElvUI_EltreumUI:EltruismPallyPower()
 		end
 
 		_G.PallyPowerRF:SetTemplate("Transparent", E.media.normTex, true)
-		_G.PallyPowerAuto:SetTemplate("Transparent", E.media.normTex, true)
 		_G.PallyPowerRFIcon:SetTexCoord(unpack(E.TexCoords))
 		_G.PallyPowerRFIconSeal:SetTexCoord(unpack(E.TexCoords))
-
+		S:HandleFrame(_G["PallyPowerRF"])
 		if E.db.ElvUI_EltreumUI.skins.shadow.enable and not _G.PallyPowerRF.shadow then
 			_G.PallyPowerRF:CreateShadow(E.db.ElvUI_EltreumUI.skins.shadow.length)
 			if _G.PallyPowerRF.shadow then
@@ -84,6 +86,7 @@ function ElvUI_EltreumUI:EltruismPallyPower()
 				ElvUI_EltreumUI:ShadowColor(_G.PallyPowerRF.shadow)
 			end
 		end
+
 		--because we need 2 shadows
 		if E.db.ElvUI_EltreumUI.skins.shadow.enable and not _G.PallyPowerAnchor.shadow and _G.PallyPowerRFIcon:GetTexture() ~= nil then
 			_G.PallyPowerAnchor:CreateShadow(E.db.ElvUI_EltreumUI.skins.shadow.length)
@@ -99,7 +102,7 @@ function ElvUI_EltreumUI:EltruismPallyPower()
 		end
 
 		--hide the double lines
-		if E.Cata or E.Wrath then
+		if E.Wrath then
 			_G.PallyPowerRF.TopEdge:Kill()
 		end
 		_G.PallyPowerRF.BottomEdge:Kill()
@@ -109,9 +112,9 @@ function ElvUI_EltreumUI:EltruismPallyPower()
 			local button = PallyPower.classButtons[i]
 			--button:SetTemplate("Transparent", nil, true)
 			button:SetTemplate("Transparent", E.media.normTex, true)
-
 			--_G[button:GetName().."ClassIcon"]:SetTexCoord(unpack(E.TexCoords))
 			_G[button:GetName().."BuffIcon"]:SetTexCoord(unpack(E.TexCoords))
+			S:HandleFrame(button)
 			if E.db.ElvUI_EltreumUI.skins.shadow.enable and not button.shadow then
 				button:CreateShadow(E.db.ElvUI_EltreumUI.skins.shadow.length)
 				button.shadow:ClearAllPoints()
@@ -126,6 +129,7 @@ function ElvUI_EltreumUI:EltruismPallyPower()
 			for j = 1, PALLYPOWER_MAXPERCLASS do
 				--PallyPower.playerButtons[i][j]:SetTemplate("Transparent", nil, true)
 				PallyPower.playerButtons[i][j]:SetTemplate("Transparent", E.media.normTex, true)
+				S:HandleFrame(PallyPower.playerButtons[i][j])
 			end
 		end
 
@@ -248,6 +252,7 @@ function ElvUI_EltreumUI:EltruismPallyPower()
 			end
 			if _G.PallyPowerFrame.shadow then
 				if _G.PallyPowerC1 and _G.PallyPowerC1:IsShown() then
+					S:HandleFrame(_G["PallyPowerC1"])
 					_G.PallyPowerFrame.shadow:ClearAllPoints()
 					if _G.PallyPowerAura and _G.PallyPowerAura:IsShown() then
 						_G.PallyPowerFrame.shadow:SetPoint("TOPLEFT", _G.PallyPowerAura, "TOPLEFT",-3,3)
@@ -487,8 +492,6 @@ function ElvUI_EltreumUI:EltruismPallyPower()
 		if _G["PallyPowerAutoIcon"] then
 			_G["PallyPowerAutoIcon"]:SetTexCoord(unpack(E.TexCoords))
 		end
-
-
 
 		--change toggle texture
 		_G.PallyPowerAnchor:GetNormalTexture():SetTexture("Interface\\Addons\\ElvUI_EltreumUI\\Media\\Textures\\circle_mask")

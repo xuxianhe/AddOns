@@ -41,7 +41,7 @@ BG.Init(function()
         end
     })
     local After = C_Timer.After
-    local _auctionID_ = "_a_uctionID"
+    local _auctionID_ = "auctionID"
 
     if (GetLocale() == "zhTW") then
         L["Alt+点击才能生效"] = "Alt+點擊才能生效"
@@ -862,7 +862,7 @@ BG.Init(function()
             tinsert(f.logs, { money = money, player = "|cff" .. aura.GREEN1 .. L["你"] .. "|r" })
             tinsert(f.logs2, { money = money, player = "|cff" .. aura.GREEN1 .. L["你"] .. "|r" })
         else
-            if f.mod == "anonymous" and not aura.IsML() then
+            if f.mod == "anonymous" and not (BiaoGe and BiaoGe.options and BiaoGe.options.autoAuctionShowSender == 1) then
                 f.topMoneyText:SetText(L["|cffFFD100出价最高者：|r"] .. L["別人(匿名)"])
                 tinsert(f.logs, { money = money, player = L["匿名"] })
             else

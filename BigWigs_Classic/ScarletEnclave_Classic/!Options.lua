@@ -34,6 +34,7 @@ BigWigs:AddColors("Solistrasza", {
 	[1227696] = "red",
 	[1228063] = {"blue","yellow"},
 	[1231993] = {"blue","purple"},
+	[1232097] = {"blue","orange"},
 	["adds"] = "cyan",
 	["stages"] = "cyan",
 })
@@ -42,15 +43,17 @@ BigWigs:AddSounds("Solistrasza", {
 	[1227696] = "alarm",
 	[1228063] = {"underyou","warning"},
 	[1231993] = "alert",
+	[1232097] = "warning",
 	["adds"] = "info",
 	["stages"] = "long",
 })
 
 BigWigs:AddColors("Alexei the Beastlord", {
 	[1228295] = "red",
-	[1230105] = "orange",
+	[1230105] = "yellow",
 	[1230200] = "blue",
 	[1230242] = "blue",
+	[1230899] = "orange",
 })
 
 BigWigs:AddSounds("Alexei the Beastlord", {
@@ -58,6 +61,7 @@ BigWigs:AddSounds("Alexei the Beastlord", {
 	[1230105] = "warning",
 	[1230200] = "info",
 	[1230242] = "info",
+	[1230899] = "long",
 })
 
 BigWigs:AddColors("Mason the Echo", {
@@ -76,11 +80,13 @@ BigWigs:AddSounds("Mason the Echo", {
 
 BigWigs:AddColors("Reborn Council", {
 	[1231095] = {"green","orange"},
+	[1231264] = "yellow",
 	["stages"] = "cyan",
 })
 
 BigWigs:AddSounds("Reborn Council", {
 	[1231095] = "info",
+	[1231264] = "warning",
 })
 
 BigWigs:AddColors("Lillian Voss", {
@@ -110,9 +116,10 @@ BigWigs:AddColors("Grand Crusader Caldoran", {
 })
 
 BigWigs:AddSounds("Grand Crusader Caldoran", {
-	[1229114] = "long",
+	[1229114] = "alert",
 	[1229272] = "alarm",
 	[1229503] = "info",
 	[1229714] = "warning",
 	[1231027] = "long",
+	["stages"] = "long",
 })

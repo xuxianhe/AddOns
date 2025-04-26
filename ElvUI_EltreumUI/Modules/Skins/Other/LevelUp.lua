@@ -142,7 +142,7 @@ function ElvUI_EltreumUI:SkinLevelUp()
 end
 
 --add one for classic/tbc as well, but for some reason doesnt really work inside a function, maybe because of the timer?
-if E.Classic then
+if E.Wrath or E.Classic then
 	local LevelUpFrame = CreateFrame("Frame", "EltruismLevelUp", UIParent)
 	LevelUpFrame:SetPoint("TOP", UIParent, 0, -100)
 	LevelUpFrame:SetSize(418, 72)
@@ -190,18 +190,16 @@ if E.Classic then
 	LevelUpFrame:Hide()
 
 	local playerlevel = E.mylevel
-	if E.Cata or E.Classic then
-		LevelUpFrame:RegisterEvent("PLAYER_LEVEL_UP")
-		--LevelUpFrame:RegisterEvent("PLAYER_STARTED_MOVING")
-		--LevelUpFrame:SetScript("OnEvent", function(self, event, ...)
-		LevelUpFrame:SetScript("OnEvent", function()
-			if E.db.ElvUI_EltreumUI.skins.levelbossinstance then
-				playerlevel = playerlevel + 1
-				--print(playerlevel)
-				LevelUpFrame.Text2:SetText(LEVEL.." "..playerlevel.."!")
-				UIFrameFadeIn(LevelUpFrame, 1, 0, 1)
-				E:Delay(5, function() UIFrameFadeOut(LevelUpFrame, 1, 1, 0) end)
-			end
-		end)
-	end
+	LevelUpFrame:RegisterEvent("PLAYER_LEVEL_UP")
+	--LevelUpFrame:RegisterEvent("PLAYER_STARTED_MOVING")
+	--LevelUpFrame:SetScript("OnEvent", function(self, event, ...)
+	LevelUpFrame:SetScript("OnEvent", function()
+		if E.db.ElvUI_EltreumUI.skins.levelbossinstance then
+			playerlevel = playerlevel + 1
+			--print(playerlevel)
+			LevelUpFrame.Text2:SetText(LEVEL.." "..playerlevel.."!")
+			UIFrameFadeIn(LevelUpFrame, 1, 0, 1)
+			E:Delay(5, function() UIFrameFadeOut(LevelUpFrame, 1, 1, 0) end)
+		end
+	end)
 end

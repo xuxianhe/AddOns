@@ -228,6 +228,17 @@ end
 
 --[[------------------------------------------------------------------------]]--
 
+LiteMountMountHeaderMixin = {}
+
+function LiteMountMountHeaderMixin:SetCollapsedState(isCollapsed)
+    local atlas = isCollapsed and "Professions-recipe-header-expand" or "Professions-recipe-header-collapse"
+    self.CollapseIcon:SetAtlas(atlas, true)
+    self.CollapseIconAlphaAdd:SetAtlas(atlas, true)
+end
+
+
+--[[------------------------------------------------------------------------]]--
+
 LiteMountMountButtonMixin = {}
 
 function LiteMountMountButtonMixin:Initialize(bitFlags, mount)
@@ -303,7 +314,25 @@ function LiteMountMountScrollBoxMixin:RefreshMountList()
     if InCombatLockdown() then return end
 
     local mounts = LM.UIFilter.GetFilteredMountList()
-    local dp = CreateDataProvider(mounts)
+    local dp = CreateTreeDataProvider()
+
+    if LM.UIFilter.GetSortKey() == 'family' then
+        local familySubTrees = {}
+        for _, m in ipairs(mounts) do
+            if not familySubTrees[m.family] then
+                local data = {
+                    isHeader = true,
+                    name = LM.UIFilter.GetSortKeyText('family') .. ': ' .. m.family,
+                }
+                familySubTrees[m.family] = dp:Insert(data)
+            end
+            familySubTrees[m.family]:Insert(m)
+        end
+    else
+        for _, m in ipairs(mounts) do
+            dp:Insert(m)
+        end
+    end
     self:SetDataProvider(dp, ScrollBoxConstants.RetainScrollPosition)
 end
 
@@ -343,10 +372,49 @@ end
 
 function LiteMountMountsPanelMixin:OnLoad()
 
-    local view = CreateScrollBoxListLinearView()
+    local view = CreateScrollBoxListTreeListView()
+--[[
     view:SetElementInitializer("LiteMountMountButtonTemplate",
         function (button, elementData)
             button:Initialize(LiteMountMountsPanel.allFlags, elementData)
+        end)
+]]
+    view:SetElementFactory(
+        function (factory, node)
+            local data = node:GetData()
+            if data.isHeader then
+                factory("LiteMountMountHeaderTemplate",
+                    function (button, node)
+                        button.Name:SetText(data.name .. ' (' .. #node:GetNodes() .. ')')
+                        button:SetCollapsedState(node:IsCollapsed())
+                        button:SetScript("OnClick",
+                            function ()
+                                node:ToggleCollapsed()
+                                button:SetCollapsedState(node:IsCollapsed())
+                            end)
+                    end)
+            else
+                factory("LiteMountMountButtonTemplate",
+                    function (button, node)
+                        button:Initialize(LiteMountMountsPanel.allFlags, data)
+                    end)
+            end
+        end)
+    view:SetElementExtentCalculator(
+        function (dataIndex, node)
+            if node:GetData().isHeader then
+                return 22
+            else
+                return 44
+            end
+        end)
+    view:SetElementIndentCalculator(
+        function (node)
+            if node:GetData().isHeader then
+                return 0
+            else
+                return 8
+            end
         end)
     view:SetPadding(0, 0, 0, 0, 0)
 

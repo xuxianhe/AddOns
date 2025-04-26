@@ -270,8 +270,8 @@ BG.Init(function()
             BiaoGe.Auction.money = BiaoGe.Auction.money or 1000
             BiaoGe.Auction.fastMoney = BiaoGe.Auction.fastMoney or { 1000, 2000, 3000, 5000, 10000 }
         end
-        BiaoGe.Auction.duration = BiaoGe.Auction.duration or 30
-        BiaoGe.Auction.mod = BiaoGe.Auction.mod or "anonymous"
+        BiaoGe.Auction.duration = BiaoGe.Auction.duration or 40
+        BiaoGe.Auction.mod = BiaoGe.Auction.mod or "normal"
 
         local function ClearAllFocus(f)
             f.Edit1:ClearFocus()

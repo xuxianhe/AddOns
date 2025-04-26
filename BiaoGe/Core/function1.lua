@@ -97,7 +97,7 @@ function BG.GetBossNumInfo(FB, bossNum)
 end
 
 ------------------在文本里插入材质图标------------------
-local function AddTexture(Texture, y, coord)
+local function AddTexture(Texture, y, coord, width)
     if not Texture then
         return ""
     end
@@ -134,8 +134,8 @@ local function AddTexture(Texture, y, coord)
     else
         tex = Texture
     end
-    local t = "|T" .. tex .. ":0:0:" .. x .. ":" .. y .. coord .. "|t"
-    return t
+    width = width or 0
+    return "|T" .. tex .. ":" .. width .. ":" .. width .. ":" .. x .. ":" .. y .. coord .. "|t"
 end
 ns.AddTexture = AddTexture
 
@@ -661,6 +661,9 @@ function BG.DeletePlayerData(realmID, player)
     end
     if BiaoGe.equip and BiaoGe.equip[realmID] then
         BiaoGe.equip[realmID][player] = nil
+    end
+    if BiaoGe.bag and BiaoGe.bag[realmID] then
+        BiaoGe.bag[realmID][player] = nil
     end
     if BiaoGeVIP and BiaoGeVIP.RoleOverviewSort and BiaoGeVIP.RoleOverviewSort[realmID] then
         for i, v in ipairs(BiaoGeVIP.RoleOverviewSort[realmID]) do

@@ -63,7 +63,7 @@ function mod:OnEngage()
 	nextTidal = 75
 	curseCount = 0
 	curseTime = 0
-	self:Berserk(360)
+	self:Berserk(420)
 end
 
 --------------------------------------------------------------------------------
@@ -72,6 +72,7 @@ end
 
 function mod:DrowningShallows(args)
 	curseTime = args.time
+	curseCount = 0
 	self:Message(args.spellId, "orange", CL.curse)
 	self:PlaySound(args.spellId, "alert")
 end
