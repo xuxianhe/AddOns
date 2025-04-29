@@ -846,6 +846,8 @@ function BaganatorCustomiseDialogMixin:SetupSorting()
     end
     tAppendAll(rawModes, commonModes)
 
+    table.insert(commonModes, {"manual", BAGANATOR_L_MANUAL})
+
     table.sort(commonModes, function(a, b) return a[2] < b[2] end)
     table.sort(rawModes, function(a, b) return a[2] < b[2] end)
 
@@ -1091,6 +1093,7 @@ function BaganatorCustomiseDialogMixin:SetupCategoriesOptions()
     editor.Return = function()
       categoriesEditor:Disable()
       ShowEditor("EditCategory")
+      addonTable.CallbackRegistry:TriggerEvent("ResetCategoryEditor")
     end
   end
 

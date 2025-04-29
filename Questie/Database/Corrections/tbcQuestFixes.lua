@@ -1524,6 +1524,12 @@ function QuestieTBCQuestFixes:Load()
         [9831] = {
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Open the container"), 0, {{"object", 182196}}}},
         },
+        [9832] = {
+            [questKeys.extraObjectives] = {
+                {nil, Questie.ICON_TYPE_OBJECT, l10n("Open the container"), 1, {{"object", 182197}}},
+                {nil, Questie.ICON_TYPE_OBJECT, l10n("Open the container"), 2, {{"object", 182198}}},
+            },
+        },
         [9833] = {
             [questKeys.requiredMinRep] = {978,0},
         },
@@ -1531,7 +1537,7 @@ function QuestieTBCQuestFixes:Load()
             [questKeys.requiredMinRep] = {978,0},
         },
         [9836] = {
-            [questKeys.triggerEnd] = {"Master's Touch", {[zoneIDs.TANARIS]={{57.21,62.95}}}},
+            [questKeys.objectives] = {{{15608,nil,Questie.ICON_TYPE_EVENT}}},
         },
         [9847] = {
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_EVENT, l10n("Plant the Feralfen Totem on the ground"), 0, {{"object", 182176}}}},
@@ -1964,6 +1970,7 @@ function QuestieTBCQuestFixes:Load()
         },
         [10277] = {
             [questKeys.triggerEnd] = {"Caverns of Time Explained", {[zoneIDs.TANARIS]={{58.87,54.3}}}},
+            [questKeys.nextQuestInChain] = 10282,
         },
         [10283] = {
             [questKeys.objectives] = {nil,{{182589,"Internment Lodges Set Ablaze"}}},
@@ -2177,18 +2184,22 @@ function QuestieTBCQuestFixes:Load()
         [10460] = {
             [questKeys.startedBy] = {{19935,19936}},
             [questKeys.nextQuestInChain] = 10467,
+            [questKeys.preQuestSingle] = {10445},
         },
         [10461] = {
             [questKeys.startedBy] = {{19935,19936}},
             [questKeys.nextQuestInChain] = 10465,
+            [questKeys.preQuestSingle] = {10445},
         },
         [10462] = {
             [questKeys.startedBy] = {{19935,19936}},
             [questKeys.nextQuestInChain] = 10466,
+            [questKeys.preQuestSingle] = {10445},
         },
         [10463] = {
             [questKeys.startedBy] = {{19935,19936}},
             [questKeys.nextQuestInChain] = 10464,
+            [questKeys.preQuestSingle] = {10445},
         },
         [10464] = {
             [questKeys.startedBy] = {{19935,19936}},
@@ -3453,7 +3464,7 @@ function QuestieTBCQuestFixes:Load()
             [questKeys.exclusiveTo] = {11481},
         },
         [11490] = {
-            [questKeys.objectives] = {nil,{{410015, "Scrying Orb Activated"}}},
+            [questKeys.objectives] = {nil,{{187578, "Scrying Orb Activated"}}},
         },
         [11496] = {
             [questKeys.objectives] = {nil,{{187078, "Energize a Crystal Ward"}}},

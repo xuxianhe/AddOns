@@ -1,6 +1,7 @@
 # Syndicator
 
-## [190](https://github.com/Baganator/Syndicator/tree/190) (2025-04-22)
-[Full Changelog](https://github.com/Baganator/Syndicator/compare/189...190) 
+## [192](https://github.com/Baganator/Syndicator/tree/192) (2025-04-28)
+[Full Changelog](https://github.com/Baganator/Syndicator/compare/191...192) 
 
-- Update toc for 11.1.5  
+- Classic MoP: Tag for MoP support  
+- Search: Fix wrong stat strings used in Wrath (China)  

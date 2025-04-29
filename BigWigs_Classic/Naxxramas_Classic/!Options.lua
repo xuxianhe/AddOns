@@ -209,5 +209,5 @@ BigWigs:AddSounds("Kel'Thuzad", {
 	[27819] = "warning",
 	[28410] = "long",
 	["adds"] = "info",
-	["stages"] = "info",
+	["stages"] = {"info","long"},
 })

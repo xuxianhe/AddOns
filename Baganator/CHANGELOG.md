@@ -1,6 +1,6 @@
 # Baganator
 
-## [679](https://github.com/Baganator/Baganator/tree/679) (2025-04-25)
-[Full Changelog](https://github.com/Baganator/Baganator/compare/678...679) 
+## [682](https://github.com/Baganator/Baganator/tree/682) (2025-04-28)
+[Full Changelog](https://github.com/Baganator/Baganator/compare/681...682) 
 
-- Customise: Categories: Disable name field properly when editing a default  
+- Classic MoP: Tag for MoP support  

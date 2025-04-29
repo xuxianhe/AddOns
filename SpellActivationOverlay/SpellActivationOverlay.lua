@@ -14,6 +14,7 @@ local useTimer = true;
 local useSound = false;
 
 function SpellActivationOverlay_OnLoad(self)
+	SAO_Frame = self;
 	SAO.Frame = self;
 	SAO.ShowAllOverlays = SpellActivationOverlay_ShowAllOverlays;
 	SAO.HideOverlays = SpellActivationOverlay_HideOverlays;
@@ -48,7 +49,8 @@ function SpellActivationOverlay_OnLoad(self)
 		end
 	else
 		local currentClass = tostring(select(1, UnitClass("player")));
-		SAO:Error(Module, "Class unknown or not converted yet:", currentClass);
+		SAO:Error(Module, SAO:unsupportedClass(), currentClass);
+		SAO.Shutdown:EnableCategory("UNSUPPORTED_CLASS");
 	end
 
 	if ( SAO.IsCata() ) then
@@ -60,12 +62,21 @@ function SpellActivationOverlay_OnLoad(self)
 --	self:RegisterUnitEvent("UNIT_AURA", "player");
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
 	self:RegisterEvent("PLAYER_ENTERING_WORLD");
-	self:RegisterEvent("SPELL_UPDATE_USABLE");
 	self:RegisterEvent("PLAYER_REGEN_ENABLED");
 	self:RegisterEvent("PLAYER_REGEN_DISABLED");
 	self:RegisterEvent("SPELLS_CHANGED");
 	self:RegisterEvent("LEARNED_SPELL_IN_TAB");
 	self:RegisterEvent("LOADING_SCREEN_DISABLED");
+	self:RegisterEvent("PLAYER_LOGIN");
+	self:RegisterEvent("ADDON_LOADED");
+	for _, var in pairs(SAO.Variables) do
+		if type(var.event.isRequired) == 'function' and var.event.isRequired()
+		or type(var.event.isRequired) == 'boolean' and var.event.isRequired then
+			for _, eventName in ipairs(var.event.names) do
+				self:RegisterEvent(eventName);
+			end
+		end
+	end
 end
 
 function SpellActivationOverlay_OnChangeGeometry(self)
@@ -127,6 +138,9 @@ function SpellActivationOverlay_OnChangeSoundToggle(self)
 				-- Play generic sound if at least one effect is displayed
 				-- No need to spam players with several effects, because currently there is only one type of sound effect
 				overlayList[1].soundHandle = SAO:PlaySpellAlertSound();
+				-- Please note, we might play a sound for a non-pulsing alert (which should not play sounds),
+				-- but that's a minor issue, and we might even argue that it's for the better,
+				-- because it gives feedback that the player actually changed the sound option
 				break;
 			end
 		end
@@ -160,7 +174,9 @@ function SpellActivationOverlay_OnEvent(self, event, ...)
 		-- end
 	elseif ( event == "SPELL_ACTIVATION_OVERLAY_HIDE" ) then
 		local spellID = ...;
-		SAO:Debug(Module, "Received native SPELL_ACTIVATION_OVERLAY_HIDE with spell ID "..tostring(spellID));
+		if spellID then
+			SAO:Debug(Module, "Received native SPELL_ACTIVATION_OVERLAY_HIDE with spell ID "..tostring(spellID));
+		end
 		-- if spellID then
 		-- 	SpellActivationOverlay_HideOverlays(self, spellID);
 		-- else
@@ -168,14 +184,14 @@ function SpellActivationOverlay_OnEvent(self, event, ...)
 		-- end
 	end
 	if ( not self.disableDimOutOfCombat ) then
-		if ( event == "PLAYER_REGEN_DISABLED" ) then
+		if ( event == "PLAYER_REGEN_DISABLED" and self.inPseudoCombat ~= true ) then
 			self.combatAnimOut:Stop();	--In case we're in the process of animating this out.
 			self.combatAnimIn:Play();
 			for _, overlay in ipairs(self.combatOnlyOverlays) do
 				overlay.combat.animOut:Stop();
 				SpellActivationOverlayFrame_PlayCombatAnimIn(overlay.combat.animIn);
 			end
-		elseif ( event == "PLAYER_REGEN_ENABLED" ) then
+		elseif ( event == "PLAYER_REGEN_ENABLED" and self.inPseudoCombat ~= false ) then
 			self.combatAnimIn:Stop();	--In case we're in the process of animating this out.
 			self.combatAnimOut:Play();
 			for _, overlay in ipairs(self.combatOnlyOverlays) do
@@ -210,11 +226,23 @@ local complexLocationTable = {
 	["LEFT (CCW)"] = {
 		LEFT = { cw = -1 },
 	},
+	["LEFT (180)"] = {
+		LEFT = { hFlip = true, vFlip = true },
+	},
+	["LEFT (VFLIPPED)"] = {
+		LEFT = { vFlip = true },
+	},
 	["RIGHT (CW)"] = {
 		RIGHT = { cw = 1 },
 	},
 	["RIGHT (CCW)"] = {
 		RIGHT = { cw = -1 },
+	},
+	["RIGHT (180)"] = {
+		RIGHT = { hFlip = true, vFlip = true },
+	},
+	["RIGHT (VFLIPPED)"] = {
+		RIGHT = { vFlip = true },
 	},
 	["TOP (CW)"] = {
 		TOP = { cw = 1 },
@@ -222,15 +250,30 @@ local complexLocationTable = {
 	["TOP (CCW)"] = {
 		TOP = { cw = -1 },
 	},
+	["TOP (180)"] = {
+		TOP = { hFlip = true, vFlip = true },
+	},
+	["TOP (HFLIPPED)"] = {
+		TOP = { hFlip = true },
+	},
 	["BOTTOM (CW)"] = {
 		BOTTOM = { cw = 1 },
 	},
 	["BOTTOM (CCW)"] = {
 		BOTTOM = { cw = -1 },
 	},
+	["BOTTOM (180)"] = {
+		BOTTOM = { hFlip = true, vFlip = true },
+	},
+	["BOTTOM (HFLIPPED)"] = {
+		BOTTOM = { hFlip = true },
+	},
 }
 
 function SpellActivationOverlay_ShowAllOverlays(self, spellID, texturePath, positions, scale, r, g, b, autoPulse, forcePulsePlay, endTime, combatOnly)
+	if SAO.Shutdown:IsAddonDisabled() then
+		return;
+	end
 	SAO:Trace(Module, "SpellActivationOverlay_ShowAllOverlays "..tostring(spellID));
 	positions = strupper(positions);
 	if ( complexLocationTable[positions] ) then
@@ -321,11 +364,22 @@ function SpellActivationOverlay_ShowOverlay(self, spellID, texturePath, position
 	overlay.texture:SetVertexColor(r / 255, g / 255, b / 255);
 	
 	overlay.animOut:Stop();	--In case we're in the process of animating this out.
-	if useSound then
+	if useSound and (autoPulse or forcePulsePlay) then
 		overlay.soundHandle = SAO:PlaySpellAlertSound();
 	end
+	-- Circumvent a bug with pulse animations
+	-- First, hide the overlay temporarily
+	-- Then, very quickly (but not too quickly) start the pulse animation sooner, which kind of fixes the animation issue
+	-- If we do not do this, we might see a weird flash for a brief moment at the very beginning of overlay:Show()
+	if ( combatOnly ) then
+		overlay.animIn.alpha1:SetToAlpha(0.01);
+		overlay.animIn.alpha2:SetFromAlpha(0.01);
+	else
+		overlay.animIn.alpha1:SetToAlpha(0.5);
+		overlay.animIn.alpha2:SetFromAlpha(0.5);
+	end
 	overlay:Show();
-	if ( forcePulsePlay ) then
+	if ( forcePulsePlay and not overlay.pulse:IsPlaying() ) then
 		overlay.pulse:Play();
 	end
 	overlay.pulse.autoPlay = autoPulse;
@@ -359,6 +413,13 @@ function SpellActivationOverlay_ShowOverlay(self, spellID, texturePath, position
 			overlay.combat.animOut:Stop();
 			SpellActivationOverlayFrame_PlayCombatAnimIn(overlay.combat.animIn);
 		end
+	end
+end
+
+function SpellActivationOverlay_DumpCombatOnlyOverlays()
+	SAO:Info(Module, "Listing combat-only overlays ("..#SAO.Frame.combatOnlyOverlays.." item"..(#SAO.Frame.combatOnlyOverlays == 1 and "" or "s")..")");
+	for i, overlay in pairs(SAO.Frame.combatOnlyOverlays) do
+		SAO:Info(Module, "combat-only-overlay["..i.."] location == "..overlay.position..", spell ID = "..overlay.spellID.." "..(GetSpellInfo(overlay.spellID) or ""));
 	end
 end
 
@@ -501,11 +562,13 @@ function SpellActivationOverlayTexture_TerminateOverlay(overlay)
 	overlay.soundHandle = nil;
 
 	-- Hide the overlay and make it available again in the pool for future use
+	overlay.mask:SetAlpha(0); -- Set alpha to zero, because next time we want to start unnoticed
 	overlay.mask:SetScale(1); -- Reset scale, in case a previous animation shrank it to 0.01
 	overlay.endTime = nil; -- Reset endTime, to avoid excessive optimizations when re-using this overlay
 	overlay:Hide();
 	tDeleteItem(overlayParent.overlaysInUse[overlay.spellID], overlay);
 	tinsert(overlayParent.unusedOverlays, overlay);
+	tDeleteItem(overlayParent.combatOnlyOverlays, overlay);
 end
 
 function SpellActivationOverlayFrame_OnTimeoutFinished(anim)
@@ -621,14 +684,15 @@ function SpellActivationOverlayTexture_OnFadeInFinished(animGroup)
 	SAO:Trace(Module, "SpellActivationOverlayTexture_OnFadeInFinished "..tostring(animGroup));
 	local overlay = animGroup:GetParent();
 	overlay:SetAlpha(1);
-	if ( overlay.pulse.autoPlay ) then
+	if ( overlay.pulse.autoPlay and not overlay.pulse:IsPlaying() ) then
 		overlay.pulse:Play();
 	end
 end
 
 function SpellActivationOverlayTexture_PreStartPulse(anim)
+	SAO:Trace(Module, "SpellActivationOverlayTexture_PreStartPulse "..tostring(anim));
 	local overlay = anim:GetParent():GetParent();
-	if ( overlay.pulse.autoPlay ) then
+	if ( overlay.combatOnly and overlay.pulse.autoPlay and not overlay.pulse:IsPlaying() ) then
 		overlay.pulse:Play();
 	end
 end
@@ -654,6 +718,22 @@ function SpellActivationOverlayFrame_OnFadeInFinished(anim)
 			end
 		end
 	end
+end
+
+function SpellActivationOverlayFrame_OnEnterCombat(anim)
+	SAO:Trace(Module, "SpellActivationOverlayFrame_OnEnterCombat "..tostring(anim));
+	-- Combat has started, or pseudo-started
+	-- A pseudo-start happens when a proc was just triggered and the effect is visible shortly
+	-- In this case, the player may or may not be in combat, but overlays will be visible as if in combat
+	local frame = anim:GetParent();
+	frame.inPseudoCombat = true;
+end
+
+function SpellActivationOverlayFrame_OnLeaveCombat(anim)
+	SAO:Trace(Module, "SpellActivationOverlayFrame_OnLeaveCombat "..tostring(anim));
+	-- Combat has finished, or pseudo-finished (see SpellActivationOverlayFrame_OnEnterCombat)
+	local frame = anim:GetParent();
+	frame.inPseudoCombat = false;
 end
 
 function SpellActivationOverlayFrame_SetForceAlpha1(enabled)
