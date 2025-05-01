@@ -1,10 +1,10 @@
 # BigWigs [Classic]
 
-## [v11.1.37](https://github.com/BigWigsMods/BigWigs_Classic/tree/v11.1.37) (2025-04-29)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs_Classic/compare/v11.1.36...v11.1.37) [Previous Releases](https://github.com/BigWigsMods/BigWigs_Classic/releases)
+## [v11.1.41](https://github.com/BigWigsMods/BigWigs_Classic/tree/v11.1.41) (2025-05-01)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs_Classic/compare/v11.1.40...v11.1.41) [Previous Releases](https://github.com/BigWigsMods/BigWigs_Classic/releases)
 
-- ScarletEnclave\_Classic/Caldoran: Fix missing CASTBAR flag  
-- ScarletEnclave\_Classic/Caldoran: Add cast bar for tank debuff, improve stage warnings  
-- BlackwingLair/Trash: Rename Arcane Bomb to Soak  
-- AQ40/Trash: Tweak  
-- AQ20/Trash: Add SoD hard mode abilities  
+- Update zhCN (#146)  
+- ScarletEnclave\_Classic/LillianVoss: Rename Unstable Concoction to Bomb  
+- ScarletEnclave\_Classic/Beatrix: Add Confession  
+- NightmareGrove\_Classic: Various improvements to the 4 dragons  
+- World\_Classic: Various improvements to the 4 dragons  

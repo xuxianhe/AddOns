@@ -164,7 +164,7 @@ BigWigs:AddColors("The Four Horsemen", {
 	[28883] = "yellow",
 	[28884] = "red",
 	[29061] = "yellow",
-	["mark"] = {"blue","red","yellow"},
+	["mark"] = {"blue","yellow"},
 	["stages"] = "cyan",
 })
 
