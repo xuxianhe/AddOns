@@ -90,12 +90,16 @@ BigWigs:AddSounds("Mason the Echo", {
 BigWigs:AddColors("Reborn Council", {
 	[1231095] = {"green","orange"},
 	[1231264] = "yellow",
+	[1231282] = "cyan",
+	[1231383] = "red",
 	["stages"] = "cyan",
 })
 
 BigWigs:AddSounds("Reborn Council", {
 	[1231095] = "info",
 	[1231264] = "warning",
+	[1231282] = "long",
+	[1231383] = "alarm",
 })
 
 BigWigs:AddColors("Lillian Voss", {
