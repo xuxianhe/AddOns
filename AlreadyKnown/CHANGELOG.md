@@ -1,6 +1,9 @@
 # Already Known?
 
-## [1.81](https://github.com/ahakola/AlreadyKnown/tree/1.81) (2025-03-07)
-[Full Changelog](https://github.com/ahakola/AlreadyKnown/compare/1.80...1.81) [Previous Releases](https://github.com/ahakola/AlreadyKnown/releases)
+## [1.82](https://github.com/ahakola/AlreadyKnown/tree/1.82) (2025-05-02)
+[Full Changelog](https://github.com/ahakola/AlreadyKnown/compare/1.81...1.82) [Previous Releases](https://github.com/ahakola/AlreadyKnown/releases)
 
-- .toc bump  
+- Merge pull request #16 from Gogo1951/patch-2  
+    Update AlreadyKnown.toc  
+- Update AlreadyKnown.toc  
+    Updated Version in ToC for Classic Era / Anniversary / SoD game Client.  
