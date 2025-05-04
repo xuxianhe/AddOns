@@ -42,7 +42,7 @@ local locales = {
     ["-感谢使用大脚金团辅助工具-"] = { "-感谢使用大脚金团辅助工具-", "-感謝使用大脚金團輔助工具-", },
 }
 local function Default(player, time)
-    BG.IsSavingLedger=true
+    BG.IsSavingLedger = true
     return {
         player = player,
         class = select(2, UnitClass(player)),
@@ -60,7 +60,7 @@ local function CheckTimeOut(time)
     BG.After(20, function()
         if linshi_duizhang and linshi_duizhang.t then
             if time == linshi_duizhang.t then
-                BG.IsSavingLedger=nil
+                BG.IsSavingLedger = nil
                 linshi_duizhang = nil
                 BG.SendSystemMessage(L["账单识别错误或超时！"])
             end
@@ -829,8 +829,8 @@ function BG.DuiZhangSet(num)
             local tbl = {}
             for _, v in ipairs(BiaoGe.duizhang[num].tradeTbl[ii]) do
                 local yes
-for b = 1, Maxb[FB] do
- for i = 1, BG.GetMaxi(FB, b) do
+                for b = 1, Maxb[FB] do
+                    for i = 1, BG.GetMaxi(FB, b) do
                         local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
                         if otherjine and not (otherjine.hasTradeTbl or otherjine.tradeTbl) then
                             local maijia = BG.DuiZhangFrame[FB]["boss" .. b]["maijia" .. i]
@@ -856,7 +856,7 @@ for b = 1, Maxb[FB] do
     end
 
     -- 设置打钩/叉叉材质
-    C_Timer.After(0, function()
+    BG.After(0, function()
         for b = 1, Maxb[FB] + 1 do
             for i = 1, BG.GetMaxi(FB, b) do
                 local zhuangbei = BG.DuiZhangFrame[FB]["boss" .. b]["zhuangbei" .. i]
@@ -884,6 +884,37 @@ for b = 1, Maxb[FB] do
                     end
                 end
             end
+        end
+
+        -- 打包交易的进行合并对账
+        if BiaoGe.duizhang[num].tradeTbl then
+            BG.After(0, function()
+                for b = 1, Maxb[FB] do
+                    for i = 1, BG.GetMaxi(FB, b) do
+                        local otherjine = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
+                        if otherjine and otherjine.tradeTbl and BG.DuiZhangFrameDs[FB .. 3]["boss" .. b]["ds" .. i]:IsVisible() then
+                            local mySum = 0
+                            local otherSum = 0
+                            for _, v in ipairs(otherjine.tradeTbl) do
+                                local b = v.b
+                                local i = v.i
+                                local mybutton = BG.DuiZhangFrame[FB]["boss" .. b]["myjine" .. i]
+                                local otherbutton = BG.DuiZhangFrame[FB]["boss" .. b]["otherjine" .. i]
+                                mySum = mySum + (tonumber(mybutton:GetText()) or 0)
+                                otherSum = otherSum + (tonumber(otherbutton:GetText()) or 0)
+                            end
+                            if mySum == otherSum then
+                                for _, v in ipairs(otherjine.tradeTbl) do
+                                    local b = v.b
+                                    local i = v.i
+                                    BG.DuiZhangFrame[FB]["boss" .. b]["yes" .. i]:SetTexture("interface/raidframe/readycheck-ready")
+                                    BG.DuiZhangFrameDs[FB .. 3]["boss" .. b]["ds" .. i]:Hide()
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
         end
     end)
 end

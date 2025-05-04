@@ -131,6 +131,10 @@ local function AddTexture(Texture, y, coord, width)
         tex = "Interface\\AddOns\\BiaoGe\\Media\\icon\\BOX"
     elseif Texture == "DD" then
         tex = "Interface\\AddOns\\BiaoGe\\Media\\icon\\DD"
+    elseif Texture == "LEFT" then
+        return "|A:NPE_LeftClick:0:0|a"
+    elseif Texture == "RIGHT" then
+        return "|A:NPE_RightClick:0:0|a"
     else
         tex = Texture
     end

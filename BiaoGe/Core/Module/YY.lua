@@ -706,7 +706,7 @@ BG.Init(function()
         local t = BG.YYMainFrame.my:CreateFontString()
         t:SetPoint("TOP", BG.YYMainFrame.my, "BOTTOM", 0, 0)
         t:SetFont(STANDARD_TEXT_FONT, 13, "OUTLINE") -- 游戏主界面文字
-        t:SetText(BG.STC_w1(L["（左键修改评价，SHIFT+左键查询大众评价，ALT+右键删除评价）"]))
+        t:SetText(BG.STC_w1(format(L["（%s修改评价，SHIFT+%s查询大众评价，ALT+%s删除评价）"], AddTexture("LEFT"), AddTexture("LEFT"), AddTexture("RIGHT"))))
     end
 
     -- 查询评价Frame
@@ -1411,8 +1411,8 @@ BG.Init(function()
                 GameTooltip:ClearLines()
                 GameTooltip:AddLine("|cff00BFFFYY:" .. yy .. RR)
                 GameTooltip:AddLine(" ")
-                GameTooltip:AddLine(L["|cffFFFFFF左键：|r查询大众评价"])
-                GameTooltip:AddLine(L["|cffFFFFFF右键：|r复制该号码"])
+                GameTooltip:AddLine(AddTexture("LEFT") .. L["查询大众评价"])
+                GameTooltip:AddLine(AddTexture("RIGHT") .. L["复制该号码"])
 
                 -- 以往查询结果
                 local yes

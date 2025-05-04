@@ -1,0 +1,95 @@
+#
+# Do not edit - this file is generated from TOC_TEMPLATE.TOC
+#
+## Interface: 40402
+## Title: Buffomat Classic
+## Notes: Semi-automatic buff and resurrection bot, compatible with Classic, TBC, and WotLK Classic
+## Version: 2025.5.0-7190671c
+## Author: kvakvs; original by GPI/Erytheia-Razorfen
+## DefaultState: enabled
+## SavedVariables: BuffomatShared
+## SavedVariablesPerCharacter: BuffomatCharacter
+
+embeds.xml
+
+Src/EarlyBoot.lua
+Src/KvLib/KvEnv.lua
+Src/Buffomat.lua
+Src/Throttle.lua
+
+Src/KvLib/KvOptions.lua
+
+Src/Const/Const.lua
+Src/Const/Textures.lua
+Src/Knowledge/AllBuffs.lua
+Src/Knowledge/AllSpellsMage.lua
+Src/Knowledge/AllSpellsPriest.lua
+Src/Knowledge/AllSpellsDruid.lua
+Src/Knowledge/AllSpellsShaman.lua
+Src/Knowledge/AllSpellsWarlock.lua
+Src/Knowledge/AllSpellsHunter.lua
+Src/Knowledge/AllSpellsPaladin.lua
+Src/Knowledge/AllSpellsWarrior.lua
+Src/Knowledge/AllSpellsRogue.lua
+Src/Knowledge/AllSpellsDeathknight.lua
+Src/Knowledge/AllConsumesScrolls.lua
+Src/Knowledge/AllConsumesEnchantments.lua
+Src/Knowledge/AllConsumesElixirs.lua
+Src/Knowledge/AllConsumesFlasks.lua
+Src/Knowledge/AllConsumesFood.lua
+Src/Knowledge/AllConsumesOther.lua
+Src/Const/SpellIds.lua
+Src/Const/ItemIds.lua
+
+Src/Core/Buff.lua
+Src/Core/CharacterSettings.lua
+Src/Core/GroupBuffTarget.lua
+Src/Core/Macro.lua
+Src/Core/Unit.lua
+Src/Core/UnitBuffTarget.lua
+Src/Core/ProfileSettings.lua
+Src/Core/SharedSettings.lua
+Src/Core/BuffDefinition.lua
+Src/Core/Party.lua
+
+Src/Task/Task.lua
+Src/Task/TaskList.lua
+Src/Task/TaskScan.lua
+Src/Task/ActionCast.lua
+Src/Task/ActionUse.lua
+Src/Task/ActionMacro.lua
+
+Src/Cache/ItemCache.lua
+Src/Cache/SpellCache.lua
+Src/Cache/ItemListCache.lua
+Src/Cache/UnitCache.lua
+
+Src/Ui/Options.lua
+Src/Ui/OptionsPopupMenu.lua
+Src/Ui/SpellsDialog.lua
+Src/Ui/TaskListPanel.lua
+Src/Ui/NgSecureActionButton.lua
+Src/Ui/NgTaskListWindow.lua
+Src/Ui/Buffomat.xml
+Src/Ui/ForceTargetDialog.lua
+
+Src/Events.lua
+Src/SpellSetup.lua
+Src/BuffChecks.lua
+
+Src/Languages/Languages.lua
+Src/Languages/English.lua
+Src/Languages/German.lua
+Src/Languages/French.lua
+Src/Languages/Russian.lua
+Src/Languages/Chinese.lua
+
+Src/Toolbox/LegacyToolbox.lua
+Src/Toolbox/SlashCommands.lua
+Src/Toolbox/Popup.lua
+Src/Toolbox/NgStrings.lua
+Src/Toolbox/NgToolbox.lua
+
+#
+# Do not edit - this file is generated from TOC_TEMPLATE.TOC
+#

@@ -202,8 +202,8 @@ end
 
 local function HasQianKuan()
     local FB = BG.FB1
-for b = 1, Maxb[FB] do
- for i = 1, BG.GetMaxi(FB, b) do
+    for b = 1, Maxb[FB] do
+        for i = 1, BG.GetMaxi(FB, b) do
             local bt = BG.Frame[FB]["boss" .. b]["qiankuan" .. i]
             if BG.Frame[FB]["boss" .. b]["qiankuan" .. i] and BiaoGe[FB]["boss" .. b]["qiankuan" .. i] then
                 return true

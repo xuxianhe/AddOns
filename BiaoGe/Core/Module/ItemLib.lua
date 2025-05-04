@@ -1224,7 +1224,7 @@ local function SetItemLib()
                     else
                         BiaoGeTooltip2:AddLine(L["掉落后会提醒"], 1, 1, 1, true)
                     end
-                    BiaoGeTooltip2:AddLine(L["右键取消心愿装备"], 1, 0.82, 0, true)
+                    BiaoGeTooltip2:AddLine(AddTexture("RIGHT")..L["取消心愿装备"], 1, 0.82, 0, true)
                     BiaoGeTooltip2:Show()
                     f:GetScript("OnEnter")(f)
                 end)
@@ -2249,7 +2249,7 @@ function BG.ItemLibUI()
         local t = f:CreateFontString()
         t:SetFont(STANDARD_TEXT_FONT, 13, "OUTLINE")
         t:SetPoint("TOP", mainFrame.Hope, "BOTTOM", 0, 0)
-        t:SetText(L["（右键删除心愿装备）"])
+        t:SetText(AddTexture("RIGHT")..L["（删除心愿装备）"])
 
         local title_table = {
             { name = "", width = 80, color = "FFFFFF", JustifyH = "CENTER" },

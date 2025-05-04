@@ -149,7 +149,7 @@ BG.Init(function()
                 if not BG.HistoryMainFrame:IsVisible() then
                     GameTooltip:AddLine(" ", 1, 0.82, 0, true)
                     GameTooltip:AddLine(L["操作提示："], 1, 1, 1, true)
-                    GameTooltip:AddLine(L["右键点击一个装备可以打开菜单"], 1, 0.82, 0, true)
+                    GameTooltip:AddLine(AddTexture("RIGHT")..L["点击一个装备可以打开菜单"], 1, 0.82, 0, true)
                     GameTooltip:AddLine(L["在未拍列表可以按住CTRL、SHIFT来多选装备，便于团长批量发起拍卖"], 1, 0.82, 0, true)
                 end
                 GameTooltip:Show()

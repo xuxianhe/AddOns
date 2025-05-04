@@ -857,9 +857,9 @@ function BG.RoleOverviewUI()
                 end
                 local tipsText
                 if BiaoGe.options.roleOverviewDefaultShow == "one" then
-                    tipsText = L["|cff808080（CTRL+左键固定显示，长按SHIFT显示全服务器角色%s）|r"]
+                    tipsText = format(L["|cff808080（CTRL+%s固定显示，长按SHIFT显示全服务器角色%%s）|r"], AddTexture("LEFT"))
                 else
-                    tipsText = L["|cff808080（CTRL+左键固定显示，长按SHIFT显示当前服务器角色%s）|r"]
+                    tipsText = format(L["|cff808080（CTRL+%s固定显示，长按SHIFT显示当前服务器角色%%s）|r"],AddTexture("LEFT"))
                 end
                 t:SetText(t:GetText() .. format(tipsText, accountsText))
             end

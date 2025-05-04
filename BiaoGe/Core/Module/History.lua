@@ -82,7 +82,7 @@ function BG.HistoryUI()
         local text = BG.History.List:CreateFontString() -- 提示文字
         text:SetPoint("TOP", BG.History.List, "BOTTOM", 0, 0)
         text:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
-        text:SetText(BG.STC_w1(L["（ALT+左键改名，ALT+右键删除表格）"]))
+        text:SetText(BG.STC_w1(format(L["（ALT+%s改名，ALT+%s删除表格）"], AddTexture("LEFT"), AddTexture("RIGHT"))))
     end
     ------------------历史表格按键------------------
     do
@@ -120,8 +120,8 @@ function BG.HistoryUI()
                     GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
                     GameTooltip:ClearLines()
                     GameTooltip:AddLine(self:GetText(), 1, 1, 1, true)
-                    GameTooltip:AddLine(L["左键：打开历史表格"], 1, 0.82, 0, true)
-                    GameTooltip:AddLine(L["右键：打开历史表格汇总"], 1, 0.82, 0, true)
+                    GameTooltip:AddLine(AddTexture("LEFT") .. L["打开历史表格"], 1, 0.82, 0, true)
+                    GameTooltip:AddLine(AddTexture("RIGHT") .. L["打开历史表格汇总"], 1, 0.82, 0, true)
                     GameTooltip:Show()
                 end)
                 bt:SetScript("OnLeave", function(self)

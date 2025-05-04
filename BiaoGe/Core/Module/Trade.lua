@@ -538,20 +538,6 @@ BG.Init(function()
 
     -- 欠款记录
     do
-        -- local old = TradeFrame
-        -- local TradeFrame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-        -- TradeFrame:SetBackdrop({
-        --     bgFile = "Interface/ChatFrame/ChatFrameBackground",
-        --     edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-        --     edgeSize = 16,
-        --     insets = { left = 3, right = 3, top = 3, bottom = 3 }
-        -- })
-        -- TradeFrame:SetBackdropColor(0, 0, 0, 0.8)
-        -- TradeFrame:SetSize(old:GetSize())
-        -- TradeFrame:SetPoint("TOPLEFT", 16, -116)
-        -- TradeFrame:SetToplevel(true)
-        -- TradeFrame:EnableMouse(true)
-
         BG.qiankuanTradeFrame = {}
         local f = CreateFrame("Frame", nil, TradeFrame, "BackdropTemplate")
         f:SetBackdrop({
@@ -609,7 +595,7 @@ BG.Init(function()
         bt:SetText(L["清除全部欠款"])
         BG.qiankuanTradeFrame.ButtonClearAll = bt
         bt:SetScript("OnClick", function(self)
-            if BG.qiankuanTradeFrame.hasItem then
+            if BG.qiankuanTradeFrame.hasItem and not IsAltKeyDown() then
                 return
             end
             local unit = "NPC"
@@ -625,6 +611,8 @@ BG.Init(function()
                 GameTooltip:ClearLines()
                 GameTooltip:AddLine(L["错误"], 1, 0, 0, true)
                 GameTooltip:AddLine(L["欠款需要单独收取，不要和装备混在一起交易！否则账单错误！"], 1, 0.82, 0, true)
+                GameTooltip:AddLine(" ")
+                GameTooltip:AddLine(L["如需强制清除欠款，需按下ALT后才能清除！"], 1, 0.82, 0, true)
                 GameTooltip:Show()
             end
         end)
@@ -805,7 +793,7 @@ BG.Init(function()
                                 bt:SetText(L["清除"])
                                 bts.button = bt
                                 bt:SetScript("OnClick", function(self)
-                                    if BG.qiankuanTradeFrame.hasItem then
+                                    if BG.qiankuanTradeFrame.hasItem and not IsAltKeyDown() then
                                         return
                                     end
                                     BG.PlaySound(1)
@@ -828,6 +816,8 @@ BG.Init(function()
                                         GameTooltip:ClearLines()
                                         GameTooltip:AddLine(L["错误"], 1, 0, 0, true)
                                         GameTooltip:AddLine(L["欠款需要单独收取，不要和装备混在一起交易！否则账单错误！"], 1, 0.82, 0, true)
+                                        GameTooltip:AddLine(" ")
+                                        GameTooltip:AddLine(L["如需强制清除欠款，需按下ALT后才能清除！"], 1, 0.82, 0, true)
                                         GameTooltip:Show()
                                     end
                                 end)
@@ -1493,12 +1483,12 @@ BG.Init(function()
         local function GetQianKuan()
             return tonumber(BG.qiankuanTradeFrame.Text2.text:GetText()) or 0
         end
-        local function SetMoney(money, name, isExpenses)
+        local function SetMoney(money, name, isExpenses, isMan)
             local moneyFrame = TradePlayerInputMoneyFrame
             MoneyInputFrame_ResetMoney(moneyFrame)
             _G[moneyFrame:GetName() .. "Gold"]:SetNumber(money)
             lastClick = nil
-            if isExpenses then
+            if isExpenses and not isMan then
                 lastClick = {
                     money = money,
                     name = name,
@@ -1523,7 +1513,7 @@ BG.Init(function()
                 end)
             end)
         end
-        local function CreateButton(name, money, isExpenses)
+        local function CreateButton(name, money, isExpenses, hasMan)
             local ds
             local f = CreateFrame("Frame", nil, child)
             do
@@ -1615,8 +1605,15 @@ BG.Init(function()
                 bt:SetSize(width * .25 - 5, nameFrame:GetHeight() - 2)
                 bt:SetPoint("LEFT", moneyFrame, "RIGHT", 2, 0)
                 bt:SetText(L["交易"])
-                bt:SetScript("OnClick", function(self)
+                bt:RegisterForClicks("AnyUp")
+                bt:SetScript("OnClick", function(self, button)
                     BG.PlaySound(1)
+                    local money = money
+                    local isMan
+                    if button == "RightButton" and hasMan then
+                        money = hasMan.avg
+                        isMan = true
+                    end
                     local myMoney = floor(GetMoney() / 1e4)
                     if money < 0 then
                         UIErrorsFrame:AddMessage(L["交易金额不能为负数！"], 1, 0, 0)
@@ -1650,10 +1647,10 @@ BG.Init(function()
                                 end
                                 StaticPopupDialogs["BIAOGE_FASTTRADE_QIANKUAN"].OnButton1 = function()
                                     StaticPopupDialogs["BIAOGE_CLEAR_ALL_QIANKUAN"].OnAccept()
-                                    SetMoney(money - qiankuan, name, isExpenses)
+                                    SetMoney(money - qiankuan, name, isExpenses, isMan)
                                 end
                                 StaticPopupDialogs["BIAOGE_FASTTRADE_QIANKUAN"].OnButton2 = function()
-                                    SetMoney(money, name, isExpenses)
+                                    SetMoney(money, name, isExpenses, isMan)
                                 end
                                 StaticPopup_Hide("BIAOGE_FASTTRADE_QIANKUAN2")
                                 StaticPopup_Show("BIAOGE_FASTTRADE_QIANKUAN",
@@ -1673,13 +1670,13 @@ BG.Init(function()
                                     }
                                 end
                                 StaticPopupDialogs["BIAOGE_FASTTRADE_QIANKUAN2"].OnAccept = function()
-                                    SetMoney(money, name, isExpenses)
+                                    SetMoney(money, name, isExpenses, isMan)
                                 end
                                 StaticPopup_Hide("BIAOGE_FASTTRADE_QIANKUAN")
                                 StaticPopup_Show("BIAOGE_FASTTRADE_QIANKUAN2", qiankuan, money)
                             end
                         else
-                            SetMoney(money, name, isExpenses)
+                            SetMoney(money, name, isExpenses, isMan)
                         end
                     else
                         UIErrorsFrame:AddMessage(L["你的钱不够！"], 1, 0, 0)
@@ -1687,8 +1684,17 @@ BG.Init(function()
                 end)
                 bt:SetScript("OnEnter", function(self)
                     ds:Show()
+                    if hasMan then
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
+                        GameTooltip:ClearLines()
+                        GameTooltip:AddLine(TRADE, 1, 1, 1, true)
+                        GameTooltip:AddLine(AddTexture("LEFT") .. TRADE .. money, 1, .82, 0, true)
+                        GameTooltip:AddLine(AddTexture("RIGHT") .. TRADE .. hasMan.avg, 1, .82, 0, true)
+                        GameTooltip:Show()
+                    end
                 end)
                 bt:SetScript("OnLeave", function(self)
+                    GameTooltip:Hide()
                     if f.tradeing then return end
                     ds:Hide()
                 end)
@@ -1768,9 +1774,10 @@ BG.Init(function()
                 local i = 1
                 while BG.Frame[FB]["boss" .. Maxb[FB] + 1]["zhuangbei" .. i] do
                     local item = BG.Frame[FB]["boss" .. Maxb[FB] + 1]["zhuangbei" .. i]:GetText()
+                    local hasMan = BG.Frame[FB]["boss" .. Maxb[FB] + 1]["zhuangbei" .. i].hasMan
                     local money = tonumber(BG.Frame[FB]["boss" .. Maxb[FB] + 1]["jine" .. i]:GetText())
                     if item ~= "" and money and money ~= 0 then
-                        CreateButton(item, money, true)
+                        CreateButton(item, money, true, hasMan)
                     end
                     i = i + 1
                 end
@@ -1797,9 +1804,9 @@ BG.Init(function()
         f:SetScript("OnEvent", function(self, event, msg, sender, ...)
             sender = BG.GSN(sender)
             if not BG.IsMLByName(sender) then return end
-            local gz = msg:match("^人均工资：(%d+)$")
+            local gz = msg:match("^人均工资：(%d+)")
             if not gz then
-                gz = msg:match("^人均薪水：(%d+)$")
+                gz = msg:match("^人均薪水：(%d+)")
             end
             if gz then
                 gzTbl = {
@@ -2034,6 +2041,7 @@ BG.Init(function()
 
     -- 交易打开时
     BG.RegisterEvent("TRADE_SHOW", function(self, ...)
+        BG.qiankuanTradeFrame.hasItem = nil
         if BiaoGe.options["autoTrade"] == 1 and IsInRaid(1) then
             BG.QianKuan.frame:Show()
         else

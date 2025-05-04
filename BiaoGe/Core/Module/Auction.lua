@@ -189,7 +189,7 @@ BG.Init(function()
             if header and _G[header:GetName() .. "Text"]:GetText():match("Loaded/Standby") then
                 local tbl = header.obj.childButtons
                 for i, v in ipairs(tbl) do
-                    local bt=v.frame
+                    local bt = v.frame
                     if WeakAuras.IsAuraLoaded(bt.id) and bt:GetPoint(1) then
                         local ver = bt.id:match("<BiaoGe>拍卖%s-v(%d+%.%d+)")
                         if ver then
@@ -617,7 +617,7 @@ BG.Init(function()
                     info.text = L["半匿名模式"]
                     info.arg1 = "anonymous"
                     info.tooltipTitle = info.text
-                    info.tooltipText = L["拍卖过程中不会显示当前出价最高人是谁。拍卖结束后才会知晓|cff00ff00（团长可以无视匿名）|r"]
+                    info.tooltipText = L["拍卖过程中不会显示当前出价最高人是谁，拍卖结束后才会知晓。"]
                     info.tooltipOnButton = true
                     info.func = function(self, arg1, arg2)
                         BiaoGe.Auction.mod = arg1
@@ -1161,11 +1161,10 @@ BG.Init(function()
             GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
             GameTooltip:ClearLines()
             GameTooltip:AddLine(self:GetText(), 1, 1, 1, true)
-            GameTooltip:AddDoubleLine(L["拍卖WA版本："], BGA.ver)
-            -- GameTooltip:AddLine(" ", 1, 0, 0, true)
-            GameTooltip:AddDoubleLine(L["鼠标左键："], L["一键导入WA字符串"])
-            GameTooltip:AddDoubleLine(L["鼠标右键："], L["复制WA字符串"])
+            GameTooltip:AddLine(AddTexture("LEFT") .. L["一键导入WA字符串"])
+            GameTooltip:AddLine(AddTexture("RIGHT") .. L["复制WA字符串"])
             GameTooltip:AddLine(" ", 1, 0, 0, true)
+            GameTooltip:AddDoubleLine(L["拍卖WA版本："] , BGA.ver)
             GameTooltip:AddLine(L["全新的拍卖方式，不再通过传统的聊天栏来拍卖装备，而是使用新的UI来拍卖。"], 1, 0.82, 0, true)
             GameTooltip:AddLine(" ", 1, 0, 0, true)
             GameTooltip:AddLine(L["|cffFFFFFF安装WA：|r此WA是团员端，用于接收团长发出的拍卖消息，没安装的团员显示不了拍卖UI。请团长安装该WA字符串后发给团员安装。如果团员已经安装了BiaoGe插件，可以不用安装该WA。"], 1, 0.82, 0, true)

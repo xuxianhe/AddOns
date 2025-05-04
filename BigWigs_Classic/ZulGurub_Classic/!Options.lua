@@ -95,15 +95,19 @@ BigWigs:AddSounds("Bloodlord Mandokir", {
 })
 
 BigWigs:AddColors("Jin'do the Hexxer", {
-	[17172] = {"blue","yellow"},
-	[24262] = "orange",
+	[17172] = {"blue","purple"},
+	[24262] = "red",
 	[24306] = {"blue","yellow"},
-	[24309] = "red",
+	[24309] = "orange",
+	[24466] = {"blue","cyan"},
 })
 
 BigWigs:AddSounds("Jin'do the Hexxer", {
 	[17172] = "alert",
+	[24262] = "warning",
 	[24306] = "alarm",
+	[24309] = "info",
+	[24466] = "long",
 })
 
 BigWigs:AddColors("Gahz'ranka", {

@@ -279,30 +279,33 @@ BG.Init(function()
         -- BiaoGe.options.SearchHistory[ns.updateText_now[1]]=nil
         if next(ns.updateText_now) and not BiaoGe.options.SearchHistory[ns.updateText_now[1]] then
             BiaoGe.options.SearchHistory[ns.updateText_now[1]] = true
-            local f = BG.CreateMainFrame()
-            f:SetSize(450, 1)
-            f:SetFrameStrata("HIGH")
-            f.titleText:SetText(L["<BiaoGe> 金团表格"])
-            f.texts = {}
-            BG.updateFrame = f
-            local w = 15
-            for i, text in ipairs(ns.updateText_now) do
-                local t = f:CreateFontString()
-                t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
-                t:SetText(text)
-                t:SetWidth(f:GetWidth() - w * 2)
-                if i == 1 then
-                    t:SetPoint("TOPLEFT", w, -35)
-                    t:SetJustifyH("CENTER")
-                else
-                    t:SetPoint("TOPLEFT", f.texts[i - 1], "BOTTOMLEFT", 0, -15)
-                    t:SetJustifyH("LEFT")
+            if BiaoGe.options.lastVer then
+                local f = BG.CreateMainFrame()
+                f:SetSize(450, 1)
+                f:SetFrameStrata("HIGH")
+                f.titleText:SetText(L["<BiaoGe> 金团表格"])
+                f.texts = {}
+                BG.updateFrame = f
+                local w = 15
+                for i, text in ipairs(ns.updateText_now) do
+                    local t = f:CreateFontString()
+                    t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+                    t:SetText(text)
+                    t:SetWidth(f:GetWidth() - w * 2)
+                    if i == 1 then
+                        t:SetPoint("TOPLEFT", w, -35)
+                        t:SetJustifyH("CENTER")
+                    else
+                        t:SetPoint("TOPLEFT", f.texts[i - 1], "BOTTOMLEFT", 0, -15)
+                        t:SetJustifyH("LEFT")
+                    end
+                    t:SetTextColor(1, .82, 0)
+                    tinsert(f.texts, t)
                 end
-                t:SetTextColor(1, .82, 0)
-                tinsert(f.texts, t)
+                f:SetHeight(f:GetTop() - f.texts[#f.texts]:GetBottom())
             end
-            f:SetHeight(f:GetTop() - f.texts[#f.texts]:GetBottom())
         end
+        BiaoGe.options.lastVer = BG.ver
     end
     tinsert(UISpecialFrames, "BG.MainFrame")
     ----------接收表格主界面----------
@@ -586,7 +589,7 @@ BG.Init(function()
                 t:SetPoint("LEFT", tt, "RIGHT", 0, 0)
                 t:SetFont(STANDARD_TEXT_FONT, 13, "OUTLINE")
                 -- t:SetTextColor(RGB(BG.dis))
-                t:SetText(L["（SHIFT+左键发送装备，ALT+左键设为心愿装备，CTRL+左键打开试衣间。部位按钮支持使用滚轮切换）"])
+                t:SetText(format(L["（ALT+%s设为心愿装备。部位按钮支持使用滚轮切换）"], AddTexture("LEFT")))
             end
         end
         -- 对账
@@ -895,7 +898,7 @@ BG.Init(function()
                 text:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE")
                 text:SetAlpha(0.8)
                 text:SetPoint("BOTTOMLEFT", bt, "BOTTOMRIGHT", 5, 0)
-                text:SetText(L["右键通知框体可还原位置"])
+                text:SetText(AddTexture("RIGHT") .. L["通知框体可还原位置"])
 
                 bt:SetScript("OnEnter", function(self)
                     font:SetTextColor(RGB("FFFFFF"))
@@ -1702,8 +1705,8 @@ BG.Init(function()
 
                                         if not BG.IsSavingLedger and ShowGuanZhu and BiaoGe[FB]["boss" .. b]["guanzhu" .. i] then
                                             if not string.find(sound_yes, tostring(itemID)) then
-                                                BG.FrameLootMsg:AddMessage(BG.STC_g1(format(L["你关注的装备开始拍卖了：%s（右键取消关注）"],
-                                                    AddTexture(Texture) .. BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText())))
+                                                BG.FrameLootMsg:AddMessage(BG.STC_g1(format(L["你关注的装备开始拍卖了：%s（%s取消关注）"],
+                                                    AddTexture(Texture) .. BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText(), AddTexture("RIGHT"))))
                                                 PlaySoundFile(BG["sound_paimai" .. BiaoGe.options.Sound], "Master")
                                                 sound_yes = sound_yes .. itemID .. " "
                                             end
@@ -2095,7 +2098,7 @@ BG.Init(function()
                 end
             end
         end)
-        
+
         local bt = CreateFrame("CheckButton", nil, UIParent, "ChatConfigCheckButtonTemplate")
         bt:SetSize(30, 30)
         bt.Text:SetText(BG.BG .. L["荆棘谷血月活动期间自动释放尸体和对话自动复活"])
@@ -3005,9 +3008,9 @@ end
 
 -- local tex = UIParent:CreateTexture()
 -- tex:SetPoint("CENTER")
--- tex:SetSize(100,100)
--- tex:SetAtlas("bags-newitem")
--- tex:SetTexture("Interface\\AddOns\\BiaoGe\\Media\\icon\\AFD")
+-- tex:SetSize(800,600)
+-- -- tex:SetAtlas("bags-newitem")
+-- tex:SetTexture("Interface\\AddOns\\BiaoGeAI\\Media\\icon\\ICC\\4.png")
 -- print(GetTimePreciseSec())
 --[[
 

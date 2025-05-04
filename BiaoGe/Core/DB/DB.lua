@@ -855,7 +855,7 @@ BG.Init(function()
             BiaoGe.History[FB] = {}
         end
     end
-
+    
     if not BG.IsVanilla then
         if not BiaoGe.BossFrame then
             BiaoGe.BossFrame = {}

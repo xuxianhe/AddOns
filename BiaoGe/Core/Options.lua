@@ -652,7 +652,7 @@ BG.Init(function()
                 -- " ",
                 -- L[""],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["装备未拾取提醒"] .. "*", biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["装备未拾取提醒"] .. "*", biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
             local name = "autoLoot"
             if BiaoGe.options[name] ~= 1 then
@@ -804,7 +804,7 @@ BG.Init(function()
                 L["一键发工资："],
                 L["增加一键发工资和补贴的按钮。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["交易增强*"], biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["交易增强*"], biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
             local name = "autoTrade"
             if BiaoGe.options[name] ~= 1 then
@@ -855,7 +855,7 @@ BG.Init(function()
                 L["重复交易工资提醒"],
                 L["如果2分钟内你曾与同一个人交易过相同的金币，会有红字提醒。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["重复交易工资提醒"] .. "*", biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["重复交易工资提醒"] .. "*", biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
             local name = "autoTrade"
             if BiaoGe.options[name] ~= 1 then
@@ -873,7 +873,7 @@ BG.Init(function()
                 L["在团长的团队框架显示其是否正在交易。"],
                 L["支持NDui、ElvUI、Cell、原生框架。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["团长是否正在交易"] .. "*", biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["团长是否正在交易"] .. "*", biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
             local name = "autoTrade"
             if BiaoGe.options[name] ~= 1 then
@@ -1256,7 +1256,7 @@ BG.Init(function()
                 " ",
                 L["取消勾选则不会保存表格。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["自动清空表格时保存表格"] .. "*", biaoge, 40, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["自动清空表格时保存表格"] .. "*", biaoge, 40, height - h, ontext)
             BG.options["button" .. name] = f
             if BiaoGe.options["autoQingKong"] ~= 1 then
                 f:Hide()
@@ -1636,7 +1636,7 @@ BG.Init(function()
                 " ",
                 L["这是为了防止你看不到对方的拍卖聊天信息和自动拍卖出价消息。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["自动移除屏蔽对象"] .. "*", biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["自动移除屏蔽对象"] .. "*", biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
         end
         h = h + 30
@@ -1857,7 +1857,7 @@ BG.Init(function()
                 L["交易时自动填写交易金额"],
                 L["交易时，自定填写应付的交易金额。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["交易时自动填写交易金额"] .. "*", autoAuction, 40, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["交易时自动填写交易金额"] .. "*", autoAuction, 40, height - h, ontext)
             BG.options["button" .. name] = f
             if BiaoGe.options["autoAuctionMoney"] ~= 1 then
                 f:Hide()
@@ -1873,7 +1873,7 @@ BG.Init(function()
                 L["交易时自动确认交易"],
                 L["当交易金额等于应收/应付金额时，自动点击交易按钮。但屏幕中间的二次确认框还是需要你手动确认。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["交易时自动确认交易"] .. "*", autoAuction, 40, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["交易时自动确认交易"] .. "*", autoAuction, 40, height - h, ontext)
             BG.options["button" .. name] = f
             if BiaoGe.options["autoAuctionMoney"] ~= 1 then
                 f:Hide()
@@ -1889,7 +1889,7 @@ BG.Init(function()
                 L["拍卖成功的聊天消息后面增加[出价记录]"],
                 L["鼠标悬停在[出价记录]时会显示该装备的出价记录。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["拍卖成功的聊天消息后面增加[出价记录]"] .. "*", autoAuction, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["拍卖成功的聊天消息后面增加[出价记录]"] .. "*", autoAuction, 15, height - h, ontext)
             BG.options["button" .. name] = f
         end
         h = h + 30
@@ -1902,7 +1902,7 @@ BG.Init(function()
                 L["拍卖竞价窗口自动往上吸附"],
                 L["当靠前的窗口消失时，后面的窗口会自动往上吸附。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["拍卖竞价窗口自动往上吸附"] .. "*", autoAuction, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["拍卖竞价窗口自动往上吸附"] .. "*", autoAuction, 15, height - h, ontext)
             BG.options["button" .. name] = f
         end
         h = h + 30
@@ -2461,7 +2461,7 @@ BG.Init(function()
             t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
             t:SetPoint("TOPLEFT", 15, height)
             t:SetTextColor(1, 1, 1)
-            t:SetText(AddTexture("QUEST") .. L["不显示低于该装等的角色："])
+            t:SetText(L["不显示低于该装等的角色："])
 
             local edit = CreateFrame("EditBox", nil, roleOverview, "InputBoxTemplate")
             edit:SetSize(50, 20)
@@ -3006,36 +3006,38 @@ BG.Init(function()
         local width3 = 160
         local height2 = 350
 
-        local text = config:CreateFontString()
-        text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
-        text:SetPoint("TOPLEFT", width, height)
-        text:SetText(L["BiaoGe的配置文件中，大部分都是账号互通的，比如当前表格、历史表格、YY评价、设置。但也有一些是按角色来保存的，比如心愿清单、装备过滤方案、集结号的搜索记录和密语模板。\n\n当一个角色改名或者转服时，该角色的心愿清单等数据就会丢失。所以该功能就是为了帮你找回原来的角色数据。"])
-        text:SetTextColor(1, 1, 1)
-        text:SetJustifyH("LEFT")
-        text:SetWidth(SettingsPanel.Container:GetWidth() - 70)
+        do
+            local text = config:CreateFontString()
+            text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+            text:SetPoint("TOPLEFT", width, height)
+            text:SetText(L["BiaoGe的配置文件中，大部分都是账号互通的，比如当前表格、历史表格、YY评价、设置。但也有一些是按角色来保存的，比如心愿清单、装备过滤方案、集结号的搜索记录和密语模板。\n\n当一个角色改名或者转服时，该角色的心愿清单等数据就会丢失。所以该功能就是为了帮你找回原来的角色数据。"])
+            text:SetTextColor(1, 1, 1)
+            text:SetJustifyH("LEFT")
+            text:SetWidth(SettingsPanel.Container:GetWidth() - 70)
 
-        height = height - text:GetHeight()
+            height = height - text:GetHeight()
 
-        local text = config:CreateFontString()
-        text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
-        text:SetPoint("TOPLEFT", width, height - 15)
-        text:SetText(L["选择一个目标角色"])
-        text:SetTextColor(0, 1, 0)
-        text:SetWidth(width2)
+            local text = config:CreateFontString()
+            text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+            text:SetPoint("TOPLEFT", width, height - 15)
+            text:SetText(L["选择一个目标角色"])
+            text:SetTextColor(0, 1, 0)
+            text:SetWidth(width2)
 
-        local text = config:CreateFontString()
-        text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
-        text:SetPoint("TOPLEFT", width + width2 + 15, height - 15)
-        text:SetText(L["要复制的内容"])
-        text:SetTextColor(0, 1, 0)
-        text:SetWidth(width2)
+            local text = config:CreateFontString()
+            text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+            text:SetPoint("TOPLEFT", width + width2 + 15, height - 15)
+            text:SetText(L["要复制的内容"])
+            text:SetTextColor(0, 1, 0)
+            text:SetWidth(width2)
 
-        local text = config:CreateFontString()
-        text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
-        text:SetPoint("TOPLEFT", width + width2 + 15 + width2 + 15, height - 15)
-        text:SetText(L["操作"])
-        text:SetTextColor(0, 1, 0)
-        text:SetWidth(width3)
+            local text = config:CreateFontString()
+            text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+            text:SetPoint("TOPLEFT", width + width2 + 15 + width2 + 15, height - 15)
+            text:SetText(L["操作"])
+            text:SetTextColor(0, 1, 0)
+            text:SetWidth(width3)
+        end
 
         height = height - 15
 
@@ -3071,13 +3073,14 @@ BG.Init(function()
             end
         end
 
+        -- 创建角色列表
         local function UpdateAllButtons()
             for i, bt in ipairs(buttons) do
                 bt:Hide()
             end
             wipe(buttons)
 
-            for realmID, v in pairs(BiaoGe.Hope) do
+            for realmID, v in pairs(BiaoGe.playerInfo) do
                 if next(v) then
                     local bt = CreateFrame("Button", nil, child)
                     if not buttons[1] then
@@ -3099,7 +3102,7 @@ BG.Init(function()
                     t:SetTextColor(1, 0.82, 0)
                     bt:Disable()
 
-                    for player, v in pairs(BiaoGe.Hope[realmID]) do
+                    for player in pairs(BiaoGe.playerInfo[realmID]) do
                         local bt = CreateFrame("Button", nil, child)
                         if not buttons[1] then
                             bt:SetPoint("TOPLEFT", child, 0, 0)
@@ -3176,6 +3179,7 @@ BG.Init(function()
         f:EnableMouse(true)
         f:SetPoint("TOPLEFT", width + width2 + 15, height - 15)
 
+        -- 创建选项
         local function CreateButton(text, configName)
             local bt = CreateFrame("CheckButton", nil, f, "ChatConfigCheckButtonTemplate")
             bt:SetSize(30, 30)

@@ -814,7 +814,7 @@ function BG.CreateGuanZhuButton(bt, _type)
         GameTooltip:ClearLines()
         if _type == "biaoge" then
             GameTooltip:AddLine(BG.STC_b1(L["关注中，团长拍卖此装备会提醒"]))
-            GameTooltip:AddLine(L["右键取消关注"], 1, 0.82, 0)
+            GameTooltip:AddLine(AddTexture("RIGHT")..L["取消关注"], 1, 0.82, 0)
         elseif _type == "history" then
             GameTooltip:AddLine(BG.STC_b1(L["关注中"]))
         end
@@ -868,7 +868,7 @@ function BG.CreateQiankuanButton(bt, _type)
         GameTooltip:ClearLines()
         if _type == "biaoge" then
             GameTooltip:AddLine(L["欠款："] .. BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["qiankuan" .. i], 1, 0, 0)
-            GameTooltip:AddLine(L["右键清除欠款"], 1, 0.82, 0)
+            GameTooltip:AddLine(AddTexture("RIGHT")..L["清除欠款"], 1, 0.82, 0)
         elseif _type == "history" then
             GameTooltip:AddLine(L["欠款："] .. f.qiankuan, 1, 0, 0)
         end

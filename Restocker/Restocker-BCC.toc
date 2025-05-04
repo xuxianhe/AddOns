@@ -5,7 +5,7 @@
 ## Title: Restocker
 ## Author: kvakvs; original author RainForDays
 ## Notes: Restock items automatically from vendors and manage bag/bank balance
-## Version: 2024.5.1-f005d363
+## Version: 2025.5.0-f005d363
 ## DefaultState: enabled
 ## SavedVariablesPerCharacter: RestockerSettings
 

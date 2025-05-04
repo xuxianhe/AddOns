@@ -1,7 +1,10 @@
 # BigWigs [Burning Crusade]
 
-## [v11.1.1](https://github.com/BigWigsMods/BigWigs_BurningCrusade/tree/v11.1.1) (2025-03-25)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs_BurningCrusade/compare/v11.1.0...v11.1.1) [Previous Releases](https://github.com/BigWigsMods/BigWigs_BurningCrusade/releases)
+## [v11.1.2](https://github.com/BigWigsMods/BigWigs_BurningCrusade/tree/v11.1.2) (2025-05-02)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs_BurningCrusade/compare/v11.1.1...v11.1.2) [Previous Releases](https://github.com/BigWigsMods/BigWigs_BurningCrusade/releases)
 
-- Update zhCN (#22)  
-- Fix packager  
+- Update options file layout  
+- Add option files  
+- Update workflow  
+- Add Mists toc  
+- Bump toc  
