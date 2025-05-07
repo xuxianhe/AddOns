@@ -1,12 +1,7 @@
 # Baganator
 
-## [683](https://github.com/Baganator/Baganator/tree/683) (2025-05-03)
-[Full Changelog](https://github.com/Baganator/Baganator/compare/682...683) 
+## [686](https://github.com/Baganator/Baganator/tree/686) (2025-01-31)
+[Full Changelog](https://github.com/Baganator/Baganator/compare/685...686) 
 
-- Categories: Use new API for detecting upgrade track for "Group By"  
-- Categories: Tweak hearthstone category to avoid some not hearthstone items  
-- Categories: Fix transfer button not working if identical items stacked  
-- Remove annotations.lua from final package  
-- Minor cleanup, remove some unused variables  
-- Fix default section names not being translated properly  
-- Updates to support type checking via lua language server  
+- Customise: Categories: Skin raw search box and scroll buttons for visual search  
+- Move scrolling search widget to Syndicator  
