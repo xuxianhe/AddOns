@@ -15,7 +15,7 @@ BigWigs:AddSounds("Balnazzar Scarlet Enclave", {
 })
 
 BigWigs:AddColors("High Commander Beatrix", {
-	[1231873] = {"blue","green"},
+	[1231873] = "blue",
 	[1232389] = {"blue","purple"},
 	[1232390] = {"blue","red"},
 	[1232637] = {"blue","red"},
@@ -103,7 +103,7 @@ BigWigs:AddSounds("Reborn Council", {
 })
 
 BigWigs:AddColors("Lillian Voss", {
-	[1232192] = {"blue","orange"},
+	[1232192] = {"blue","purple"},
 	[1233847] = "red",
 	[1233849] = "blue",
 	[1233883] = {"blue","green"},
