@@ -246,9 +246,11 @@ f:SetScript("OnEvent", function(self, event, msg, playerName, ...)
         linshi_duizhang = nil
         BG.IsSavingLedger = nil
         BG.DuiZhangList()
-        BG.After(0.1, function()
-            Send(#BiaoGe.duizhang, sumMoney, FB)
-        end)
+        if FB then
+            BG.After(0.1, function()
+                Send(#BiaoGe.duizhang, sumMoney, FB)
+            end)
+        end
         return
     end
 end)

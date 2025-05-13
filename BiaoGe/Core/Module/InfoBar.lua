@@ -24,10 +24,12 @@ local realmID = GetRealmID()
 local player = BG.playerName
 local realmName = GetRealmName()
 
---最后更新时间：25/5/3 11:00
+--最后更新时间：25/5/9 14:30
 local AFDtbl_360 = {
     -- 1200
     "wlk怀旧-范沃森-Selendis",
+    -- 1080
+    "水晶之牙-Ace-Nanami",
     -- 780
     "露露缇娅",
     -- 600
@@ -49,8 +51,10 @@ local AFDtbl_180 = {
     -- "",
     -- "",
     -- "",
-    -- "",
-    -- "",
+    "灰烬使者-XenophobicOrigin-魂曲",
+    "过期",
+    "汪涛",
+    "ImTheW",
     "炸炸",
     "云澈澈",
     "布鲁-末日重生公会",
@@ -83,6 +87,9 @@ local AFDtbl_90 = {
     -- "",
     -- "",
     -- "",
+    -- "",
+    "白烏鴉",
+    "大王别介",
     "forest1818",
     "超能力领域-展开",
     "小戆戆",
@@ -94,8 +101,43 @@ local tbl = {
     -- "",
     -- "",
     -- "",
-
-
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    "奥罗-众生之巅-王之守护",
+    "melody",
+    "萨弗拉斯-深田姥师",
+    "abbiy921",
+    "弄啥呢",
+    "十六夜夜",
+    "DemonClin",
+    "祈福-橙光-璀璨橙光",
+    "水晶之牙-莎莎歌舞厅-斗篷丶",
+    "小亏",
+    "smapwje",
+    "铁血II-亚洲金团",
+    "豆包",
+    "硬汉服-七七超甜",
+    "名牌太贵",
+    "麻辣蛋黄派",
+    "GUNι",
+    "Caroline-觅心者",
+    "xbrave",
+    "邵拉达",
+    "泡沫",
+    "范克瑞斯-扶光",
+    "霜语-天人境",
+    "Karaok",
+    "多宝色猪",
+    "维希度斯-藏星",
     "秋秋丶夜-震地者",
     "小语风",
     "标标",
@@ -236,7 +278,6 @@ do
         "凉爽皮夹黄",
         "维克洛尔-月下斋-迪凯哥",
         "大以巴狼",
-        "铁血II-亚洲金团",
         "萝卜",
         "龙之召唤-圈圈的味道",
         "布朗熊",
@@ -477,11 +518,11 @@ BG.Init(function()
         bt:SetScript("OnMouseUp", function(self, button)
             if button == "LeftButton" then
                 if IsControlKeyDown() then
-                    BG.SetFBCD(nil, nil, true)
+                    ns.InterfaceOptionsFrame_OpenToCategory("|cff00BFFFBiaoGe|r")
+                    BG.MainFrame:Hide()
                 end
             elseif button == "RightButton" then
-                ns.InterfaceOptionsFrame_OpenToCategory("|cff00BFFFBiaoGe|r")
-                BG.MainFrame:Hide()
+                BG.SetFBCD(nil, nil, true)
             end
             BG.PlaySound(1)
         end)

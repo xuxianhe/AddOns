@@ -2363,3 +2363,4 @@ function BG.SetEditBaseClass(edit)
         end
     end)
 end
+

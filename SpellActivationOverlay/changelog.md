@@ -1,5 +1,34 @@
 ## SpellActivationOverlay Changelog
 
+#### v2.4.0 (2025-05-11)
+
+Shout-out to fellow developers Skyward, Vanheden and Adal4. Thanks!
+Special thanks to Amanthuul once again for his work on the shaman class. Kudos!
+
+Bump in TOC file for Scarlet Enclave update (Classic Era)
+Bump in TOC file for Dragon Soul patch (Cataclysm)
+
+New Spell Alert
+- Druid's Swiftbloom (Scarlet Enclave 2pc, Season of Discovery)
+- Hunter's Burning Adrenaline (Firelands 4pc, Cataclysm)
+- Shaman's Maelstrom Weapon can stack up to 10 times (Season of Discovery)
+
+New Glowing Buttons
+- Druid's Nourish, during Fury of Stormrage (Season of Discovery)
+- Druid's Healing Touch, during Swiftbloom (Season of Discovery)
+- Druid's Nourish, during Swiftbloom (Season of Discovery)
+- Druid's Regrowth, during Swiftbloom (Season of Discovery)
+- Priest's Binding Heal, during Surge of Light (Season of Discovery)
+- Shaman's Chain Heal, during Power Surge\* (Season of Discovery)
+
+Removed Glowing Button
+- Shaman's Chain Heal, during Power Surge\* (Season of Discovery)
+
+\* Chain Heal has been moved from Power Surge DPS buff to Healer buff
+
+Miscellaneous
+- The 'Recently Updated' option note has been withdrawn from old updates
+
 #### v2.3.4 (2025-12-06)
 
 Bump in TOC file for Anniversary update (Classic Era)

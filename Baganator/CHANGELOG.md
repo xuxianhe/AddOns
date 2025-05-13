@@ -1,7 +1,7 @@
 # Baganator
 
-## [686](https://github.com/Baganator/Baganator/tree/686) (2025-01-31)
-[Full Changelog](https://github.com/Baganator/Baganator/compare/685...686) 
+## [687](https://github.com/Baganator/Baganator/tree/687) (2025-05-11)
+[Full Changelog](https://github.com/Baganator/Baganator/compare/686...687) 
 
-- Customise: Categories: Skin raw search box and scroll buttons for visual search  
-- Move scrolling search widget to Syndicator  
+- [Fixes #470] Activate NDui skin if AuroraClassic is enabled  
+- Reduce number of errors when Syndicator is disabled (to just error stating that)  

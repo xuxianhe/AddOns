@@ -1,11 +1,8 @@
 # BigWigs [Classic]
 
-## [v11.1.44](https://github.com/BigWigsMods/BigWigs_Classic/tree/v11.1.44) (2025-05-08)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs_Classic/compare/v11.1.43...v11.1.44) [Previous Releases](https://github.com/BigWigsMods/BigWigs_Classic/releases)
+## [v11.1.48](https://github.com/BigWigsMods/BigWigs_Classic/tree/v11.1.48) (2025-05-13)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs_Classic/compare/v11.1.47...v11.1.48) [Previous Releases](https://github.com/BigWigsMods/BigWigs_Classic/releases)
 
-- ScarletEnclave\_Classic/Trash: Tweak  
-- ScarletEnclave\_Classic/LillianVoss: Tweak  
-- ScarletEnclave\_Classic/Balnazzar: Make Mind Control ME\_ONLY by default, add backup stage 2 event  
-- ScarletEnclave\_Classic/Beatrix: Tweak  
-- ScarletEnclave\_Classic/Caldoran: Fix wrong icon for first Wake of Ashes bar  
-- ZulGurub\_Classic/Jindo: Fix sounds playing for everyone  
+- BlackwingLair/Vaelastrasz: Locale cleanup  
+- ScarletEnclave\_Classic/Mason: Locale cleanup  
+- ScarletEnclave\_Classic/RebornCouncil: Fix another Peeled Secrets bug  

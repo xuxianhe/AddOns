@@ -739,3 +739,11 @@ end
 -- function BG.()
 
 -- end
+
+function BG.ClearColorCode(text)
+    return text:gsub("|c........", ""):gsub("|r", "")
+end
+
+function BG.ClearCode(text)
+    return text:gsub("|T.-|t", ""):gsub("|A.-|a", ""):gsub("|cff......", ""):gsub("|r", "")
+end

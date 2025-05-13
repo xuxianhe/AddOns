@@ -125,8 +125,14 @@ SAO.defaults = {
                 [81093] = { -- Fury of Stormrage (Cataclysm)
                     [2912] = true, -- Starfire
                 },
-                [414800]= { -- Fury of Stormrage (Season of Discovery)
+                [414800] = { -- Fury of Stormrage (Season of Discovery)
                     [5185] = true, -- Healing Touch
+                    [408247] = true, -- Nourish
+                },
+                [1226035] = { -- Swiftbloom (Season of Discovery)
+                    [5185] = true, -- Healing Touch
+                    [408247] = true, -- Nourish
+                    [8936] = true, -- Regrowth
                 },
             }
         },
@@ -142,6 +148,9 @@ SAO.defaults = {
                     [0] = true, -- any stacks
                 },
                 [82926] = { -- Master Marksman (Cataclysm)
+                    [0] = true,
+                },
+                [99060] = { -- Burning Adrenaline (Cataclysm)
                     [0] = true,
                 },
                 [415414]= { -- Lock and Load (Season of Discovery)
@@ -456,8 +465,9 @@ SAO.defaults = {
                     [596]  = true, -- Prayer of Healing
                 },
                 [431666] = {  -- Surge of Light (Season of Discovery)
-                    [585]  = true, -- Smite
-                    [2061] = true, -- Flash Heal
+                    [585]    = true, -- Smite
+                    [2061]   = true, -- Flash Heal
+                    [401937] = true, -- Binding Heal
                 },
                 [431655] = {  -- Mind Spike (Season of Discovery)
                     [8092] = true, -- Mind Blast
@@ -503,6 +513,8 @@ SAO.defaults = {
                 [408505] = { -- Maelstrom Weapon (Season of Discovery)
                     [5] = true, -- 5 stacks
                     [0] = true, -- any stacks but 5
+                    [6] = true, -- 6-9 stacks
+                    [10]= true, -- 10 stacks
                 },
                 [53390] = { -- Tidal Waves
                     [0] = false, -- any stacks
@@ -544,8 +556,10 @@ SAO.defaults = {
                 },
                 [415105] = {  -- Power Surge (Season of Discovery)
                     [421]   = false, -- Chain Lightning
-                    [1064]  = false, -- Chain Heal
                     [408490] = false, -- Lava Burst (Season of Discovery)
+                },
+                [468526] = { -- Power Surge Healing proc (Season of Discovery)
+                    [1064] = false,  -- Chain Heal
                 },
                 [51505] = {  -- Lava Burst, for Lava Surge (Cataclysm)
                     [51505] = true,

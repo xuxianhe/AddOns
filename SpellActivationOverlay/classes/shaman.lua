@@ -147,10 +147,36 @@ local function customCLEU(self, ...)
     end
 end
 
+-- Check if Maelstrom Weapon effect should pulse at 5 stacks
+-- This question only applies to 5 stacks, because the answer is obvious for other stacks
+-- At 5 stacks, we want to pulse if the shaman is capped at 5 stacks, and not pulse if capped at 10
+local function mustPulseMSW5(self, ...)
+    -- Count the number of items currently equipped from Enhancement's T4 set (Season of Discovery)
+    local t4Items = { 240131, 240135, 240128, 240136, 240134, 240129, 240137, 240130 }
+    local nbT4Items = 0;
+    for _, item in ipairs(t4Items) do
+        if C_Item.IsEquippedItem(item) then
+            nbT4Items = nbT4Items + 1;
+        end
+    end
+
+    if nbT4Items < 6 then
+        -- If the shaman does not have the T4 6pc, s/he is capped at 5 stacks
+        -- In which case, the Maelstrom Weapon should pulse at 5 stacks
+        return true;
+    else
+        -- If the shaman has at least 6 pieces of Enhancement's T4, Maelstrom Weapon is capped at 10 stacks
+        -- In this case, Maelstrom Weapon should *not* pulse at 5 stacks
+        return false;
+    end
+end
+
 local function registerClass(self)
     local hash0Stacks = self:HashNameFromStacks(0);
     local hash2Stacks = self:HashNameFromStacks(2);
     local hash4Stacks = self:HashNameFromStacks(4);
+    local hash6Stacks = self:HashNameFromStacks(6);
+    local hash9Stacks = self:HashNameFromStacks(9);
 
    -- Elemental Focus has 2 charges on TBC, Wrath and Cataclysm
     -- TBC/Wrath use echo_of_the_elements texture, with scale of 100%
@@ -238,13 +264,27 @@ local function registerClass(self)
                 { stacks = 2, texture = "maelstrom_weapon_2", position = "Top", scale = maelstromWeaponScale, pulse = false, option = false },
                 { stacks = 3, texture = "maelstrom_weapon_3", position = "Top", scale = maelstromWeaponScale, pulse = false, option = false },
                 { stacks = 4, texture = "maelstrom_weapon_4", position = "Top", scale = maelstromWeaponScale, pulse = false, option = { setupHash = hash0Stacks, testHash = hash4Stacks, subText = self:NbStacks(1,4) } },
-                { stacks = 5, texture = "maelstrom_weapon"  , position = "Top", scale = maelstromWeaponScale, pulse = true , option = true },
+                [SAO.WRATH+SAO.CATA] = {
+                    { stacks = 5, texture = "maelstrom_weapon"  , position = "Top", scale = maelstromWeaponScale, pulse = true , option = true },
+                },
+                [SAO.SOD] = { 
+                    { stacks = 5, texture = "maelstrom_weapon"  , position = "Top", scale = maelstromWeaponScale, pulse = mustPulseMSW5, option = true },
+                    { stacks = 6, texture = "maelstrom_weapon_6", position = "Top", scale = maelstromWeaponScale, pulse = false, option = false },
+                    { stacks = 7, texture = "maelstrom_weapon_7", position = "Top", scale = maelstromWeaponScale, pulse = false, option = false },
+                    { stacks = 8, texture = "maelstrom_weapon_8", position = "Top", scale = maelstromWeaponScale, pulse = false, option = false },
+                    { stacks = 9, texture = "maelstrom_weapon_9", position = "Top", scale = maelstromWeaponScale, pulse = false, option = { setupHash = hash6Stacks, testHash = hash9Stacks, subText = self:NbStacks(6,9) } },
+                    { stacks = 10, texture = "maelstrom_weapon_10" , position = "Top", scale = maelstromWeaponScale, pulse = true , option = true },
+                },
             },
             buttons = {
                 default = { stacks = 5 },
                 [SAO.SOD] =   { lightningBolt, chainLightning, lesserHealingWave,                                                               lavaBurstSoD },
                 [SAO.WRATH] = { lightningBolt, chainLightning, lesserHealingWave,                     healingWave, chainHeal,              hex },
                 [SAO.CATA] =  { lightningBolt, chainLightning, healingSurge,      greaterHealingWave, healingWave, chainHeal, healingRain, hex },
+            },
+            handlers = {
+                -- Force refresh on a regular basis, because the game client does not send the correct SPELL_AURA_REFRESH events
+                [SAO.SOD] = { onRepeat = function(bucket) bucket:refresh(); end },
             },
         }
     );
@@ -293,9 +333,9 @@ local function registerClass(self)
 
         -- Power Surge
         local powerSurgeSoDBuff = 415105;
+        local powerSurgeSoDHealBuff = 468526;
         local powerSurgeSpells = {
             (GetSpellInfo(chainLightning)),
-            (GetSpellInfo(chainHeal)),
             (GetSpellInfo(lavaBurstSoD)),
         }
 
@@ -336,6 +376,17 @@ local function registerClass(self)
             local pulse = lightningShieldStacks == 9;
             self:RegisterAura(auraName, lightningShieldStacks, RollingThunderHandler.fakeSpellID, "fulmination", "Top", scale, 255, 255, 255, pulse, RollingThunderHandler.earthShockSpells);
         end
+
+        SAO:CreateEffect(
+            "power_surge_sod_heal",
+            SAO.SOD,
+            powerSurgeSoDHealBuff,
+            "aura",
+            {
+                talent = powerSurgeSoDHealBuff,
+                button = { spellID = chainHeal, option = { talentSubText = HEALER } },
+            }
+        );
     end
 end
 
@@ -374,7 +425,7 @@ local function loadOptions(self)
     if self.IsWrath() then
         self:AddSoulPreserverOverlayOption(60515); -- 60515 = Shaman buff
     elseif self.IsSoD() then
-        self:AddOverlayOption(powerSurgeSoD, powerSurgeSoDBuff);
+        self:AddOverlayOption(powerSurgeSoD, powerSurgeSoDBuff, nil, DAMAGER);
         self:AddOverlayOption(rollingThunderSoD, lightningShield, self:HashNameFromStacks(7), nil, nil, nil, RollingThunderHandler.fakeSpellID);
         self:AddOverlayOption(rollingThunderSoD, lightningShield, self:HashNameFromStacks(8), nil, nil, nil, RollingThunderHandler.fakeSpellID);
         self:AddOverlayOption(rollingThunderSoD, lightningShield, self:HashNameFromStacks(9), nil, nil, nil, RollingThunderHandler.fakeSpellID);
@@ -383,9 +434,8 @@ local function loadOptions(self)
     if self.IsCata() then
         self:AddGlowingOption(fulminationTalentCata, lightningShield, earthShock, sixToNineStacks);
     elseif self.IsSoD() then
-        self:AddGlowingOption(powerSurgeSoD, powerSurgeSoDBuff, chainLightning);
-        self:AddGlowingOption(powerSurgeSoD, powerSurgeSoDBuff, chainHeal);
-        self:AddGlowingOption(powerSurgeSoD, powerSurgeSoDBuff, lavaBurstSoD);
+        self:AddGlowingOption(powerSurgeSoD, powerSurgeSoDBuff, chainLightning, DAMAGER);
+        self:AddGlowingOption(powerSurgeSoD, powerSurgeSoDBuff, lavaBurstSoD, DAMAGER);
         self:AddGlowingOption(rollingThunderSoD, lightningShield, earthShock, sevenToNineStacks);
     end
 end

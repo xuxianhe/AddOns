@@ -62,7 +62,7 @@ BigWigs:AddSounds("Firemaw", {
 BigWigs:AddColors("Ebonroc", {
 	[22539] = "red",
 	[23339] = "yellow",
-	[23340] = {"blue","orange"},
+	[23340] = {"blue","purple"},
 	[368515] = "blue",
 })
 

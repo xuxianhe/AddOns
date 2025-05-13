@@ -695,9 +695,9 @@ function BG.RoleOverviewUI()
                 else
                     realmName = ""
                 end
-                local talentText=""
+                local talentText = ""
                 if isVIP then
-                    talentText=BG.GetTalentIcon(v.class, v.talent, 15)
+                    talentText = BG.GetTalentIcon(v.class, v.talent, 15)
                 end
                 local bt = CreateFrame("Button", nil, BG.FBCDFrame)
                 bt:SetPoint("TOPLEFT", BG.FBCDFrame, "TOPLEFT", FBCDchoice_table[1].width, -7 - height * n)
@@ -857,9 +857,9 @@ function BG.RoleOverviewUI()
                 end
                 local tipsText
                 if BiaoGe.options.roleOverviewDefaultShow == "one" then
-                    tipsText = format(L["|cff808080（CTRL+%s固定显示，长按SHIFT显示全服务器角色%%s）|r"], AddTexture("LEFT"))
+                    tipsText = format(L["|cff808080（%s固定显示，长按SHIFT显示全服务器角色%%s）|r"], AddTexture("RIGHT"))
                 else
-                    tipsText = format(L["|cff808080（CTRL+%s固定显示，长按SHIFT显示当前服务器角色%%s）|r"],AddTexture("LEFT"))
+                    tipsText = format(L["|cff808080（%s固定显示，长按SHIFT显示当前服务器角色%%s）|r"], AddTexture("RIGHT"))
                 end
                 t:SetText(t:GetText() .. format(tipsText, accountsText))
             end
