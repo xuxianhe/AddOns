@@ -1,7 +1,6 @@
 # Baganator
 
-## [687](https://github.com/Baganator/Baganator/tree/687) (2025-05-11)
-[Full Changelog](https://github.com/Baganator/Baganator/compare/686...687) 
+## [688](https://github.com/Baganator/Baganator/tree/688) (2025-05-13)
+[Full Changelog](https://github.com/Baganator/Baganator/compare/687...688) 
 
-- [Fixes #470] Activate NDui skin if AuroraClassic is enabled  
-- Reduce number of errors when Syndicator is disabled (to just error stating that)  
+- Sorting: Fallback if classID/subClassID are missing due to wrong Blizzard data  
