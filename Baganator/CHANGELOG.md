@@ -1,6 +1,6 @@
 # Baganator
 
-## [688](https://github.com/Baganator/Baganator/tree/688) (2025-05-13)
-[Full Changelog](https://github.com/Baganator/Baganator/compare/687...688) 
+## [692](https://github.com/Baganator/Baganator/tree/692) (2025-05-17)
+[Full Changelog](https://github.com/Baganator/Baganator/compare/691...692) 
 
-- Sorting: Fallback if classID/subClassID are missing due to wrong Blizzard data  
+- Sorting: Add fallback for when max stack size information is unavailable  

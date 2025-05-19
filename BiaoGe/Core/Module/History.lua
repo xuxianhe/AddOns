@@ -114,7 +114,7 @@ function BG.HistoryUI()
             end
             BG.PlaySound(1)
         end)
-        BG.Init2(function ()
+        BG.Init2(function()
             if BGV then
                 bt:SetScript("OnEnter", function(self)
                     GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
@@ -129,7 +129,6 @@ function BG.HistoryUI()
                 end)
             end
         end)
- 
     end
     ------------------保存当前表格按键------------------
     do
@@ -297,48 +296,6 @@ function BG.HistoryUI()
     end
     ------------------导出表格按键------------------
     do
-        BG.frameWenBen = {}
-        local f = CreateFrame("Frame", nil, BG.MainFrame, "BasicFrameTemplate")
-        f:SetWidth(350)
-        f:SetHeight(650)
-        f.TitleText:SetText(L["导出表格"])
-        f:SetFrameLevel(300)
-        f:SetPoint("CENTER")
-        f:EnableMouse(true)
-        f:SetMovable(true)
-        f:SetToplevel(true)
-        f:Hide()
-        f:SetScript("OnMouseUp", function(self)
-            self:StopMovingOrSizing()
-        end)
-        f:SetScript("OnMouseDown", function(self)
-            self:StartMoving()
-        end)
-        BG.frameWenBen.frame = f
-
-        local edit = CreateFrame("EditBox", nil, BG.frameWenBen.frame)
-        edit:SetWidth(BG.frameWenBen.frame:GetWidth() - 27)
-        edit:SetHeight(1)
-        edit:SetAutoFocus(true)
-        edit:EnableMouse(true)
-        edit:SetTextInsets(10, 10, 10, 10)
-        edit:SetMultiLine(true)
-        edit:SetFontObject(GameFontNormal)
-        edit:HookScript("OnEscapePressed", function()
-            BG.frameWenBen.frame:Hide()
-        end)
-        BG.frameWenBen.edit = edit
-
-        local scroll = CreateFrame("ScrollFrame", nil, BG.frameWenBen.frame, "UIPanelScrollFrameTemplate")
-        scroll:SetWidth(BG.frameWenBen.frame:GetWidth() - 27)
-        scroll:SetHeight(BG.frameWenBen.frame:GetHeight() - 29)
-        scroll:SetPoint("BOTTOMLEFT", BG.frameWenBen.frame, "BOTTOMLEFT", 0, 2)
-        scroll.ScrollBar.scrollStep = BG.scrollStep
-        BG.CreateSrollBarBackdrop(scroll.ScrollBar)
-        BG.HookScrollBarShowOrHide(scroll)
-        scroll:SetScrollChild(edit)
-        BG.frameWenBen.scroll = scroll
-
         -- 创建按键
         local bt = CreateFrame("Button", nil, parent)
         bt:SetPoint("TOPRIGHT", BG.History.SendButton, "TOPLEFT", width_jiange, 0)
@@ -361,45 +318,34 @@ function BG.HistoryUI()
             GameTooltip:Hide()
         end)
         bt:SetScript("OnClick", function(self)
-            if BG.frameWenBen.frame:IsVisible() then
-                BG.frameWenBen.frame:Hide()
-                return
-            else
-                BG.frameWenBen.frame:Show()
-            end
             local FB = BG.FB1
             local Frame
-            local text
+            local text = ""
             if BG["Frame" .. FB]:IsVisible() then
                 Frame = BG.Frame
             elseif BG["HistoryFrame" .. FB]:IsVisible() then
                 Frame = BG.HistoryFrame
             end
-            BG.frameWenBen.edit:SetText("")
             for b = 1, Maxb[FB] + 2 do
                 local bossname2 = BG.Boss[FB]["boss" .. b].name2
                 local bosscolor = BG.Boss[FB]["boss" .. b].color
-                text = "|cff" .. bosscolor .. bossname2 .. RN
-                BG.frameWenBen.edit:Insert(text) -- BOSS名字
+                text = text .. "|cff" .. bosscolor .. bossname2 .. "|r\n"
                 for i = 1, BG.GetMaxi(FB, b) do
                     if Frame[FB]["boss" .. b]["zhuangbei" .. i] then
-                        if Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText() ~= "" or Frame[FB]["boss" .. b]["maijia" .. i]:GetText() ~= "" or Frame[FB]["boss" .. b]["jine" .. i]:GetText() ~= "" then
-                            text = Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText() .. " " .. RGB_16(Frame[FB]["boss" .. b]["maijia" .. i]) .. " " .. Frame[FB]["boss" .. b]["jine" .. i]:GetText() .. "\n"
-                            BG.frameWenBen.edit:Insert(text)
+                        if Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText() ~= ""
+                            or Frame[FB]["boss" .. b]["maijia" .. i]:GetText() ~= ""
+                            or Frame[FB]["boss" .. b]["jine" .. i]:GetText() ~= "" then
+                            text = text .. Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText() .. " "
+                                .. RGB_16(Frame[FB]["boss" .. b]["maijia" .. i]) .. " "
+                                .. Frame[FB]["boss" .. b]["jine" .. i]:GetText() .. "|r\n"
                         end
                     end
                 end
-                BG.frameWenBen.edit:Insert("\n")
+                if b ~= Maxb[FB] + 2 then
+                    text = text .. "\n"
+                end
             end
-            -- 删掉末尾的两个回车
-            local text = BG.frameWenBen.edit:GetText()
-            text = strsub(text, 1, -2)
-            BG.frameWenBen.edit:SetText(text)
-            BG.frameWenBen.edit:HighlightText()
-            -- 设置滚动条到末尾
-            C_Timer.After(0, function()
-                BG.SetScrollBottom(BG.frameWenBen.scroll, BG.frameWenBen.edit)
-            end)
+            BG.CreateExportFrame(L["导出表格"], text)
         end)
     end
     ------------------应用表格按键------------------

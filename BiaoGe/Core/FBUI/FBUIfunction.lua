@@ -25,7 +25,6 @@ BG.Frame.p = p
 local preWidget
 local framedown
 local frameright
--- local last
 local red, greed, blue = 1, 1, 1
 
 ------------------结算工资------------------
@@ -251,6 +250,52 @@ local function UpdateCancelDelete(self, FB, b, i, type)
             self:SetScript("OnUpdate", nil)
             BG.ButtonCancelDelete:Hide()
         end
+    end)
+end
+
+-- 鼠标提示玩家的欠款和罚款
+do
+    local CD
+    local function SetTooltip(unit)
+        local name = BG.SPN(BG.GN(unit))
+        local FB = BG.FB1
+        local fkMoney = 0
+        local qkMoney = 0
+        BG.PairFBItem(function(item, buyer, money, b, i)
+            if buyer:GetText() == name then
+                if b == Maxb[FB] then
+                    fkMoney = fkMoney + (tonumber(money:GetText()) or 0)
+                end
+                qkMoney = qkMoney + (tonumber(BiaoGe[FB]["boss" .. b]["qiankuan" .. i]) or 0)
+            end
+        end)
+        if fkMoney ~= 0 then
+            GameTooltip:AddLine(L["罚款："] .. BG.STC_w1(fkMoney), 1, .82, 0)
+        end
+        if qkMoney ~= 0 then
+            GameTooltip:AddLine(L["欠款："] .. BG.STC_w1(qkMoney), 1, .82, 0)
+        end
+        if fkMoney ~= 0 or qkMoney ~= 0 then
+            GameTooltip:Show()
+        end
+    end
+    GameTooltip:HookScript("OnTooltipSetUnit", function(self)
+        if BiaoGe.options["mouseFK"] ~= 1 then return end
+        local unit = "mouseover"
+        if not (UnitIsPlayer(unit) and UnitIsSameServer(unit)) then return end
+        if CD then return end
+        CD = true
+        BG.After(0, function() CD = false end)
+        SetTooltip(unit)
+    end)
+
+    hooksecurefunc(GameTooltip, "SetUnit", function(self, unit)
+        if BiaoGe.options["mouseFK"] ~= 1 then return end
+        if not (UnitIsPlayer(unit) and UnitIsSameServer(unit)) then return end
+        if CD then return end
+        CD = true
+        BG.After(0, function() CD = false end)
+        SetTooltip(unit)
     end)
 end
 

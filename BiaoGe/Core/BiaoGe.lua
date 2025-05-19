@@ -1300,8 +1300,7 @@ BG.Init(function()
 
         if BG.IsWLK then
             BG.TabButtonsFB_TBC = CreateFrame("Frame", nil, BG.TabButtonsFB)
-            -- BG.TabButtonsFB_TBC:SetPoint("TOPLEFT", BG.MainFrame, "TOPLEFT", 80, -28)
-            BG.TabButtonsFB_TBC:SetPoint("RIGHT", BG.TabButtonsFB, "LEFT", -60, -0)
+            BG.TabButtonsFB_TBC:SetPoint("RIGHT", BG.TabButtonsFB, "LEFT", -40, -0)
             BG.TabButtonsFB_TBC:SetHeight(20)
         end
 
@@ -1928,160 +1927,7 @@ BG.Init(function()
             end
         end)
     end
-    ----------一键分配装备给自己----------
-    BG.Init2(function()
-        if BG.IsRetail then return end
-        local isOnter
 
-        local function IsTrueLoot(quality, bindType, itemStackCount, typeID)
-            local _quality = GetLootThreshold()
-            if _quality then
-                if quality < _quality then
-                    return
-                end
-                if bindType == 4 then          -- 任务物品
-                    return
-                elseif bindType == 1 then      -- 拾取绑定的
-                    if itemStackCount > 1 then -- 堆叠数量大于1
-                        return
-                    end
-                end
-                return true
-            end
-        end
-
-        local function GiveLoot()
-            if GetLootMethod() ~= "master" then return end
-            for ci = 1, GetNumGroupMembers() do
-                for li = 1, GetNumLootItems() do
-                    if LootSlotHasItem(li) and GetMasterLootCandidate(li, ci) == BG.GN() then
-                        local itemLink = GetLootSlotLink(li)
-                        if itemLink then
-                            local name, link, quality, level, _, _, _, itemStackCount, _, Texture,
-                            _, typeID, _, bindType = GetItemInfo(itemLink)
-                            if IsTrueLoot(quality, bindType, itemStackCount, typeID) then
-                                GiveMasterLoot(li, ci)
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
-        local function OnClick(self)
-            BG.PlaySound(1)
-            GiveLoot()
-        end
-
-        local function OnEnter(self)
-            isOnter = true
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
-            GameTooltip:ClearLines()
-            GameTooltip:AddLine(L["一键分配"], 1, 1, 1, true)
-            if self.dis then
-                if IsInRaid(1) then
-                    GameTooltip:AddLine(L["你不是物品分配者，不能使用。"], 1, 0, 0, true)
-                else
-                    GameTooltip:AddLine(L["不在团队中，不能使用。"], 1, 0, 0, true)
-                end
-            else
-                GameTooltip:AddLine(L["把全部可交易的物品分配给自己。"], 1, 0.82, 0, true)
-            end
-            GameTooltip:AddLine(BG.STC_dis(L["你可在插件设置-BiaoGe-其他功能里关闭这个功能。"]), 0.5, 0.5, 0.5, true)
-
-            local items = {}
-            for li = 1, GetNumLootItems() do
-                if LootSlotHasItem(li) then
-                    local itemLink = GetLootSlotLink(li)
-                    if itemLink then
-                        local name, link, quality, level, _, _, _, itemStackCount, _, Texture,
-                        _, typeID, _, bindType = GetItemInfo(itemLink)
-                        if IsTrueLoot(quality, bindType, itemStackCount, typeID) then
-                            tinsert(items, AddTexture(Texture, -3) .. link .. "|cffFFFFFF(" .. level .. ")|r")
-                        end
-                    end
-                end
-            end
-            GameTooltip:AddLine(" ", 1, 1, 0, true)
-            GameTooltip:AddLine(L["点击后会把这些物品分配给你："], 1, 1, 0, true)
-            if #items ~= 0 then
-                for i, item in ipairs(items) do
-                    GameTooltip:AddLine(i .. ". " .. item, 1, 1, 0)
-                end
-            else
-                GameTooltip:AddLine(BG.STC_dis(L["没有符合条件的物品。"]), 1, 1, 0, true)
-            end
-            GameTooltip:Show()
-        end
-
-        local function OnLeave(self)
-            isOnter = false
-            GameTooltip:Hide()
-        end
-
-        local parent = ElvLootFrame or XLootFrame or LootFrame
-        local bt = BG.CreateButton(parent)
-        bt:SetPoint("BOTTOM", parent, "TOP", 0, 0)
-        bt:SetText(L["一键分配"])
-        bt:SetSize(bt:GetFontString():GetWidth() + 10, 25)
-        bt:Hide()
-        bt:SetScript("OnClick", OnClick)
-        bt:SetScript("OnEnter", OnEnter)
-        bt:SetScript("OnLeave", OnLeave)
-
-        local f = CreateFrame("Frame", nil, bt)
-        f:SetAllPoints()
-        f.dis = true
-        f.bt = bt
-        f:SetScript("OnEnter", OnEnter)
-        f:SetScript("OnLeave", OnLeave)
-        local disframe = f
-
-        local function OnShow()
-            if BiaoGe.options["allLootToMe"] ~= 1 then
-                bt:Hide()
-                disframe:Hide()
-                return
-            end
-            isOnter = false
-
-            if GetLootMethod() == "master" then
-                bt:Show()
-                if IsInRaid(1) and BG.masterLooter == BG.GN() then
-                    disframe:Hide()
-                    bt:Enable()
-                    if BiaoGe.options["autoAllLootToMe"] == 1 and not IsModifierKeyDown() then
-                        BG.After(0.1, function()
-                            GiveLoot()
-                        end)
-                    end
-                else
-                    disframe:Show()
-                    bt:Disable()
-                end
-            else
-                bt:Hide()
-            end
-        end
-        hooksecurefunc("LootFrame_Show", OnShow)
-        if ElvLootFrame then
-            ElvLootFrame:HookScript("OnShow", OnShow)
-        end
-        if XLootFrame then
-            XLootFrame:HookScript("OnShow", OnShow)
-        end
-
-        -- 当物品被捡走时，刷新鼠标提示工具
-        BG.RegisterEvent("LOOT_SLOT_CLEARED", function(self, event)
-            if isOnter then
-                if bt:IsEnabled() then
-                    OnEnter(bt)
-                else
-                    OnEnter(disframe)
-                end
-            end
-        end)
-    end)
     ----------血月活动期间自动释放尸体和对话自动复活----------
     if BG.IsVanilla_Sod then
         local tbl = {
@@ -2818,11 +2664,13 @@ BG.Init(function()
                         CDing[sender] = nil
                     end)
                 elseif strfind(msg, "MyVer") and not close then
-                    local _, version = strsplit("-", msg)
-                    if VerGuoQi(BG.ver, version) then
-                        SendSystemMessage("|cff00BFFF" .. format(L["< BiaoGe > 你的当前版本%s已过期，请更新插件。"] .. RR, BG.STC_r1(BG.ver)))
-                        BG.VerText:SetTextColor(1, 0, 0)
-                        close = true
+                    if BiaoGe.options.addonsOutTime == 1 then
+                        local _, version = strsplit("-", msg)
+                        if VerGuoQi(BG.ver, version) then
+                            SendSystemMessage("|cff00BFFF" .. format(L["< BiaoGe > 你的当前版本%s已过期，请更新插件。"] .. RR, BG.STC_r1(BG.ver)))
+                            BG.VerText:SetTextColor(1, 0, 0)
+                            close = true
+                        end
                     end
                 end
             elseif event == "PLAYER_ENTERING_WORLD" then
@@ -2834,6 +2682,7 @@ BG.Init(function()
                         C_ChatInfo.SendAddonMessage("BiaoGe", "VersionCheck", "GUILD")
                     end
                 end)
+
                 -- x秒后关闭检测版本是否过期的功能
                 C_Timer.After(10, function()
                     close = true

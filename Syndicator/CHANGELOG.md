@@ -1,6 +1,6 @@
 # Syndicator
 
-## [200](https://github.com/Baganator/Syndicator/tree/200) (2025-05-13)
-[Full Changelog](https://github.com/Baganator/Syndicator/compare/199...200) 
+## [203](https://github.com/Baganator/Syndicator/tree/203) (2025-05-16)
+[Full Changelog](https://github.com/Baganator/Syndicator/compare/202...203) 
 
-- Add type override for "Wand of Making" as Blizzard hasn't fixed the item data  
+- Reenable tooltip scanning on Mists Classic (issue appears fixed now)  

@@ -12,14 +12,14 @@ local strfind = string.find
 -- Generate our version variables
 --
 
-local BIGWIGS_VERSION = 386
+local BIGWIGS_VERSION = 387
 local CONTENT_PACK_VERSIONS = {
-	["LittleWigs"] = {11, 1, 44},
-	["BigWigs_Classic"] = {11, 1, 47},
+	["LittleWigs"] = {11, 1, 46},
+	["BigWigs_Classic"] = {11, 1, 49},
 	["BigWigs_BurningCrusade"] = {11, 1, 2},
 	["BigWigs_WrathOfTheLichKing"] = {11, 1, 4},
 	["BigWigs_Cataclysm"] = {11, 1, 5},
-	["BigWigs_MistsOfPandaria"] = {11, 1, 0},
+	["BigWigs_MistsOfPandaria"] = {11, 1, 2},
 }
 local BIGWIGS_RELEASE_STRING
 local versionQueryString, versionResponseString = "Q^%d^%s^%d^%s", "V^%d^%s^%d^%s"
@@ -50,7 +50,7 @@ do
 	local ALPHA = "ALPHA"
 
 	local releaseType
-	local myGitHash = "23ae670" -- The ZIP packager will replace this with the Git hash.
+	local myGitHash = "e0b98c8" -- The ZIP packager will replace this with the Git hash.
 	local releaseString
 	--[=[@alpha@
 	-- The following code will only be present in alpha ZIPs.
@@ -1052,6 +1052,7 @@ function mod:ADDON_LOADED(addon)
 	end
 	bwFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 	bwFrame:RegisterEvent("GROUP_FORMED")
+	self:GROUP_FORMED() -- If you're already in a group, the event only fires when logging on, not when reloading UI, so we force a check
 	bwFrame:RegisterEvent("GROUP_LEFT")
 	bwFrame:RegisterEvent("START_PLAYER_COUNTDOWN")
 	bwFrame:RegisterEvent("CANCEL_PLAYER_COUNTDOWN")
@@ -1135,20 +1136,12 @@ function mod:ADDON_LOADED(addon)
 				end
 			end
 		end
-		-- Cleanup function.
-		-- TODO: look into having a way for our boss modules not to create a table when no options are changed.
-		local toDelete = {}
 		if BigWigs3DB.namespaces then
 			for k,v in next, BigWigs3DB.namespaces do
-				if not next(v) then
-					toDelete[k] = true
-				elseif strfind(k, " Trash", nil, true) and public:GetAddOnState("QuaziiUI") ~= "MISSING" then
-					toDelete[k] = true
+				if (strfind(k, " Trash", nil, true) or strfind(k, " Rares", nil, true)) and (public:GetAddOnState("QuaziiUI") ~= "MISSING" or public:GetAddOnState("ElvUI_ProjectHopes") ~= "MISSING") then
+					BigWigs3DB.namespaces[k] = nil
 				end
 			end
-		end
-		for k in next, toDelete do
-			BigWigs3DB.namespaces[k] = nil
 		end
 	end
 	self:BigWigs_CoreOptionToggled(nil, "fakeDBMVersion", self.isFakingDBM)
@@ -1185,16 +1178,6 @@ end
 function mod:CANCEL_PLAYER_COUNTDOWN(...)
 	loadAndEnableCore()
 	public:SendMessage("Blizz_StopCountdown", ...)
-end
-
--- We can't do our addon loading in ADDON_LOADED as the target addons may be registering that
--- which would break that event for those addons. Use this event instead.
-function mod:UPDATE_FLOATING_CHAT_WINDOWS()
-	bwFrame:UnregisterEvent("UPDATE_FLOATING_CHAT_WINDOWS")
-	self.UPDATE_FLOATING_CHAT_WINDOWS = nil
-
-	self:GROUP_FORMED()
-	self:PLAYER_ENTERING_WORLD()
 end
 
 -- Various temporary printing stuff
@@ -1293,6 +1276,7 @@ do
 		BigWigs_DragonIsles = "BigWigs_Dragonflight",
 		BigWigs_VaultOfTheIncarnates = "BigWigs_Dragonflight",
 	}
+	local DisableAddOn = C_AddOns.DisableAddOn
 	local delayedMessages = {}
 	local foundReqAddons = {} -- Deciding whether or not we show a warning for core/options/plugins addons not existing
 	local printMissingExpansionAddon = true
@@ -1363,6 +1347,7 @@ do
 				delayedMessages[#delayedMessages+1] = msg
 				Popup(msg, true)
 			end
+			DisableAddOn(i)
 		end
 
 		if reqFuncAddons[name] then
@@ -1417,7 +1402,7 @@ do
 		--ruRU = "Russian (ruRU)",
 		--zhCN = "Simplified Chinese (zhCN)",
 		--zhTW = "Traditional Chinese (zhTW)",
-		itIT = "Italian (itIT)",
+		--itIT = "Italian (itIT)",
 		--koKR = "Korean (koKR)",
 		--esES = "Spanish (esES)",
 		--esMX = "Spanish (esMX)",
@@ -1429,7 +1414,7 @@ do
 		--[542] = locales.frFR, -- frFR
 		--[3207] = locales.ptBR, [3208] = locales.ptBR, [3209] = locales.ptBR, [3210] = locales.ptBR, [3234] = locales.ptBR, -- ptBR
 		--[1425] = locales.esMX, [1427] = locales.esMX, [1428] = locales.esMX, -- esMX
-		[1309] = locales.itIT, [1316] = locales.itIT, -- itIT
+		--[1309] = locales.itIT, [1316] = locales.itIT, -- itIT
 		--[1378] = locales.esES, [1379] = locales.esES, [1380] = locales.esES, [1381] = locales.esES, [1382] = locales.esES, [1383] = locales.esES, -- esES
 		--[1384] = locales.esES, [1385] = locales.esES, [1386] = locales.esES, [1387] = locales.esES, [1395] = locales.esES, -- esES
 	}
@@ -1594,7 +1579,6 @@ bwFrame:SetScript("OnEvent", function(_, event, ...)
 	mod[event](mod, ...)
 end)
 bwFrame:RegisterEvent("ADDON_LOADED")
-bwFrame:RegisterEvent("UPDATE_FLOATING_CHAT_WINDOWS")
 
 function mod:CHAT_MSG_ADDON(prefix, msg, channel, sender)
 	if channel ~= "RAID" and channel ~= "PARTY" and channel ~= "INSTANCE_CHAT" then

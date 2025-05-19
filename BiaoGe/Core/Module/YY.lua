@@ -1305,14 +1305,14 @@ BG.Init(function()
                     break
                 end
             end
-            local blackText=""
-            for _,yy in ipairs(blackList) do
-                if yy==tonumber(cleanedYY) then
-                    blackText=L["|cffff0000（该团长为毛团，请注意！如想举报更多毛团，请在抖音发视频后@苍穹之霜）|r"]
+            local blackText = ""
+            for _, yy in ipairs(blackList) do
+                if yy == tonumber(cleanedYY) then
+                    blackText = L["|cffff0000（该团长为毛团，请注意！如想举报更多毛团，请在抖音发视频后@苍穹之霜）|r"]
                     break
                 end
             end
-            
+
             return "|cff" .. color .. "|Hgarrmission:BiaoGeYY:YY:" .. cleanedYY ..
                 "|h[YY:" .. cleanedYY .. PingJia(cleanedYY) .. "]" .. "|h|r" .. blackText
         end
@@ -1553,13 +1553,8 @@ BG.Init(function()
                             return
                         end
                     end
-                    local a = {
-                        yy = cleanedYY,
-                        time = GetServerTime(),
-                        name = playerName,
-                        colorname = SetClassCFF(playerName)
-                    }
-                    tinsert(BiaoGe.YYdb.LeaderYY, 1, a)
+                    cleanedYY = tonumber(cleanedYY)
+                    Y.SaveLeaderYY(cleanedYY, playerName)
                     return
                 end
             end
@@ -1639,15 +1634,16 @@ BG.Init(function()
                 },
             }
 
-            for yy, v in pairs(BiaoGe.YYdb.LeaderYY) do
+            for _, v in pairs(BiaoGe.YYdb.LeaderYY) do
                 local pingjiaText = ""
                 for k, vv in pairs(BiaoGe.YYdb.all) do
-                    if yy == tonumber(vv.yy) then
+                    if v.yy == tonumber(vv.yy) then
                         pingjiaText = format(BG.STC_dis(L["（曾评价为：|cff%s%s|r）"]), Y.PingjiaColor(vv.pingjia), Y.Pingjia(vv.pingjia))
+                        break
                     end
                 end
                 local a = {
-                    text = yy .. " " .. v.colorname .. pingjiaText,
+                    text = v.yy .. " " .. v.colorname .. pingjiaText,
                     notCheckable = true,
                     func = function()
                         edit:SetText(v.yy)
@@ -1718,14 +1714,16 @@ BG.Init(function()
                 end
             end
             for yy in pairs(BiaoGe.YYdb.LeaderYY) do
-                local same = 0
-                for _, raidName in ipairs(BiaoGe.YYdb.LeaderYY[yy].raidMember) do
-                    if BG.raidRosterName[raidName] then
-                        same = same + 1
+                if BiaoGe.YYdb.LeaderYY[yy].raidMember then
+                    local same = 0
+                    for _, raidName in ipairs(BiaoGe.YYdb.LeaderYY[yy].raidMember) do
+                        if BG.raidRosterName[raidName] then
+                            same = same + 1
+                        end
                     end
-                end
-                if same >= 15 then
-                    return yy
+                    if same >= 15 then
+                        return yy
+                    end
                 end
             end
         end

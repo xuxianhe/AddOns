@@ -207,7 +207,7 @@ function Townsfolk.Initialize()
     -- todo: specialized trainer types (leatherworkers, engineers, etc)
 
     local classSpecificTownsfolk = {}
-    local factionSpecificTownsfolk = {["Horde"] = {}, ["Alliance"] = {}}
+    local factionSpecificTownsfolk = {["Horde"] = {}, ["Alliance"] = {}, ["Neutral"] = {}}
 
     local classTrainers = Townsfolk.GetClassTrainers()
     for class, trainers in pairs(classTrainers) do
@@ -299,7 +299,8 @@ function Townsfolk.PostBoot() -- post DB boot (use queries here)
         ["WARLOCK"] = {5565,16583},
         ["ROGUE"] = (Questie.IsWotlk or Questie.IsCata or Questie.IsMoP) and {2892} -- All poison vendors sell all ranks of poison, so Rank 1 of one poison is enough here
             or {5140,2928,8924,5173,2930,8923},
-        ["DRUID"] = {17034,17026,17035,17021,17038,17036,17037}
+        ["DRUID"] = {17034,17026,17035,17021,17038,17036,17037},
+        ["MONK"] = {},
     }
     reagents = reagents[playerClass]
     if Questie.IsSoD then

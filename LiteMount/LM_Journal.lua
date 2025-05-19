@@ -31,15 +31,28 @@ LM.Journal.__index = LM.Journal
 -- [13] isSteadyFlight = C_MountJournal.GetMountInfoByID(mountID)
 
 --  [1] creatureDisplayInfoID,
---  [2] description,
---  [3] source,
+--  [2] descriptionText,
+--  [3] sourceText,
 --  [4] isSelfMount,
 --  [5] mountTypeID,
---  [6] uiModelSceneID = C_MountJournal.GetMountInfoExtraByID(mountID)
+--  [6] modelSceneID
+--  [7] animID
+--  [8] spellVisualKitID
+--  [9] disablePlayerMountPreview
+
+
+--      = C_MountJournal.GetMountInfoExtraByID(mountID)
 
 function LM.Journal:Get(id)
     local name, spellID, icon, _, _, sourceType, _, _, faction, _, _, _, isSteadyFlight = C_MountJournal.GetMountInfoByID(id)
-    local modelID, descriptionText, sourceText, isSelfMount, mountTypeID, sceneID = C_MountJournal.GetMountInfoExtraByID(id)
+    local creatureDisplayID, descriptionText, sourceText, isSelfMount, mountTypeID, modelSceneID, animID, spellVisualKitID, disablePlayerMountPreview = C_MountJournal.GetMountInfoExtraByID(id)
+
+    if not creatureDisplayID then
+        local allCreatureDisplays = C_MountJournal.GetMountAllCreatureDisplayInfoByID(id)
+        if allCreatureDisplays and allCreatureDisplays[1] then
+            creatureDisplayID = allCreatureDisplays[1].creatureDisplayID
+        end
+    end
 
     if not name then
         LM.Debug("LM.Mount: Failed GetMountInfo for ID = #%d", id)
@@ -48,20 +61,25 @@ function LM.Journal:Get(id)
 
     local m = LM.Mount.new(self)
 
-    m.modelID       = modelID
-    m.sceneID       = sceneID
-    m.name          = name
-    m.spellID       = spellID
-    m.mountID       = id
-    m.icon          = icon
-    m.isSelfMount   = isSelfMount
-    m.mountTypeID   = mountTypeID
-    m.description   = descriptionText
-    m.sourceType    = sourceType
-    m.sourceText    = sourceText
-    m.isSteadyFlight= isSteadyFlight
-    m.needsFaction  = PLAYER_FACTION_GROUP[faction]
-    m.flags         = { }
+    m.mountID                   = id
+    m.name                      = name
+    m.spellID                   = spellID
+    m.icon                      = icon
+    m.sourceType                = sourceType
+    m.needsFaction              = PLAYER_FACTION_GROUP[faction]
+    m.isSteadyFlight            = isSteadyFlight
+
+    m.creatureDisplayID         = creatureDisplayID
+    m.descriptionText           = descriptionText
+    m.sourceText                = sourceText
+    m.isSelfMount               = isSelfMount
+    m.mountTypeID               = mountTypeID
+    m.modelSceneID              = modelSceneID
+    m.animID                    = animID
+    m.spellVisualKitID          = spellVisualKitID
+    m.disablePlayerMountPreview = disablePlayerMountPreview
+
+    m.flags                     = { }
 
     -- LM.Debug("LM.Mount: mount type of "..m.name.." is "..m.mountTypeID)
 
@@ -188,17 +206,20 @@ local ForceSummonByID = {
     [1727] = true,  -- Tarecgosa's Visage
 }
 
+-- Summon (Thalassian) Charger and Summon (Thalassian) Warhorse are busted on
+-- Cata Classic. I believe this is because the Thalassian version and the base
+-- alliance versions share the same spell and Blizzard have fubared something.
+-- Summon (Great) Exarch's Elekk and Summon (Great) Sunwalker Kodo work fine.
+
+if WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC then
+    ForceSummonByID[41] = true  -- Warhorse
+    ForceSummonByID[84] = true  -- Charger
+    ForceSummonByID[149] = true -- Thalassian Charger
+    ForceSummonByID[150] = true -- Thalassian Warhorse
+end
+
 function LM.Journal:GetCastAction(context)
     local forceSummonByID = ForceSummonByID[self.mountID] or false
-
-    -- Summon Charger and Summon Warhorse are busted on Cata Classic, though
-    -- weirdly Summon (Great) Exarch's Elekk and Summon (Great) Sunwalker Kodo
-    -- work fine.
-    if WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC then
-        if self.mountID == 41 or self.mountID == 84 then
-            forceSummonByID = true
-        end
-    end
 
     local summonFunc = function () C_MountJournal.SummonByID(self.mountID) end
 

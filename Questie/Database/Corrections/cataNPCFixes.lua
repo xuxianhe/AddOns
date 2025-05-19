@@ -282,7 +282,7 @@ function CataNpcFixes.Load()
             [npcKeys.spawns] = {[zoneIDs.THE_BARRENS] = {{65.28,56.26},{65.19,54.06},{65.12,53.88},{64.28,54.68},{64.24,55.58},{63.77,54.4},{66.12,52.2},{66.04,52.19},{64.94,52.21},{63.87,55.36},{66.05,52.43},{64.36,54.28},{65.23,54.48},{63.95,53.95},{66.08,52.52},{65,53.19},{65.02,52.77},{63.75,54.38},{64.51,54.48},{66.15,52.31},{64.91,53.95},{64.15,55.48},{65.4,54.7},{65.25,54.28},{64.97,52.63}}},
         },
         [3341] = { -- Gann Stonespire
-            [npcKeys.spawns] = {[zoneIDs.SOUTHERN_BARRENS] = {{45.8,78.8}}},
+            [npcKeys.spawns] = {[zoneIDs.SOUTHERN_BARRENS] = {{49.22,82.38}}},
             [npcKeys.waypoints] = {},
         },
         [3383] = { -- Southsea Cutthroat
@@ -292,7 +292,6 @@ function CataNpcFixes.Load()
             [npcKeys.questStarts] = {851,852,855,4021},
         },
         [3394] = { -- Barak Kodobane
-            [npcKeys.spawns] = {[zoneIDs.THE_BARRENS] = {{51.0,78.8}}},
             [npcKeys.waypoints] = {},
         },
         [3395] = { -- Verog the Dervish
@@ -305,6 +304,9 @@ function CataNpcFixes.Load()
         [3412] = { -- Nogg
             [npcKeys.spawns] = {[zoneIDs.ORGRIMMAR] = {{56.28,56.36}}},
             [npcKeys.waypoints] = {[zoneIDs.ORGRIMMAR] = {{{56.28,56.36},{56.74,57.02}}}},
+        },
+        [3438] = { -- Kreenig Snarlsnout
+            [npcKeys.waypoints] = {},
         },
         [3467] = { -- Baron Longshore
             [npcKeys.spawns] = {[zoneIDs.THE_BARRENS]={{69.91,85.2}}},
@@ -957,6 +959,9 @@ function CataNpcFixes.Load()
         [11501] = { -- King Gordok
             [npcKeys.spawns] = {[zoneIDs.DIRE_MAUL_GORDOK_COMMONS] = {{31.83,25.93},{-1,-1}}},
         },
+        [11502] = { -- Ragnaros
+            [npcKeys.spawns] = {[zoneIDs.MOLTEN_CORE] = {{55.36,55.02},{-1,-1}}},
+        },
         [11517] = { -- Oggleflint
             [npcKeys.spawns] = {[zoneIDs.RAGEFIRE_CHASM] = {{70.1,64.2},{-1,-1}}},
         },
@@ -1010,6 +1015,13 @@ function CataNpcFixes.Load()
         [11937] = { -- Demon Portal Guardian
             [npcKeys.spawns] = {[zoneIDs.DESOLACE] = {{53.14,79.95},{53.93,79.2},{50.91,81.31},{52.65,81.86},{53.13,84.06},{55.07,79.4},{55.28,71.9},{50.65,70.78},{50.21,74.28},{49.89,77.3}}},
             [npcKeys.zoneID] = zoneIDs.DESOLACE,
+        },
+        [12056] = { -- Baron Geddon
+            [npcKeys.spawns] = {[zoneIDs.MOLTEN_CORE] = {{66.97,65.83},{-1,-1}}},
+            [npcKeys.waypoints] = {[zoneIDs.MOLTEN_CORE] = {{{57.14,73.74},{53.94,75.85},{52.15,75.77},{51.39,78.21},{51.83,81.94},{53.51,83.94},{54.88,82.65},{55.35,79.23},{56.38,74.98},{57.14,73.74},{64.53,67.01},{66.14,66.16},{66.97,65.83}}}},
+        },
+        [12057] = { -- Garr
+            [npcKeys.spawns] = {[zoneIDs.MOLTEN_CORE] = {{29.58,73.08},{-1,-1}}},
         },
         [12201] = { -- Princess Theradras
             [npcKeys.spawns] = {[zoneIDs.MARAUDON_ZAETARS_GRAVE] = {{24.34,78.34}},[zoneIDs.MARAUDON] = {{-1,-1}}},
@@ -1489,6 +1501,9 @@ function CataNpcFixes.Load()
         [16293] = { -- Apprentice Shatharia
             [npcKeys.spawns] = {[zoneIDs.GHOSTLANDS] = {{31.43,48.33}}},
         },
+        [16294] = { -- Aldaron the Reckless
+            [npcKeys.spawns] = {[zoneIDs.EVERSONG_WOODS] = {{32.8,69.4}}},
+        },
         [16301] = { -- Risen Hungerer
             [npcKeys.spawns] = {[zoneIDs.GHOSTLANDS] = {{39.2,33.59},{38.72,35.65},{39.36,35.66},{39.62,32.94},{38.77,30.07},{39.52,29.33},{38.23,44.76},{39.37,42.94},{38.29,42.51},{38.27,38.52},{38.03,38.68},{39.56,38.01},{39.77,32.29},{40.31,34.52},{39.66,30.84},{40.38,30.02},{38.57,30.88},{39.4,32.52},{38.94,41.11},{38.45,40.98},{37.34,47.81}}},
         },
@@ -1925,6 +1940,9 @@ function CataNpcFixes.Load()
         },
         [19598] = { -- Mutate Fleshlasher
             [npcKeys.spawns] = {[zoneIDs.THE_BOTANICA] = {{19.88,78.61},{18.71,80.56},{15.68,78.45},{16.59,77.74},{18.02,75.63},{18.42,74.65},{-1,-1}}},
+        },
+        [19622] = { -- Kael'thas Sunstrider
+            [npcKeys.spawns] = {[zoneIDs.TEMPEST_KEEP] = {{50.04,14.67},{-1,-1}}},
         },
         [19698] = { -- Greatfather Aldrimus
             [npcKeys.spawns] = {[zoneIDs.TEROKKAR_FOREST] = {{35.08,65.15}}},
@@ -2593,6 +2611,14 @@ function CataNpcFixes.Load()
         [35839] = { -- Sergeant Cleese
             [npcKeys.spawns] = {[zoneIDs.GILNEAS_CITY] = {{67.55,64.26}}},
         },
+        [35867] = { -- Kalec
+            [npcKeys.spawns] = {
+                [zoneIDs.AZSHARA] = {
+                    {55.49,52.13},
+                    {66.55,20.36,phases.KALEC_TERMINUS},
+                },
+            },
+        },
         [35875] = { -- Aggra
             [npcKeys.spawns] = {
                 [zoneIDs.THE_LOST_ISLES] = {
@@ -2680,6 +2706,9 @@ function CataNpcFixes.Load()
             [npcKeys.questStarts] = {24459,14438,14491},
             [npcKeys.questEnds] = {24215,14438,14491},
         },
+        [36676] = { -- Azuregos
+            [npcKeys.spawns] = {[zoneIDs.AZSHARA] = {{67.07,20.57}}},
+        },
         [36682] = { -- The Hammer
             [npcKeys.spawns] = {[zoneIDs.THE_LOST_ISLES] = {{41.93,65.96}}},
             [npcKeys.waypoints] = {[zoneIDs.THE_LOST_ISLES] = {{{41.93,65.96},{41.47,66.06},{41.54,66.09},{40.64,66.37}}}},
@@ -2725,10 +2754,14 @@ function CataNpcFixes.Load()
             [npcKeys.spawns] = {[zoneIDs.DUN_MOROGH] = {{35.82,64.59}}},
         },
         [37165] = { -- Henry Zykes
-            [npcKeys.waypoints] = {[4709] = {{{42.57,22.30},{41.87,22.25},{41.64,21.56},{41.59,21.28},{41.41,20.36},{41.33,19.33},{40.63,18.26},{40.52,17.90},{40.43,17.31},{40.58,16.28},{40.62,15.49},{40.67,15.07}}}},
+            [npcKeys.spawns] = {[zoneIDs.SOUTHERN_BARRENS] = {{38.88,13.35}}},
+            [npcKeys.waypoints] = {[zoneIDs.SOUTHERN_BARRENS] = {{{40.93,15.55},{40.77,15.53},{40.57,15.45},{40.44,15.38},{40.26,15.25},{40.15,15.14},{40.00,14.95},{39.93,14.81},{39.83,14.68},{39.60,14.61},{39.44,14.56},{39.27,14.48},{39.13,14.41},{38.99,14.31},{38.88,14.14},{38.80,13.97},{38.72,13.71},{38.68,13.57},{38.68,13.55},{38.69,13.32},{38.83,13.62},{38.82,14.02},{38.89,14.19},{39.04,14.34},{39.19,14.30},{39.37,14.22},{39.52,14.24},{39.64,14.29},{39.76,14.37},{39.90,14.51},{40.08,14.71},{40.13,14.90},{40.19,15.03},{40.39,15.25},{40.55,15.38},{40.61,15.40},{40.68,15.38},{40.88,15.31},{40.79,15.51},{40.69,15.75},{40.67,16.20},{40.68,16.36},{40.72,16.64},{40.78,16.95},{40.87,17.17},{40.97,17.41},{41.02,17.57},{41.04,17.62},{41.07,17.79},{41.07,17.91},{41.22,18.10},{41.38,18.34},{41.47,18.46},{41.59,18.63},{41.71,18.80},{41.83,18.99},{41.89,19.22},{41.86,19.46},{41.88,19.71},{41.97,19.92},{42.09,20.10},{42.15,20.17},{42.16,20.19},{42.31,20.33},{42.16,20.48},{42.00,20.82},{41.99,21.08},{42.00,21.20},{42.09,21.57},{42.15,21.70},{42.26,21.95},{42.32,22.12},{42.41,22.45},{42.44,22.58},{42.49,22.96},{42.51,23.17},{42.56,23.44},{42.57,23.62},{42.57,23.92},{42.56,24.18},{42.53,24.40},{42.52,24.46},{42.44,24.89},{42.41,25.08},{42.40,25.26},{42.39,25.35},{42.38,25.57},{42.57,25.68},{42.71,25.84},{42.84,26.04},{42.94,26.33},{42.99,26.48},{43.02,26.61},{43.10,26.97},{43.18,27.18},{43.24,27.27},{43.38,27.48},{43.23,27.23},{43.04,26.94},{42.95,26.80},{42.87,26.58},{42.82,26.36},{42.77,26.03},{42.78,25.80},{42.80,25.61},{42.80,25.27},{42.70,24.97},{42.62,24.87},{42.52,24.72},{42.42,24.48},{42.42,24.34},{42.42,24.00},{42.42,23.82},{42.41,23.41},{42.40,23.17},{42.40,22.89},{42.42,22.66},{42.51,22.41},{42.61,22.31},{42.42,22.10},{42.34,21.98},{42.26,21.81},{42.17,21.54},{42.09,21.27},{42.07,21.21},{41.95,20.77},{41.90,20.59},{41.83,20.33},{41.78,20.11},{41.76,19.98},{41.70,19.74},{41.64,19.51},{41.52,19.16},{41.44,18.93},{41.37,18.80},{41.22,18.59},{41.07,18.35},{41.04,18.23},{40.94,18.00},{40.79,17.83},{40.77,17.57},{40.76,17.34},{40.74,17.08},{40.75,16.88},{40.79,16.61},{40.86,16.37},{40.95,16.11},{40.97,16.05},{41.02,15.84},{41.06,15.53},{41.14,15.34},{40.93,15.55}}}},
         },
         [37172] = { -- Detective Snap Snagglebolt
             [npcKeys.spawns] = {[zoneIDs.ORGRIMMAR] = {{50.8,75.24}}},
+        },
+        [37487] = { -- Taurajo Refugee
+            [npcKeys.spawns] = {[zoneIDs.SOUTHERN_BARRENS] = {{38.59,33.2},{39.07,33.27},{38.7,33.65},{41.54,37.33},{42.04,36.65},{41.97,37.14},{42.12,37.62},{42.02,37.77},{41.11,36.21},{39.51,32.62},{39.16,34.77}}},
         },
         [37513] = { -- Sabersnout
             [npcKeys.spawns] = {[zoneIDs.SOUTHERN_BARRENS] = {{42.99,41.6}}},
@@ -2763,6 +2796,9 @@ function CataNpcFixes.Load()
                     {70.88,39.84,phases.GILNEAS_CHAPTER_10},
                 },
             },
+        },
+        [37847] = { -- Mankrik
+            [npcKeys.spawns] = {[zoneIDs.SOUTHERN_BARRENS] = {{44.51,88.09}}},
         },
         [37921] = { -- Orcish War Machine
             [npcKeys.spawns] = {[zoneIDs.GILNEAS] = {{32.19,42.12},{28.55,39.05},{29.19,40.94},{30.57,32.27},{26.57,31.45},{26.37,32.83},{27.07,35.13},{30.9,20.19},{29.26,21.2},{27.79,25.67},{27.67,27.29}}},
@@ -3489,20 +3525,33 @@ function CataNpcFixes.Load()
             [npcKeys.spawns] = {[zoneIDs.SHIMMERING_EXPANSE] = {{33.11,76.77}}},
             [npcKeys.zoneID] = zoneIDs.SHIMMERING_EXPANSE,
         },
+        [42039] = { -- High Chieftain Cliffwalker
+            [npcKeys.spawns] = {
+                [zoneIDs.STONETALON_MOUNTAINS] = {
+                    {45.04,32.76,phases.STONETALON_CLIFFWALKER_JUSTICE},
+                    {45.61,34.21,phases.STONETALON_CLIFFWALKER_RAMP},
+                    {45.53,33.71,phases.STONETALON_CLIFFWALKER_GARROSH},
+                },
+            },
+        },
         [42074] = { -- Fathom-Stalker Azjentus
             [npcKeys.spawns] = {[zoneIDs.SHIMMERING_EXPANSE] = {{46.45,79.27}}},
         },
         [42076] = { -- Lady Naz'jar
-            [npcKeys.spawns] = {[zoneIDs.SHIMMERING_EXPANSE] = {
-                {29,78.45},
-                {46.38,79.03,phases.VASHJIR_LADY_NAZ_JAR_AT_RIDGE},
-            }},
+            [npcKeys.spawns] = {
+                [zoneIDs.SHIMMERING_EXPANSE] = {
+                    {29,78.45},
+                    {46.38,79.03,phases.VASHJIR_LADY_NAZ_JAR_AT_RIDGE},
+                },
+            },
         },
         [42077] = { -- Lady Naz'jar
-            [npcKeys.spawns] = {[zoneIDs.SHIMMERING_EXPANSE] = {
-                {33.13,75.88,phases.VASHJIR_LADY_NAZ_JAR_AT_TEMPLE},
-                {42.51,78.62,phases.VASHJIR_LADY_NAZ_JAR_AT_BRIDGE},
-            }},
+            [npcKeys.spawns] = {
+                [zoneIDs.SHIMMERING_EXPANSE] = {
+                    {33.13,75.88,phases.VASHJIR_LADY_NAZ_JAR_AT_TEMPLE},
+                    {42.51,78.62,phases.VASHJIR_LADY_NAZ_JAR_AT_BRIDGE},
+                },
+            },
         },
         [42135] = { -- Defend the Bridge Quad Credit
             [npcKeys.spawns] = {[zoneIDs.SHIMMERING_EXPANSE] = {{38.49,78.6}}},

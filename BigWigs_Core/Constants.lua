@@ -161,6 +161,7 @@ local customBossOptions = { -- Adding core generic toggles
 	warmup = {L.warmup, L.warmup_desc, "Interface\\AddOns\\BigWigs\\Media\\Icons\\Menus\\Warmup"},
 	adds = {L.adds, L.adds_desc, false},
 	health = {L.health, L.health_desc, false},
+	energy = {L.energy, L.energy_desc, false},
 }
 
 local function getIcon(icon, module, option)
@@ -196,7 +197,7 @@ function BigWigs:GetBossOptionDetails(module, option)
 		optionType = type(option)
 	end
 
-	local alternativeName = module.altNames and module.altNames[option]
+	local optionNotes = module.notes and module.notes[option]
 	local moduleLocale = module:GetLocale(true)
 
 	if optionType == "string" then
@@ -231,7 +232,7 @@ function BigWigs:GetBossOptionDetails(module, option)
 
 		local icon = getIcon(moduleLocale[option .. "_icon"], module, option)
 
-		return option, title, description, icon, alternativeName
+		return option, title, description, icon, optionNotes
 	elseif optionType == "number" then
 		if option > 0 then
 			local spellName = GetSpellName(option)
@@ -263,7 +264,7 @@ function BigWigs:GetBossOptionDetails(module, option)
 				icon = getIcon(iconReplacement, module, option)
 			end
 			local roleDesc = getRoleStrings(module, option)
-			return option, spellName, roleDesc..desc, icon, alternativeName
+			return option, spellName, roleDesc..desc, icon, optionNotes
 		else
 			-- This is an EncounterJournal ID
 			local tbl = C_EncounterJournal_GetSectionInfo(-option)
@@ -277,7 +278,7 @@ function BigWigs:GetBossOptionDetails(module, option)
 			end
 
 			local roleDesc = getRoleStrings(module, option)
-			return option, title, roleDesc..description, abilityIcon or false, alternativeName
+			return option, title, roleDesc..description, abilityIcon or false, optionNotes
 		end
 	end
 end

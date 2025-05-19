@@ -814,7 +814,7 @@ function BG.CreateGuanZhuButton(bt, _type)
         GameTooltip:ClearLines()
         if _type == "biaoge" then
             GameTooltip:AddLine(BG.STC_b1(L["关注中，团长拍卖此装备会提醒"]))
-            GameTooltip:AddLine(AddTexture("RIGHT")..L["取消关注"], 1, 0.82, 0)
+            GameTooltip:AddLine(AddTexture("RIGHT") .. L["取消关注"], 1, 0.82, 0)
         elseif _type == "history" then
             GameTooltip:AddLine(BG.STC_b1(L["关注中"]))
         end
@@ -868,7 +868,7 @@ function BG.CreateQiankuanButton(bt, _type)
         GameTooltip:ClearLines()
         if _type == "biaoge" then
             GameTooltip:AddLine(L["欠款："] .. BiaoGe[FB]["boss" .. BossNum(FB, b, t)]["qiankuan" .. i], 1, 0, 0)
-            GameTooltip:AddLine(AddTexture("RIGHT")..L["清除欠款"], 1, 0.82, 0)
+            GameTooltip:AddLine(AddTexture("RIGHT") .. L["清除欠款"], 1, 0.82, 0)
         elseif _type == "history" then
             GameTooltip:AddLine(L["欠款："] .. f.qiankuan, 1, 0, 0)
         end
@@ -2364,3 +2364,83 @@ function BG.SetEditBaseClass(edit)
     end)
 end
 
+function BG.PairFBItem(func, bossNum)
+    local FB = BG.FB1
+    for b = bossNum or 1, bossNum or Maxb[FB], 1 do
+        for i = 1, BG.GetMaxi(FB, b) do
+            local item = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
+            local buyer = BG.Frame[FB]["boss" .. b]["maijia" .. i]
+            local money = BG.Frame[FB]["boss" .. b]["jine" .. i]
+            if func(item, buyer, money, b, i) then return end
+        end
+    end
+end
+
+function BG.CreateExportFrame(title, text)
+    if BG.exportFrame then
+        BG.exportFrame:SetShown(not BG.exportFrame:IsVisible())
+    else
+        local f = CreateFrame("Frame", nil, BG.MainFrame, "BackdropTemplate")
+        f:SetBackdrop({
+            bgFile = "Interface/ChatFrame/ChatFrameBackground",
+            edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+            edgeSize = 1,
+        })
+        f:SetBackdropColor(0, 0, 0, 0.9)
+        f:SetBackdropBorderColor(1, 1, 1, BG.borderAlpha)
+        f:SetPoint("CENTER")
+        f:SetSize(350, 450)
+        f:EnableMouse(true)
+        f:SetMovable(true)
+        f:SetFrameStrata("HIGH")
+        f:SetScript("OnHide", function(self)
+            self:Hide()
+        end)
+        f:SetScript("OnMouseUp", function(self)
+            self:StopMovingOrSizing()
+        end)
+        f:SetScript("OnMouseDown", function(self)
+            self:StartMoving()
+        end)
+        BG.exportFrame = f
+
+        f.CloseButton = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+        f.CloseButton:SetPoint("TOPRIGHT", f, "TOPRIGHT", 5, 5)
+
+        local l = f:CreateLine()
+        l:SetColorTexture(1, 1, 1, BG.borderAlpha)
+        l:SetStartPoint("TOPLEFT", 1, -21)
+        l:SetEndPoint("TOPRIGHT", -1, -21)
+        l:SetThickness(1)
+
+        f.titleText = f:CreateFontString()
+        f.titleText:SetPoint("TOP", 0, -2)
+        f.titleText:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+
+        local scroll = CreateFrame("ScrollFrame", nil, f, "UIPanelScrollFrameTemplate") -- 滚动
+        scroll:SetWidth(f:GetWidth() - 30)
+        scroll:SetHeight(f:GetHeight() - 29)
+        scroll:SetPoint("TOPLEFT", f, "TOPLEFT", 5, -25)
+        scroll.ScrollBar.scrollStep = BG.scrollStep
+        f.scroll = scroll
+        BG.CreateSrollBarBackdrop(scroll.ScrollBar)
+
+        local edit = CreateFrame("EditBox", nil, f) -- 子框架
+        edit:SetFontObject(GameFontNormal)
+        edit:SetWidth(scroll:GetWidth())
+        edit:SetHeight(scroll:GetHeight())
+        edit:SetMultiLine(true)
+        scroll:SetScrollChild(edit)
+        f.edit = edit
+        edit:SetScript("OnEscapePressed", function(self)
+            f:Hide()
+        end)
+    end
+    BG.exportFrame.titleText:SetText(title)
+    BG.exportFrame.edit:SetText(text)
+    BG.exportFrame.edit:SetFocus()
+    BG.exportFrame.edit:HighlightText()
+    BG.After(0, function()
+        BG.SetScrollBottom(BG.exportFrame.scroll, BG.exportFrame.edit)
+    end)
+end

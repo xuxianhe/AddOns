@@ -92,7 +92,7 @@ do
 end
 -- 初始化
 do
-    BG.Maxi                                    = 30
+    BG.Maxi                                    = 40
     BG.FBWidth                                 = {}
     BG.FBHeight                                = {}
     BG.BossNumtbl                              = {}
@@ -215,6 +215,8 @@ do
                 { 4, 4, 4, 4, 4, 5, 5, 5, 5, 10, 8, 5, })
             AddDB("BWL", mainFrameWidth, 810, 3, 10, { 0, 5, 9 }, nil, difTbl3,
                 { 5, 5, 5, 5, 5, 5, 5, 6, 9, 12, })
+            AddDB("TAQ", mainFrameWidth, 810, 3, 11, { 0, 6, 10 }, nil, difTbl3,
+                { 4, 4, 4, 4, 4, 4, 4, 4, 5, 20, 5, }, 14)
         elseif BG.IsCTM then
             AddDB("BOT", 1715, 930, 4, 15, { 0, 5, 10, 14 }, { "N", "H" }, nil,
                 { 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 8, 24, 4, }, 12)
@@ -328,6 +330,7 @@ do
 
             -- TBC
             do
+                AddDB("TAQ", 531, "", nil, nil, nil, nil, L["安其拉"])
                 AddDB("BWL", 469, "", nil, nil, nil, nil, L["黑翼之巢"])
                 AddDB("SSC", 548, "", nil, nil, nil, nil, L["毒蛇风暴"])
                 AddDB("HS", 534, "", nil, nil, nil, nil, L["海加尔山"])
@@ -389,7 +392,7 @@ do
             FB = FB or BG.FB1
             if not isScrollFrame then
                 if b == Maxb[FB] then
-                    return 30
+                    return BG.Maxi
                 elseif b == Maxb[FB] + 1 then
                     return 20
                 elseif b == Maxb[FB] + 2 then

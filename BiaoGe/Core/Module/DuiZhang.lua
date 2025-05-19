@@ -468,6 +468,17 @@ function BG.DuiZhangUI()
             GameTooltip:Hide()
         end)
         bt:SetScript("OnClick", function(self)
+            BG.PlaySound(1)
+            local text = ""
+            local num = BG.lastduizhangNum
+            for name, v in pairs(BiaoGe.duizhang[num].member) do
+                local color = "ffFFFFFF"
+                if v.class then
+                    color = select(4, GetClassColor(v.class))
+                end
+                text = text .. "|c" .. color .. name.."|r\n"
+            end
+            BG.CreateExportFrame(L["导出名单"], text)
         end)
         function bt:ShowRaidMember()
             if not BG.DuiZhangMainFrame.raidMemberFrame then
@@ -478,13 +489,19 @@ function BG.DuiZhangUI()
                     edgeSize = 1,
                 })
                 mainFrame:SetBackdropColor(0, 0, 0, .9)
-                mainFrame:SetBackdropBorderColor(1, 1, 1, .8)
-                mainFrame:SetSize(405, 275)
+                mainFrame:SetBackdropBorderColor(1, 1, 1, .5)
+                mainFrame:SetSize(405, 290)
                 mainFrame:SetPoint("BOTTOM", self, "TOP", 0, 5)
                 mainFrame:SetFrameLevel(200)
                 mainFrame:Hide()
                 mainFrame.buttons = {}
                 BG.DuiZhangMainFrame.raidMemberFrame = mainFrame
+
+                local t = mainFrame:CreateFontString()
+                t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+                t:SetPoint("BOTTOMLEFT",  15, 5)
+                t:SetTextColor(1, 0.82, 0)
+                t:SetText(AddTexture("LEFT").. L["导出名单"])
 
                 local function CreateRaidButton(i)
                     local f = CreateFrame("Frame", nil, mainFrame, "BackdropTemplate")

@@ -24,7 +24,7 @@ local realmID = GetRealmID()
 local player = BG.playerName
 local realmName = GetRealmName()
 
---最后更新时间：25/5/9 14:30
+--最后更新时间：25/5/17 11:00
 local AFDtbl_360 = {
     -- 1200
     "wlk怀旧-范沃森-Selendis",
@@ -51,6 +51,11 @@ local AFDtbl_180 = {
     -- "",
     -- "",
     -- "",
+    "维克洛尔-SilverMoon-桃太浪",
+    "匕首岭-丹妮卡丽熙",
+    "祈福-夜色丨骑",
+    "巴罗夫-亲近自然",
+    "铁血I-抱抱熊丷",
     "灰烬使者-XenophobicOrigin-魂曲",
     "过期",
     "汪涛",
@@ -87,7 +92,7 @@ local AFDtbl_90 = {
     -- "",
     -- "",
     -- "",
-    -- "",
+    "匕首岭-我就是硬",
     "白烏鴉",
     "大王别介",
     "forest1818",
@@ -112,6 +117,57 @@ local tbl = {
     -- "",
     -- "",
     -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    -- "",
+    "奥罗-特兰克斯团",
+    "无畏-恶魔术之神-多拂朗明哥",
+    "祝福加油",
+    "灰烬使者-小熊布袋",
+    "QQ小经典",
+    "萨弗拉斯-破晓-小蜜柚",
+    "匕首岭-星空下的守夜人-風情一刀",
+    "匕首岭-TypeMoon-小米布丁",
+    "红玉圣殿-泰山之巅-丢丢",
+    "范克瑞斯-彩云之南-个人设置",
+    "比格沃斯-波比波比",
+    "维希度斯-议会-赛雷",
+    "怒炉-小天",
+    "匕首岭-天泫-踏雪凌風",
+    "银色北伐军-高深-Pichu",
+    "火锤-协和医院工会",
+    "莫格莱尼-利刃-死亡灬印记",
+    "哈喽哈喽小农民需要表格唯爱屁",
+    "范克瑞斯-钻石武力公会",
+    "红玉圣殿-彩虹小小糖",
+    "火锤-荭手-刘诗诗丶",
+    "碧玉矿洞-虚无妹妹的风俗小铺-虚无丶月",
+    "安娜kt",
+    "莫格莱尼-承筱诺",
+    "龙之召唤-诺诺吖",
+    "铁血-诺诺吖",
+    "龙牙-犍为斌哥哥",
+    "灰烬使者-壹玖叁公会-海天一线",
+    "维希度斯-盛世鼎红-爱有来生",
+    "比格沃斯-大崬",
+    "吉安娜-边总",
     "奥罗-众生之巅-王之守护",
     "melody",
     "萨弗拉斯-深田姥师",
@@ -247,11 +303,9 @@ local tbl = {
     "呆丶呆",
     "风神之怒",
     "火舞龙腾",
-    "维克洛尔-SilverMoon-桃太浪",
-
 }
 for _, name in ipairs(tbl) do
-    tinsert(AFDtbl_30, name)
+    tinsert(AFDtbl_30, tostring(name:gsub(" ", "")))
 end
 
 do
@@ -468,7 +522,6 @@ do
         "老周不想取名",
         "埃提耶什-<夜宴>-正夏",
         "单脚跳",
-        "铁血I-诺诺吖",
         "法尔班克斯-<骚年远征军>-雪见月十九",
         "水晶之牙-Equipo Octavo",
         "维系度斯-你看我牛牛吗",
@@ -484,7 +537,7 @@ do
         L["以及多个没有留名的爱发电用户"],
     }
     for _, name in ipairs(tbl) do
-        tinsert(AFDtbl_30, name)
+        tinsert(AFDtbl_30, tostring(name:gsub(" ", "")))
     end
 end
 
@@ -518,11 +571,11 @@ BG.Init(function()
         bt:SetScript("OnMouseUp", function(self, button)
             if button == "LeftButton" then
                 if IsControlKeyDown() then
-                    ns.InterfaceOptionsFrame_OpenToCategory("|cff00BFFFBiaoGe|r")
-                    BG.MainFrame:Hide()
+                    BG.SetFBCD(nil, nil, true)
                 end
             elseif button == "RightButton" then
-                BG.SetFBCD(nil, nil, true)
+                ns.InterfaceOptionsFrame_OpenToCategory("|cff00BFFFBiaoGe|r")
+                BG.MainFrame:Hide()
             end
             BG.PlaySound(1)
         end)

@@ -26,6 +26,7 @@ local heroes = {
 	DVa = "D.Va",
 	Doomfist = "Doomfist",
 	Echo = "Echo",
+	Freja = "Freja",
 	Genji = "Genji",
 	Hanzo = "Hanzo",
 	Hazard = "Hazard",

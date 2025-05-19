@@ -17,16 +17,18 @@ local plugin = ldb:NewDataObject(AddonName, { text = AddonName, type = "data sou
 function plugin:OnClick(button) --function plugin.OnClick(self, button)
     if button == "LeftButton" then
         if IsControlKeyDown() then
-            if SettingsPanel:IsVisible() then
-                HideUIPanel(SettingsPanel)
-            else
-                ns.InterfaceOptionsFrame_OpenToCategory("|cff00BFFFBiaoGe|r")
-                BG.MainFrame:Hide()
-            end
+            BG.SetFBCD(nil, nil, true)
         else
             BG.MainFrame:SetShown(not BG.MainFrame:IsVisible())
         end
     elseif button == "RightButton" then
+        if SettingsPanel:IsVisible() then
+            HideUIPanel(SettingsPanel)
+        else
+            ns.InterfaceOptionsFrame_OpenToCategory("|cff00BFFFBiaoGe|r")
+            BG.MainFrame:Hide()
+        end
+    elseif button == "MiddleButton" then
         BG.SetFBCD(nil, nil, true)
     end
     BG.PlaySound(1)

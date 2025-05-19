@@ -1641,6 +1641,20 @@ BG.Init(function()
         end
         h = h + 30
 
+        -- 鼠标提示对方的欠款和罚款
+        do
+            local name = "mouseFK"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+
+            local ontext = {
+                L["鼠标提示对方的欠款和罚款"],
+                L["鼠标悬浮在一个玩家时，显示他的欠款和罚款。"],
+            }
+            local f = O.CreateCheckButton(name, AddTexture("QUEST")..L["鼠标提示对方的欠款和罚款"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+        end
+        h = h + 30
 
         -- 小地图图标
         do
@@ -1665,6 +1679,21 @@ BG.Init(function()
                     end
                 end
             end)
+        end
+        h = h + 30
+
+        -- 插件过期提醒
+        do
+            local name = "addonsOutTime"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+           
+            local ontext = {
+                L["插件过期提醒"],
+                L["当插件有可用更新时，红字提醒。"],
+            }
+            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["插件过期提醒"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
         end
     end
 

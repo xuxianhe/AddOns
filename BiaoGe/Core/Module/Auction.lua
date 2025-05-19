@@ -260,7 +260,7 @@ BG.Init(function()
         end
     end
 
-    ------------------团长开始拍卖UI------------------
+    -- 团长开始拍卖UI
     do
         BiaoGe.Auction = BiaoGe.Auction or {}
         if BG.IsVanilla then
@@ -769,7 +769,7 @@ BG.Init(function()
             end)
         end
     end
-    ------------------插件版本------------------
+    -- 插件版本
     do
         BG.guildBiaoGeVersion = {}
         BG.guildClass = {}
@@ -960,7 +960,7 @@ BG.Init(function()
             BG.SendSystemMessage(L["请你删除aaa插件，该插件会破坏系统的通讯功能，导致其他插件功能失效。"])
         end)
     end
-    ------------------给拍卖WA设置关注和心愿------------------
+    -- 给拍卖WA设置关注和心愿
     function BG.HookCreateAuction(f)
         -- 关注
         if not f.itemFrame2.guanzhu then
@@ -1071,7 +1071,7 @@ BG.Init(function()
         CheckIgnore()
     end
 
-    ------------------拍卖WA字符串------------------
+    -- 拍卖WA字符串
     local wa
     -- WA字符串
     wa = [[

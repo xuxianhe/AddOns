@@ -54,12 +54,14 @@ function BG.RoleOverviewUI()
             }
         elseif BG.IsWLK then
             BiaoGe.FBCDchoice = {
+                ["25ICC"] = 1,
+                ["10ICC"] = 1,
                 ["25TOC"] = 1,
                 ["10TOC"] = 1,
-                ["25OL"] = 1,
-                ["10OL"] = 1,
-                ["25ULD"] = 1,
-                ["10ULD"] = 1,
+                -- ["25OL"] = 1,
+                -- ["10OL"] = 1,
+                -- ["25ULD"] = 1,
+                -- ["10ULD"] = 1,
                 -- ["25NAXX"] = 1,
                 -- ["10NAXX"] = 1,
                 -- ["25EOE"] = 1,
@@ -100,12 +102,12 @@ function BG.RoleOverviewUI()
             BiaoGe.MONEYchoice = {
                 -- [396] = 1,
                 -- [395] = 1,
-                -- [341] = 1,
+                [341] = 1,
                 [301] = 1,
                 [221] = 1,
                 [102] = 1,
                 [101] = 1,
-                -- [2711] = 1, -- 天灾石
+                [2711] = 1, -- 天灾石
                 [2589] = 1, -- 赛德精华
                 ["money"] = 1,
             }
@@ -134,11 +136,13 @@ function BG.RoleOverviewUI()
                 BiaoGe.MONEYchoice[226404] = 1
             end)
         elseif BG.IsWLK then
-            BG.Once("FBCDchoice", 250116, function()
-                BiaoGe.FBCDchoice["25TOC"] = 1
-                BiaoGe.FBCDchoice["10TOC"] = 1
-                BiaoGe.FBCDchoice["25OL"] = 1
-                BiaoGe.FBCDchoice["10OL"] = 1
+            BG.Once("FBCDchoice", 250512, function()
+                BiaoGe.FBCDchoice["25ICC"] = 1
+                BiaoGe.FBCDchoice["10ICC"] = 1
+                BiaoGe.FBCDchoice["25OL"] = nil
+                BiaoGe.FBCDchoice["10OL"] = nil
+                BiaoGe.FBCDchoice["25ULD"] = nil
+                BiaoGe.FBCDchoice["10ULD"] = nil
                 BiaoGe.FBCDchoice["25NAXX"] = nil
                 BiaoGe.FBCDchoice["10NAXX"] = nil
                 BiaoGe.FBCDchoice["25EOE"] = nil
@@ -146,8 +150,10 @@ function BG.RoleOverviewUI()
                 BiaoGe.FBCDchoice["25OS"] = nil
                 BiaoGe.FBCDchoice["10OS"] = nil
             end)
-            BG.Once("MONEYchoice", 250116, function()
+            BG.Once("MONEYchoice", 250512, function()
+                BiaoGe.MONEYchoice[341] = 1
                 BiaoGe.MONEYchoice[301] = 1
+                BiaoGe.MONEYchoice[2711] = 1
                 BiaoGe.MONEYchoice[2589] = 1
             end)
         elseif BG.IsCTM then
@@ -367,6 +373,41 @@ function BG.RoleOverviewUI()
         end
         if BiaoGe.options.roleOverviewDefaultShow == "all" and not isShiftKeyDown then
             return true
+        end
+    end
+    -- 检查子账号
+    local function CheckSameName(frame, realmID, player)
+        if BiaoGeAccounts and BiaoGeAccounts.accountName and BGV and BGV.ShowEquipFrame then
+            BG.After(0, function()
+                local tbl = {}
+                for accountName in pairs(BiaoGeAccounts.accountName) do
+                    for _realmID in pairs(BiaoGeAccounts.accountName[accountName]) do
+                        if realmID == _realmID then
+                            for _player in pairs(BiaoGeAccounts.accountName[accountName][realmID]) do
+                                if player == _player then
+                                    tinsert(tbl, accountName)
+                                end
+                            end
+                        end
+                    end
+                end
+                if #tbl > 1 then
+                    local t = frame:CreateFontString()
+                    t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+                    t:SetPoint("RIGHT", frame, "LEFT", -15, 0)
+                    t:SetTextColor(1, 0, 0)
+                    t:SetText(L["角色数据错误"])
+
+                    if not BG.FBCDFrame.errText then
+                        local t = frame:CreateFontString()
+                        t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+                        t:SetPoint("BOTTOM", BG.FBCDFrame, "TOP", 0, 0)
+                        t:SetTextColor(1, 0, 0)
+                        t:SetText(L["你部分角色存在错误，请你/BGR，然后鼠标悬停在有错误的角色上，会显示解决办法。"])
+                        t:SetWidth(BG.FBCDFrame:GetWidth())
+                    end
+                end
+            end)
         end
     end
     function BG.SetFBCD(self, position, click, refresh)
@@ -710,6 +751,7 @@ function BG.RoleOverviewUI()
                 bt:SetFontString(t)
                 bt:SetSize(bt.width, 20)
                 SetEquipFrameFuc(bt, v.isAccounts, realmID, player, colorplayer, v.level, v.class, v.iLevel)
+                CheckSameName(bt, realmID, player)
 
                 -- 副本CD
                 for _, cd in pairs(v.tbl) do
@@ -857,9 +899,9 @@ function BG.RoleOverviewUI()
                 end
                 local tipsText
                 if BiaoGe.options.roleOverviewDefaultShow == "one" then
-                    tipsText = format(L["|cff808080（%s固定显示，长按SHIFT显示全服务器角色%%s）|r"], AddTexture("RIGHT"))
+                    tipsText = L["|cff808080（鼠标中键固定显示，长按SHIFT显示全服务器角色%s）|r"]
                 else
-                    tipsText = format(L["|cff808080（%s固定显示，长按SHIFT显示当前服务器角色%%s）|r"], AddTexture("RIGHT"))
+                    tipsText = L["|cff808080（鼠标中键固定显示，长按SHIFT显示当前服务器角色%s）|r"]
                 end
                 t:SetText(t:GetText() .. format(tipsText, accountsText))
             end
@@ -1043,6 +1085,7 @@ function BG.RoleOverviewUI()
                 bt:SetSize(bt.width, 20)
                 right = bt
                 SetEquipFrameFuc(bt, v.isAccounts, realmID, player, colorplayer, v.level, v.class, v.iLevel)
+                CheckSameName(bt, realmID, player)
 
                 -- 牌子
                 local pz = v.tbl
@@ -2067,7 +2110,7 @@ function BG.RoleOverviewUI()
                 -- bt.tbl = { 259 }           -- 燃烧的远征test
             elseif i == 2 then
                 bt.type = "zhiding"
-                bt.tbl = { 2463, 2481 } --伽马灵魂烘炉、贝塔要塞
+                bt.tbl = { 2463, } --伽马灵魂烘炉。贝塔要塞2481（已删）
                 -- bt.tbl = { 136 }  -- 地狱火test
             end
             bt:Hide()
