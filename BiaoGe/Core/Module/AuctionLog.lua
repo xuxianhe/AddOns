@@ -149,7 +149,7 @@ BG.Init(function()
                 if not BG.HistoryMainFrame:IsVisible() then
                     GameTooltip:AddLine(" ", 1, 0.82, 0, true)
                     GameTooltip:AddLine(L["操作提示："], 1, 1, 1, true)
-                    GameTooltip:AddLine(AddTexture("RIGHT")..L["点击一个装备可以打开菜单"], 1, 0.82, 0, true)
+                    GameTooltip:AddLine(AddTexture("RIGHT") .. L["点击一个装备可以打开菜单"], 1, 0.82, 0, true)
                     GameTooltip:AddLine(L["在未拍列表可以按住CTRL、SHIFT来多选装备，便于团长批量发起拍卖"], 1, 0.82, 0, true)
                 end
                 GameTooltip:Show()
@@ -1801,7 +1801,7 @@ BG.Init(function()
         local f = CreateFrame("Frame", nil, TradeFrame)
         f:SetFrameStrata("HIGH")
         local text = f:CreateFontString()
-        text:SetPoint("TOPLEFT", TradePlayerInputMoneyInsetBg, "BOTTOMLEFT", 5, 3)
+        text:SetPoint("TOPLEFT", TradePlayerInputMoneyInsetBg, "BOTTOMLEFT", 0, 3)
         text:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
         BG.trade.GiveYouMoneyText = text
 
@@ -1833,7 +1833,7 @@ BG.Init(function()
             if BG.ImML() then
                 player = BG.GN("NPC")
                 local targetMoney = math.modf(GetTargetTradeMoney() / 10000)
-                local sumqiankuan = tonumber(BG.QianKuan.edit:GetText()) or 0
+                local sumqiankuan = tonumber(BG.tradeQianKuanEdit.edit:GetText()) or 0
                 if sumTargetMoney ~= 0 and sumTargetMoney == targetMoney + sumqiankuan then
                     for i = 1, 6 do
                         local link = GetTradePlayerItemLink(i)
@@ -1871,7 +1871,7 @@ BG.Init(function()
             else
                 player = BG.GN()
                 local playerMoney = math.modf(GetPlayerTradeMoney() / 10000)
-                local sumqiankuan = tonumber(BG.QianKuan.edit:GetText()) or 0
+                local sumqiankuan = tonumber(BG.tradeQianKuanEdit.edit:GetText()) or 0
                 if sumPlayerMoney ~= 0 and sumPlayerMoney == playerMoney + sumqiankuan then
                     for i = 1, 6 do
                         local link = GetTradeTargetItemLink(i)
@@ -1946,8 +1946,8 @@ BG.Init(function()
                 if m <= 0 then
                     m = ""
                 end
-                BG.QianKuan.edit:ClearFocus()
-                BG.QianKuan.edit:SetText(m)
+                BG.tradeQianKuanEdit.edit:ClearFocus()
+                BG.tradeQianKuanEdit.edit:SetText(m)
             end
         end
         local function UpdateMyQianKuan()
@@ -1959,18 +1959,14 @@ BG.Init(function()
                 if m <= 0 then
                     m = ""
                 end
-                BG.QianKuan.edit:ClearFocus()
-                BG.QianKuan.edit:SetText(m)
+                BG.tradeQianKuanEdit.edit:ClearFocus()
+                BG.tradeQianKuanEdit.edit:SetText(m)
             end
         end
-
         local function MLAcceptTrade()
             if not (BiaoGe.options["autoAuctionMoney"] == 1 and BiaoGe.options["autoAuctionSureClick"] == 1) then return end
             local targetMoney = floor(GetTargetTradeMoney() / 1e4)
             if targetMoney > 0 and targetMoney == sumTargetMoney then
-                if not TradeFrame.BiaoGeUpdateFrame then
-                    TradeFrame.BiaoGeUpdateFrame = CreateFrame("Frame")
-                end
                 TradeFrame.BiaoGeUpdateFrame.elapsed = 0
                 TradeFrame.BiaoGeUpdateFrame:SetScript("OnUpdate", function(self, elapsed)
                     if not TradeFrame:IsVisible() then
@@ -1993,37 +1989,33 @@ BG.Init(function()
             if not (BiaoGe.options["autoAuctionMoney"] == 1 and BiaoGe.options["autoAuctionSureClick"] == 1) then return end
             local playerMoney = floor(GetPlayerTradeMoney() / 1e4)
             if playerMoney > 0 and playerMoney == sumPlayerMoney then
-                if not TradeFrame.BiaoGeUpdateFrame then
-                    TradeFrame.BiaoGeUpdateFrame = CreateFrame("Frame")
-                end
-                TradeFrame.BiaoGeUpdateFrame.elapsed = 0
-                TradeFrame.BiaoGeUpdateFrame:SetScript("OnUpdate", function(self, elapsed)
-                    if not TradeFrame:IsVisible() then
-                        self:SetScript("OnUpdate", nil)
-                        return
-                    end
-                    self.elapsed = self.elapsed + elapsed
-                    if self.elapsed >= .5 then
-                        self:SetScript("OnUpdate", nil)
-                        local playerMoney = floor(GetPlayerTradeMoney() / 1e4)
-                        if playerMoney > 0 and playerMoney == sumPlayerMoney then
-                            UIErrorsFrame:AddMessage(L["BiaoGe正在申请确认交易"], 1, 1, 0)
-                            AcceptTrade()
+                if not TradeFrame.BiaoGeUpdateFrame.isDoing then
+                    TradeFrame.BiaoGeUpdateFrame.isDoing = true
+                    TradeFrame.BiaoGeUpdateFrame.elapsed = 0
+                    TradeFrame.BiaoGeUpdateFrame:SetScript("OnUpdate", function(self, elapsed)
+                        if not TradeFrame:IsVisible() then
+                            self:SetScript("OnUpdate", nil)
+                            return
                         end
-                    end
-                end)
+                        self.elapsed = self.elapsed + elapsed
+                        if self.elapsed >= .5 then
+                            self:SetScript("OnUpdate", nil)
+                            local playerMoney = floor(GetPlayerTradeMoney() / 1e4)
+                            if playerMoney > 0 and playerMoney == sumPlayerMoney then
+                                UIErrorsFrame:AddMessage(L["BiaoGe正在申请确认交易"], 1, 1, 0)
+                                AcceptTrade()
+                            end
+                        end
+                    end)
+                end
+            else
+                TradeFrame.BiaoGeUpdateFrame:SetScript("OnUpdate", nil)
+                TradeFrame.BiaoGeUpdateFrame.isDoing = nil
             end
         end
         local function SetMyMoney()
             if not (BiaoGe.options["autoAuctionMoney"] == 1 and BiaoGe.options["autoAuctionSetMoney"] == 1) then return end
-            local moneyFrame = TradePlayerInputMoneyFrame
-            local money = floor(GetMoney() / 1e4)
-            if money >= sumPlayerMoney then
-                MoneyInputFrame_ResetMoney(moneyFrame)
-                _G[moneyFrame:GetName() .. "Gold"]:SetNumber(sumPlayerMoney)
-            else
-                UIErrorsFrame:AddMessage(L["你的钱不够！"], 1, 0, 0)
-            end
+            BG.SetMyTradeMoney(sumPlayerMoney)
         end
 
         local function UpdateGiveMeMoneyTextColor()
@@ -2072,7 +2064,11 @@ BG.Init(function()
         end
         -- 团长自动摆放装备
         BG.RegisterEvent("TRADE_SHOW", function(self, ...)
-            BG.QianKuan.edit:SetText("")
+            if not TradeFrame.BiaoGeUpdateFrame then
+                TradeFrame.BiaoGeUpdateFrame = CreateFrame("Frame")
+            end
+            TradeFrame.BiaoGeUpdateFrame.isDoing = nil
+            BG.tradeQianKuanEdit.edit:SetText("")
             BG.auctionLogFrame.GetTargetTradeTbl(BG.ImML() and BG.GN("NPC") or player)
             sumTargetMoney = 0
             sumPlayerMoney = 0
@@ -2149,6 +2145,7 @@ BG.Init(function()
         end)
         -- 团长
         BG.RegisterEvent("TRADE_PLAYER_ITEM_CHANGED", function(self, ...)
+            TradeFrame.BiaoGeUpdateFrame.isDoing = nil
             sumTargetMoney = 0
             for i = 1, 6 do
                 _G["TradePlayerItem" .. i .. "ItemButton"].moneyText:Hide()
@@ -2191,6 +2188,7 @@ BG.Init(function()
         end)
         -- 团员
         BG.RegisterEvent("TRADE_TARGET_ITEM_CHANGED", function(self, ...)
+            TradeFrame.BiaoGeUpdateFrame.isDoing = nil
             sumPlayerMoney = 0
             for i = 1, 6 do
                 _G["TradeRecipientItem" .. i .. "ItemButton"].moneyText:Hide()
@@ -2240,16 +2238,14 @@ BG.Init(function()
             UpdateTargetQianKuan()
             MLAcceptTrade()
         end)
-        if not BG.IsRetail then -- todo
-            TradePlayerInputMoneyFrameGold:HookScript("OnTextChanged", function()
-                if BG.ImML() then return end
-                if BG.trade.GiveYouMoneyText:IsVisible() then
-                    UpdateGiveYouMoneyTextColor()
-                end
-                UpdateMyQianKuan()
-                PlayerAcceptTrade()
-            end)
-        end
+        tinsert(BG.TradeMyMoneyChange, function()
+            if BG.ImML() then return end
+            if BG.trade.GiveYouMoneyText:IsVisible() then
+                UpdateGiveYouMoneyTextColor()
+            end
+            UpdateMyQianKuan()
+            PlayerAcceptTrade()
+        end)
 
         -- 交易成功后，把拍卖记录设为已交易
         BG.RegisterEvent("UI_INFO_MESSAGE", function(self, event, _, text)
@@ -2277,3 +2273,11 @@ BG.Init(function()
         end)
     end
 end)
+
+--[[
+_G["TradePlayerItem1ItemButton"]
+
+/run PickupPlayerMoney(10000) _G["TradePlayerItem1ItemButton"]:Click()
+/run PickupTradeMoney(10000) C_Timer.After(0,function () ClearCursor() end)
+/run BG.SetMyMoney(10000)
+ ]]

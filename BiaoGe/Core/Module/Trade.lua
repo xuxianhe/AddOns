@@ -33,6 +33,10 @@ BG.trade.targetinfo = {}
 BG.trade.targetitems = {}
 BG.trade.playeritems = {}
 
+BG.TradeMyMoneyChange = {}
+
+local TradeUpdateStart, TradeUpdateEnd
+local goldTex = "|A:auctionhouse-icon-coin-gold:0:0|a"
 BG.Init(function()
     -- 函数：交易自动记录买家和金额
     do
@@ -60,20 +64,20 @@ BG.Init(function()
                 BG.trade.targetmoney = math.modf(BG.trade.targetmoney / 10000)
             end
 
-            BG.qiankuanTradeFrame.hasItem = nil
+            BG.tradeQianKuanListFrame.hasItem = nil
             for i = 1, 6 do
                 local targetitem = GetTradeTargetItemLink(i)
                 local name, texture, quantity, quality, isUsable, enchant = GetTradeTargetItemInfo(i)
                 if targetitem and quality >= BG.tradeQuality then
                     table.insert(BG.trade.targetitems, { link = targetitem, count = quantity })
-                    BG.qiankuanTradeFrame.hasItem = true
+                    BG.tradeQianKuanListFrame.hasItem = true
                 end
 
                 local playeritem = GetTradePlayerItemLink(i)
                 local name, texture, quantity, quality, isUsable, enchant = GetTradePlayerItemInfo(i)
                 if playeritem and quality >= BG.tradeQuality then
                     table.insert(BG.trade.playeritems, { link = playeritem, count = quantity })
-                    BG.qiankuanTradeFrame.hasItem = true
+                    BG.tradeQianKuanListFrame.hasItem = true
                 end
             end
 
@@ -206,8 +210,8 @@ BG.Init(function()
             end
 
             local qiankuan = 0
-            if BG.QianKuan.edit and tonumber(BG.QianKuan.edit:GetText()) then
-                qiankuan = qiankuan + tonumber(BG.QianKuan.edit:GetText())
+            if BG.tradeQianKuanEdit.edit and tonumber(BG.tradeQianKuanEdit.edit:GetText()) then
+                qiankuan = qiankuan + tonumber(BG.tradeQianKuanEdit.edit:GetText())
             end
             local qiankuantext = ""
             if qiankuan ~= 0 then
@@ -365,30 +369,30 @@ BG.Init(function()
 
     -- 交易欠款输入框
     do
-        BG.QianKuan = {}
-        local frame = CreateFrame("Frame", nil, TradeFrame, "BackdropTemplate")
-        frame:SetBackdrop({
+        BG.tradeQianKuanEdit = {}
+        local f = CreateFrame("Frame", nil, TradeFrame, "BackdropTemplate")
+        f:SetBackdrop({
             bgFile = "Interface/Tooltips/UI-Tooltip-Background",
             edgeFile = "Interface/ChatFrame/ChatFrameBackground",
             edgeSize = 1.5
         })
-        frame:SetBackdropColor(0.5, 0, 0.1, 0.5)
-        frame:SetBackdropBorderColor(0.5, 0, 0.1, 1)
-        frame:SetSize(130, 25)
-        frame:SetPoint("BOTTOM", TradeRecipientMoneyBg, "TOPLEFT", -10, 3)
-        frame:SetToplevel(true)
-        frame:EnableMouse(true)
-        frame:SetFrameLevel(TradeRecipientMoneyBg:GetFrameLevel() + 1)
-        BG.QianKuan.frame = frame
+        f:SetBackdropColor(0.5, 0, 0, 0.5)
+        f:SetBackdropBorderColor(1, 0, 0, .5)
+        f:SetSize(150, 25)
+        f:SetPoint("BOTTOM", TradeRecipientMoneyBg, "TOP", 0, 3)
+        f:SetToplevel(true)
+        f:EnableMouse(true)
+        f:SetFrameLevel(TradeRecipientMoneyBg:GetFrameLevel() + 10)
+        BG.tradeQianKuanEdit.frame = f
 
-        local edit = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
-        edit:SetSize(70, 20)
-        edit:SetPoint("RIGHT", BG.QianKuan.frame, -5, 0)
+        local edit = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+        edit:SetSize(90, 20)
+        edit:SetPoint("RIGHT", BG.tradeQianKuanEdit.frame, -5, 0)
         edit:SetText("")
         edit:SetTextColor(RGB("FF0000"))
         edit:SetNumeric(true)
         edit:SetAutoFocus(false)
-        BG.QianKuan.edit = edit
+        BG.tradeQianKuanEdit.edit = edit
         edit:SetScript("OnTextChanged", function(self)
             BG.UpdateTwo0(self)
             BG.GetTradeInfo()
@@ -412,7 +416,7 @@ BG.Init(function()
             local f = BG.CreateNumFrame(TradeRecipientItem1ItemButton)
             if f then
                 f:ClearAllPoints()
-                f:SetPoint("TOP", BG.QianKuan.frame, "BOTTOM", 0, 0)
+                f:SetPoint("TOP", BG.tradeQianKuanEdit.frame, "BOTTOM", 0, 0)
             end
         end)
         edit:HookScript("OnEditFocusLost", function(self, button)
@@ -422,11 +426,11 @@ BG.Init(function()
         end)
 
         local text = edit:CreateFontString()
-        text:SetPoint("RIGHT", BG.QianKuan.edit, "LEFT", -8, 0)
+        text:SetPoint("RIGHT", BG.tradeQianKuanEdit.edit, "LEFT", -8, 0)
         text:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
         text:SetTextColor(RGB("FF0000"))
         text:SetText(L["欠款："])
-        BG.QianKuan.text = text
+        BG.tradeQianKuanEdit.text = text
 
         _G.TradeFrame:HookScript("OnMouseDown", function(self, enter)
             edit:ClearFocus()
@@ -435,15 +439,24 @@ BG.Init(function()
 
     -- 金币超上限
     do
-        local f = CreateFrame("Frame", nil, TradeFrame)
+        local f = CreateFrame("Frame", nil, TradeFrame, "BackdropTemplate")
+        f:SetBackdrop({
+            bgFile = "Interface/ChatFrame/ChatFrameBackground",
+            edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+            edgeSize = 1,
+        })
+        f:SetBackdropColor(0, 0, 0, .9)
+        f:SetBackdropBorderColor(1, 0, 0, 1)
+        f:SetPoint("BOTTOMRIGHT", TradeRecipientMoneyBg, "TOPRIGHT", 0, 0)
         f:SetFrameStrata("HIGH")
         local t = f:CreateFontString()
-        t:SetPoint("BOTTOMRIGHT", TradeRecipientMoneyBg, "TOPRIGHT", 0, 0)
+        t:SetPoint("CENTER")
         t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
         t:SetTextColor(RGB(BG.r1))
         t:SetText(L["金币已超上限！"])
+        f:SetSize(t:GetStringWidth() + 10, t:GetHeight() + 5)
         t:Hide()
-        BG.tradeGoldTop = t
+        BG.tradeGoldTop = f
         if BG.IsVanilla then
             BG.tradeGoldTop.num = 214745
         else
@@ -456,9 +469,7 @@ BG.Init(function()
         local f = CreateFrame("Frame", nil, TradeFrame)
         f:SetFrameStrata("HIGH")
         local t = f:CreateFontString()
-        if not BG.IsRetail then -- todo
-            t:SetPoint("BOTTOMLEFT", TradePlayerInputMoneyFrame, "TOPLEFT", 0, 0)
-        end
+        t:SetPoint("RIGHT", BG.tradeQianKuanEdit.frame, "LEFT", -20, 0)
         t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
         t:SetTextColor(RGB(BG.r1))
         t:SetText(L["重复交易！"])
@@ -538,7 +549,7 @@ BG.Init(function()
 
     -- 欠款记录
     do
-        BG.qiankuanTradeFrame = {}
+        BG.tradeQianKuanListFrame = {}
         local f = CreateFrame("Frame", nil, TradeFrame, "BackdropTemplate")
         f:SetBackdrop({
             bgFile = "Interface/ChatFrame/ChatFrameBackground",
@@ -551,7 +562,7 @@ BG.Init(function()
         f:SetPoint("TOP", TradeFrame, "BOTTOM", 0, -1)
         f:EnableMouse(true)
         f:Hide()
-        BG.qiankuanTradeFrame.frame = f
+        BG.tradeQianKuanListFrame.frame = f
 
         local text = f:CreateFontString()
         text:SetPoint("TOP", f, "TOP", 0, -5)
@@ -564,11 +575,11 @@ BG.Init(function()
         bt:SetText(L["刷新"])
         bt:SetScript("OnClick", function(self)
             BG.PlaySound(1)
-            BG.qiankuanTradeFrame.Update()
+            BG.tradeQianKuanListFrame.Update()
         end)
 
         -- 总欠款
-        local f = CreateFrame("Frame", nil, BG.qiankuanTradeFrame.frame)
+        local f = CreateFrame("Frame", nil, BG.tradeQianKuanListFrame.frame)
         f:SetSize(0, 20)
         f:SetPoint("BOTTOMLEFT", 33, 5)
         f.text = f:CreateFontString()
@@ -577,25 +588,25 @@ BG.Init(function()
         f.text:SetText(L["合计欠款："])
         f.text:SetJustifyH("LEFT")
         f:SetWidth(f.text:GetStringWidth())
-        BG.qiankuanTradeFrame.Text1 = f
+        BG.tradeQianKuanListFrame.Text1 = f
 
-        local f = CreateFrame("Frame", nil, BG.qiankuanTradeFrame.Text1)
+        local f = CreateFrame("Frame", nil, BG.tradeQianKuanListFrame.Text1)
         f:SetSize(100, 20)
-        f:SetPoint("LEFT", BG.qiankuanTradeFrame.Text1, "RIGHT", 5, 0)
+        f:SetPoint("LEFT", BG.tradeQianKuanListFrame.Text1, "RIGHT", 5, 0)
         f.text = f:CreateFontString()
         f.text:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
         f.text:SetAllPoints()
         f.text:SetTextColor(1, 0, 0)
         f.text:SetJustifyH("LEFT")
-        BG.qiankuanTradeFrame.Text2 = f
+        BG.tradeQianKuanListFrame.Text2 = f
 
-        local bt = BG.CreateButton(BG.qiankuanTradeFrame.Text1)
+        local bt = BG.CreateButton(BG.tradeQianKuanListFrame.Text1)
         bt:SetSize(100, 20)
-        bt:SetPoint("BOTTOMRIGHT", BG.qiankuanTradeFrame.frame, "BOTTOMRIGHT", -7, 5)
+        bt:SetPoint("BOTTOMRIGHT", BG.tradeQianKuanListFrame.frame, "BOTTOMRIGHT", -7, 5)
         bt:SetText(L["清除全部欠款"])
-        BG.qiankuanTradeFrame.ButtonClearAll = bt
+        BG.tradeQianKuanListFrame.ButtonClearAll = bt
         bt:SetScript("OnClick", function(self)
-            if BG.qiankuanTradeFrame.hasItem and not IsAltKeyDown() then
+            if BG.tradeQianKuanListFrame.hasItem and not IsAltKeyDown() then
                 return
             end
             local unit = "NPC"
@@ -603,10 +614,10 @@ BG.Init(function()
             local target = BG.GN(unit)
             local class = select(2, UnitClass(unit))
             local color = select(4, GetClassColor(class))
-            StaticPopup_Show("BIAOGE_CLEAR_ALL_QIANKUAN", "|c" .. color .. target .. RR, BG.qiankuanTradeFrame.Text2.text:GetText())
+            StaticPopup_Show("BIAOGE_CLEAR_ALL_QIANKUAN", "|c" .. color .. target .. RR, BG.tradeQianKuanListFrame.Text2.text:GetText())
         end)
         bt:SetScript("OnEnter", function(self)
-            if BG.qiankuanTradeFrame.hasItem then
+            if BG.tradeQianKuanListFrame.hasItem then
                 GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
                 GameTooltip:ClearLines()
                 GameTooltip:AddLine(L["错误"], 1, 0, 0, true)
@@ -620,7 +631,7 @@ BG.Init(function()
             GameTooltip:Hide()
         end)
 
-        local frame, child = BG.CreateScrollFrame(BG.qiankuanTradeFrame.frame, BG.qiankuanTradeFrame.frame:GetWidth() - 15, BG.qiankuanTradeFrame.frame:GetHeight() - 55)
+        local frame, child = BG.CreateScrollFrame(BG.tradeQianKuanListFrame.frame, BG.tradeQianKuanListFrame.frame:GetWidth() - 15, BG.tradeQianKuanListFrame.frame:GetHeight() - 55)
         frame:SetPoint("TOPLEFT", 7.5, -25)
         frame:SetBackdrop({
             edgeFile = "Interface/ChatFrame/ChatFrameBackground",
@@ -630,8 +641,8 @@ BG.Init(function()
 
         local buttons = {}
 
-        function BG.qiankuanTradeFrame.Update()
-            BG.qiankuanTradeFrame.frame:Hide()
+        function BG.tradeQianKuanListFrame.Update()
+            BG.tradeQianKuanListFrame.frame:Hide()
             if not (BiaoGe.options["autoTrade"] == 1 and BiaoGe.options["qiankuanTrade"] == 1) then return end
             local unit = "NPC"
             if BG.DeBug then unit = "player" end
@@ -793,7 +804,7 @@ BG.Init(function()
                                 bt:SetText(L["清除"])
                                 bts.button = bt
                                 bt:SetScript("OnClick", function(self)
-                                    if BG.qiankuanTradeFrame.hasItem and not IsAltKeyDown() then
+                                    if BG.tradeQianKuanListFrame.hasItem and not IsAltKeyDown() then
                                         return
                                     end
                                     BG.PlaySound(1)
@@ -807,11 +818,11 @@ BG.Init(function()
                                     BiaoGe[FB]["boss" .. b]["qiankuan" .. i] = nil
                                     BG.Frame[FB]["boss" .. b]["qiankuan" .. i]:Hide()
 
-                                    BG.qiankuanTradeFrame.Update()
+                                    BG.tradeQianKuanListFrame.Update()
                                 end)
                                 bt:SetScript("OnEnter", function(self)
                                     bts.ds:Show()
-                                    if BG.qiankuanTradeFrame.hasItem then
+                                    if BG.tradeQianKuanListFrame.hasItem then
                                         GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
                                         GameTooltip:ClearLines()
                                         GameTooltip:AddLine(L["错误"], 1, 0, 0, true)
@@ -838,29 +849,29 @@ BG.Init(function()
                 end
             end
 
-            BG.qiankuanTradeFrame.Text2.text:SetText(sum)
+            BG.tradeQianKuanListFrame.Text2.text:SetText(sum)
 
             if #buttons > 5 then
                 frame.scroll.ScrollBar:Show()
-                frame.scroll:SetWidth(BG.qiankuanTradeFrame.frame:GetWidth() - 15 - 31)
+                frame.scroll:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 15 - 31)
                 for i, v in ipairs(buttons) do
                     v.item:SetWidth(v.hasicon and 125 or (125 + v.icon:GetWidth()))
                     v.line:SetEndPoint("BOTTOMLEFT", frame.scroll:GetWidth(), 0)
-                    v.frame:SetWidth(BG.qiankuanTradeFrame.frame:GetWidth() - 15 - 31)
-                    v.ds:SetWidth(BG.qiankuanTradeFrame.frame:GetWidth() - 15 - 31)
+                    v.frame:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 15 - 31)
+                    v.ds:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 15 - 31)
                 end
             else
                 frame.scroll.ScrollBar:Hide()
-                frame.scroll:SetWidth(BG.qiankuanTradeFrame.frame:GetWidth() + 5)
+                frame.scroll:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() + 5)
                 for i, v in ipairs(buttons) do
                     v.item:SetWidth(v.hasicon and 145 or (145 + v.icon:GetWidth()))
                     v.line:SetEndPoint("BOTTOMLEFT", frame.scroll:GetWidth() - 30, 0)
-                    v.frame:SetWidth(BG.qiankuanTradeFrame.frame:GetWidth() - 25)
-                    v.ds:SetWidth(BG.qiankuanTradeFrame.frame:GetWidth() - 25)
+                    v.frame:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 25)
+                    v.ds:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 25)
                 end
             end
             if yes then
-                BG.qiankuanTradeFrame.frame:Show()
+                BG.tradeQianKuanListFrame.frame:Show()
             end
         end
 
@@ -889,8 +900,8 @@ BG.Init(function()
                 end
                 BG.SendSystemMessage(format(L["已清除%s的全部欠款|cffFF0000%s|r。"],
                     "|c" .. color .. target .. RR,
-                    BG.qiankuanTradeFrame.Text2.text:GetText()))
-                BG.qiankuanTradeFrame.Update()
+                    BG.tradeQianKuanListFrame.Text2.text:GetText()))
+                BG.tradeQianKuanListFrame.Update()
             end,
             OnCancel = function()
             end,
@@ -972,41 +983,6 @@ BG.Init(function()
             f:SetFrameStrata("HIGH")
             f:Hide()
             BG.tradelastAuctionFrame.frame = f
-            -- DEBUG
-            --[[         local f = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-            f:SetBackdrop({
-                bgFile = "Interface/ChatFrame/ChatFrameBackground",
-                edgeFile = "Interface/ChatFrame/ChatFrameBackground",
-                edgeSize = 2,
-            })
-            f:SetBackdropColor(0, 0, 0, 0.8)
-            f:SetBackdropBorderColor(0, 0, 0, 1)
-            f:SetSize(BG.tradeSeeFrame.frame:GetWidth(), 125)
-            f:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-            f:SetMovable(true)
-            f:EnableMouse(true)
-            f:SetScript("OnDragStart", f.StartMoving)
-            f:SetScript("OnDragStop", f.StopMovingOrSizing)
-            BG.tradelastAuctionFrame.frame = f
-            BG.After(2, function()
-                local itemID = 37790
-                local item = Item:CreateFromItemID(itemID)
-                item:ContinueOnItemLoad(function()
-                    SendChatMessage(select(2, GetItemInfo(itemID)), "RAID")
-                end)
-                local itemID = 24729
-                local item = Item:CreateFromItemID(itemID)
-                item:ContinueOnItemLoad(function()
-                    SendChatMessage(select(2, GetItemInfo(itemID)), "RAID")
-                end)
-                local itemID = 4367
-                local item = Item:CreateFromItemID(itemID)
-                item:ContinueOnItemLoad(function()
-                    SendChatMessage(select(2, GetItemInfo(itemID)), "RAID")
-                end)
-            end) ]]
-            --
-
             f:SetScript("OnShow", function(self)
                 BG.After(0, function()
                     BG.tradelastAuctionFrame.buttonGroup:Show()
@@ -1028,6 +1004,14 @@ BG.Init(function()
                     BG.tradelastAuctionFrame.UpdateAllButtons()
                 end)
             end)
+
+            function f:UpdateShow()
+                if BG.ImML() then
+                    self:Show()
+                else
+                    self:Hide()
+                end
+            end
         end
 
         for i = 1, maxButtons do
@@ -1368,7 +1352,6 @@ BG.Init(function()
             end)
         end
 
-
         local f = CreateFrame("Frame")
         f:RegisterEvent("CHAT_MSG_RAID_WARNING")
         f:RegisterEvent("CHAT_MSG_RAID_LEADER")
@@ -1419,7 +1402,6 @@ BG.Init(function()
             end
         end)
     end
-
     -- 一键交易工资
     do
         BG.tradeFastGiveMoneyFrame = {}
@@ -1427,6 +1409,7 @@ BG.Init(function()
         local givedTbl = {}
         local buttons = {}
         function BG.CreateTradeFastGiveMoneyFrame()
+            if BG.tradeFastGiveMoneyFrame.frame then return end
             local f = CreateFrame("Frame", nil, TradeFrame, "BackdropTemplate")
             f:SetBackdrop({
                 bgFile = "Interface/ChatFrame/ChatFrameBackground",
@@ -1481,12 +1464,10 @@ BG.Init(function()
         end
 
         local function GetQianKuan()
-            return tonumber(BG.qiankuanTradeFrame.Text2.text:GetText()) or 0
+            return tonumber(BG.tradeQianKuanListFrame.Text2.text:GetText()) or 0
         end
         local function SetMoney(money, name, isExpenses, isMan)
-            local moneyFrame = TradePlayerInputMoneyFrame
-            MoneyInputFrame_ResetMoney(moneyFrame)
-            _G[moneyFrame:GetName() .. "Gold"]:SetNumber(money)
+            BG.SetMyTradeMoney(money)
             lastClick = nil
             if isExpenses and not isMan then
                 lastClick = {
@@ -1507,7 +1488,7 @@ BG.Init(function()
                     self.elapsed = self.elapsed + elapsed
                     if self.elapsed >= .2 then
                         self:SetScript("OnUpdate", nil)
-                        UIErrorsFrame:AddMessage(format(L["确认交易%s%sg？"], SetClassCFF(BG.GN("NPC")), money), 1, 1, 0)
+                        UIErrorsFrame:AddMessage(format(L["确认交易%s%s%s？"], SetClassCFF(BG.GN("NPC")), money, goldTex), 1, 1, 0)
                         AcceptTrade()
                     end
                 end)
@@ -1737,8 +1718,8 @@ BG.Init(function()
             return icon
         end
         function BG.UpdateTradeFastGiveMoneyFrame()
+            mainFrame:Show()
             if BG.ImML() then
-                BG.tradelastAuctionFrame.frame:Show()
                 mainFrame:ClearAllPoints()
                 mainFrame:SetPoint("TOPLEFT", TradeFrame, "TOPRIGHT", 1, -20)
                 local w1 = TradeFrame:GetTop()
@@ -1746,7 +1727,6 @@ BG.Init(function()
                 mainFrame:SetHeight(w1 - w2 - 20 - 2)
                 frame:SetHeight(mainFrame:GetHeight() - 25)
             else
-                BG.tradelastAuctionFrame.frame:Hide()
                 if gzTbl and BG.IsMLByName(gzTbl.player) then
                     mainFrame:ClearAllPoints()
                     mainFrame:SetPoint("BOTTOMLEFT", BG.tradeSeeFrame.frame, "TOPLEFT", 0, 1)
@@ -2039,18 +2019,136 @@ BG.Init(function()
         end)
     end
 
+    -- 摆放交易金币
+    do
+        function BG.ReSetTradeMoney()
+            local playerTradeMoney = GetPlayerTradeMoney()
+            if playerTradeMoney > 0 then
+                ClearCursor()
+                PickupTradeMoney(playerTradeMoney)
+                ClearCursor()
+            end
+        end
+
+        local function PickUpMyMoney(money)
+            ClearCursor()
+            PickupPlayerMoney(money)
+            _G["TradePlayerItem1ItemButton"]:Click()
+        end
+        function BG.SetMyTradeMoney(giveMoney)
+            BG.ReSetTradeMoney()
+            giveMoney = giveMoney * 10000
+            local money = GetMoney()
+            if money >= giveMoney then
+                PickUpMyMoney(giveMoney)
+            else
+                UIErrorsFrame:AddMessage(L["你的钱不够！"], 1, 0, 0)
+            end
+        end
+    end
+    -- 我的金币输入框更新时
+    do
+        tinsert(BG.TradeMyMoneyChange, function()
+            BG.GetTradeInfo()
+            BG.tradeSaveMoney:UpdateFrame()
+            BG.tradeSeeFrame.text:SetText(BG.TradeText())
+        end)
+        function TradeUpdateEnd()
+            if BG.TradeUpdateFrame then
+                BG.TradeUpdateFrame:SetScript("OnUpdate", nil)
+            end
+        end
+
+        function TradeUpdateStart()
+            if not BG.TradeUpdateFrame then
+                BG.TradeUpdateFrame = CreateFrame("Frame")
+            end
+            BG.TradeUpdateFrame.t = 0
+            BG.TradeUpdateFrame:SetScript("OnUpdate", function(self, t)
+                self.t = self.t + t
+                if self.t >= .2 then
+                    self.t = 0
+                    for i, func in ipairs(BG.TradeMyMoneyChange) do
+                        func()
+                    end
+                    BG.tradeMyMoneyFrame:SetText(floor(GetPlayerTradeMoney() / 10000))
+                end
+            end)
+        end
+
+        local f = CreateFrame("Frame", nil, TradeFrame, "BackdropTemplate")
+        f:SetSize(170, 20)
+        f:SetPoint("BOTTOM", TradePlayerInputMoneyInsetBg, "TOP", 0, -0)
+        f:SetFrameLevel(TradeRecipientMoneyBg:GetFrameLevel() + 15)
+        BG.tradeMyMoneyFrame = f
+        local t = f:CreateFontString()
+        t:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
+        t:SetPoint("BOTTOM")
+        t:SetWidth(f:GetWidth() - 10)
+        t:SetTextColor(1, 1, 1)
+        t:SetJustifyH("LEFT")
+        f.Text = t
+
+        local bt = CreateFrame("Button", nil, f)
+        bt:SetSize(16, 16)
+        bt:SetPoint("BOTTOMLEFT", t, "BOTTOMRIGHT", 0, 0)
+        local tex = bt:CreateTexture()
+        tex:SetPoint("CENTER")
+        tex:SetSize(bt:GetWidth() + 10, bt:GetHeight() + 10)
+        tex:SetTexture([[Interface\Buttons\UI-Panel-MinimizeButton-Up]])
+        bt:SetNormalTexture(tex)
+        local tex = bt:CreateTexture()
+        tex:SetPoint("CENTER")
+        tex:SetSize(bt:GetWidth() + 10, bt:GetHeight() + 10)
+        tex:SetTexture([[Interface\Buttons\UI-Panel-MinimizeButton-Down]])
+        bt:SetPushedTexture(tex)
+        local tex = bt:CreateTexture()
+        tex:SetPoint("CENTER")
+        tex:SetSize(bt:GetWidth() + 10, bt:GetHeight() + 10)
+        tex:SetTexture([[Interface\Buttons\UI-Panel-MinimizeButton-Highlight]])
+        bt:SetHighlightTexture(tex)
+        bt:SetScript("OnClick", function(self)
+            f.alwaysShow=true
+            BG.ReSetTradeMoney()
+        end)
+        bt:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+            GameTooltip:ClearLines()
+            GameTooltip:AddLine(L["重置交易金额"], 1, 1, 1, true)
+            GameTooltip:Show()
+        end)
+        bt:SetScript("OnLeave", GameTooltip_Hide)
+
+        function f:SetText(money)
+            money = tonumber(money) or 0
+            if money == 0 and not self.alwaysShow then
+                self:Hide()
+            else
+                self:Show()
+                t:SetText(format(L["实际交易：%s"], money) .. goldTex)
+                bt:ClearAllPoints()
+                bt:SetPoint("BOTTOMLEFT", t:GetWrappedWidth() + 10, 0)
+            end
+        end
+
+        f:SetText()
+    end
+
     -- 交易打开时
     BG.RegisterEvent("TRADE_SHOW", function(self, ...)
-        BG.qiankuanTradeFrame.hasItem = nil
+        BG.tradeQianKuanListFrame.hasItem = nil
         if BiaoGe.options["autoTrade"] == 1 and IsInRaid(1) then
-            BG.QianKuan.frame:Show()
+            BG.tradeQianKuanEdit.frame:Show()
+            TradeUpdateStart()
         else
-            BG.QianKuan.frame:Hide()
+            BG.tradeQianKuanEdit.frame:Hide()
         end
 
         BG.tradeGoldTop:Hide()
         BG.tradeSaveMoney:Hide()
-        BG.qiankuanTradeFrame.Update()
+        BG.tradeQianKuanListFrame.Update()
+        BG.tradeMyMoneyFrame:Hide()
+        BG.tradeMyMoneyFrame.alwaysShow=nil
 
         if BiaoGe.options["autoTrade"] == 1 and BiaoGe.options["tradePreview"] == 1 and IsInRaid(1) then
             BG.tradeSeeFrame.frame:Show()
@@ -2061,12 +2159,10 @@ BG.Init(function()
             LibBG:UIDropDownMenu_SetText(BG.tradeDropDown.DropDown, L["无"])
             BG.tradeSeeFrame.text:SetText("")
             BG.tradeSeeFrame.CheckButton:SetChecked(true)
+            BG.tradelastAuctionFrame.frame:UpdateShow()
 
-            if not BG.tradeFastGiveMoneyFrame.frame then
-                BG.CreateTradeFastGiveMoneyFrame()
-            end
-            BG.tradeFastGiveMoneyFrame.frame:Show()
-            BG.UpdateTradeFastGiveMoneyFrame() -- 包含了BG.tradelastAuctionFrame.frame的显示/隐藏
+            BG.CreateTradeFastGiveMoneyFrame()
+            BG.UpdateTradeFastGiveMoneyFrame()
         else
             BG.tradeSeeFrame.frame:Hide()
             BG.tradelastAuctionFrame.frame:Hide()
@@ -2074,6 +2170,9 @@ BG.Init(function()
                 BG.tradeFastGiveMoneyFrame.frame:Hide()
             end
         end
+    end)
+    BG.RegisterEvent("TRADE_CLOSED", function(self, ...)
+        TradeUpdateEnd()
     end)
 
     -- 交易框对应的物品高亮
@@ -2161,15 +2260,6 @@ BG.Init(function()
                 BG.InsertLink(text)
             end
         end)
-
-        -- 我输入金币时
-        if not BG.IsRetail then -- todo
-            TradePlayerInputMoneyFrameGold:HookScript("OnTextChanged", function()
-                BG.GetTradeInfo()
-                BG.tradeSaveMoney:UpdateFrame()
-                BG.tradeSeeFrame.text:SetText(BG.TradeText())
-            end)
-        end
 
         --每次点交易确定时记录双方交易的金币和物品
         local f = CreateFrame("Frame")

@@ -2236,7 +2236,7 @@ BG.Init(function()
                 return
             end
             for k, vv in pairs(BiaoGe.YYdb.all) do
-                if yy == vv.yy then
+                if tonumber(yy) == tonumber(vv.yy) then
                     BG.After(5, function()
                         SendSystemMessage(BG.BG .. format(L["恭喜你们击杀尾王！YY%s你曾评价为：|cff%s>>%s<<。|r"], yy, Y.PingjiaColor(vv.pingjia), Y.Pingjia(vv.pingjia)))
                     end)
