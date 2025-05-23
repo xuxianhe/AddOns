@@ -1651,7 +1651,7 @@ BG.Init(function()
                 L["鼠标提示对方的欠款和罚款"],
                 L["鼠标悬浮在一个玩家时，显示他的欠款和罚款。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST")..L["鼠标提示对方的欠款和罚款"] .. "*", biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["鼠标提示对方的欠款和罚款"] .. "*", biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
         end
         h = h + 30
@@ -1687,7 +1687,7 @@ BG.Init(function()
             local name = "addonsOutTime"
             BG.options[name .. "reset"] = 1
             BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
-           
+
             local ontext = {
                 L["插件过期提醒"],
                 L["当插件有可用更新时，红字提醒。"],
@@ -1776,6 +1776,7 @@ BG.Init(function()
                 end
                 edit:SetAutoFocus(false)
                 edit:SetNumeric(true)
+                edit:SetMaxBytes(8)
                 edit.i = i
                 tinsert(buttons, edit)
                 edit:SetScript("OnTextChanged", function(self)
@@ -1937,14 +1938,33 @@ BG.Init(function()
         h = h + 30
         -- 匿名模式对你无效
         do
+            BG.Once("autoAuctionShowSender", 250523, function()
+                BiaoGe.options.autoAuctionShowSender = 1
+            end)
             local name = "autoAuctionShowSender"
-            BG.options[name .. "reset"] = 0
+            BG.options[name .. "reset"] = 1
             BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
             local ontext = {
                 L["匿名模式对你无效"],
                 L["勾选后，在竞拍过程中，匿名对你无效，你将可以直接看到实际出价人，不管你是团长还是团员。"],
             }
             local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["匿名模式对你无效"] .. "*", autoAuction, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+        end
+        h = h + 30
+        -- 竞拍欢呼语
+        do
+            local name = "autoAuctionHappySay"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["竞拍欢呼语"],
+                format(L["在竞价过程中，如果有人出价超过%s，有%s概率团长在团队频道发送一段随机的欢呼语，以活跃拍卖氛围。"],
+                    BG.IsVanilla and ("1" .. "万") or ("2" .. "万"), "50%"),
+                " ",
+                L["需要使用非匿名模式，而且你是团长时才会生效。"],
+            }
+            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["竞拍欢呼语"] .. "*", autoAuction, 15, height - h, ontext)
             BG.options["button" .. name] = f
         end
     end

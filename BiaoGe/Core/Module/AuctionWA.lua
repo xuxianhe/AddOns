@@ -1654,6 +1654,7 @@ BG.Init(function()
             edit:SetAutoFocus(false)
             edit:SetNumeric(true)
             edit:SetText(money)
+            edit:SetMaxBytes(8)
             edit.owner = AuctionFrame
             edit:SetScript("OnTextChanged", aura.myMoney_OnTextChanged)
             edit:SetScript("OnEnterPressed", aura.SendMyMoney_OnClick)

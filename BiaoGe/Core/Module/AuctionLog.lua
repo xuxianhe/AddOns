@@ -1822,6 +1822,8 @@ BG.Init(function()
 
     -- 交易时
     do
+        TradeFrame.BiaoGeUpdateFrame = CreateFrame("Frame")
+
         local sumTargetMoney = 0
         local sumPlayerMoney = 0
 
@@ -1987,6 +1989,7 @@ BG.Init(function()
         end
         local function PlayerAcceptTrade()
             if not (BiaoGe.options["autoAuctionMoney"] == 1 and BiaoGe.options["autoAuctionSureClick"] == 1) then return end
+            if TradeFrame.BiaoGeUpdateFrame.isSetingMoney then return end
             local playerMoney = floor(GetPlayerTradeMoney() / 1e4)
             if playerMoney > 0 and playerMoney == sumPlayerMoney then
                 if not TradeFrame.BiaoGeUpdateFrame.isDoing then
@@ -2064,10 +2067,8 @@ BG.Init(function()
         end
         -- 团长自动摆放装备
         BG.RegisterEvent("TRADE_SHOW", function(self, ...)
-            if not TradeFrame.BiaoGeUpdateFrame then
-                TradeFrame.BiaoGeUpdateFrame = CreateFrame("Frame")
-            end
             TradeFrame.BiaoGeUpdateFrame.isDoing = nil
+            TradeFrame.BiaoGeUpdateFrame.isSetingMoney=nil
             BG.tradeQianKuanEdit.edit:SetText("")
             BG.auctionLogFrame.GetTargetTradeTbl(BG.ImML() and BG.GN("NPC") or player)
             sumTargetMoney = 0
@@ -2146,6 +2147,7 @@ BG.Init(function()
         -- 团长
         BG.RegisterEvent("TRADE_PLAYER_ITEM_CHANGED", function(self, ...)
             TradeFrame.BiaoGeUpdateFrame.isDoing = nil
+            TradeFrame.BiaoGeUpdateFrame.isSetingMoney = nil
             sumTargetMoney = 0
             for i = 1, 6 do
                 _G["TradePlayerItem" .. i .. "ItemButton"].moneyText:Hide()
@@ -2189,6 +2191,7 @@ BG.Init(function()
         -- 团员
         BG.RegisterEvent("TRADE_TARGET_ITEM_CHANGED", function(self, ...)
             TradeFrame.BiaoGeUpdateFrame.isDoing = nil
+            TradeFrame.BiaoGeUpdateFrame.isSetingMoney = nil
             sumPlayerMoney = 0
             for i = 1, 6 do
                 _G["TradeRecipientItem" .. i .. "ItemButton"].moneyText:Hide()

@@ -1402,6 +1402,7 @@ BG.Init(function()
             end
         end)
     end
+    
     -- 一键交易工资
     do
         BG.tradeFastGiveMoneyFrame = {}
@@ -1476,9 +1477,7 @@ BG.Init(function()
                 }
             end
             BG.After(0, function()
-                if not TradeFrame.BiaoGeUpdateFrame then
-                    TradeFrame.BiaoGeUpdateFrame = CreateFrame("Frame")
-                end
+                TradeFrame.BiaoGeUpdateFrame.isSetingMoney = true
                 TradeFrame.BiaoGeUpdateFrame.elapsed = 0
                 TradeFrame.BiaoGeUpdateFrame:SetScript("OnUpdate", function(self, elapsed)
                     if not TradeFrame:IsVisible() or BG.tradeSaveMoney:IsVisible() then
@@ -1589,6 +1588,7 @@ BG.Init(function()
                 bt:RegisterForClicks("AnyUp")
                 bt:SetScript("OnClick", function(self, button)
                     BG.PlaySound(1)
+                    BG.tradeMyMoneyFrame.canShow = true
                     local money = money
                     local isMan
                     if button == "RightButton" and hasMan then
@@ -2021,7 +2021,7 @@ BG.Init(function()
 
     -- 摆放交易金币
     do
-        function BG.ReSetTradeMoney()
+        function BG.ResetTradeMoney()
             local playerTradeMoney = GetPlayerTradeMoney()
             if playerTradeMoney > 0 then
                 ClearCursor()
@@ -2036,7 +2036,8 @@ BG.Init(function()
             _G["TradePlayerItem1ItemButton"]:Click()
         end
         function BG.SetMyTradeMoney(giveMoney)
-            BG.ReSetTradeMoney()
+            BG.tradeMyMoneyFrame.canShow = true
+            BG.ResetTradeMoney()
             giveMoney = giveMoney * 10000
             local money = GetMoney()
             if money >= giveMoney then
@@ -2089,37 +2090,44 @@ BG.Init(function()
         t:SetJustifyH("LEFT")
         f.Text = t
 
+        -- 重置金币
         local bt = CreateFrame("Button", nil, f)
-        bt:SetSize(16, 16)
-        bt:SetPoint("BOTTOMLEFT", t, "BOTTOMRIGHT", 0, 0)
-        local tex = bt:CreateTexture()
-        tex:SetPoint("CENTER")
-        tex:SetSize(bt:GetWidth() + 10, bt:GetHeight() + 10)
-        tex:SetTexture([[Interface\Buttons\UI-Panel-MinimizeButton-Up]])
-        bt:SetNormalTexture(tex)
-        local tex = bt:CreateTexture()
-        tex:SetPoint("CENTER")
-        tex:SetSize(bt:GetWidth() + 10, bt:GetHeight() + 10)
-        tex:SetTexture([[Interface\Buttons\UI-Panel-MinimizeButton-Down]])
-        bt:SetPushedTexture(tex)
-        local tex = bt:CreateTexture()
-        tex:SetPoint("CENTER")
-        tex:SetSize(bt:GetWidth() + 10, bt:GetHeight() + 10)
-        tex:SetTexture([[Interface\Buttons\UI-Panel-MinimizeButton-Highlight]])
-        bt:SetHighlightTexture(tex)
-        bt:SetScript("OnClick", function(self)
-            f.alwaysShow=true
-            BG.ReSetTradeMoney()
-        end)
-        bt:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
-            GameTooltip:ClearLines()
-            GameTooltip:AddLine(L["重置交易金额"], 1, 1, 1, true)
-            GameTooltip:Show()
-        end)
-        bt:SetScript("OnLeave", GameTooltip_Hide)
+        do
+            bt:SetSize(16, 16)
+            bt:SetPoint("BOTTOMLEFT", t, "BOTTOMRIGHT", 0, 0)
+            local tex = bt:CreateTexture()
+            tex:SetPoint("CENTER")
+            tex:SetSize(bt:GetWidth() + 10, bt:GetHeight() + 10)
+            tex:SetTexture([[Interface\Buttons\UI-Panel-MinimizeButton-Up]])
+            bt:SetNormalTexture(tex)
+            local tex = bt:CreateTexture()
+            tex:SetPoint("CENTER")
+            tex:SetSize(bt:GetWidth() + 10, bt:GetHeight() + 10)
+            tex:SetTexture([[Interface\Buttons\UI-Panel-MinimizeButton-Down]])
+            bt:SetPushedTexture(tex)
+            local tex = bt:CreateTexture()
+            tex:SetPoint("CENTER")
+            tex:SetSize(bt:GetWidth() + 10, bt:GetHeight() + 10)
+            tex:SetTexture([[Interface\Buttons\UI-Panel-MinimizeButton-Highlight]])
+            bt:SetHighlightTexture(tex)
+            bt:SetScript("OnClick", function(self)
+                f.alwaysShow = true
+                BG.ResetTradeMoney()
+            end)
+            bt:SetScript("OnEnter", function(self)
+                GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+                GameTooltip:ClearLines()
+                GameTooltip:AddLine(L["重置交易金额"], 1, 1, 1, true)
+                GameTooltip:Show()
+            end)
+            bt:SetScript("OnLeave", GameTooltip_Hide)
+        end
 
         function f:SetText(money)
+            if not BG.tradeMyMoneyFrame.canShow then
+                self:Hide()
+                return
+            end
             money = tonumber(money) or 0
             if money == 0 and not self.alwaysShow then
                 self:Hide()
@@ -2131,7 +2139,7 @@ BG.Init(function()
             end
         end
 
-        f:SetText()
+        BG.tradeMyMoneyFrame:SetText()
     end
 
     -- 交易打开时
@@ -2148,7 +2156,8 @@ BG.Init(function()
         BG.tradeSaveMoney:Hide()
         BG.tradeQianKuanListFrame.Update()
         BG.tradeMyMoneyFrame:Hide()
-        BG.tradeMyMoneyFrame.alwaysShow=nil
+        BG.tradeMyMoneyFrame.alwaysShow = nil
+        BG.tradeMyMoneyFrame.canShow = nil
 
         if BiaoGe.options["autoTrade"] == 1 and BiaoGe.options["tradePreview"] == 1 and IsInRaid(1) then
             BG.tradeSeeFrame.frame:Show()
@@ -2173,6 +2182,8 @@ BG.Init(function()
     end)
     BG.RegisterEvent("TRADE_CLOSED", function(self, ...)
         TradeUpdateEnd()
+        BG.tradeMyMoneyFrame.alwaysShow = nil
+        BG.tradeMyMoneyFrame.canShow = nil
     end)
 
     -- 交易框对应的物品高亮

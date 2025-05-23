@@ -123,7 +123,7 @@ do
             }
             Maxi[FB] = maxiTbl
             -- 设置支出格子为x个
-            if FB == "ULD" then
+            if FB == "ULD" or FB == "ICC" then
                 tinsert(Maxi[FB], 5)
             elseif FB == "MC" then
                 tinsert(Maxi[FB], 6)
@@ -197,7 +197,7 @@ do
                 [194] = "N",
             }
             AddDB("ICC", mainFrameWidth, 875, 3, 15, { 0, 7, 13 }, { "N10", "N25", "H10", "H25", }, difTbl2,
-                { 3, 3, 3, 5, 3, 3, 5, 3, 5, 3, 5, 8, 3, 10, 5, })
+                { 3, 3, 3, 5, 3, 3, 5, 3, 5, 3, 5, 8, 3, 12, 6, })
             AddDB("TOC", mainFrameWidth, 835, 3, 9, { 0, 5, 8 }, { "N10", "N25", "H10", "H25", }, difTbl2,
                 { 5, 5, 5, 5, 5, 3, 8, 22, 5, }, 16)
             AddDB("ULD", mainFrameWidth, 875, 3, 16, { 0, 7, 13 }, { "N10", "N25" }, difTbl1,
@@ -331,7 +331,7 @@ do
             -- TBC
             do
                 AddDB("TAQ", 531, "", nil, nil, nil, nil, L["安其拉"])
-                AddDB("BWL", 469, "", nil, nil, nil, nil, L["黑翼之巢"])
+                AddDB("BWL", 469, "", nil, nil, nil, nil, L["黑翼"])
                 AddDB("SSC", 548, "", nil, nil, nil, nil, L["毒蛇风暴"])
                 AddDB("HS", 534, "", nil, nil, nil, nil, L["海加尔山"])
                 AddDB("BT", 564, "", nil, nil, nil, nil, L["黑暗神殿"])

@@ -570,6 +570,7 @@ BG.Init(function()
                 edit:SetText(BiaoGe.Auction[edit._type])
                 edit:SetAutoFocus(false)
                 edit:SetNumeric(true)
+                edit:SetMaxBytes(8)
                 edit:SetScript("OnTextChanged", OnTextChanged)
                 edit:SetScript("OnEnterPressed", OnEnterPressed)
                 mainFrame.Edit2 = edit
@@ -720,38 +721,6 @@ BG.Init(function()
             else
                 mainFrame:SetHeight(mainFrameHeight - 20)
             end
-            --[[             do
-                local tex = mainFrame:CreateTexture()
-                tex:SetPoint("TOPLEFT", mainFrame, "BOTTOMLEFT", 2, 22)
-                tex:SetPoint("BOTTOMRIGHT", mainFrame, "BOTTOMRIGHT", -2, 2)
-                tex:SetColorTexture(0.2, 0.2, 0.2, 1)
-
-                local auction = CreateFrame("Frame", nil, mainFrame)
-                auction:SetSize(1, 20)
-                auction:SetPoint("LEFT", tex, "LEFT", 0, 0)
-                auction.title = L["拍卖WA版本"]
-                auction.title2 = L["拍卖：%s"]
-                auction.table = BG.raidAuctionVersion
-                auction.isAuciton = true
-                auction:SetScript("OnEnter", Addon_OnEnter)
-                auction.text = auction:CreateFontString()
-                auction.text:SetFont(STANDARD_TEXT_FONT, 13, "OUTLINE")
-                auction.text:SetPoint("CENTER")
-                auction.text:SetTextColor(0.7, 0.7, 0.7)
-                mainFrame.auction = auction
-                UpdateAddonFrame(auction)
-
-                auction:SetScript("OnMouseUp", function(self)
-                    mainFrame:GetScript("OnMouseUp")(mainFrame)
-                end)
-                auction:SetScript("OnMouseDown", function(self)
-                    mainFrame:GetScript("OnMouseDown")(mainFrame)
-                end)
-                auction:SetScript("OnLeave", function(self)
-                    GameTooltip:Hide()
-                    self.isOnEnter = false
-                end)
-            end ]]
         end
 
         -- ALT点击背包生效
@@ -1071,6 +1040,142 @@ BG.Init(function()
         CheckIgnore()
     end
 
+    -- 拍卖欢呼语
+    do
+        local tbl = {
+            [[老板这波操作，直接把竞拍场变成了 "金币战场"，敌方全员溃败！]],
+            [[天呐！老板的金币像 "冰霜新星"一样冻住了所有竞争者！太强了！]],
+            [[老板出价如 "炎爆术"般炸裂，直接秒杀全场竞拍者！]],
+            [[救命！老板的金币大军开着 "奥术飞弹"来了，谁顶得住啊！]],
+            [[这波出价，堪比 "星辰坠落"！老板这是要把装备砸穿地心啊！]],
+            [[老板一喊价，就像按下了 "群体驱散"，其他出价瞬间消失！]],
+            [[别人竞拍靠 "普通攻击"，老板竞拍直接 "开大"！这谁受得了！]],
+            [[老板的金币如 "复活币"般珍贵，这波操作直接让装备 "起死回生"！]],
+            [[哇塞！老板这波 "闪现"出价，直接把其他玩家甩到外太空！]],
+            [[老板的金币像 "治疗链"一样疯狂跳，直接把竞拍值抬到天花板！]],
+            [[这出价，是要发动 "末日决战"吗？老板太强了！]],
+            [[老板一出手，就像 "圣骑士开无敌"，其他竞拍者完全无法抵抗！]],
+            [[救命！老板的金币如 "恶魔之怒"般汹涌，直接把竞拍场炸翻！]],
+            [[老板这波 "影遁"出价，其他玩家根本找不到机会反击！]],
+            [[别人出价是 "普通任务"，老板出价是 "史诗级成就"！瑞斯拜！]],
+            [[老板的金币像 "狂暴战"一样疯狂输出，直接把竞拍值打崩！]],
+            [[这波操作，堪比 "法师偷取增益"，老板直接把装备buff拉满！]],
+            [[老板一喊价，就像 "猎人开威慑"，其他出价全成了挠痒痒！]],
+            [[老板的金币如 "盗贼伏击"般突然，直接把竞拍节奏带飞！]],
+            [[哇哦！老板这波 "牧师渐隐术"出价，其他玩家完全跟不上节奏！]],
+            [[这出价，是要发动 "萨满嗜血"吗？老板直接让竞拍速度翻倍！]],
+            [[老板一出手，就像 "术士召唤末日守卫"，其他竞拍者直接吓退！]],
+            [[救命！老板的金币如 "猎人瞄准射击"般精准，直接命中装备！]],
+            [[老板这波 "战士冲锋"出价，直接把其他玩家撞出竞拍圈！]],
+            [[别人出价是 "小怪巡逻"，老板出价是 "BOSS碾压"！太强了！]],
+            [[老板的金币像 "德鲁伊变熊"一样坚挺，直接把竞拍价稳住！]],
+            [[这波操作，堪比 "潜行者偷袭"，老板直接把装备偷走啦！]],
+            [[老板一喊价，就像 "死亡骑士开大军"，其他出价全成了炮灰！]],
+            [[老板的金币如 "法师暴风雪"般覆盖全场，其他玩家根本无处可逃！]],
+            [[哇塞！老板这波 "圣骑士制裁"出价，其他竞拍者直接被沉默！]],
+            [[这出价，是要发动 "猎人误导"吗？老板直接把装备骗到手！]],
+            [[老板一出手，就像 "萨满开英勇"，其他玩家只能看着干瞪眼！]],
+            [[救命！老板的金币如 "术士生命虹吸"般疯狂，直接吸干所有竞争者！]],
+            [[老板这波 "盗贼消失"出价，其他玩家根本反应不过来！]],
+            [[别人出价是 "普通攻击"，老板出价是 "暴击秒杀"！太狠了！]],
+            [[老板的金币像 "牧师治疗祷言"一样慷慨，直接把装备价格抬到天际！]],
+            [[这波操作，堪比 "法师奥术飞弹连发"，老板直接把竞拍值打穿！]],
+            [[老板一喊价，就像 "战士破甲"，其他玩家的抵抗瞬间瓦解！]],
+            [[老板的金币如 "德鲁伊回春术"般持续，直接把竞拍热度拉满！]],
+            [[哇哦！老板这波 "圣骑士奉献"出价，其他竞拍者全被烧死啦！]],
+            [[这出价，是要发动 "猎人假死"吗？老板直接让其他玩家放弃抵抗！]],
+            [[老板一出手，就像 "萨满地震术"，其他玩家的出价全被震碎！]],
+            [[救命！老板的金币如 "术士恐惧术"般可怕，其他玩家直接吓跑！]],
+            [[老板这波 "盗贼闷棍"出价，其他玩家根本无法反击！]],
+            [[别人出价是 "新手村练习"，老板出价是 "团本开荒"！太强了！]],
+            [[老板的金币像 "法师炎爆术"一样高伤害，直接秒杀所有竞争者！]],
+            [[这波操作，堪比 "潜行者毁伤"，老板直接把装备拆分成碎片！]],
+            [[老板一喊价，就像 "死亡骑士冰链术"，其他玩家的出价全被冻结！]],
+            [[老板的金币如 "猎人爆炸射击"般炸裂，直接把竞拍场炸上天！]],
+            [[哇塞！老板这波 "圣骑士神恩术"出价，其他玩家只能望尘莫及！]],
+
+            [[救命！老板这手速和魄力，是吃了“竞拍开挂套餐”吧！太强了！]],
+            [[老板出价，寸草不生！这波直接把竞拍门槛抬到外太空！]],
+            [[家人们快看！这位大佬的金币正在组团冲锋，势不可挡！]],
+            [[这出价，是要把装备焊在身上的节奏啊！老板太狠了！]],
+            [[老板这波操作，直接让竞拍变成了个人秀场，瑞斯拜！]],
+            [[别人出价靠犹豫，老板出价靠霸气！膝盖已献上！]],
+            [[哇哦！老板这一嗓子，整个服务器都在颤抖！]],
+            [[竞拍界的“钞能力”天花板出现了！老板yyds！]],
+            [[老板的金币如瀑布般倾泻，这谁顶得住啊！]],
+            [[这波出价，直接给竞拍结果盖棺定论！老板太会了！]],
+            [[救命！老板的金币大军已抵达战场，宣告胜利！]],
+            [[老板一出手，就知有没有！这格局，爱了爱了！]],
+            [[别人出价是试水，老板出价是海啸！太强了！]],
+            [[老板这波操作，直接把竞拍玩成了“金币交响乐”！]],
+            [[天呐！老板的金币正在疯狂上分，无人能敌！]],
+            [[老板出价，直接“杀疯了”！这装备妥妥是你的！]],
+            [[这出价，是要把其他竞拍者“卷”到地心吗？老板牛！]],
+            [[别人竞拍靠运气，老板竞拍靠实力！瑞斯拜！]],
+            [[老板的金币正在上演“速度与激情”，太刺激了！]],
+            [[哇塞！老板这气势，直接把竞拍现场变成了“土豪专属区”！]],
+            [[救命！老板这波操作，直接让竞拍进入“碾压局”！]],
+            [[老板一喊价，空气都凝固了！这威慑力绝了！]],
+            [[别人出价是小打小闹，老板出价是惊天动地！]],
+            [[老板的金币如火箭般发射，这谁能拦得住！]],
+            [[这波出价，直接给装备贴上了“老板专属”标签！]],
+            [[天呐！老板的金币正在疯狂刷屏，太壕了！]],
+            [[老板出价，直接“封神”！这操作太秀了！]],
+            [[别人竞拍是过家家，老板竞拍是打BOSS！太强了！]],
+            [[老板的金币正在谱写“竞拍传奇”，太牛了！]],
+            [[哇哦！老板这一出手，直接把竞拍变成了“降维打击”！]],
+            [[救命！老板的金币大军已势不可挡，宣告胜利！]],
+            [[老板一喊价，全场都沸腾了！这魅力谁能抗拒！]],
+            [[别人出价是毛毛雨，老板出价是倾盆大雨！]],
+            [[老板的金币正在上演“王者归来”，太霸气了！]],
+            [[这波出价，直接把装备“拿捏”得死死的！老板牛！]],
+            [[天呐！老板的金币正在疯狂输出，太猛了！]],
+            [[老板出价，直接“炸场”！这操作太顶了！]],
+            [[别人竞拍是青铜，老板竞拍是王者！瑞斯拜！]],
+            [[老板的金币正在书写“竞拍神话”，太厉害了！]],
+            [[哇塞！老板这气势，直接把竞拍现场变成了“个人演唱会”！]],
+            [[救命！老板这波操作，直接让竞拍进入“无敌模式”！]],
+            [[老板一喊价，世界都安静了！这实力太震撼了！]],
+            [[别人出价是小浪花，老板出价是惊涛骇浪！]],
+            [[老板的金币正在发起“总攻”，胜利在望！]],
+            [[这波出价，直接给装备插上了“老板的翅膀”！]],
+            [[天呐！老板的金币正在疯狂收割，太绝了！]],
+            [[老板出价，直接“起飞”！这操作太帅了！]],
+            [[别人竞拍是新手村，老板竞拍是终极大本营！太强了！]],
+            [[老板的金币正在创造“竞拍奇迹”，太牛啦！]],
+            [[哇哦！老板这一出手，直接把竞拍变成了“老板的Show Time”！]],
+        }
+        for i in ipairs(tbl) do
+            tbl[i] = tbl[i]:gsub("老板", "<%%s>")
+        end
+
+        local minMoney = 10000
+        if BG.IsWLK then
+            minMoney=20000
+        end
+        BG.RegisterEvent("CHAT_MSG_ADDON", function(self, event, ...)
+            if not (BG.IsLeader and BiaoGe.options.autoAuctionHappySay == 1) then return end
+            local prefix, msg, distType, sender = ...
+            if prefix ~= "BiaoGeAuction" then return end
+            local arg1, arg2, arg3, arg4, arg5, arg6, arg7 = strsplit(",", msg)
+            sender = BG.GSN(sender)
+            if arg1 == "SendMyMoney" and distType == "RAID" then
+                local auctionID = tonumber(arg2)
+                local money = tonumber(arg3)
+                if money and money >= minMoney then
+                    for _, f in pairs(_G.BGA.Frames) do
+                        if not f.IsEnd and f.mod ~= "anonymous" and f.auctionID == auctionID then
+                            if random(10) > 5 then
+                                SendChatMessage(format(tbl[random(#tbl)], sender), "RAID")
+                            end
+                            return
+                        end
+                    end
+                end
+            end
+        end)
+    end
+
     -- 拍卖WA字符串
     local wa
     -- WA字符串
@@ -1164,7 +1269,7 @@ BG.Init(function()
             GameTooltip:AddLine(AddTexture("LEFT") .. L["一键导入WA字符串"])
             GameTooltip:AddLine(AddTexture("RIGHT") .. L["复制WA字符串"])
             GameTooltip:AddLine(" ", 1, 0, 0, true)
-            GameTooltip:AddDoubleLine(L["拍卖WA版本："] , BGA.ver)
+            GameTooltip:AddDoubleLine(L["拍卖WA版本："], BGA.ver)
             GameTooltip:AddLine(L["全新的拍卖方式，不再通过传统的聊天栏来拍卖装备，而是使用新的UI来拍卖。"], 1, 0.82, 0, true)
             GameTooltip:AddLine(" ", 1, 0, 0, true)
             GameTooltip:AddLine(L["|cffFFFFFF安装WA：|r此WA是团员端，用于接收团长发出的拍卖消息，没安装的团员显示不了拍卖UI。请团长安装该WA字符串后发给团员安装。如果团员已经安装了BiaoGe插件，可以不用安装该WA。"], 1, 0.82, 0, true)

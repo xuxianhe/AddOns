@@ -24,7 +24,7 @@ local realmID = GetRealmID()
 local player = BG.playerName
 local realmName = GetRealmName()
 
---最后更新时间：25/5/17 11:00
+--最后更新时间：25/5/23 13:15
 local AFDtbl_360 = {
     -- 1200
     "wlk怀旧-范沃森-Selendis",
@@ -50,7 +50,7 @@ local AFDtbl_180 = {
     -- "",
     -- "",
     -- "",
-    -- "",
+    "碧玉矿洞-Fated",
     "维克洛尔-SilverMoon-桃太浪",
     "匕首岭-丹妮卡丽熙",
     "祈福-夜色丨骑",
@@ -114,28 +114,28 @@ local tbl = {
     -- "",
     -- "",
     -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
-    -- "",
+    "无畏-言狗狗保护协会-言而有信",
+    "红玉圣殿-大力彬哥",
+    "银色北伐军-天雨星沉-乔丶",
+    "龙之召唤-听香水榭公会",
+    "比格沃斯-小熊晚安",
+    "死亡猎手-第二世界-小锅米线",
+    "祈福-摸鱼-血风沅",
+    "死亡猎手-ONEPIECE-卡尔汀娜",
+    "特螂普",
+    "比斯巨兽-闪耀光芒吧",
+    "灰烬使者-Ns",
+    "无尽风暴-年轻艺术家-王子",
+    "龙之召唤-大老虎-二狗子",
+    "龙之召唤，神話工会，山岸又逢花",
+    "灰烬使者-七夜雪-北榭倾城丶",
+    "铁血-巴牧师",
+    "莫格莱尼-无忧-河南彭于晏",
+    "比格沃斯-FromShadow-合体熊猫",
+    "碧玉矿洞-小乖不哭",
+    "霜语-八零-一刀满血秒",
+    "辛洛斯-风游鲸",
+    "法尔班克斯-風雨飘飘落凡尘-丶風尘",
     "霜语-马村勇进",
     "奥罗-特兰克斯团",
     "无畏-恶魔术之神-多拂朗明哥",
@@ -640,7 +640,7 @@ BG.Init(function()
         end
         bt:SetScript("OnEnter", function(self)
             wipe(self.texts)
-            local w, h = BG.MainFrame:GetWidth(), BG.MainFrame:GetHeight() - 40
+            local w, h = BG.MainFrame:GetWidth(), BG.MainFrame:GetHeight() - 50
             local f, child = BG.CreateScrollFrame(self, w, h)
             f:SetBackdrop({
                 bgFile = "Interface/ChatFrame/ChatFrameBackground",
