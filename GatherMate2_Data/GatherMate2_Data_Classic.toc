@@ -1,8 +1,8 @@
-## Interface: 11507
+## Interface: 11506
 ## Notes: GatherMate2 data fetched from Wowhead
 ## Title: GatherMate2Data
 ## Author: kagaro, Xinhuan, Spinx, Marrtin
-## Version: v2025-04-12
+## Version: v2025-02-23
 ## LoadOnDemand: 1
 ## Dependencies: GatherMate2
 
