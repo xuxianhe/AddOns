@@ -877,7 +877,7 @@ function addon:ApplyAttributes()
 end
 
 function addon:GameVersionHasTalentSpecs()
-    if addon:ProjectIsRetail() then
+    if addon:ProjectIsRetail() or addon:ProjectIsMists() then
         return true
     elseif addon:ProjectIsWrath() or addon:ProjectIsCataclysm() then
         return true
@@ -889,8 +889,12 @@ end
 -- Returns the active talent spec, encapsulating the differences between
 -- Retail and Wrath.
 function addon:GetActiveTalentSpec()
-    if addon:ProjectIsRetail() then
-        return GetSpecialization()
+    if addon:ProjectIsRetail() or addon:ProjectIsMists() then
+        if GetSpecialization then
+            return GetSpecialization()
+        elseif C_SpecializationInfo then
+            return C_SpecializationInfo.GetSpecialization()
+        end
     elseif addon:ProjectIsWrath() or addon:ProjectIsCataclysm() then
         return GetActiveTalentGroup()
     end
@@ -901,9 +905,14 @@ end
 -- Returns an acceptable string for the given talent spec, covering the
 -- differences between Retail and Wrath
 function addon:GetTalentSpecName(idx)
-    if addon:ProjectIsRetail() then
-        local _, specName = GetSpecializationInfo(idx)
-        return specName
+    if addon:ProjectIsRetail() or addon:ProjectIsMists() then
+        if GetSpecializationInfo then
+            local _, specName = GetSpecializationInfo(idx)
+            return specName
+        elseif C_SpecializationInfo then
+            local _, specName = C_SpecializationInfo.GetSpecializationInfo(idx)
+            return specName
+        end
     elseif addon:ProjectIsWrath() or addon:ProjectIsCataclysm() then
         if idx == 1 then
             return L["Primary"]
@@ -916,7 +925,7 @@ function addon:GetTalentSpecName(idx)
 end
 
 function addon:GetNumTalentSpecs()
-    if addon:ProjectIsRetail() then
+    if addon:ProjectIsRetail() or addon:ProjectIsMists() then
         return GetNumSpecializations()
     elseif addon:ProjectIsWrath() or addon:ProjectIsCataclysm() then
         return 2

@@ -382,13 +382,6 @@ local function configTable()
 						name = L["Details embeded"],
 						args = {},
 					},
-					lfg_invite_info = {
-						order = 4,
-						type = "group",
-						name = L["LFG Invite Info"],
-						childGroups = "tab",
-						args = {},
-					},
 				},
 			},
 			about = {
