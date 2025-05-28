@@ -1,4 +1,4 @@
-## Interface: 30403
+## Interface: 30400
 ## Title: WeakAuras - ItemUseStores
 ## Notes: Store Item Use Data
 ## Author: HopeAsd

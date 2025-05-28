@@ -743,7 +743,6 @@ do
         local Interface = "Interface\\AddOns\\BiaoGe\\Media\\sound\\"
         BG.soundTbl = {
             { ID = "AI", name = L["AI语音"] },
-            { ID = "YingXue", name = L["樱雪"] },
             { ID = "BeiXi", name = L["匕首岭-<TIMEs>贝西"] },
             { ID = "SiKaQi", name = L["司卡奇"] },
         }
@@ -763,6 +762,7 @@ do
             { ID = "countDownStop", name = "倒数暂停.mp3" },
             { ID = "HusbandComeOn", name = "老公加油.mp3" },
             { ID = "qiankuan", name = "未收欠款.mp3" },
+            { ID = "autoAuctionAutoEndTips", name = "自动出价结束.mp3" },
         }
         for _, vv in ipairs(BG.soundTbl) do
             local name = vv.ID
@@ -879,9 +879,6 @@ BG.Init(function()
     local name = "moLing"
     BG.options[name .. "reset"] = 1
     BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
-
-    -- 声音方案
-    BiaoGe.options.Sound = BiaoGe.options.Sound or BG.soundTbl[random(#BG.soundTbl)]
 
     -- 高亮天赋装备
     if not BiaoGe.filterClassNum then

@@ -439,7 +439,7 @@ local function OnClick(self)
             BG.SendMsgToRaid(tbl, BG.tongBaoSendCD)
         else
             if HasQianKuan() then
-                PlaySoundFile(BG["sound_qiankuan" .. BiaoGe.options.Sound], "Master")
+                BG.PlaySound("qiankuan")
             end
 
             local text = L["———通报账单———"]

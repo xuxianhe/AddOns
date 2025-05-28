@@ -453,13 +453,16 @@ end
 
 ------------------按键声音------------------
 function BG.PlaySound(id)
-    if BiaoGe.options['buttonSound'] ~= 1 then return end
-    if id and BG["sound" .. id] then
-        if id == 2 then
-            PlaySoundFile(BG["sound" .. id])
-        else
-            PlaySound(BG["sound" .. id])
+    if BiaoGe.options['buttonSound'] == 1 and type(id) == "number" then
+        if BG["sound" .. id] then
+            if id == 2 then
+                PlaySoundFile(BG["sound" .. id])
+            else
+                PlaySound(BG["sound" .. id])
+            end
         end
+    elseif BiaoGe.options['tipsSound'] == 1 and type(id) == "string" then
+        PlaySoundFile(BG["sound_" .. id .. BiaoGe.options.Sound], "Master")
     end
 end
 

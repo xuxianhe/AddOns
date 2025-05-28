@@ -641,7 +641,9 @@ BG.Init(function()
                     end
 
                     if aura.IsRaidLeader() then
-                        SendChatMessage(format(L["{rt6}拍卖成功{rt6} %s %s %s"], f.link, f.player, f.money), "RAID")
+                        C_Timer.After(.2,function ()
+                            SendChatMessage(format(L["{rt6}拍卖成功{rt6} %s %s %s"], f.link, f.player, f.money), "RAID")
+                        end)
                     end
                 else
                     t:SetText(L["流拍"])
@@ -806,7 +808,7 @@ BG.Init(function()
 
             if not f.start and BiaoGe and BiaoGe.options and BiaoGe.options.Sound then
                 if random(10) <= 1 then
-                    PlaySoundFile(BG["sound_HusbandComeOn" .. BiaoGe.options.Sound])
+                    BG.PlaySound("HusbandComeOn")
                 end
             end
         end
@@ -912,6 +914,7 @@ BG.Init(function()
             f.autoMoneyEdit:SetEnabled(true)
             f.autoMoneyEdit.isLocked = false
             f.hide:Enable()
+            aura.AutoSendEndPlaySound()
         end
 
         aura.UpdateAutoButton(f)
@@ -1032,8 +1035,8 @@ BG.Init(function()
         parent:SetScript("OnUpdate", function(self, t)
             self.t = self.t - t
             if self.t <= 0 then self.t = 0 end
-            self:SetAlpha(1 - self.t / self.alltime)
-            self:SetScale(1 - self.t / self.alltime)
+            self:SetAlpha(max(1 - self.t / self.alltime, 0.01))
+            self:SetScale(max(1 - self.t / self.alltime, 0.01))
             self.myMoneyEdit:SetCursorPosition(0)
             if self.t <= 0 then
                 self:SetScript("OnUpdate", nil)
@@ -1172,6 +1175,12 @@ BG.Init(function()
             if newmoney <= f.autoMoney then
                 C_ChatInfo.SendAddonMessage(aura.AddonChannel, "SendMyMoney" .. "," ..
                     f[_auctionID_] .. "," .. newmoney, "RAID")
+            end
+        end
+
+        function aura.AutoSendEndPlaySound()
+            if BiaoGe and BiaoGe.options and BiaoGe.options.autoAuctionAutoEndTips == 1 then
+                BG.PlaySound("autoAuctionAutoEndTips")
             end
         end
     end
@@ -1734,7 +1743,11 @@ BG.Init(function()
     do
         local f = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
         f:SetSize(aura.WIDTH, aura.HEIGHT)
-        f:SetFrameStrata('HIGH')
+        if BiaoGe and BiaoGe.options and BiaoGe.options.autoAuctionFrameLevel then
+            f:SetFrameStrata(BiaoGe.options.autoAuctionFrameLevel)
+        else
+            f:SetFrameStrata('HIGH')
+        end
         f:SetClampedToScreen(true)
         f:SetFrameLevel(100)
         f:SetToplevel(true)

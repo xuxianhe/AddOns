@@ -1901,7 +1901,7 @@ function BG.RoleOverviewUI()
                                         BG.After(i, function()
                                             SendSystemMessage(msg)
                                             if BG["sound_" .. profession .. "Ready" .. BiaoGe.options.Sound] then
-                                                PlaySoundFile(BG["sound_" .. profession .. "Ready" .. BiaoGe.options.Sound], "Master")
+                                                BG.PlaySound(profession.."Ready")
                                             else
                                                 PlaySoundFile("Interface\\AddOns\\BiaoGe\\Media\\sound\\other\\done.mp3", "Master")
                                             end

@@ -357,7 +357,7 @@ BG.Init(function()
                     BG.After(1, function()
                         biaogefull = false
                     end)
-                    PlaySoundFile(BG["sound_biaogefull" .. BiaoGe.options.Sound], "Master")
+                    BG.PlaySound("biaogefull")
                 end
                 return
             end
@@ -571,7 +571,7 @@ BG.Init(function()
                             BG.FrameLootMsg:AddMessage(BG.STC_g1(format(L["你的心愿达成啦！！！>>>>> %s(%s) <<<<<"], (AddTexture(Texture) .. link), level)))
                             bt.looted:Show()
                             Hope = true
-                            PlaySoundFile(BG["sound_hope" .. BiaoGe.options.Sound], "Master")
+                            BG.PlaySound("hope")
                             break
                         end
                     end

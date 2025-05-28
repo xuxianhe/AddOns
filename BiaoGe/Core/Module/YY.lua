@@ -1782,7 +1782,7 @@ BG.Init(function()
                     BG.ClearFocus()
                     BG.PlaySound(2)
                     BG.After(2.5, function()
-                        PlaySoundFile(BG["sound_pingjia" .. BiaoGe.options.Sound], "Master")
+                        BG.PlaySound("pingjia")
                     end)
                 end)
             end

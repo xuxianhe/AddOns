@@ -1706,7 +1706,7 @@ BG.Init(function()
                                             if not string.find(sound_yes, tostring(itemID)) then
                                                 BG.FrameLootMsg:AddMessage(BG.STC_g1(format(L["你关注的装备开始拍卖了：%s（%s取消关注）"],
                                                     AddTexture(Texture) .. BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]:GetText(), AddTexture("RIGHT"))))
-                                                PlaySoundFile(BG["sound_paimai" .. BiaoGe.options.Sound], "Master")
+                                                BG.PlaySound("paimai")
                                                 sound_yes = sound_yes .. itemID .. " "
                                             end
                                         end
@@ -2067,7 +2067,7 @@ BG.Init(function()
             f:SetScript("OnUpdate", function(self, elapsed)
                 if needStop then
                     needStop = nil
-                    PlaySoundFile(BG["sound_countDownStop" .. BiaoGe.options.Sound], "Master")
+                    BG.PlaySound("countDownStop")
                     local text = L["{rt7}倒数暂停{rt7}"]
                     SendChatMessage(text, channel)
                     auctioning = nil
@@ -2332,7 +2332,7 @@ BG.Init(function()
                                 SendSystemMessage(BG.STC_b1(format(L["<BiaoGe> 已自动清空表格< %s >，分钱人数已改为%s人。"], BG.GetFBinfo(FB, "localName"), num)))
                             end
 
-                            PlaySoundFile(BG["sound_qingkong" .. BiaoGe.options.Sound], "Master")
+                            BG.PlaySound("qingkong")
                         end
                     end
                 end)
@@ -2347,7 +2347,7 @@ BG.Init(function()
                     BG.SetBiaoGeFormHistory(FB, 1)
                     BG.DeleteHistory(FB, 1)
                     SendSystemMessage(BG.STC_b1(L["<BiaoGe> 已撤回清空，还原了表格数据，并删除了历史表格1。"]))
-                    PlaySoundFile(BG["sound_cehuiqingkong" .. BiaoGe.options.Sound], "Master")
+                    BG.PlaySound("cehuiqingkong")
                     BG.PlaySound(1)
                 else
                     SendSystemMessage(BG.STC_b1(L["<BiaoGe>"]) .. " " .. BG.STC_r1(L["只能撤回一次。"]))
@@ -2629,8 +2629,12 @@ BG.Init(function()
             end
             ver = start .. middle .. last
             ver = ver:gsub("%D", "")
-            ver = tonumber(ver)
-            return ver
+            if ver:len() >= 6 then
+                return 0
+            else
+                ver = tonumber(ver)
+                return ver
+            end
         end
 
         -- 比较版本

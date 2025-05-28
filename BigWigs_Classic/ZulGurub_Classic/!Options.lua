@@ -3,11 +3,11 @@
 BigWigs:AddColors("High Priestess Jeklik", {
 	[12097] = {"blue","purple"},
 	[16098] = {"green","red"},
+	[23952] = {"blue","orange"},
 	[23953] = {"green","yellow"},
 	[23954] = {"green","red"},
 	[23970] = "blue",
 	["stages"] = "cyan",
-	["swarm"] = "orange",
 })
 
 BigWigs:AddSounds("High Priestess Jeklik", {
@@ -16,18 +16,22 @@ BigWigs:AddSounds("High Priestess Jeklik", {
 	[23954] = "warning",
 	[23970] = "underyou",
 	["stages"] = "info",
-	["swarm"] = "alarm",
 })
 
 BigWigs:AddColors("High Priest Venoxis", {
+	[8269] = "orange",
 	[23860] = "yellow",
-	[23861] = {"green","yellow"},
-	[23895] = "orange",
+	[23861] = {"blue","red"},
+	[23865] = {"blue","yellow"},
+	[23895] = {"green","orange"},
+	["stages"] = "cyan",
 })
 
 BigWigs:AddSounds("High Priest Venoxis", {
-	[23861] = "info",
+	[8269] = "long",
+	[23861] = {"alarm","underyou"},
 	[23895] = "alert",
+	["stages"] = "info",
 })
 
 BigWigs:AddColors("High Priestess Mar'li", {
@@ -104,7 +108,7 @@ BigWigs:AddColors("Jin'do the Hexxer", {
 	[24262] = "red",
 	[24306] = {"blue","yellow"},
 	[24309] = "orange",
-	[24466] = {"blue","cyan"},
+	[24466] = {"blue","yellow"},
 })
 
 BigWigs:AddSounds("Jin'do the Hexxer", {
