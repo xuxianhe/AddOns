@@ -758,7 +758,7 @@ BG.Init(function()
 
         local buttons = {}
         function BG.tradeQianKuanListFrame:Update()
-            self.frame:Hide()
+            BG.tradeQianKuanListFrame.frame:Hide()
             if BiaoGe.options["autoTrade"] == 1 and BiaoGe.options["qiankuanTrade"] == 1 and IsInRaid(1) then
                 local unit = "NPC"
                 if BG.DeBug then unit = "player" end
@@ -919,8 +919,8 @@ BG.Init(function()
                                     bt:SetPoint("LEFT", bts.qiankuan, "RIGHT", 5, 0)
                                     bt:SetText(L["清除"])
                                     bts.button = bt
-                                    bt:SetScript("OnClick", function(self)
-                                        if self.hasItem and not IsAltKeyDown() then
+                                    bt:SetScript("OnClick", function()
+                                        if BG.tradeQianKuanListFrame.hasItem and not IsAltKeyDown() then
                                             return
                                         end
                                         BG.PlaySound(1)
@@ -934,11 +934,11 @@ BG.Init(function()
                                         BiaoGe[FB]["boss" .. b]["qiankuan" .. i] = nil
                                         BG.Frame[FB]["boss" .. b]["qiankuan" .. i]:Hide()
 
-                                        self:Update()
+                                        BG.tradeQianKuanListFrame:Update()
                                     end)
                                     bt:SetScript("OnEnter", function(self)
                                         bts.ds:Show()
-                                        if self.hasItem then
+                                        if BG.tradeQianKuanListFrame.hasItem then
                                             GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
                                             GameTooltip:ClearLines()
                                             GameTooltip:AddLine(L["错误"], 1, 0, 0, true)
@@ -965,29 +965,29 @@ BG.Init(function()
                     end
                 end
 
-                self.Text2.text:SetText(sum)
+                BG.tradeQianKuanListFrame.Text2.text:SetText(sum)
 
                 if #buttons > 5 then
                     frame.scroll.ScrollBar:Show()
-                    frame.scroll:SetWidth(self.frame:GetWidth() - 15 - 31)
+                    frame.scroll:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 15 - 31)
                     for i, v in ipairs(buttons) do
                         v.item:SetWidth(v.hasicon and 125 or (125 + v.icon:GetWidth()))
                         v.line:SetEndPoint("BOTTOMLEFT", frame.scroll:GetWidth(), 0)
-                        v.frame:SetWidth(self.frame:GetWidth() - 15 - 31)
-                        v.ds:SetWidth(self.frame:GetWidth() - 15 - 31)
+                        v.frame:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 15 - 31)
+                        v.ds:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 15 - 31)
                     end
                 else
                     frame.scroll.ScrollBar:Hide()
-                    frame.scroll:SetWidth(self.frame:GetWidth() + 5)
+                    frame.scroll:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() + 5)
                     for i, v in ipairs(buttons) do
                         v.item:SetWidth(v.hasicon and 145 or (145 + v.icon:GetWidth()))
                         v.line:SetEndPoint("BOTTOMLEFT", frame.scroll:GetWidth() - 30, 0)
-                        v.frame:SetWidth(self.frame:GetWidth() - 25)
-                        v.ds:SetWidth(self.frame:GetWidth() - 25)
+                        v.frame:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 25)
+                        v.ds:SetWidth(BG.tradeQianKuanListFrame.frame:GetWidth() - 25)
                     end
                 end
                 if yes then
-                    self.frame:Show()
+                    BG.tradeQianKuanListFrame.frame:Show()
                 end
             end
         end
