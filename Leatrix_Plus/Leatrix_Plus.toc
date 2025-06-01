@@ -1,14 +1,14 @@
-## Interface: 40401, 40402
+## Interface: 30404
 
-## Title: Leatrix Plus
-## Title-zhCN: Leatrix Plus [|cffeda55f功能百宝箱|r]
-## Title-zhTW: Leatrix Plus [|cffeda55f功能百寶箱|r]
+## Title: Leatrix Plus |cff99ddff谷|r|cff88ccee风|r|cff77bbdd修|r|cff66aacc复|r|cff5599bb版|r|cff4488aa-|r|cff00aaffW|r|cff0099ffL|r|cff0088ffK|r
+## Title-zhCN: Leatrix Plus |cff99ddff谷|r|cff88ccee风|r|cff77bbdd修|r|cff66aacc复|r|cff5599bb版|r|cff4488aa-|r|cff00aaffW|r|cff0099ffL|r|cff0088ffK|r
+## Title-zhTW: Leatrix Plus |cff99ddff谷|r|cff88ccee風|r|cff77bbdd修|r|cff66aacc復|r|cff5599bb版|r|cff4488aa-|r|cff00aaffW|r|cff0099ffL|r|cff0088ffK|r
 
 ## Notes: Quality of life addon.
-## Notes-zhCN: 哆啦A梦的百宝袋
-## Notes-zhTW: 哆啦A夢的百寶袋
+## Notes-zhCN: 哆啦A梦的百宝袋。谷风呀
+## Notes-zhTW: 哆啦A夢的百寶袋。谷风呀
 
-## Version: 4.0.47
+## Version: 3.4.4b 谷风呀
 ## Author: Leatrix
 ## SavedVariables: LeaPlusDB
 

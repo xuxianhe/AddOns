@@ -1,0 +1,23 @@
+## Interface: 40400
+
+## Title: Leatrix Plus |cff99ddff谷|r|cff88ccee风|r|cff77bbdd修|r|cff66aacc复|r|cff5599bb版|r
+## Title-zhCN: Leatrix Plus |cff99ddff谷|r|cff88ccee风|r|cff77bbdd修|r|cff66aacc复|r|cff5599bb版|r
+## Title-zhTW: Leatrix Plus |cff99ddff谷|r|cff88ccee風|r|cff77bbdd修|r|cff66aacc復|r|cff5599bb版|r
+
+## Notes: Quality of life addon.
+## Notes-zhCN: 哆啦A梦的百宝袋。谷风呀
+## Notes-zhTW: 哆啦A夢的百寶袋。谷风呀
+
+## Version: 3.0.191 谷风呀
+## Author: Leatrix
+## SavedVariables: LeaPlusDB
+
+## OptionalDeps: Leatrix_enUS, ElvUI, Glass, CharacterStatsWRATH, totalRP3, TitanClassic
+
+## X-Curse-Project-ID: 463863
+
+Leatrix_Plus_Library.lua
+Leatrix_Plus_Locale.lua
+Leatrix_Plus_Media.lua
+Leatrix_Plus.xml
+Leatrix_Plus.lua

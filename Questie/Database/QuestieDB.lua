@@ -83,8 +83,11 @@ local questTagCorrections = {
     [8122] = {41, "PvP"},
     [8367] = {41, "PvP"},
     [8371] = {41, "PvP"},
+    [8375] = {41, "PvP"},
+    [8383] = {41, "PvP"},
     [8385] = {41, "PvP"},
     [8386] = {41, "PvP"},
+    [8387] = {41, "PvP"},
     [8388] = {41, "PvP"},
     [8404] = {41, "PvP"},
     [8405] = {41, "PvP"},
@@ -346,9 +349,7 @@ local questTagCorrections = {
     [8372] = {41, "PvP"},
     [8373] = {41, "PvP"},
     [8374] = {41, "PvP"},
-    [8383] = {41, "PvP"},
     [8384] = {41, "PvP"},
-    [8387] = {41, "PvP"},
     [8389] = {41, "PvP"},
     [8390] = {41, "PvP"},
     [8391] = {41, "PvP"},
@@ -591,6 +592,8 @@ function QuestieDB:Initialize()
     Questiedbcharhidden = Questie.db.char.hidden
 end
 
+---@param objectId ObjectId
+---@return Object|nil
 function QuestieDB:GetObject(objectId)
     if not objectId then
         return nil
@@ -619,6 +622,8 @@ function QuestieDB:GetObject(objectId)
     return obj;
 end
 
+---@param itemId ItemId
+---@return Item|nil
 function QuestieDB:GetItem(itemId)
     if (not itemId) or (itemId == 0) then
         return nil
@@ -1649,8 +1654,8 @@ function QuestieDB:GetCreatureLevels(quest)
     return creatureLevels
 end
 
----@param npcId number
----@return table|nil
+---@param npcId NpcId
+---@return NPC|nil
 function QuestieDB:GetNPC(npcId)
     if not npcId then
         return nil
@@ -1715,6 +1720,13 @@ end
 ---------------------------------------------------------------------------------------------------
 -- Modifications to questDB
 
+local questsRequiringNewbieAchievement = {
+    [31316] = true, -- Julia, The Pet Tamer
+    [31812] = true, -- Zunta, The Pet Tamer
+    [32008] = true, -- Audrey Burnhep
+    [32009] = true, -- Varzok
+}
+
 function _QuestieDB:CheckAchievementRequirements(questId)
     -- So far the only Quests that we know of that requires an earned Achievement are the ones offered by:
     -- https://www.wowhead.com/wotlk/npc=35094/crusader-silverdawn
@@ -1729,6 +1741,10 @@ function _QuestieDB:CheckAchievementRequirements(questId)
         end
 
         return false
+    end
+
+    if questsRequiringNewbieAchievement[questId] then
+        return select(13, GetAchievementInfo(7433)) -- Newbie
     end
 end
 

@@ -1,8 +1,7 @@
 # BigWigs
 
-## [v388.1](https://github.com/BigWigsMods/BigWigs/tree/v388.1) (2025-05-27)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v388...v388.1) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
+## [v388.3](https://github.com/BigWigsMods/BigWigs/tree/v388.3) (2025-05-31)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs/compare/v388.2...v388.3) [Previous Releases](https://github.com/BigWigsMods/BigWigs/releases)
 
-- LiberationOfUndermine/Rik: Only show excitement message on max stacks  
-- LiberationOfUndermine/Rik: Throttle and rename Entranced  
-- Loader: Cleanup  
+- Loader: Fix an issue that was causing the Shadowlands addon to become disabled, closes #2055  
+- Plugins/BossBlock: Horrific Vision of Orgrimmar talking heads  

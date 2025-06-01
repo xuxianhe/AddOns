@@ -420,9 +420,18 @@ function MopNpcFixes.Load()
             [npcKeys.zoneID] = zoneIDs.SILVERMOON_CITY,
             [npcKeys.spawns] = {[zoneIDs.SILVERMOON_CITY] = {{82.8,38.8}}},
         },
+        [62923] = { -- Empty Package
+            [npcKeys.zoneID] = zoneIDs.THE_JADE_FOREST,
+            [npcKeys.spawns] = {
+                [zoneIDs.THE_JADE_FOREST] = {{22.9,30.6}}
+            },
+        },
         [63296] = { -- Gato
             [npcKeys.zoneID] = zoneIDs.VALLEY_OF_TRIALS,
             [npcKeys.spawns] = {[zoneIDs.VALLEY_OF_TRIALS] = {{42.2,68.4}}},
+        },
+        [64033] = { -- Master Angler Marina
+            [npcKeys.friendlyToFaction] = "A",
         },
         [64738] = { -- Hooded Crusader
             [npcKeys.spawns] = {[zoneIDs.SCARLET_HALLS] = {{-1,-1}}},
@@ -430,8 +439,19 @@ function MopNpcFixes.Load()
         [64764] = { -- Hooded Crusader
             [npcKeys.spawns] = {[zoneIDs.SCARLET_HALLS] = {{-1,-1}}},
         },
+        [65310] = { -- Turnip Punching Bag
+            [npcKeys.zoneID] = 0,
+            [npcKeys.spawns] = {},
+        },
+        [65325] = { -- Puntable Marmot
+            [npcKeys.zoneID] = 0,
+            [npcKeys.spawns] = {},
+        },
         [66449] = { -- Ang the Wise
             [npcKeys.spawns] = {[zoneIDs.STORMWIND_CITY] = {{68.4,17},{68.6,17}}},
+        },
+        [66741] = { -- Aki the Chosen - Remove with Patch 5.4
+            [npcKeys.spawns] = {[zoneIDs.VALE_OF_ETERNAL_BLOSSOMS] = {{84,28.6}}},
         },
         [68430] = { -- Arcanis Mechanica
             [npcKeys.spawns] = {[zoneIDs.SILVERMOON_CITY] = {{86.4,31.8}}},

@@ -1,0 +1,19 @@
+## Interface: 40402
+
+## Title: Leatrix Maps |cff99ddff谷|r|cff88ccee风|r|cff77bbdd修|r|cff66aacc复|r|cff5599bb版|r|cff4488aa-|r|cff00aaffC|r|cff0099ffT|r|cff0088ffM|r
+## Notes: Enhancements for your maps.
+
+## Version: 4.0.56b
+## Author: Leatrix
+## SavedVariables: LeaMapsDB
+
+## OptionalDeps: Leatrix_enUS, ElvUI, Demodal, Carbonite
+
+## X-Curse-Project-ID: 463868
+
+Leatrix_Maps_Library.lua
+Leatrix_Maps_Locale.lua
+Leatrix_Maps.xml
+Leatrix_Maps_Icons_Cata.lua
+Leatrix_Maps_Reveal_Cata.lua
+Leatrix_Maps.lua
