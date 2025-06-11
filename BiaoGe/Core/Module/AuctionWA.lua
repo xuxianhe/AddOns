@@ -5,7 +5,7 @@ local pt = print
 
 BG.Init(function()
     local aura = aura_env or {}
-    aura.ver = "v2.9"
+    aura.ver = "v3.0"
 
     function aura.GetVerNum(str)
         return tonumber(string.match(str, "v(%d+%.%d+)")) or 0
@@ -102,7 +102,8 @@ BG.Init(function()
         L["ALT+点击：全部折叠"] = "ALT+點擊：全部摺疊"
         L["你已是%s的出价最高者，|cffff0000没必要自己顶自己|r。真的要继续出价到 %s ？"] = "你已是%s的出價最高者，|cffff0000沒必要自己頂自己|r。真的要繼續出價到 %s ？"
         L["备注："] = "備註："
-        L["{rt1}拍卖开始{rt1} %s 起拍价：%s %s"] = "{rt1}拍賣開始{rt1} %s 起拍價：%s %s"
+        L["{rt1}拍卖开始{rt1} %s 起拍价：%s"] = "{rt1}拍賣開始{rt1} %s 起拍價：%s"
+        L["团长："] = "團長"
     end
 
     function aura.GN(unit)
@@ -335,6 +336,15 @@ BG.Init(function()
                 f.IsSmallWindow = false
                 f.hide:SetText(L["折叠"])
 
+                if f.highlight then
+                    f.highlight.flashGroup:Stop()
+                    f.highlight:Hide()
+                end
+                if f.autoFrame.highlight then
+                    f.autoFrame.highlight.flashGroup:Stop()
+                    f.autoFrame.highlight:Hide()
+                end
+
                 if aura.IsML() then
                     f.cancel:Show()
                 else
@@ -377,6 +387,15 @@ BG.Init(function()
                 if f.isAuto then return end
                 f.IsSmallWindow = true
                 f.hide:SetText(L["展开"])
+
+                if f.highlight then
+                    f.highlight.flashGroup:Stop()
+                    f.highlight:Hide()
+                end
+                if f.autoFrame.highlight then
+                    f.autoFrame.highlight.flashGroup:Stop()
+                    f.autoFrame.highlight:Hide()
+                end
 
                 f.autoFrame:Hide()
                 f.cancel:Hide()
@@ -641,7 +660,7 @@ BG.Init(function()
                     end
 
                     if aura.IsRaidLeader() then
-                        C_Timer.After(.2,function ()
+                        C_Timer.After(.2, function()
                             SendChatMessage(format(L["{rt6}拍卖成功{rt6} %s %s %s"], f.link, f.player, f.money), "RAID")
                         end)
                     end
@@ -865,7 +884,7 @@ BG.Init(function()
             tinsert(f.logs, { money = money, player = "|cff" .. aura.GREEN1 .. L["你"] .. "|r" })
             tinsert(f.logs2, { money = money, player = "|cff" .. aura.GREEN1 .. L["你"] .. "|r" })
         else
-            if f.mod == "anonymous" and not (BiaoGe and BiaoGe.options and BiaoGe.options.autoAuctionShowSender == 1) then
+            if f.mod == "anonymous" then
                 f.topMoneyText:SetText(L["|cffFFD100出价最高者：|r"] .. L["別人(匿名)"])
                 tinsert(f.logs, { money = money, player = L["匿名"] })
             else
@@ -971,6 +990,27 @@ BG.Init(function()
         return height
     end
 
+    local function CheckAllFrameOverlap()
+        for i = 1, aura.maxNumFrame do
+            local f = _G.BGA.Frames[i]
+            if f and not f.animing then
+                local top = f:GetTop()
+                local bottom = f:GetBottom()
+                for i = 1, aura.maxNumFrame do
+                    local _f = _G.BGA.Frames[i]
+                    if _f and not _f.animing and f.num ~= _f.num then
+                        local _top = _f:GetTop()
+                        local _bottom = _f:GetBottom()
+                        if (top <= _top and top >= _bottom) or (bottom <= _top and bottom >= _bottom) then
+                            aura.UpdateAllFrames()
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     local function UpdateAllFrameNum()
         local num = 0
         local tbl = {}
@@ -1032,6 +1072,7 @@ BG.Init(function()
     function aura.anim(parent)
         parent.alltime = 0.5
         parent.t = 0.5
+        parent.animing = true
         parent:SetScript("OnUpdate", function(self, t)
             self.t = self.t - t
             if self.t <= 0 then self.t = 0 end
@@ -1039,7 +1080,11 @@ BG.Init(function()
             self:SetScale(max(1 - self.t / self.alltime, 0.01))
             self.myMoneyEdit:SetCursorPosition(0)
             if self.t <= 0 then
+                self.animing = nil
                 self:SetScript("OnUpdate", nil)
+                C_Timer.After(0, function()
+                    CheckAllFrameOverlap()
+                end)
             end
         end)
     end
@@ -1203,6 +1248,8 @@ BG.Init(function()
         end
         local AuctionFrame
 
+        mod = "normal"
+
         -- 主界面
         do
             local f = CreateFrame("Frame", nil, _G.BGA.AuctionMainFrame, "BackdropTemplate")
@@ -1220,7 +1267,6 @@ BG.Init(function()
             else
                 for i = 1, aura.maxNumFrame do
                     if not _G.BGA.Frames[i] then
-                        -- f:SetPoint("TOP", 0, -(aura.HEIGHT + 5) * (i - 1))
                         f.num = i
                         f:SetPoint("TOP", 0, -GetHeight(f.num))
                         break
@@ -1800,10 +1846,6 @@ BG.Init(function()
                 aura.CreateAuction(auctionID, itemID, money, duration, player, mod)
 
                 if aura.IsRaidLeader() then
-                    local tbl = {
-                        normal = L["正常模式"],
-                        anonymous = L["匿名模式"],
-                    }
                     local function GetVIPTipsText(link)
                         local tipsText = ""
                         if BiaoGeVIP and BiaoGeVIP.auction then
@@ -1819,7 +1861,7 @@ BG.Init(function()
                             for _, FB in ipairs(tbl) do
                                 local text = BiaoGeVIP.auction[FB].money[itemID .. "tips"]
                                 if text then
-                                    tipsText = " " .. L["备注："] .. text
+                                    tipsText = " " .. L["团长："] .. text
                                     break
                                 end
                             end
@@ -1828,8 +1870,8 @@ BG.Init(function()
                     end
                     local _, link = GetItemInfo(itemID)
                     if link then
-                        local msg = format(L["{rt1}拍卖开始{rt1} %s 起拍价：%s %s"],
-                            link, money, (tbl[mod] and "<" .. tbl[mod] .. ">" or ""))
+                        local msg = format(L["{rt1}拍卖开始{rt1} %s 起拍价：%s"],
+                            link, money)
                         local tipsText = GetVIPTipsText(link)
                         if strlen(msg .. tipsText) < 255 then
                             msg = msg .. tipsText
@@ -1839,8 +1881,8 @@ BG.Init(function()
                         After(0.5, function()
                             local _, link = GetItemInfo(itemID)
                             if link then
-                                local msg = format(L["{rt1}拍卖开始{rt1} %s 起拍价：%s %s"],
-                                    link, money, (tbl[mod] and "<" .. tbl[mod] .. ">" or ""))
+                                local msg = format(L["{rt1}拍卖开始{rt1} %s 起拍价：%s"],
+                                    link, money)
                                 local tipsText = GetVIPTipsText(link)
                                 if strlen(msg .. tipsText) < 255 then
                                     msg = msg .. tipsText

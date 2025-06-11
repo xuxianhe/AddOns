@@ -1,49 +1,47 @@
-# [5.12.9](https://github.com/WeakAuras/WeakAuras2/tree/5.12.9) (2024-04-29)
+# [5.19.10](https://github.com/WeakAuras/WeakAuras2/tree/5.19.10) (2025-05-31)
 
-[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.12.8...5.12.9)
+[Full Changelog](https://github.com/WeakAuras/WeakAuras2/compare/5.19.9...5.19.10)
 
 ## Highlights
 
- - Added "Parent Frame" as option to "Glow Frame Type"
-- Cataclysm bug fixes 
+Fix babelfish.lua writing
 
 ## Commits
 
-Boneshock (1):
+InfusOnWoW (19):
 
-- add Location trigger (#4917)
-
-InfusOnWoW (8):
-
+- Fix babelfish.lua writing
+- Localization: Restore a few accidentally dropped english translations
+- Add a pride month logo and use it in June
+- Guard against duration being 0 leading to division by zero error
+- Revert "State: Don't put the trigger table into the state"
 - Update Atlas File List from wago.tools
-- Fix tracking specific charges being affeced by paused evoker spells
-- Weapon Enchant Trigger: Fix trigger stack check and missing condition
-- Add missing order increment
-- Fix AddFakeInformation for TSU auras to not overwrite progressType
-- Shape shift Trigger: Add note for incompatibility with SoD's Gladiator rune
-- Remove dead code
-- Update Atlas File List from wago.tools
-
-Lynn (1):
-
-- Added "Parent Frame" as option to "Glow Frame Type" (#5025)
+- Update Discord List
+- Update Discord List
+- State: Don't put the trigger table into the state
+- Fix "Negator" localization
+- Boss Mod Trigger: Fix count condition
+- Rework TextEditor's edit error handling
+- Update Discord List
+- Sub Element Anchoring: Make options a bit less confussing
+- Rename "Nameplate Type" to "Hostility"
+- Unit Characteristics/Health/Power trigger
+- On loadstring error, print a better hint where the error comes form
+- Add a onLoad/onUnload custom function
+- Update Discord List
 
 Stanzilla (4):
 
 - Update WeakAurasModelPaths from wago.tools
 - Update WeakAurasModelPaths from wago.tools
 - Update WeakAurasModelPaths from wago.tools
-- Mark model paths script as executeable
-
-emptyrivers (1):
-
-- only use whisper comms if target is on the actually same server (#5019)
+- Update WeakAurasModelPaths from wago.tools
 
 mrbuds (5):
 
-- Cataclysm: add class & spec load option
-- FontString:SetJustifyV error with "CENTER" on cataclysm beta
-- Types (#5013)
-- Cataclysm: remove "Resilience" from "Character Stats" trigger
-- Classic: fix talent not checked on changing talent group
+- Add an "Assisted Combat Next Cast" trigger for 11.1.7
+- Fix typo
+- Use spellId arg of SPELL_UPDATE_COOLDOWN
+- BossMod Announce: fix count condition
+- Fix tooltips with custom code using unitAuraInstanceID
 

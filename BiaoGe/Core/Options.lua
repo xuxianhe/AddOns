@@ -496,11 +496,16 @@ BG.Init(function()
             if BiaoGe.options[name] == "0,0,0,0.8" then
                 BiaoGe.options[name] = "0.01,0.01,0.01,0.8"
             end
+            BG.Once("options", 250610, function()
+                if BiaoGe.options[name] == "Interface/FrameGeneral/UI-Background-Rock" then
+                    BiaoGe.options[name] = "0.01,0.01,0.01,0.8"
+                    BiaoGe.options["alpha"] = .8
+                end
+            end)
 
             local table = {
                 { tex = "Interface/FrameGeneral/UI-Background-Rock", name = L["岩石"], alpha = 1 },
                 { tex = "Interface/FrameGeneral/UI-Background-Marble", name = L["大理石"], alpha = 1 },
-                -- { tex = "0,0,0,0.8", name = L["黑夜"], },
                 { tex = "0.01,0.01,0.01,0.8", name = L["黑夜"], },
                 { tex = "0,0,0,0", name = L["皇帝的新衣"], },
             }
@@ -2114,22 +2119,6 @@ BG.Init(function()
             BG.options["button" .. name] = f
         end
         h = h + 30
-        -- 匿名模式对你无效
-        do
-            BG.Once("autoAuctionShowSender", 250523, function()
-                BiaoGe.options.autoAuctionShowSender = 1
-            end)
-            local name = "autoAuctionShowSender"
-            BG.options[name .. "reset"] = 1
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
-            local ontext = {
-                L["匿名模式对你无效"],
-                L["勾选后，在竞拍过程中，匿名对你无效，你将可以直接看到实际出价人，不管你是团长还是团员。"],
-            }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["匿名模式对你无效"] .. "*", autoAuction, 15, height - h, ontext)
-            BG.options["button" .. name] = f
-        end
-        h = h + 30
         -- 竞拍欢呼语
         do
             local name = "autoAuctionHappySay"
@@ -2336,7 +2325,7 @@ BG.Init(function()
                 height = height - height_jiange - height_jiange
                 local text = roleOverview:CreateFontString(nil, "ARTWORK", "GameFontNormal")
                 text:SetPoint("TOPLEFT", width, height)
-                text:SetText(BG.STC_y1(L["货币*"]))
+                text:SetText(BG.STC_w1(L["货币*"]))
                 height = height - height_jiange
                 local l = O.CreateLine(roleOverview, height + line_height)
 
@@ -2349,7 +2338,7 @@ BG.Init(function()
                 text:SetText(BG.STC_b1(L["团本*"]))
                 height = height - height_jiange
                 O.CreateLine(roleOverview, height + line_height)
-                height = CreateFBCDbutton(1, #BG.FBCDall_table - 3, width, height, 100, height_jiange)
+                height = CreateFBCDbutton(1, 7, width, height, 100, height_jiange)
 
                 -- 专业
                 height = height - height_jiange - height_jiange
@@ -2358,13 +2347,22 @@ BG.Init(function()
                 text:SetText("|cffADFF2F" .. (TRADE_SKILLS .. "*") .. RR)
                 height = height - height_jiange
                 O.CreateLine(roleOverview, height + line_height)
-                height = CreateFBCDbutton(#BG.FBCDall_table - 2, #BG.FBCDall_table, width, height, 100, height_jiange)
+                height = CreateFBCDbutton(#BG.FBCDall_table - 2 - #BG.factionTbl, #BG.FBCDall_table - #BG.factionTbl, width, height, 100, height_jiange)
+
+                -- 声望
+                height = height - height_jiange - height_jiange
+                local text = roleOverview:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+                text:SetPoint("TOPLEFT", width, height)
+                text:SetText("|cffFFFF00" .. (L["声望"] .. "*") .. RR)
+                height = height - height_jiange
+                O.CreateLine(roleOverview, height + line_height)
+                height = CreateFBCDbutton(#BG.FBCDall_table - #BG.factionTbl + 1, #BG.FBCDall_table, width, height, 100, height_jiange)
 
                 -- 货币
                 height = height - height_jiange - height_jiange
                 local text = roleOverview:CreateFontString(nil, "ARTWORK", "GameFontNormal")
                 text:SetPoint("TOPLEFT", width, height)
-                text:SetText(BG.STC_y1(L["货币*"]))
+                text:SetText(BG.STC_w1(L["货币*"]))
                 height = height - height_jiange
                 local l = O.CreateLine(roleOverview, height + line_height)
 
@@ -2411,13 +2409,22 @@ BG.Init(function()
                 text:SetText("|cffADFF2F" .. (TRADE_SKILLS .. "*") .. RR)
                 height = height - height_jiange
                 O.CreateLine(roleOverview, height + line_height)
-                height = CreateFBCDbutton(41, #BG.FBCDall_table, width, height, 100, height_jiange)
+                height = CreateFBCDbutton(41, #BG.FBCDall_table - #BG.factionTbl, width, height, 100, height_jiange)
+
+                -- 声望
+                height = height - height_jiange - height_jiange
+                local text = roleOverview:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+                text:SetPoint("TOPLEFT", width, height)
+                text:SetText("|cffFFFF00" .. (L["声望"] .. "*") .. RR)
+                height = height - height_jiange
+                O.CreateLine(roleOverview, height + line_height)
+                height = CreateFBCDbutton(#BG.FBCDall_table - #BG.factionTbl + 1, #BG.FBCDall_table, width, height, 100, height_jiange)
 
                 -- 货币
                 height = height - height_jiange - height_jiange
                 local text = roleOverview:CreateFontString(nil, "ARTWORK", "GameFontNormal")
                 text:SetPoint("TOPLEFT", width, height)
-                text:SetText(BG.STC_y1(L["货币*"]))
+                text:SetText(BG.STC_w1(L["货币*"]))
                 height = height - height_jiange
                 local l = O.CreateLine(roleOverview, height + line_height)
 
@@ -2460,7 +2467,7 @@ BG.Init(function()
                 height = height - height_jiange - height_jiange
                 local text = roleOverview:CreateFontString(nil, "ARTWORK", "GameFontNormal")
                 text:SetPoint("TOPLEFT", width, height)
-                text:SetText(BG.STC_y1(L["货币*"]))
+                text:SetText(BG.STC_w1(L["货币*"]))
                 height = height - height_jiange
                 local l = O.CreateLine(roleOverview, height + line_height)
 
@@ -3148,24 +3155,39 @@ BG.Init(function()
                     " ",
                     L["在集结号活动的右键菜单里增加[邀请][复制活动说明]按钮。"],
                 },
-                -- onClick = function(self)
-                --     local addonName = "MeetingHorn"
-                --     if not IsAddOnLoaded(addonName) then return end
-                --     if self:GetChecked() then
-                --         BG.MeetingHorn.WhisperButton:Show()
-                --         BG.MeetingHorn.WhisperFrame:Show()
-                --         BiaoGe.MeetingHornWhisper.WhisperFrame = true
-                --     else
-                --         BG.MeetingHorn.WhisperButton:Hide()
-                --     end
-                -- end
             })
-            if BG.IsWLK then
-                -- tinsert(tbl[#tbl].ontext, " ")
-                -- tinsert(tbl[#tbl].ontext, L["在团长的右键菜单里增加[进入DD语音房间]按钮。"])
-            end
             if BG.IsVanilla then
                 tbl[#tbl].ontext[2] = L["预设装等、自定义文本，当你点击集结号活动密语时会自动添加该内容。"]
+            end
+            -- 禁用语音开团快人一步
+            if BG.IsWLK then
+                tinsert(tbl, {
+                    name = "MeetingHorn_banVoiceList",
+                    name2 = L["禁用语音开团快人一步"] .. "*",
+                    reset = 0,
+                    ontext = {
+                        L["禁用语音开团快人一步"],
+                        L["活动列表顶部的语音开团快人一步将会被禁用，其活动将会合并到常规活动里。"],
+                    },
+                    onClick = function(self)
+                        local addonName = "MeetingHorn"
+                        if not IsAddOnLoaded(addonName) then return end
+                        local MeetingHorn = LibStub("AceAddon-3.0"):GetAddon(addonName)
+                        local LFG = MeetingHorn:GetModule('LFG', 'AceEvent-3.0', 'AceTimer-3.0', 'AceComm-3.0', 'LibCommSocket-3.0')
+                        if self:GetChecked() then
+                            if LFG.SQDU then
+                                LFG.SQDU = BG.MeetingHorn.SQDU_newFuc
+                                if LFG.voiceList then
+                                    wipe(LFG.voiceList)
+                                end
+                            end
+                        else
+                            if LFG.SQDU then
+                                LFG.SQDU = BG.MeetingHorn.SQDU_oldFuc
+                            end
+                        end
+                    end
+                })
             end
 
             for i, v in ipairs(tbl) do

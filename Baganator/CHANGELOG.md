@@ -1,6 +1,6 @@
 # Baganator
 
-## [693](https://github.com/Baganator/Baganator/tree/693) (2025-05-28)
-[Full Changelog](https://github.com/Baganator/Baganator/compare/692...693) 
+## [697](https://github.com/Baganator/Baganator/tree/697) (2025-06-09)
+[Full Changelog](https://github.com/Baganator/Baganator/compare/696...697) 
 
-- Ungroup stacks when socketing a gem  
+- Remove some usage of `select` to improve performance  

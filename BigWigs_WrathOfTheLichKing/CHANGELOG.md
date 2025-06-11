@@ -1,6 +1,6 @@
 # BigWigs [Wrath of the Lich King]
 
-## [v11.1.5](https://github.com/BigWigsMods/BigWigs_WrathOfTheLichKing/tree/v11.1.5) (2025-05-21)
-[Full Changelog](https://github.com/BigWigsMods/BigWigs_WrathOfTheLichKing/compare/v11.1.4...v11.1.5) [Previous Releases](https://github.com/BigWigsMods/BigWigs_WrathOfTheLichKing/releases)
+## [v11.1.6](https://github.com/BigWigsMods/BigWigs_WrathOfTheLichKing/tree/v11.1.6) (2025-06-10)
+[Full Changelog](https://github.com/BigWigsMods/BigWigs_WrathOfTheLichKing/compare/v11.1.5...v11.1.6) [Previous Releases](https://github.com/BigWigsMods/BigWigs_WrathOfTheLichKing/releases)
 
-- Ulduar/YoggSaron: Fix a negative duration  
+- Move some CheckForWipe registration from OnEnable to OnEngage  

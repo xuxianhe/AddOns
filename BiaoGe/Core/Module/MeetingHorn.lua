@@ -187,8 +187,6 @@ BG.Init2(function()
                 if not select(2, GetChannelName(channelName)) then
                     local channels = { GetChannelList() }
                     if channels and #channels > 3 then
-                        MeetingHorn.MainPanel:Show()
-                        MeetingHorn.MainPanel:Hide()
                         JoinTemporaryChannel(channelName)
                     end
                     BG.After(3, JoinMeetingHorn)
@@ -499,18 +497,34 @@ BG.Init2(function()
         local AchievementTitle, AchievementTitleID, AchievementEdit, AchievementCheckButton
         if not BG.IsVanilla then
             local onEnterTextTbl = {
-                "25TOC",
-                3812,
-                3916,
-                3819,
-                3818,
-                3817,
-                "10TOC",
-                3918,
-                3917,
-                3810,
-                3809,
-                3808,
+                "25ICC",
+                4637,
+                4608,
+                4603,
+                4635,
+                4634,
+                4633,
+                4632,
+                "10ICC",
+                4636,
+                4532,
+                4602,
+                4631,
+                4630,
+                4629,
+                4628,
+                -- "25TOC",
+                -- 3812,
+                -- 3916,
+                -- 3819,
+                -- 3818,
+                -- 3817,
+                -- "10TOC",
+                -- 3918,
+                -- 3917,
+                -- 3810,
+                -- 3809,
+                -- 3808,
                 -- "ULD(25)",
                 -- 2895,
                 -- 3037,
@@ -534,22 +548,6 @@ BG.Init2(function()
                 -- 4815,
                 -- 4818,
                 -- 4817,
-                -- "ICC(25)",
-                -- 4637,
-                -- 4608,
-                -- 4603,
-                -- 4635,
-                -- 4634,
-                -- 4633,
-                -- 4632,
-                -- "ICC(10)",
-                -- 4636,
-                -- 4532,
-                -- 4602,
-                -- 4631,
-                -- 4630,
-                -- 4629,
-                -- 4628,
             }
             local t = f:CreateFontString()
             t:SetPoint("TOPLEFT", 15, -30)
@@ -1284,5 +1282,16 @@ BG.Init2(function()
                 end
             end
         end)
+    end
+
+    -- 禁用语音开团快人一步
+    if BG.IsWLK and LFG.SQDU then
+        local name = "MeetingHorn_banVoiceList"
+        BG.MeetingHorn.SQDU_oldFuc = LFG.SQDU
+        BG.MeetingHorn.SQDU_newFuc = function() end
+
+        if BiaoGe.options[name] == 1 then
+            LFG.SQDU = BG.MeetingHorn.SQDU_newFuc
+        end
     end
 end)

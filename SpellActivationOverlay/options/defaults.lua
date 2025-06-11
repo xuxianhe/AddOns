@@ -10,21 +10,21 @@ SAO.defaults = {
                 [51124] = { -- Killing Machine
                     [0] = true,
                 },
-                [81141] = { -- Crimson Scourge (Cataclysm)
+                [81141] = { -- Crimson Scourge (Cataclysm+)
                     [0] = true,
                 },
-                [81340] = { -- Sudden Doom (Cataclysm)
+                [81340] = { -- Sudden Doom (Cataclysm+)
                     [0] = true,
                 },
-                [93426] = { -- Dark Transformation (not an actual buff) (Cataclysm)
+                [93426] = { -- Dark Transformation (not an actual buff) (Cataclysm+)
                     [0] = true,
                 },
-                [96171] = { -- Will of the Necropolis (Cataclysm)
+                [96171] = { -- Will of the Necropolis (Cataclysm+)
                     [0] = true,
                 },
             },
             glow = {
-                [49222] = { -- Bone Shield (Cataclysm)
+                [49222] = { -- Bone Shield (Cataclysm+)
                     [49222] = false, -- Bone Shield
                 },
                 [56815] = { -- Rune Strike (Wrath)
@@ -36,21 +36,24 @@ SAO.defaults = {
                 },
                 [51124] = { -- Killing Machine
                     [49020] = true, -- Obliterate (not for Wrath)
-                    [45477] = true, -- Icy Touch (not for Cata)
+                    [45477] = true, -- Icy Touch (only for Wrath)
                     [49143] = true, -- Frost Strike
-                    [49184] = true, -- Howling Blast (not for Cata)
+                    [49184] = true, -- Howling Blast (only for Wrath)
                 },
-                [81141] = { -- Crimson Scourge (Cataclysm)
+                [81141] = { -- Crimson Scourge (Cataclysm+)
                     [48721] = true, -- Blood Boil
                 },
-                [81340] = { -- Sudden Doom (Cataclysm)
+                [81340] = { -- Sudden Doom (Cataclysm+)
                     [47541] = true, -- Death Coil
                 },
-                [93426] = { -- Dark Transformation (not an actual buff) (Cataclysm)
+                [93426] = { -- Dark Transformation (not an actual buff) (Cataclysm+)
                     [63560] = true, -- Dark Transformation
                 },
-                [96171] = { -- Will of the Necropolis (Cataclysm)
+                [96171] = { -- Will of the Necropolis (Cataclysm+)
                     [48982] = true, -- Rune Tap
+                },
+                [101568] = { -- Glyph of Dark Succor (MoP)
+                    [49998] = true, -- Death Strike
                 },
             }
         },
@@ -198,7 +201,7 @@ SAO.defaults = {
         },
         ["MAGE"] = {
             alert = {
-                [12536] = { -- Arcane Concentration
+                [12536] = { -- Arcane Concentration (Era - Cataclysm)
                     [0] = false,
                 },
                 [79683] = { -- Arcane Missiles! (Cataclysm)
@@ -241,7 +244,7 @@ SAO.defaults = {
                 [400670]= { -- Fingers of Frost (Season of Discovery)
                     [0] = true, -- any stacks
                 },
-                [57761] = { -- Brain Freeze (Wrath+)
+                [57761] = { -- Brain Freeze (Wrath, Cataclysm)
                     [0] = true,
                 },
                 [400730] = { -- Brain Freeze (Season of Discovery)
@@ -312,7 +315,7 @@ SAO.defaults = {
         },
         ["PALADIN"] = {
             alert = {
-                [54149] = { -- Infusion of Light (2/2) (Wrath+)
+                [54149] = { -- Infusion of Light (2/2 in Wrath-Cataclysm, Spec in Mists of Pandaria)
                     [0] = true,
                 },
                 [59578] = { -- The Art of War (2/2) (Wrath+)
@@ -321,18 +324,18 @@ SAO.defaults = {
                 [60513] = { -- Healing Trance / Soul Preserver (Wrath)
                     [0] = false,
                 },
-                [85247] = { -- Holy Power (not an actual buff) (Cataclysm)
+                [85247] = { -- Holy Power (not an actual buff) (Cataclysm+)
                     [1] = false, -- 1 charge of Holy Power
                     [2] = false, -- 2 charges of Holy Power
                     [3] = true,  -- 3 charges of Holy Power
                 },
-                [85416] = { -- Grand Crusader (Cataclysm)
+                [85416] = { -- Grand Crusader (Cataclysm+)
                     [0] = true,
                 },
-                [88819] = { -- Daybreak (Cataclysm)
+                [88819] = { -- Daybreak (Cataclysm+)
                     [0] = true,
                 },
-                [90174] = { -- Divine Purpose (Cataclysm)
+                [90174] = { -- Divine Purpose (Cataclysm+)
                     [0] = true,
                 },
             },
@@ -349,7 +352,7 @@ SAO.defaults = {
                 [53385] = { -- Divine Storm (Wrath+)
                     [53385] = true, -- Divine Storm
                 },
-                [53600] = { -- Shield of the Righteous (Cataclysm)
+                [53600] = { -- Shield of the Righteous (Cataclysm+)
                     [53600] = true, -- Shield of the Righteous
                 },
                 [53671] = { -- Judgements of the Pure (Wrath+)
@@ -360,42 +363,50 @@ SAO.defaults = {
                 [407778] = { -- Divine Storm (Season of Discovery)
                     [407778]= true, -- Divine Storm (Season of Discovery)
                 },
-                [54149] = { -- Infusion of Light (2/2) (Wrath+)
-                    [19750] = true, -- Flash of Light
+                [54149] = { -- Infusion of Light (2/2 in Wrath-Cataclysm, Spec in Mists of Pandaria)
+                    [19750] = true, -- Flash of Light (Wrath, Cataclysm)
                     [635]   = true, -- Holy Light
-                    [82326] = true, -- Divine Light (Cataclysm)
-                    [82327] = true, -- Holy Radiance (Cataclysm)
+                    [82326] = true, -- Divine Light (Cataclysm+)
+                    [82327] = true, -- Holy Radiance (Cataclysm+)
                 },
                 [59578] = { -- The Art of War (2/2) (Wrath+)
                     [879]   = true, -- Exorcism
                     [19750] = true, -- Flash of Light (not for Cata)
                 },
-                [84963] = { -- Inquisition (Cataclysm)
+                [84963] = { -- Inquisition (Cataclysm+)
                     [84963] = false, -- Inquisition
                 },
-                [85222] = { -- Light of Dawn (Cataclysm)
+                [85222] = { -- Light of Dawn (Cataclysm+)
                     [85222] = true, -- Light of Dawn
                 },
-                [85256] = { -- Templar's Verdict (Cataclysm)
+                [114163] = { -- Eternal Flame (Mists of Pandaria)
+                    [114163] = true, -- Eternal Flame
+                },
+                [85256] = { -- Templar's Verdict (Cataclysm+)
                     [85256] = true, -- Templar's Verdict
                 },
-                [85416] = { -- Grand Crusader (Cataclysm)
+                [85416] = { -- Grand Crusader (Cataclysm+)
                     [31935] = true, -- Avenger's Shield
                 },
-                [85673] = { -- Word of Glory (Cataclysm)
+                [85673] = { -- Word of Glory (Cataclysm+)
                     [85673] = true, -- Word of Glory
                 },
-                [88819] = { -- Daybreak (Cataclysm)
+                [88819] = { -- Daybreak (Cataclysm+)
                     [20473] = true, -- Holy Shock
                 },
-                [90174] = { -- Divine Purpose (Cataclysm)
-                    [85673] = true, -- Word of Glory
-                    [85256] = true, -- Templar's Verdict
-                    [84963] = true, -- Inquisition
-                    [85696] = true, -- Zealotry
+                [90174] = { -- Divine Purpose (Cataclysm+)
+                    [85673]  = true, -- Word of Glory
+                    [85256]  = true, -- Templar's Verdict
+                    [84963]  = true, -- Inquisition
+                    [85696]  = true, -- Zealotry (Cataclysm)
+                    [85222]  = true, -- Light of Dawn (Mists of Pandaria+)
+                    [53600]  = true, -- Shield of the Righteous (Mists of Pandaria+)
+                    [53385]  = true, -- Divine Storm (Mists of Pandaria+)
+                    [114163] = true, -- Eternal Flame (Mists of Pandaria+)
                 },
-                [94686] = { -- Crusade (Cataclysm)
-                    [635]   = true, -- Holy Light
+                [94686] = { -- Crusade (Cataclysm) / Supplication (Mists of Pandaria)
+                    [635]   = true, -- Holy Light (Cataclysm)
+                    [19750] = true, -- Flash of Light (Mists of Pandaria)
                 },
             },
         },
@@ -405,6 +416,12 @@ SAO.defaults = {
                     [0] = true,
                 },
                 [88688] = {  -- Surge of Light (Cataclysm)
+                    [0] = true,
+                },
+                [114255] = { -- Surge of Light (Mists of Pandaria)
+                    [0] = nil, -- set to nil to simplify DB migration
+                },
+                [87160] = {  -- Surge of Darkness (Mists of Pandaria)
                     [0] = true,
                 },
                 [63734] = { -- Serendipity (Wrath)
@@ -429,6 +446,15 @@ SAO.defaults = {
                     [3] = true,  -- 3 stacks
                     [0] = false, -- any stacks but 3
                 },
+                [123266] = { -- Divine Insight, Discipline (Mists of Pandaria)
+                    [0] = true,
+                },
+                [123267] = { -- Divine Insight, Holy (Mists of Pandaria)
+                    [0] = true,
+                },
+                [124430] = { -- Divine Insight, Shadow (Mists of Pandaria)
+                    [0] = true,
+                },
             },
             glow = {
                 [588] = { -- Inner Fire (Wrath+)
@@ -444,21 +470,25 @@ SAO.defaults = {
                     [585]  = true, -- Smite
                     [2061] = true, -- Flash Heal (not for TBC)
                 },
-                [88688] = { -- Surge of Light (Cataclysm)
+                [88688] = { -- Surge of Light (Cataclysm+)
                     [101062] = nil, -- Flash Heal (no mana), set to nil to simplify DB migration
+                },
+                [114255] = { -- Surge of Light (Mists of Pandaria)
+                    [2061] = nil, -- Flash Heal, set to nil to simplify DB migration
+                },
+                [87160] = {  -- Mind Melt (Cataclysm), Surge of Darkness (Mists of Pandaria)
+                    [8092]  = true, -- Mind Blast (Cataclysm)
+                    [73510] = true, -- Mind Spike (Mists of Pandaria)
                 },
                 [63734] = { -- Serendipity 3/3 (Wrath)
                     [2060] = true, -- Greater Heal
                     [596]  = true, -- Prayer of Healing
                 },
-                [63735] = { -- Serendipity 2/2 (Cataclysm)
+                [63735] = { -- Serendipity (talent 2/2 in Cataclysm, spec in Mists of Pandaria)
                     [2060] = nil, -- Greater Heal, set to nil to simplify DB migration
                     [596]  = nil, -- Prayer of Healing, set to nil to simplify DB migration
                 },
-                [87160] = {  -- Mind Melt (Cataclysm)
-                    [8092] = true, -- Mind Blast
-                },
-                [413247]= { -- Serendipity 3/3 (Season of Discovery)
+                [413247]= { -- Serendipity (Season of Discovery)
                     [2050] = true, -- Lesser Heal
                     [2054] = true, -- Heal
                     [2060] = true, -- Greater Heal
@@ -471,6 +501,9 @@ SAO.defaults = {
                 },
                 [431655] = {  -- Mind Spike (Season of Discovery)
                     [8092] = true, -- Mind Blast
+                },
+                [81292] = { -- Glyph of Mind Spike (Mists of Pandaria)
+                    [8092] = true,
                 },
             },
         },
@@ -506,7 +539,10 @@ SAO.defaults = {
                 [51505] = {  -- Lava Burst, for Lava Surge (Cataclysm)
                     [0] = true,
                 },
-                [53817] = { -- Maelstrom Weapon
+                [77762] = { -- Lava Surge (Mists of Pandaria)
+                    [0] = true,
+                },
+                [53817] = { -- Maelstrom Weapon (Wrath+)
                     [5] = true, -- 5 stacks
                     [0] = true, -- any stacks but 5
                 },
@@ -516,10 +552,13 @@ SAO.defaults = {
                     [6] = true, -- 6-9 stacks
                     [10]= true, -- 10 stacks
                 },
-                [53390] = { -- Tidal Waves
+                [53390] = { -- Tidal Waves (Wrath+)
                     [0] = false, -- any stacks
                 },
-                [60515] = { -- Healing Trance / Soul Preserver
+                [432041] = { -- Tidal Waves (Season of Discovery)
+                    [0] = false, -- any stacks
+                },
+                [60515] = { -- Healing Trance / Soul Preserver (Wrath)
                     [0] = false,
                 },
                 [425339]= { -- Molten Blast (Season of Discovery)
@@ -531,20 +570,18 @@ SAO.defaults = {
                     [8] = false,
                     [9] = true,
                 },
-                [432041] = { -- Tidal Waves (Season of Discovery)
-                    [0] = false, -- any stacks
-                },
             },
             glow = {
-                [53817] = { -- Maelstrom Weapon
-                    [403]   = false, -- Lightning Bolt
-                    [421]   = false, -- Chain Lightning
-                    [8004]  = false, -- Lesser Healing Wave / Healing Surge (Cataclysm)
-                    [331]   = false, -- Healing Wave
-                    [1064]  = false, -- Chain Heal
-                    [51514] = false, -- Hex
-                    [77472] = false, -- Greater Healing Wave (Cataclysm)
-                    [73920] = false, -- Healing Rain (Cataclysm)
+                [53817] = { -- Maelstrom Weapon (Wrath+)
+                    [403]    = false, -- Lightning Bolt
+                    [421]    = false, -- Chain Lightning
+                    [8004]   = false, -- Lesser Healing Wave / Healing Surge (Cataclysm)
+                    [331]    = false, -- Healing Wave
+                    [1064]   = false, -- Chain Heal
+                    [51514]  = false, -- Hex
+                    [77472]  = false, -- Greater Healing Wave (Cataclysm)
+                    [73920]  = false, -- Healing Rain (Cataclysm)
+                    [117014] = false, -- Elemental Blast (Mists of Pandaria)
                 },
                 [408505] = { -- Maelstrom Weapon (Season of Discovery)
                     [403]   = false, -- Lightning Bolt
@@ -564,20 +601,20 @@ SAO.defaults = {
                 [51505] = {  -- Lava Burst, for Lava Surge (Cataclysm)
                     [51505] = true,
                 },
-                [53390] = { -- Tidal Waves
+                [53390] = { -- Tidal Waves (Wrath+)
                     [8004] = false, -- Lesser Healing Wave / Healing Surge (Cataclysm)
                     [331]  = false, -- Healing Wave
                     [77472] = false, -- Greater Healing Wave (Cataclysm)
                 },
-                [425339]= { -- Molten Blast (Season of Discovery)
-                    [425339] = true, -- Molten Blast (Season of Discovery)
-                },
-                [324]= {  -- Lightning Shield, for Rolling Thunder (Season of Discovery) / Fulmination (Cataclysm)
-                    [8042] = true, -- Earth Shock, for for Rolling Thunder (Season of Discovery) / Fulmination (Cataclysm)
-                },
                 [432041] = { -- Tidal Waves (Season of Discovery)
                     [8004] = false, -- Lesser Healing Wave
                     [331]  = false, -- Healing Wave
+                },
+                [425339]= { -- Molten Blast (Season of Discovery)
+                    [425339] = true, -- Molten Blast (Season of Discovery)
+                },
+                [324]= {  -- Lightning Shield, for Rolling Thunder (Season of Discovery) / Fulmination (Cataclysm+)
+                    [8042] = true, -- Earth Shock, for for Rolling Thunder (Season of Discovery) / Fulmination (Cataclysm+)
                 },
             },
         },
@@ -651,6 +688,9 @@ SAO.defaults = {
                 [440114] = { -- Sudden Death (Season of Discovery)
                     [0] = true,
                 },
+                [1231436] = { -- Warrior's Regicide (Season of Discovery)
+                    [0] = true,
+                },
                 [46924] = { -- Bladestorm (Wrath+)
                     [0] = true,
                 },
@@ -693,11 +733,21 @@ SAO.defaults = {
                     [78]  = true, -- Heroic Strike
                     [845] = true, -- Cleave
                 },
+                [86627] = { -- Incite (Cataclysm)
+                    [78]  = true, -- Heroic Strike
+                },
+                [122016] = { -- Glyph of Incite (MoP)
+                    [78]  = true, -- Heroic Strike
+                    [845] = true, -- Cleave
+                },
                 [52437] = { -- Sudden Death (Wrath+)
                     [5308] = true, -- Execute (not for Cata)
                     [86346]= true, -- Colossus Smash (Cataclysm)
                 },
                 [440114] = { -- Sudden Death (Season of Discovery)
+                    [5308] = true, -- Execute
+                },
+                [1231436] = { -- Warrior's Regicide (Season of Discovery)
                     [5308] = true, -- Execute
                 },
                 [46916] = { -- Bloodsurge (Wrath+)

@@ -1982,7 +1982,7 @@ BG.Init(function()
                 self.t = 0
                 self:SetScript("OnUpdate", function(_, t)
                     self.t = self.t + t
-                    if self.t >= 60 * 5 then
+                    if self.t >= 60 * 10 then
                         gzTbl = nil
                         self:SetScript("OnUpdate", nil)
                     end

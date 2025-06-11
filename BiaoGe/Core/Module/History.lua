@@ -134,8 +134,9 @@ function BG.HistoryUI()
     do
         function BG.SaveBiaoGe(FB)
             local FB = FB or BG.FB1
-            local DT = tonumber(date("%y%m%d%H%M%S", GetServerTime()))
-            local DTcn = date(L["%m月%d日%H:%M:%S\n"], GetServerTime())
+            local serverTime = BiaoGe[FB].raidRoster and BiaoGe[FB].raidRoster.time or GetServerTime()
+            local DT = tonumber(date("%y%m%d%H%M%S", serverTime))
+            local DTcn = date(L["%m月%d日%H:%M:%S\n"], serverTime)
             BiaoGe.History[FB][DT] = {}
             BiaoGe.History[FB][DT].tradeTbl = {}
             for b = 1, Maxb[FB] + 2 do
@@ -228,7 +229,7 @@ function BG.HistoryUI()
         end)
         bt:SetScript("OnClick", function(self)
             BG.FrameHide(2)
-            self:SetEnabled(false) -- 点击后按钮变灰2秒
+            self:SetEnabled(false)
             C_Timer.After(0.5, function()
                 bt:SetEnabled(true)
             end)

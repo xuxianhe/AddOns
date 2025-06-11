@@ -49,6 +49,12 @@ mod:RegisterEnableMob(
 )
 
 --------------------------------------------------------------------------------
+-- Locals
+--
+
+local activeBuffs = {}
+
+--------------------------------------------------------------------------------
 -- Localization
 --
 
@@ -58,6 +64,10 @@ if L then
 	L.madnesses = "Madnesses"
 	L.potions = "Potions"
 	L.buffs = "Buffs"
+	L.slowed = "Slowed"
+	L.sluggish_potion_effect = "Heal 2% every 5 sec"
+	L.sickening_potion_effect = "5% damage reduction"
+	L.spicy_potion_effect = "Breathe fire"
 
 	L.voidbound_shaman = "Voidbound Shaman"
 	L.endless_hunger_totem = "Endless Hunger Totem"
@@ -107,10 +117,15 @@ function mod:GetOptions()
 		292240, -- Entomophobia
 		306583, -- Leaden Foot
 		315385, -- Scorched Feet
+		313303, -- Burned Bridge
 		-- Potions
 		315814, -- Fermented Mixture
 		315807, -- Noxious Mixture
+		315845, -- Sluggish Potion
+		315849, -- Sickening Potion
+		315817, -- Spicy Potion
 		-- Buffs
+		313698, -- Gift of the Titans
 		312456, -- Elite Extermination
 		313770, -- Smith's Strength
 		1225675, -- Prohibition
@@ -182,7 +197,7 @@ function mod:GetOptions()
 		["altpower"] = "general",
 		[311390] = L.madnesses,
 		[315814] = L.potions,
-		[312456] = L.buffs,
+		[313698] = L.buffs,
 		[297237] = L.voidbound_shaman,
 		[297302] = L.endless_hunger_totem,
 		[296510] = L.crawling_corruption,
@@ -228,10 +243,13 @@ function mod:OnBossEnable()
 	self:Log("SPELL_AURA_APPLIED", "EntomophobiaApplied", 292240)
 	self:Log("SPELL_AURA_APPLIED_DOSE", "LeadenFootApplied", 306583)
 	self:Log("SPELL_AURA_APPLIED", "ScorchedFeetApplied", 315385)
+	self:Log("SPELL_PERIODIC_ENERGIZE", "BurnedBridge", 313303)
 
 	-- Potions
 	self:Log("SPELL_ENERGIZE", "FermentedMixture", 315814)
 	self:Log("SPELL_ENERGIZE", "NoxiousMixture", 315807)
+	self:InitBuffs() -- reload protection
+	self:RegisterUnitEvent("UNIT_AURA", nil, "player")
 
 	-- Buffs
 	self:Log("SPELL_ENERGIZE", "EliteExtermination", 312456)
@@ -374,6 +392,10 @@ function mod:VerifyEnable()
 	return instanceId == 2212 or instanceId == 2828 -- BFA, Revisited
 end
 
+function mod:OnBossDisable()
+	activeBuffs = {}
+end
+
 --------------------------------------------------------------------------------
 -- Event Handlers
 --
@@ -457,6 +479,14 @@ function mod:ScorchedFeetApplied(args)
 	end
 end
 
+function mod:BurnedBridge(args)
+	if self:Me(args.destGUID) then
+		local sanityLost = args.extraSpellId -- will be a negative number representing Sanity lost
+		self:Message(args.spellId, "blue", CL.other:format(CL.underyou:format(args.spellName), L.sanity_change:format(sanityLost)))
+		self:PlaySound(args.spellId, "underyou")
+	end
+end
+
 -- Potions
 
 function mod:FermentedMixture(args)
@@ -472,6 +502,77 @@ function mod:NoxiousMixture(args)
 		local sanityLost = args.extraSpellId -- will be a negative number representing Sanity lost
 		self:Message(args.spellId, "yellow", CL.other:format(args.spellName, L.sanity_change:format(sanityLost)))
 		self:PlaySound(args.spellId, "warning")
+	end
+end
+
+do
+	local buffIds = {
+		315845, -- Sluggish Potion
+		315849, -- Sickening Potion
+		315817, -- Spicy Potion
+		313698, -- Gift of the Titans
+	}
+	local numBuffs = #buffIds
+
+	function mod:InitBuffs() -- reload protection
+		for i = 1, numBuffs do
+			local spellId = buffIds[i]
+			local info = self:GetPlayerAura(spellId)
+			if info then
+				activeBuffs[spellId] = info.expirationTime
+				if spellId == 315845 then -- Sluggish Potion
+					self:Bar(spellId, info.expirationTime - GetTime(), L.sluggish_potion_effect)
+				elseif spellId == 315849 then -- Sickening Potion
+					self:Bar(spellId, info.expirationTime - GetTime(), L.sickening_potion_effect)
+				elseif spellId == 315817 then -- Spicy Potion
+					self:Bar(spellId, info.expirationTime - GetTime(), L.spicy_potion_effect)
+				elseif spellId == 313698 then -- Gift of the Titans
+					self:Bar(spellId, info.expirationTime - GetTime())
+				end
+			end
+		end
+	end
+
+	function mod:UNIT_AURA()
+		for i = 1, numBuffs do
+			local spellId = buffIds[i]
+			local info = self:GetPlayerAura(spellId)
+			if info and activeBuffs[spellId] ~= info.expirationTime then
+				activeBuffs[spellId] = info.expirationTime
+				if spellId == 315845 then -- Sluggish Potion
+					self:Message(spellId, "green", CL.other:format(CL.you:format(self:SpellName(spellId)), L.sluggish_potion_effect))
+					self:Bar(spellId, info.expirationTime - GetTime(), L.sluggish_potion_effect)
+					self:PlaySound(spellId, "info")
+				elseif spellId == 315849 then -- Sickening Potion
+					self:Message(spellId, "green", CL.other:format(CL.you:format(self:SpellName(spellId)), L.sickening_potion_effect))
+					self:Bar(spellId, info.expirationTime - GetTime(), L.sickening_potion_effect)
+					self:PlaySound(spellId, "info")
+				elseif spellId == 315817 then -- Spicy Potion
+					self:Message(spellId, "green", CL.other:format(CL.you:format(self:SpellName(spellId)), L.spicy_potion_effect))
+					self:Bar(spellId, info.expirationTime - GetTime(), L.spicy_potion_effect)
+					self:PlaySound(spellId, "info")
+				elseif spellId == 313698 then -- Gift of the Titans
+					self:Message(spellId, "green", CL.you:format(self:SpellName(spellId)))
+					self:Bar(spellId, info.expirationTime - GetTime())
+					self:PlaySound(spellId, "long")
+				end
+			elseif not info and activeBuffs[spellId] then
+				activeBuffs[spellId] = nil
+				if spellId == 315845 then -- Sluggish Potion
+					self:Message(spellId, "blue", CL.other:format(CL.removed:format(self:SpellName(spellId)), L.slowed))
+					self:StopBar(L.sluggish_potion_effect)
+					self:PlaySound(spellId, "warning")
+				elseif spellId == 315849 then -- Sickening Potion
+					self:Message(spellId, "blue", CL.other:format(CL.removed:format(self:SpellName(spellId)), self:SpellName(315850))) -- Vomit
+					self:StopBar(L.sickening_potion_effect)
+					self:PlaySound(spellId, "warning")
+				elseif spellId == 315817 then -- Spicy Potion
+					self:Message(spellId, "blue", CL.other:format(CL.removed:format(self:SpellName(spellId)), self:SpellName(315818))) -- Burning
+					self:StopBar(L.spicy_potion_effect)
+					self:PlaySound(spellId, "warning")
+				end
+			end
+		end
 	end
 end
 

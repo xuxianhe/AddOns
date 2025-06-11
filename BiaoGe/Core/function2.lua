@@ -1942,16 +1942,18 @@ function BG.GetAuctionPrice(itemID, mod)
     local realmName = GetRealmName()
     local faction = UnitFactionGroup("player")
     if AUCTIONATOR_PRICE_DATABASE and AUCTIONATOR_PRICE_DATABASE[realmName .. " " .. faction] and
-        AUCTIONATOR_PRICE_DATABASE[realmName .. " " .. faction][itemID] and
-        type(AUCTIONATOR_PRICE_DATABASE[realmName .. " " .. faction][itemID].m) == "number" then
-        local m = AUCTIONATOR_PRICE_DATABASE[realmName .. " " .. faction][itemID].m
-        if mod == "notsilver" then
-            m = m - (m % 10000)
-        elseif mod == "notcopper" then
-            m = m - (m % 100)
+        AUCTIONATOR_PRICE_DATABASE[realmName .. " " .. faction][itemID] then
+        local m = Auctionator.Database:GetFirstPrice({ itemID })
+        if m and type(m) == "number" then
+            if mod == "notsilver" then
+                m = m - (m % 10000)
+            elseif mod == "notcopper" then
+                m = m - (m % 100)
+            end
+            return GetMoneyString(m, true), m
+        else
+            return ""
         end
-
-        return GetMoneyString(m, true), m
     else
         return ""
     end

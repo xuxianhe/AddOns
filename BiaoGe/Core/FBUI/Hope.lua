@@ -731,7 +731,7 @@ function BG.HopeUI(FB)
                     end
                 end
 
-                self:SetEnabled(false) -- 点击后按钮变灰2秒
+                self:SetEnabled(false) 
                 C_Timer.After(2, function()
                     bt:SetEnabled(true)
                 end)

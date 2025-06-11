@@ -575,7 +575,7 @@ function BG.GetItemCount(itemIDorLink)
         itemID = tonumber(itemIDorLink:match("item:(%d+)"))
     end
     for _, FB in pairs(BG.FBtable) do
-        for itemID2, _ in pairs(BG.Loot[FB].ExchangeItems) do
+        for itemID2 in pairs(BG.Loot[FB].ExchangeItems) do
             if itemID == itemID2 then
                 for _, itemID3 in pairs(BG.Loot[FB].ExchangeItems[itemID2]) do
                     local count = GetItemCount(itemID3, true)

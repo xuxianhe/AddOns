@@ -1,7 +1,6 @@
 # Syndicator
 
-## [205](https://github.com/Baganator/Syndicator/tree/205) (2025-05-26)
-[Full Changelog](https://github.com/Baganator/Syndicator/compare/204...205) 
+## [207](https://github.com/Baganator/Syndicator/tree/207) (2025-06-05)
+[Full Changelog](https://github.com/Baganator/Syndicator/compare/206...207) 
 
-- Retail: Adjust recording of warband bank content updates when crafting  
-- Attempt to fix warband bank data being wiped unexpectedly with multiple accounts  
+- Tweak usage of ATT data for expansion detection  

@@ -2293,7 +2293,11 @@ BG.Init(function()
                 return false
             end
             BG.IsNotSameTeam = IsNotSameTeam
-
+            local function SendTips(FB)
+                if (FB == "ZUG" or FB == "ZUGsod") and BG.IsVanilla and IsInRaid(1) and UnitIsGroupLeader("player") then
+                    BG.SendSystemMessage(L["提醒团长：如果你没有物品分配权，将会导致交易的相关功能失效。"])
+                end
+            end
             BG.RegisterEvent("RAID_INSTANCE_WELCOME", function(self, event, ...)
                 if BiaoGe.options["autoQingKong"] ~= 1 then return end
                 RequestRaidInfo()
@@ -2301,6 +2305,7 @@ BG.Init(function()
                 BG.After(3, function()
                     local _, _, _, _, maxPlayers, _, _, instanceID = GetInstanceInfo()
                     local FB = BG.FBIDtable[instanceID]
+                    SendTips(FB)
                     if BG.IsTBCFB(FB) and not ns.canShowTBC then return end
                     if not (FB and IsInInstance()) then return end
                     local newCD = true
@@ -2695,7 +2700,7 @@ BG.Init(function()
         end)
 
         BG.After(10, function()
-            if BG.GetVerNum(BG.ver) < 11500 then
+            if not IsTestVer() and BG.GetVerNum(BG.ver) < 11500 then
                 BG.SendSystemMessage(L["你的BiaoGe插件存在问题，请删除本地插件再重新安装一次（需要大退）。"])
             end
         end)
@@ -2831,7 +2836,7 @@ do
 end
 
 ----------其他----------
-do
+BG.Init2(function()
     -- 插件命令
     SlashCmdList["BIAOGE"] = function()
         BG.MainFrame:SetShown(not BG.MainFrame:IsVisible())
@@ -2857,7 +2862,7 @@ do
         BG.SetFBCD(nil, nil, true)
     end
     SLASH_BiaoGeRoleOverview1 = "/bgr"
-end
+end)
 
 -- local tex = UIParent:CreateTexture()
 -- tex:SetPoint("CENTER")
