@@ -3044,7 +3044,7 @@ BG.Init(function()
                 tinsert(tbl, {
                     name = "MeetingHorn_starRaidLeader",
                     name2 = L["聊天频道显示星团长标记"] .. "*",
-                    reset = 1,
+                    reset = 0,
                     ontext = {
                         L["聊天频道显示星团长标记"],
                         L["在聊天频道（综合、组队等）/鼠标提示工具/目标右键菜单中，显示星团长标记。"],
@@ -3154,6 +3154,8 @@ BG.Init(function()
                     L["在聊天输入框的右键菜单里增加[密语模板]按钮。"],
                     " ",
                     L["在集结号活动的右键菜单里增加[邀请][复制活动说明]按钮。"],
+                    " ",
+                    L["通过搜索组队频道的活动也会显示[密语]按钮。"],
                 },
             })
             if BG.IsVanilla then

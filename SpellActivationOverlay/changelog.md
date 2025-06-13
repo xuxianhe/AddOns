@@ -1,5 +1,37 @@
 ## SpellActivationOverlay Changelog
 
+#### v2.5.1 (2025-06-10)
+
+Thank you to Siegester03 for helping a great deal with Mage. Many thanks!
+
+New Spell Alerts
+- Druid's Lunar Eclipse and Solar Eclipse (Mists of Pandaria)
+- Druid's Shooting Stars (Mists of Pandaria)
+- Druid's Tooth and Claw (Mists of Pandaria)
+- Druid's Predatory Swiftness (Mists of Pandaria)
+- Druid's Omen of Clarity, for Feral and Restoration (Mists of Pandaria)
+- Mage's Arcane Missiles (Mists of Pandaria)
+- Mage's Heating Up (Mists of Pandaria)
+- Mage's Hot Streak (Mists of Pandaria)
+- Mage's Brain Freeze (Mists of Pandaria)
+- Mage's Fingers of Frost (Mists of Pandaria)
+
+New Glowing Buttons
+- Druid's Entangling Roots, during Predatory Swiftness (Mists of Pandaria)
+- Druid's Healing Touch, during Predatory Swiftness (Mists of Pandaria)
+- Druid's Hibernate, during Predatory Swiftness (Mists of Pandaria)
+- Druid's Rebirth, during Predatory Swiftness (Mists of Pandaria)
+- Mage's Arcane Missiles, during Arcane Missiles (Mists of Pandaria)
+- Mage's Inferno Blast, during Heating Up (Mists of Pandaria)
+- Mage's Pyroblast, during Hot Streak (Mists of Pandaria)
+- Mage's Frostfire Bolt, during Brain Freeze (Mists of Pandaria)
+- Mage's Deep Freeze, during Fingers of Frost (Mists of Pandaria)
+- Mage's Ice Lance, during Fingers of Frost (Mists of Pandaria)
+- Priest's Devouring Plague, at 3 Shadow Orbs (Mists of Pandaria)
+
+Known Limitations
+- Priest's Devouring Plague may glow up to 30 seconds after leaving combat
+
 #### v2.5.0 (2025-06-08)
 
 Thank you to Katalina for sending feedback and testing Paladin. Appreciated!

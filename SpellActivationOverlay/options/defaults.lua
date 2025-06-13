@@ -62,6 +62,9 @@ SAO.defaults = {
                 [16870] = { -- Omen of Clarity
                     [0] = true,
                 },
+                [135700] = { -- Omen of Clarity, Feral (Mists of Pandaria)
+                    [0] = true,
+                },
                 [48518] = { -- Eclipse (Lunar) (Wrath+)
                     [0] = true,
                 },
@@ -74,7 +77,7 @@ SAO.defaults = {
                 [408250] = { -- Eclipse (Solar, Season of Discovery)
                     [0] = true,
                 },
-                [93400] = { -- Shooting Stars (Cataclysm)
+                [93400] = { -- Shooting Stars (Cataclysm+)
                     [0] = true,
                 },
                 [16886] = { -- Nature's Grace (Era - Wrath)
@@ -86,7 +89,7 @@ SAO.defaults = {
                 [64823] = { -- Elune's Wrath (Wrath)
                     [0] = false,
                 },
-                [69369] = { -- Predatory Strikes (Wrath+)
+                [69369] = { -- Predatory Strikes (Wrath, Cataclysm) / Predatory Swiftness (Mists of Pandaria)
                     [0] = true,
                 },
                 [60512] = { -- Healing Trance / Soul Preserver (Wrath)
@@ -98,6 +101,9 @@ SAO.defaults = {
                 [414800]= { -- Fury of Stormrage (Season of Discovery)
                     [0] = true,
                 },
+                [135286]= { -- Tooth and Claw (Mists of Pandaria)
+                    [0] = true,
+                },
             },
             glow = {
                 [2912] = { -- Starfire (Season of Discovery, Wrath+)
@@ -106,7 +112,7 @@ SAO.defaults = {
                 [5176] = { -- Wrath (Season of Discovery, Wrath+)
                     [5176] = true, -- Wrath
                 },
-                [93400] = { -- Shooting Stars (Cataclysm)
+                [93400] = { -- Shooting Stars (Cataclysm+)
                     [78674] = true, -- Starsurge
                 },
                 [46833] = { -- Wrath of Elune (Wrath)
@@ -115,15 +121,15 @@ SAO.defaults = {
                 [64823] = { -- Elune's Wrath (Wrath)
                     [2912] = true, -- Starfire
                 },
-                [69369] = { -- Predatory Strikes (Wrath+)
-                    [8936]  = false, -- Regrowth
-                    [5185]  = true,  -- Healing Touch
-                    [50464] = false, -- Nourish
-                    [20484] = false, -- Rebirth
-                    [5176]  = false, -- Wrath
-                    [339]   = false, -- Entangling Roots
-                    [33786] = true,  -- Cyclone
-                    [2637]  = false, -- Hibernate
+                [69369] = { -- Predatory Strikes (Wrath, Cataclysm) / Predatory Swiftness (Mists of Pandaria)
+                    [8936]  = false, -- Regrowth (Wrath, Cataclysm)
+                    [5185]  = true,  -- Healing Touch (Wrath+)
+                    [50464] = false, -- Nourish (Wrath, Cataclysm)
+                    [20484] = false, -- Rebirth (Wrath+)
+                    [5176]  = false, -- Wrath (Wrath, Cataclysm)
+                    [339]   = false, -- Entangling Roots (Wrath+)
+                    [33786] = true,  -- Cyclone (Wrath, Cataclysm)
+                    [2637]  = false, -- Hibernate (Wrath+)
                 },
                 [81093] = { -- Fury of Stormrage (Cataclysm)
                     [2912] = true, -- Starfire
@@ -137,6 +143,14 @@ SAO.defaults = {
                     [408247] = true, -- Nourish
                     [8936] = true, -- Regrowth
                 },
+                -- The following glowing buttons are not set because these buttons are glowing natively
+                -- [135286]= { -- Tooth and Claw (Mists of Pandaria)
+                --     [6807] = true, -- Maul
+                -- },
+                -- [145162] = { -- Dream of Cenarius, Guardian (Mists of Pandaria)
+                --     [5185]  = true,  -- Healing Touch
+                --     [20484] = false, -- Rebirth
+                -- }
             }
         },
         ["HUNTER"] = {
@@ -204,7 +218,7 @@ SAO.defaults = {
                 [12536] = { -- Arcane Concentration (Era - Cataclysm)
                     [0] = false,
                 },
-                [79683] = { -- Arcane Missiles! (Cataclysm)
+                [79683] = { -- Arcane Missiles! (Cataclysm+)
                     [0] = true,
                 },
                 [44401] = { -- Missile Barrage (Wrath)
@@ -220,7 +234,7 @@ SAO.defaults = {
                 [57531] = { -- Arcane Potency (2/2) (Cataclysm)
                     [0] = false,
                 },
-                [48107] = { -- Heating Up (not an actual buff) (Season of Discovery, Wrath+)
+                [48107] = { -- Heating Up (not an actual buff for Season of Discovery, Wrath and Cataclysm; real buff since Mists of Pandaria)
                     [0] = true,
                 },
                 [48108] = { -- Hot Streak (Wrath+)
@@ -238,19 +252,19 @@ SAO.defaults = {
                 [74396] = { -- Fingers of Frost (Wrath)
                     [0] = true, -- any stacks
                 },
-                [44544] = { -- Fingers of Frost (Cataclysm)
+                [44544] = { -- Fingers of Frost (Cataclysm+)
                     [0] = nil,  -- any stacks, set to nil to simplify DB migration
                 },
                 [400670]= { -- Fingers of Frost (Season of Discovery)
                     [0] = true, -- any stacks
                 },
-                [57761] = { -- Brain Freeze (Wrath, Cataclysm)
+                [57761] = { -- Brain Freeze (Wrath+)
                     [0] = true,
                 },
                 [400730] = { -- Brain Freeze (Season of Discovery)
                     [0] = true,
                 },
-                [96215] = { -- Hot Streak + Heating Up (not an actual buff) (Season of Discovery, Wrath)
+                [96215] = { -- Hot Streak + Heating Up (not an actual buff) (Season of Discovery, Wrath, Cataclysm)
                     [0] = false,
                 },
                 [5276] = { -- Representative of spells triggering Frozen effect
@@ -258,7 +272,7 @@ SAO.defaults = {
                 },
             },
             glow = {
-                [79683] = { -- Arcane Missiles! (Cataclysm)
+                [79683] = { -- Arcane Missiles! (Cataclysm, Mists of Pandaria)
                     [5143] = true, -- Arcane Missiles
                 },
                 [44401] = { -- Missile Barrage (Wrath)
@@ -270,6 +284,9 @@ SAO.defaults = {
                 [400573]= { -- Arcane Blast 4/4 (Season of Discovery)
                     [5143] = true,  -- Arcane Missiles
                     [1449] = false, -- Arcane Explosion
+                },
+                [48107] = { -- Heating Up (Mists of Pandaria)
+                    [108853] = false, -- Inferno Blast
                 },
                 [48108] = { -- Hot Streak (Wrath+)
                     [11366] = true, -- Pyroblast
@@ -459,6 +476,9 @@ SAO.defaults = {
             glow = {
                 [588] = { -- Inner Fire (Wrath+)
                     [588] = true, -- Inner Fire
+                },
+                [2944] = { -- Devouring Plague (Mists of Pandaria)
+                    [2944] = true, -- Devouring Plague (Mists of Pandaria)
                 },
                 [15473] = { -- Shadowform
                     [15473] = true, -- Shadowform

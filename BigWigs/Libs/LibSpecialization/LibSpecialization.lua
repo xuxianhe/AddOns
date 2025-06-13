@@ -4,10 +4,11 @@ local cataWowID = 14
 local mistsWowID = 19
 if wowID ~= 1 and wowID ~= cataWowID and wowID ~= mistsWowID then return end -- Retail, Cata, Mists
 
-local LS, oldminor = LibStub:NewLibrary("LibSpecialization", 16)
+local LS, oldminor = LibStub:NewLibrary("LibSpecialization", 17)
 if not LS then return end -- No upgrade needed
 
 LS.callbackMap = LS.callbackMap or {}
+LS.callbackMapGuild = LS.callbackMapGuild or {}
 LS.frame = LS.frame or CreateFrame("Frame")
 
 -- Positions of roles
@@ -312,10 +313,10 @@ local starterSpecs = {
 }
 
 local callbackMap = LS.callbackMap
-local frame = LS.frame
+local callbackMapGuild = LS.callbackMapGuild
 
 local next, type, error, tonumber, format = next, type, error, tonumber, string.format
-local IsInGroup, geterrorhandler = IsInGroup, geterrorhandler
+local IsInGroup, geterrorhandler, GetTime = IsInGroup, geterrorhandler, GetTime
 local C_ClassTalents_GetActiveConfigID = C_ClassTalents and C_ClassTalents.GetActiveConfigID
 local SendAddonMessage, CTimerAfter = C_ChatInfo.SendAddonMessage, C_Timer.After
 local pName = UnitNameUnmodified("player")
@@ -400,18 +401,63 @@ do
 		end
 	end
 
+	local PrepareForGuild
+	do
+		local guildTimer = false
+		local prev = 0
+		local function SendToGuild()
+			guildTimer = false
+			if IsInGuild() then
+				if currentRole then -- Cataclysm Feral Druids
+					local result = SendAddonMessage("LibSpec", format("%d,,%s", currentSpecId, currentRole), "GUILD")
+					if result == 9 then
+						guildTimer = true
+						CTimerAfter(3, SendToGuild)
+					end
+				else
+					local result = SendAddonMessage("LibSpec", format("%d,%s", currentSpecId, currentTalentString or ""), "GUILD")
+					if result == 9 then
+						guildTimer = true
+						CTimerAfter(3, SendToGuild)
+					end
+				end
+			end
+		end
+		function PrepareForGuild()
+			local specId, role, _, talentString = LS:MySpecialization()
+			if specId then
+				currentSpecId = specId
+				currentTalentString = talentString
+				currentRole = specId == 750 and role or nil -- Cataclysm Feral Druids
+				if not guildTimer then
+					local t = GetTime()
+					if t-prev > 4 then
+						prev = t
+						SendToGuild()
+					else
+						guildTimer = true
+						CTimerAfter(4-(t-prev), SendToGuild)
+					end
+				end
+			end
+		end
+	end
+
 	local approved = {
-		["RAID"] = true,
-		["PARTY"] = true,
-		["INSTANCE_CHAT"] = true,
+		RAID = callbackMap,
+		PARTY = callbackMap,
+		INSTANCE_CHAT = callbackMap,
+		GUILD = callbackMapGuild,
 	}
 	local strmatch = string.match
 	local Ambiguate = Ambiguate
-	frame:SetScript("OnEvent", function(_, event, prefix, msg, channel, sender)
+	LS.frame:SetScript("OnEvent", function(_, event, prefix, msg, channel, sender)
 		if event == "CHAT_MSG_ADDON" then
 			if prefix == "LibSpec" and approved[channel] then -- Only approved channels
 				if msg == "R" then
-					if channel == "INSTANCE_CHAT" then
+					if channel == "GUILD" then
+						PrepareForGuild()
+					elseif channel == "INSTANCE_CHAT" then
 						PrepareForInstance()
 					else -- RAID/PARTY
 						PrepareForGroup()
@@ -438,7 +484,7 @@ do
 					end
 					local playerName = Ambiguate(sender, "none")
 					local talents = talentString and #talentString > 2 and talentString or nil
-					for _,func in next, callbackMap do
+					for _,func in next, approved[channel] do
 						func(specId, role, position, playerName, talents)
 					end
 				end
@@ -465,17 +511,17 @@ do
 			LS:RequestSpecialization()
 		end
 	end)
-	frame:RegisterEvent("CHAT_MSG_ADDON")
-	frame:RegisterEvent("GROUP_FORMED")
+	LS.frame:RegisterEvent("CHAT_MSG_ADDON")
+	LS.frame:RegisterEvent("GROUP_FORMED")
 	if wowID == cataWowID then
-		frame:RegisterEvent("PLAYER_TALENT_UPDATE")
+		LS.frame:RegisterEvent("PLAYER_TALENT_UPDATE")
 	elseif wowID == mistsWowID then
-		frame:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+		LS.frame:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
 	else
-		frame:RegisterEvent("ACTIVE_COMBAT_CONFIG_CHANGED")
-		frame:RegisterEvent("TRAIT_CONFIG_UPDATED")
+		LS.frame:RegisterEvent("ACTIVE_COMBAT_CONFIG_CHANGED")
+		LS.frame:RegisterEvent("TRAIT_CONFIG_UPDATED")
 	end
-	frame:RegisterEvent("PLAYER_LOGIN")
+	LS.frame:RegisterEvent("PLAYER_LOGIN")
 end
 
 if wowID == cataWowID then
@@ -571,7 +617,6 @@ end
 do
 	local prev = 0
 	local timer = false
-	local GetTime = GetTime
 	function LS:RequestSpecialization()
 		local specId, role, position, talentString = LS:MySpecialization()
 		if specId then
@@ -594,6 +639,23 @@ do
 			elseif not timer then
 				timer = true
 				CTimerAfter(3.1-(t-prev), LS.RequestSpecialization)
+			end
+		end
+	end
+
+	function LS.RequestGuildSpecialization()
+		local specId, role, position, talentString = LS:MySpecialization()
+		if specId then
+			for _,func in next, callbackMapGuild do
+				func(specId, role, position, pName, talentString) -- This allows us to show our own spec info when not grouped
+			end
+		end
+
+		if IsInGuild() then
+			local t = GetTime()
+			if t-prev > 4 then
+				prev = t
+				SendAddonMessage("LibSpec", "R", "GUILD")
 			end
 		end
 	end
@@ -623,4 +685,24 @@ function LS:Unregister(addon)
 		error("LibSpecialization: You must pass your own addon name or object to :Unregister.")
 	end
 	callbackMap[addon] = nil
+end
+
+function LS.RegisterGuild(addon, func)
+	if type(addon) ~= "table" or addon == LS then
+		error("LibSpecialization: The function lib.RegisterGuild expects your own addon object as the first arg.")
+	end
+
+	local t = type(func)
+	if t == "function" then
+		callbackMapGuild[addon] = func
+	else
+		error("LibSpecialization: The function lib.RegisterGuild expects your own function as the second arg.")
+	end
+end
+
+function LS.UnregisterGuild(addon)
+	if type(addon) ~= "table" or addon == LS then
+		error("LibSpecialization: The function lib.UnregisterGuild expects your own addon object.")
+	end
+	callbackMapGuild[addon] = nil
 end
