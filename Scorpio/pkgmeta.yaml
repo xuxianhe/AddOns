@@ -1,0 +1,10 @@
+package-as: Scorpio
+enable-nolib-creation: no
+
+manual-changelog: changelog.txt
+
+ignore:
+  - Docs
+
+move-folders:
+  Scorpio/!Scorpio: !Scorpio

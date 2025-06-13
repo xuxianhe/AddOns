@@ -1,0 +1,12 @@
+## Interface: 20504
+## Title: [Lib] Scorpio
+## Author: kurapica125@outlook.com
+## Version: r236
+## Notes: Scorpio Addon FrameWork
+## URL: http://github.com/kurapica/Scorpio
+## DefaultState: Enabled
+## LoadOnDemand: 0
+## SavedVariables: Scorpio_DB, Scorpio_Setting
+## SavedVariablesPerCharacter: Scorpio_DB_Char
+
+Scorpio.xml
