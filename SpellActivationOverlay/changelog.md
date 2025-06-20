@@ -1,5 +1,32 @@
 ## SpellActivationOverlay Changelog
 
+#### v2.5.2 (2025-06-13)
+
+Thank you to Bison for sending feedback about Feral druids. Thanks!
+
+Options Panel
+- 'Toggle Test' now previews spell alerts on top of the options panel
+- Moving the mouse over a spell alert in the options panel also previews on top
+
+New Spell Alerts
+- Dream of Cenarius, in Guardian specialization (Mists of Pandaria)
+- Dream of Cenarius, in Feral specialization (Mists of Pandaria)
+- Hunter's Master Marksman (Mists of Pandaria)
+- Hunter's Lock and Load (Mists of Pandaria)
+- Hunter's Thrill of the Hunt (Mists of Pandaria)
+
+Updated Spell Alerts
+- Druid's Omen of Clarity (Feral) has been scaled down (Mists of Pandaria)
+- Hunter's Lock and Load is slightly dimmer at 1 stack (Wrath, Cataclysm)
+
+Bug Fixes
+- The addon should no longer conflict with the game client (Mists of Pandaria)
+- Hunter's Lock and Load no longer plays a sound at 1 stack (Wrath, Cataclysm)
+- Paladins no longer have an error at start about Eternal Flame (Cataclysm)
+
+Miscellaneous
+- The addon is now capable of overlapping spell alerts with a predictable order
+
 #### v2.5.1 (2025-06-10)
 
 Thank you to Siegester03 for helping a great deal with Mage. Many thanks!
@@ -82,7 +109,7 @@ Bug Fixes
 - ElvUI users now benefit from ElvUI's Action Button Glow settings
 - Mage's Pyroblast un-glows when cast during Hot Streak (Cataclysm)
 - Priest's Flash Heal un-glows when cast during Surge of Light (Cataclysm)
-- Priests should not longer have an error at start about Shadowform
+- Priests should no longer have an error at start about Shadowform
 
 #### v2.4.3 (2024-06-02)
 

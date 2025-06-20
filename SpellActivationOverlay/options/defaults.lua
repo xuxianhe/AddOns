@@ -104,6 +104,12 @@ SAO.defaults = {
                 [135286]= { -- Tooth and Claw (Mists of Pandaria)
                     [0] = true,
                 },
+                [145152] = { -- Dream of Cenarius, Feral (Mists of Pandaria)
+                    [0] = true,
+                },
+                [145162] = { -- Dream of Cenarius, Guardian (Mists of Pandaria)
+                    [0] = true,
+                },
             },
             glow = {
                 [2912] = { -- Starfire (Season of Discovery, Wrath+)
@@ -150,7 +156,7 @@ SAO.defaults = {
                 -- [145162] = { -- Dream of Cenarius, Guardian (Mists of Pandaria)
                 --     [5185]  = true,  -- Healing Touch
                 --     [20484] = false, -- Rebirth
-                -- }
+                -- },
             }
         },
         ["HUNTER"] = {
@@ -164,7 +170,7 @@ SAO.defaults = {
                 [56453] = { -- Lock and Load (Wrath+)
                     [0] = true, -- any stacks
                 },
-                [82926] = { -- Master Marksman (Cataclysm)
+                [82926] = { -- Master Marksman (Cataclysm+)
                     [0] = true,
                 },
                 [99060] = { -- Burning Adrenaline (Cataclysm)
@@ -177,6 +183,9 @@ SAO.defaults = {
                     [0] = true,
                 },
                 [425714]= { -- Cobra Strikes (Season of Discovery)
+                    [0] = true, -- any stacks
+                },
+                [34720] = { -- Thrill of the Hunt (Mists of Pandaria)
                     [0] = true, -- any stacks
                 },
             },

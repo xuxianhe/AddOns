@@ -274,7 +274,7 @@ local complexLocationTable = {
 	},
 }
 
-function SpellActivationOverlay_ShowAllOverlays(self, spellID, texturePath, positions, scale, r, g, b, autoPulse, forcePulsePlay, endTime, combatOnly)
+function SpellActivationOverlay_ShowAllOverlays(self, spellID, texturePath, positions, scale, r, g, b, autoPulse, forcePulsePlay, endTime, combatOnly, extra)
 	if SAO.Shutdown:IsAddonDisabled() then
 		return;
 	end
@@ -282,14 +282,14 @@ function SpellActivationOverlay_ShowAllOverlays(self, spellID, texturePath, posi
 	positions = strupper(positions);
 	if ( complexLocationTable[positions] ) then
 		for location, info in pairs(complexLocationTable[positions]) do
-			SpellActivationOverlay_ShowOverlay(self, spellID, texturePath, location, scale, r, g, b, info.vFlip, info.hFlip, info.cw, autoPulse, forcePulsePlay, endTime, combatOnly);
+			SpellActivationOverlay_ShowOverlay(self, spellID, texturePath, location, scale, r, g, b, info.vFlip, info.hFlip, info.cw, autoPulse, forcePulsePlay, endTime, combatOnly, extra);
 		end
 	else
-		SpellActivationOverlay_ShowOverlay(self, spellID, texturePath, positions, scale, r, g, b, false, false, 0, autoPulse, forcePulsePlay, endTime, combatOnly);
+		SpellActivationOverlay_ShowOverlay(self, spellID, texturePath, positions, scale, r, g, b, false, false, 0, autoPulse, forcePulsePlay, endTime, combatOnly, extra);
 	end
 end
 
-function SpellActivationOverlay_ShowOverlay(self, spellID, texturePath, position, scale, r, g, b, vFlip, hFlip, cw, autoPulse, forcePulsePlay, endTime, combatOnly)
+function SpellActivationOverlay_ShowOverlay(self, spellID, texturePath, position, scale, r, g, b, vFlip, hFlip, cw, autoPulse, forcePulsePlay, endTime, combatOnly, extra)
 	SAO:Trace(Module, "SpellActivationOverlay_ShowOverlay "..tostring(spellID).." "..position);
 	SAO:Debug(Module, "Starting Overlay at location "..position.." for spell ID "..spellID.." "..(GetSpellInfo(spellID) or "")..(endTime and (" for "..math.floor((type(endTime) == 'number' and endTime or endTime.endTime)-GetTime()+0.5).." secs") or ""));
 
@@ -418,6 +418,12 @@ function SpellActivationOverlay_ShowOverlay(self, spellID, texturePath, position
 			SpellActivationOverlayFrame_PlayCombatAnimIn(overlay.combat.animIn);
 		end
 	end
+
+	local frameStrata = type(extra) == 'table' and extra.strata or "MEDIUM";
+	overlay:SetFrameStrata(frameStrata);
+
+	local frameLevel = type(extra) == 'table' and extra.level or 3;
+	overlay:SetFrameLevel(frameLevel);
 end
 
 function SpellActivationOverlay_DumpCombatOnlyOverlays()
@@ -536,7 +542,7 @@ end
 
 function SpellActivationOverlay_CreateOverlay(self)
 	SAO:Trace(Module, "SpellActivationOverlay_CreateOverlay");
-	return CreateFrame("Frame", nil, self, "SpellActivationOverlayTemplate");
+	return CreateFrame("Frame", nil, self, "SpellActivationOverlayAddonTemplate");
 end
 
 function SpellActivationOverlayTexture_OnShow(self)
@@ -743,7 +749,7 @@ end
 function SpellActivationOverlayFrame_SetForceAlpha1(enabled)
 	SAO:Trace(Module, "SpellActivationOverlayFrame_SetForceAlpha1 "..tostring(enabled));
 
-	local self = SpellActivationOverlayFrame;
+	local self = SpellActivationOverlayAddonFrame;
 	if (enabled) then
 		if (not self.disableDimOutOfCombat) then
 			self.disableDimOutOfCombat = 1;
@@ -778,7 +784,7 @@ end
 function SpellActivationOverlayFrame_SetForceAlpha2(enabled)
 	SAO:Trace(Module, "SpellActivationOverlayFrame_SetForceAlpha2 "..tostring(enabled));
 
-	local self = SpellActivationOverlayFrame;
+	local self = SpellActivationOverlayAddonFrame;
 	if (enabled) then
 		if (not self.disableDimOutOfCombat) then
 			self.disableDimOutOfCombat = 10;

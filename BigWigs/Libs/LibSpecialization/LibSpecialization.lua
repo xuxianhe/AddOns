@@ -4,7 +4,7 @@ local cataWowID = 14
 local mistsWowID = 19
 if wowID ~= 1 and wowID ~= cataWowID and wowID ~= mistsWowID then return end -- Retail, Cata, Mists
 
-local LS, oldminor = LibStub:NewLibrary("LibSpecialization", 17)
+local LS, oldminor = LibStub:NewLibrary("LibSpecialization", 19)
 if not LS then return end -- No upgrade needed
 
 LS.callbackMap = LS.callbackMap or {}
@@ -318,8 +318,9 @@ local callbackMapGuild = LS.callbackMapGuild
 local next, type, error, tonumber, format = next, type, error, tonumber, string.format
 local IsInGroup, geterrorhandler, GetTime = IsInGroup, geterrorhandler, GetTime
 local C_ClassTalents_GetActiveConfigID = C_ClassTalents and C_ClassTalents.GetActiveConfigID
-local SendAddonMessage, CTimerAfter = C_ChatInfo.SendAddonMessage, C_Timer.After
+local SendAddonMessage, CTimerNewTimer = C_ChatInfo.SendAddonMessage, C_Timer.NewTimer
 local pName = UnitNameUnmodified("player")
+local throttleTimer = 3
 
 do
 	local result = C_ChatInfo.RegisterAddonMessagePrefix("LibSpec")
@@ -333,21 +334,19 @@ do
 
 	local PrepareForInstance
 	do
-		local timerInstance = false
+		local timerInstance = nil
 		local function SendToInstance()
-			timerInstance = false
+			timerInstance = nil
 			if IsInGroup(2) then
 				if currentRole then -- Cataclysm Feral Druids
 					local result = SendAddonMessage("LibSpec", format("%d,,%s", currentSpecId, currentRole), "INSTANCE_CHAT")
 					if result == 9 then
-						timerInstance = true
-						CTimerAfter(3, SendToInstance)
+						timerInstance = CTimerNewTimer(throttleTimer, SendToInstance)
 					end
 				else
 					local result = SendAddonMessage("LibSpec", format("%d,%s", currentSpecId, currentTalentString or ""), "INSTANCE_CHAT")
 					if result == 9 then
-						timerInstance = true
-						CTimerAfter(3, SendToInstance)
+						timerInstance = CTimerNewTimer(throttleTimer, SendToInstance)
 					end
 				end
 			end
@@ -359,8 +358,7 @@ do
 				currentTalentString = talentString
 				currentRole = specId == 750 and role or nil -- Cataclysm Feral Druids
 				if not timerInstance then
-					timerInstance = true
-					CTimerAfter(3, SendToInstance)
+					timerInstance = CTimerNewTimer(throttleTimer, SendToInstance)
 				end
 			end
 		end
@@ -368,21 +366,19 @@ do
 
 	local PrepareForGroup
 	do
-		local timerGroup = false
+		local timerGroup = nil
 		local function SendToGroup()
-			timerGroup = false
+			timerGroup = nil
 			if IsInGroup(1) then
 				if currentRole then -- Cataclysm Feral Druids
 					local result = SendAddonMessage("LibSpec", format("%d,,%s", currentSpecId, currentRole), "RAID") -- RAID auto downgrades to PARTY as needed
 					if result == 9 then
-						timerGroup = true
-						CTimerAfter(3, SendToGroup)
+						timerGroup = CTimerNewTimer(throttleTimer, SendToGroup)
 					end
 				else
 					local result = SendAddonMessage("LibSpec", format("%d,%s", currentSpecId, currentTalentString or ""), "RAID") -- RAID auto downgrades to PARTY as needed
 					if result == 9 then
-						timerGroup = true
-						CTimerAfter(3, SendToGroup)
+						timerGroup = CTimerNewTimer(throttleTimer, SendToGroup)
 					end
 				end
 			end
@@ -394,8 +390,7 @@ do
 				currentTalentString = talentString
 				currentRole = specId == 750 and role or nil -- Cataclysm Feral Druids
 				if not timerGroup then
-					timerGroup = true
-					CTimerAfter(3, SendToGroup)
+					timerGroup = CTimerNewTimer(throttleTimer, SendToGroup)
 				end
 			end
 		end
@@ -403,22 +398,23 @@ do
 
 	local PrepareForGuild
 	do
-		local guildTimer = false
+		local guildTimer = nil
 		local prev = 0
 		local function SendToGuild()
-			guildTimer = false
+			if guildTimer then
+				guildTimer:Cancel()
+				guildTimer = nil
+			end
 			if IsInGuild() then
 				if currentRole then -- Cataclysm Feral Druids
 					local result = SendAddonMessage("LibSpec", format("%d,,%s", currentSpecId, currentRole), "GUILD")
 					if result == 9 then
-						guildTimer = true
-						CTimerAfter(3, SendToGuild)
+						guildTimer = CTimerNewTimer(throttleTimer, SendToGuild)
 					end
 				else
 					local result = SendAddonMessage("LibSpec", format("%d,%s", currentSpecId, currentTalentString or ""), "GUILD")
 					if result == 9 then
-						guildTimer = true
-						CTimerAfter(3, SendToGuild)
+						guildTimer = CTimerNewTimer(throttleTimer, SendToGuild)
 					end
 				end
 			end
@@ -431,12 +427,11 @@ do
 				currentRole = specId == 750 and role or nil -- Cataclysm Feral Druids
 				if not guildTimer then
 					local t = GetTime()
-					if t-prev > 4 then
+					if t-prev > throttleTimer then
 						prev = t
 						SendToGuild()
 					else
-						guildTimer = true
-						CTimerAfter(4-(t-prev), SendToGuild)
+						guildTimer = CTimerNewTimer(throttleTimer-(t-prev), SendToGuild)
 					end
 				end
 			end
@@ -616,7 +611,7 @@ end
 
 do
 	local prev = 0
-	local timer = false
+	local timer = nil
 	function LS:RequestSpecialization()
 		local specId, role, position, talentString = LS:MySpecialization()
 		if specId then
@@ -627,8 +622,11 @@ do
 
 		if IsInGroup() then
 			local t = GetTime()
-			if t-prev > 3 then
-				timer = false
+			if t-prev > throttleTimer then
+				if timer then
+					timer:Cancel()
+					timer = nil
+				end
 				prev = t
 				if IsInGroup(2) then
 					SendAddonMessage("LibSpec", "R", "INSTANCE_CHAT")
@@ -637,12 +635,15 @@ do
 					SendAddonMessage("LibSpec", "R", "RAID")
 				end
 			elseif not timer then
-				timer = true
-				CTimerAfter(3.1-(t-prev), LS.RequestSpecialization)
+				timer = CTimerNewTimer((throttleTimer+0.1)-(t-prev), LS.RequestSpecialization)
 			end
 		end
 	end
+end
 
+do
+	local prev = 0
+	local timer = nil
 	function LS.RequestGuildSpecialization()
 		local specId, role, position, talentString = LS:MySpecialization()
 		if specId then
@@ -653,9 +654,15 @@ do
 
 		if IsInGuild() then
 			local t = GetTime()
-			if t-prev > 4 then
+			if t-prev > throttleTimer then
+				if timer then
+					timer:Cancel()
+					timer = nil
+				end
 				prev = t
 				SendAddonMessage("LibSpec", "R", "GUILD")
+			elseif not timer then
+				timer = CTimerNewTimer((throttleTimer+0.1)-(t-prev), LS.RequestGuildSpecialization)
 			end
 		end
 	end

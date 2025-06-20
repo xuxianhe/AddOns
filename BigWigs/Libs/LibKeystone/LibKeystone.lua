@@ -1,7 +1,7 @@
 --@curseforge-project-slug: libkeystone@
 if WOW_PROJECT_ID ~= 1 then return end -- Retail
 
-local LKS = LibStub:NewLibrary("LibKeystone", 1)
+local LKS = LibStub:NewLibrary("LibKeystone", 2)
 if not LKS then return end -- No upgrade needed
 
 LKS.callbackMap = LKS.callbackMap or {}
@@ -63,28 +63,62 @@ do
 	end
 end
 
-local SendAddonMessage = C_ChatInfo.SendAddonMessage
+local SendAddonMessage, CTimerNewTimer = C_ChatInfo.SendAddonMessage, C_Timer.NewTimer
 local GetTime = GetTime
 local next = next
-local throttleTime = 4 -- Seconds
+local throttleTime = 3 -- Seconds
 do
 	local throttleTable = {
 		GUILD = 0,
 		PARTY = 0,
 	}
+	local timerTable = {}
+	local functionTable
 	local tonumber, match, format = tonumber, string.match, string.format
 	local Ambiguate = Ambiguate
+
+	do
+		local function SendToParty()
+			if timerTable.PARTY then
+				timerTable.PARTY:Cancel()
+				timerTable.PARTY = nil
+			end
+			local keyLevel, keyMap, playerRating = GetInfo()
+			local result = SendAddonMessage("LibKS", format("%d,%d,%d", keyLevel, keyMap, playerRating), "PARTY")
+			if result == 9 then
+				timerTable.PARTY = CTimerNewTimer(throttleTime, SendToParty)
+			end
+		end
+		local function SendToGuild()
+			if timerTable.GUILD then
+				timerTable.GUILD:Cancel()
+				timerTable.GUILD = nil
+			end
+			local keyLevel, keyMap, playerRating = GetInfo()
+			local result = SendAddonMessage("LibKS", format("%d,%d,%d", keyLevel, keyMap, playerRating), "GUILD")
+			if result == 9 then
+				timerTable.GUILD = CTimerNewTimer(throttleTime, SendToGuild)
+			end
+		end
+		functionTable = {
+			PARTY = SendToParty,
+			GUILD = SendToGuild,
+		}
+	end
+
 	LKS.frame:SetScript("OnEvent", function(_, _, prefix, msg, channel, sender)
 		if prefix == "LibKS" and throttleTable[channel] then
 			if msg == "R" then
 				local t = GetTime()
 				if t - throttleTable[channel] > throttleTime then
 					throttleTable[channel] = t
-					local keyLevel, keyMap, playerRating = GetInfo()
-					SendAddonMessage("LibKS", format("%d,%d,%d", keyLevel, keyMap, playerRating), channel)
+					functionTable[channel]()
+				elseif not timerTable[channel] then
+					timerTable[channel] = CTimerNewTimer(throttleTime, functionTable[channel])
 				end
 				return
 			end
+
 			local keyLevelStr, keyMapStr, playerRatingStr = match(msg, "^(%d+),(%d+),(%d+)$")
 			if keyLevelStr and keyMapStr and playerRatingStr then
 				local keyLevel = tonumber(keyLevelStr)
@@ -110,22 +144,27 @@ do
 		GUILD = IsInGuild,
 		PARTY = IsInGroup,
 	}
+	local timers = {}
 	local pName = UnitNameUnmodified("player")
 	function LKS.Request(channel)
 		if not throttleSendTable[channel] then
 			error("LibKeystone: The function lib.Request expects a channel type of PARTY or GUILD.")
 		else
 			local keyLevel, keyMap, playerRating = GetInfo()
-			if keyLevel then
-				for _,func in next, callbackMap do
-					func(keyLevel, keyMap, playerRating, pName, channel) -- This allows us to show our own stats when not grouped
-				end
-				if statusCheckTable[channel]() then
-					local t = GetTime()
-					if t - throttleSendTable[channel] > throttleTime then
-						throttleSendTable[channel] = t
-						SendAddonMessage("LibKS", "R", channel)
+			for _,func in next, callbackMap do
+				func(keyLevel, keyMap, playerRating, pName, channel) -- This allows us to show our own stats when not grouped
+			end
+			if statusCheckTable[channel]() then
+				local t = GetTime()
+				if t - throttleSendTable[channel] > throttleTime then
+					if timers[channel] then
+						timers[channel]:Cancel()
+						timers[channel] = nil
 					end
+					throttleSendTable[channel] = t
+					SendAddonMessage("LibKS", "R", channel)
+				elseif not timers[channel] then
+					timers[channel] = CTimerNewTimer((throttleTime+0.1)-(t-throttleSendTable[channel]), function() LKS.Request(channel) end)
 				end
 			end
 		end

@@ -64,6 +64,17 @@ function SAO.Trace(self, prefix, msg, ...)
     end
 end
 
+function SAO.LogPersistent(self, prefix, msg)
+    if SpellActivationOverlayDB then
+        local line = "[@"..GetTime().."] :"..prefix..": "..msg;
+        if not SpellActivationOverlayDB.logs then
+            SpellActivationOverlayDB.logs = { line };
+        else
+            tinsert(SpellActivationOverlayDB.logs, line);
+        end
+    end
+end
+
 local timeOfLastTrace = {}
 function SAO.TraceThrottled(self, key, prefix, ...)
     key = tostring(key)..tostring(prefix);
@@ -482,6 +493,19 @@ end
 -- Get the number of specializations for the current class
 function SAO:GetNbSpecs()
     return GetNumSpecializationsForClassID(select(2, UnitClassBase("player")));
+end
+
+-- Get a function that retrieves the name of the specialization
+-- It returns a function that must be invoked explicitly, e.g. SAO:GetSpecNameFunction(1)()
+-- The reason for that is that specializations are not queriable at start
+-- Returns nil for flavors that do not support Specializations
+function SAO:GetSpecNameFunction(specIndex)
+    if not C_SpecializationInfo then
+        return nil;
+    end
+    return function()
+        return select(2, C_SpecializationInfo.GetSpecializationInfo(specIndex));
+    end;
 end
 
 -- Utility function to get the spell ID associated to an action
