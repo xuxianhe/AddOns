@@ -339,6 +339,18 @@ SAO.defaults = {
                 },
             },
         },
+        ["MONK"] = { -- (Mists of Pandaria+)
+            alert = {
+                [116768] = { -- Combo Breaker: Blackout Kick
+                    [0] = true,
+                },
+                [118864] = { -- Combo Breaker: Tiger Palm
+                    [0] = true,
+                },
+            },
+            glow = {
+            },
+        },
         ["PALADIN"] = {
             alert = {
                 [54149] = { -- Infusion of Light (2/2 in Wrath-Cataclysm, Spec in Mists of Pandaria)
@@ -542,6 +554,9 @@ SAO.defaults = {
                     [0] = "cd:off",
                 },
                 [462707] = { -- Cutthroat (Season of Discovery)
+                    [0] = true,
+                },
+                [121153] = { -- Blindside (Mists of Pandaria)
                     [0] = true,
                 },
             },

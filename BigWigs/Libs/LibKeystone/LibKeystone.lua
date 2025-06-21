@@ -1,11 +1,12 @@
 --@curseforge-project-slug: libkeystone@
 if WOW_PROJECT_ID ~= 1 then return end -- Retail
 
-local LKS = LibStub:NewLibrary("LibKeystone", 2)
+local LKS = LibStub:NewLibrary("LibKeystone", 3)
 if not LKS then return end -- No upgrade needed
 
 LKS.callbackMap = LKS.callbackMap or {}
 LKS.frame = LKS.frame or CreateFrame("Frame")
+LKS.isGuildHidden = LKS.isGuildHidden or false
 
 local callbackMap = LKS.callbackMap
 local type, error = type, error
@@ -36,6 +37,13 @@ function LKS.Unregister(addon)
 		error("LibKeystone: The function lib.Unregister expects your own addon object.")
 	end
 	callbackMap[addon] = nil
+end
+
+function LKS.SetGuildHidden(isHidden)
+	if type(isHidden) ~= "boolean" then
+		error("LibKeystone: The function lib.SetGuildHidden expects a boolean value.")
+	end
+	LKS.isGuildHidden = isHidden
 end
 
 local GetInfo
@@ -95,6 +103,9 @@ do
 				timerTable.GUILD = nil
 			end
 			local keyLevel, keyMap, playerRating = GetInfo()
+			if keyLevel ~= 0 and LKS.isGuildHidden then
+				keyLevel, keyMap = -1, -1
+			end
 			local result = SendAddonMessage("LibKS", format("%d,%d,%d", keyLevel, keyMap, playerRating), "GUILD")
 			if result == 9 then
 				timerTable.GUILD = CTimerNewTimer(throttleTime, SendToGuild)
@@ -151,6 +162,9 @@ do
 			error("LibKeystone: The function lib.Request expects a channel type of PARTY or GUILD.")
 		else
 			local keyLevel, keyMap, playerRating = GetInfo()
+			if keyLevel ~= 0 and LKS.isGuildHidden and channel == "GUILD" then
+				keyLevel, keyMap = -1, -1
+			end
 			for _,func in next, callbackMap do
 				func(keyLevel, keyMap, playerRating, pName, channel) -- This allows us to show our own stats when not grouped
 			end

@@ -25,7 +25,7 @@ local CVarCacheSounds = {
 BINDING_NAME_BETTERFISHINGKEY = "Cast and Interact"
 
 local ClassicFishingIDs = {
-  7620, 7731, 7732, 18248, 33095, 51294, 88868
+  7620, 7731, 7732, 18248, 33095, 51294, 88868, 110410
 }
 
 function BetterFishing:GetFishingCastID()
@@ -91,7 +91,7 @@ function BetterFishing:GetSecureButton()
 end
 
 function BetterFishing:IsFlying()
-  -- Check for Zen Flight
+  -- Check for Zen Flight, consider supporting MoP+ only as 11.1.5 changed zen flight
   if C_UnitAuras and C_UnitAuras.GetPlayerAuraBySpellID(125883) then
     return false
   else

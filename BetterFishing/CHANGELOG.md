@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 41
+## 42
 - Version update
 
 # Info

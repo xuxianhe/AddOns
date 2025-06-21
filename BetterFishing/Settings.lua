@@ -48,7 +48,7 @@ function BetterFishing:CreateSettings()
     { option = "doubleClickEnabled", detail = "Double Click to cast" },
     { option = "recastOnDoubleClick", detail = "Double Click to Recast while Fishing (Modifier Key Hooks), inverted when off" },
     { option = "overrideLunker", detail = "Allow Fishing while \"Looking for Lunkers\" (Dragonflight) buff is active", minExpansion = LE_EXPANSION_DRAGONFLIGHT },
-    { option = "objectIconDisabled", detail = "Disable icon above bobber (visibility varies for nameplate addons)", minExpansion = LE_EXPANSION_DRAGONFLIGHT }
+    { option = "objectIconDisabled", detail = "Disable icon above bobber (visibility varies for nameplate addons)", minExpansion = LE_EXPANSION_DRAGONFLIGHT },
   }
 
   for _, keyInfo in ipairs(settingsInfo) do

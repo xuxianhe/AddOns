@@ -3,6 +3,19 @@
   <Script file="InterfaceOptionsPanels.lua"/>
 
   <Frame name="SpellActivationOverlayOptionsPanel" hidden="true" parent="UIParent">
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString name="$parentBuild" text="" inherits="GameFontNormal" justifyH="CENTER" justifyV="CENTER">
+          <Anchors>
+            <Anchor point="BOTTOMRIGHT">
+              <Offset>
+                <AbsDimension x="-16" y="32"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
     <Frames>
       <Slider name="$parentSpellAlertOpacitySlider" inherits="OptionsSliderTemplate">
         <Anchors>
@@ -152,6 +165,24 @@
               SpellActivationOverlayDB.debug = true;
             else
               SpellActivationOverlayDB.debug = nil;
+            end
+          </PostClick>
+        </Scripts>
+      </CheckButton>
+      <CheckButton name="$parentSpellAlertReportButton" inherits="InterfaceOptionsCheckButtonTemplate">
+        <Anchors>
+          <Anchor point="BOTTOMLEFT" relativeTo="$parentSpellAlertDebugButton" relativePoint="BOTTOMLEFT">
+            <Offset>
+              <AbsDimension x="0" y="20"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Scripts>
+          <PostClick>
+            if (self:GetChecked()) then
+              SpellActivationOverlayDB.report = nil;
+            else
+              SpellActivationOverlayDB.report = false;
             end
           </PostClick>
         </Scripts>

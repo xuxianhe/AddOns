@@ -1459,26 +1459,23 @@ BG.Init(function()
         do
             local name = "Sound"
 
+            BG.Once("sound", 250527, function()
+                BiaoGe.options.Sound = "AI"
+            end)
+
+            BiaoGe.options.Sound = BiaoGe.options.Sound or "AI"
+
             local function GetName()
-                for i, v in ipairs(BG.soundTbl) do
+                for i, v in ipairs(BG.soundAuthor) do
                     if v.ID == BiaoGe.options.Sound then
-                        return v.name
+                        return v.ID
                     end
                 end
             end
 
-            BG.Once("sound", 250527, function()
-                BiaoGe.options.Sound = "AI"
-            end)
-            BiaoGe.options.Sound = BiaoGe.options.Sound or BG.soundTbl[random(#BG.soundTbl)].ID
-            if not GetName() then
-                BiaoGe.options.Sound = BG.soundTbl[random(#BG.soundTbl)].ID
-            end
-
             local dropDown = LibBG:Create_UIDropDownMenu(nil, biaoge)
             dropDown:SetPoint("TOPLEFT", 220, height - h + 10)
-            LibBG:UIDropDownMenu_SetWidth(dropDown, 180)
-            LibBG:UIDropDownMenu_SetText(dropDown, GetName())
+            LibBG:UIDropDownMenu_SetWidth(dropDown, 120)
             LibBG:UIDropDownMenu_SetAnchor(dropDown, 0, 0, "TOP", dropDown, "BOTTOM")
             BG.dropDownToggle(dropDown)
             BG.options["button" .. name] = dropDown
@@ -1493,12 +1490,12 @@ BG.Init(function()
             f:SetSize(t:GetWidth(), t:GetHeight())
 
             LibBG:UIDropDownMenu_Initialize(dropDown, function(self, level)
-                for _, v in ipairs(BG.soundTbl) do
+                for _, v in ipairs(BG.soundAuthor) do
                     local info = LibBG:UIDropDownMenu_CreateInfo()
-                    info.text = v.name
+                    info.text = v.ID
                     info.func = function()
                         BiaoGe.options[name] = v.ID
-                        LibBG:UIDropDownMenu_SetText(dropDown, v.name)
+                        LibBG:UIDropDownMenu_SetText(dropDown, v.ID)
                     end
                     if v.ID == BiaoGe.options[name] then
                         info.checked = true
@@ -1521,7 +1518,9 @@ BG.Init(function()
                             bt:Hide()
                             button.playSound = bt
                             bt:SetScript("OnClick", function(self)
-                                PlaySoundFile(BG["sound_" .. BG.soundTbl2[random(#BG.soundTbl2)].ID .. BG.soundTbl[self.num].ID], "Master")
+                                local index = random(#BG.soundTbl2)
+                                PlaySoundFile(BG["sound_" .. BG.soundTbl2[index].ID .. BG.soundAuthor[self.num].ID] .. ".mp3", "Master")
+                                PlaySoundFile(BG["sound_" .. BG.soundTbl2[index].ID .. BG.soundAuthor[self.num].ID] .. ".ogg", "Master")
                             end)
                             bt:SetScript("OnEnter", function(self)
                                 LibBG:UIDropDownMenu_StopCounting(self:GetParent():GetParent())
@@ -1551,6 +1550,26 @@ BG.Init(function()
             if BiaoGe.options["tipsSound"] ~= 1 then
                 dropDown:Hide()
             end
+
+            BG.Init2(function()
+                LibBG:UIDropDownMenu_SetText(dropDown, GetName())
+            end)
+
+            -- 自制语音包提示
+            local bt = BG.CreateButton(biaoge)
+            bt:SetSize(120, 25)
+            bt:SetPoint("TOPLEFT", biaoge, "TOPLEFT", 450, height - h + 10)
+            bt:SetText(L["查看教程"])
+            bt:SetScript("OnClick", function(self)
+                BG.PlaySound(1)
+                BG.ChatEditSetText("https://docs.qq.com/doc/DYXBObWZTeFdFaFFI")
+            end)
+
+            local t = biaoge:CreateFontString()
+            t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+            t:SetPoint("BOTTOM", bt, "TOP", 0, 8)
+            t:SetTextColor(1, 1, 1)
+            t:SetText(AddTexture("QUEST") .. L["我想成为语音包作者"])
         end
         h = h + 40
 
