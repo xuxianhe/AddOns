@@ -2950,24 +2950,14 @@ function GSE.CreateEditor()
                             SetBinding(initialbind)
                             destination[bind] = nil
                         end
-                        if loadout ~= "ALL" and loadout then
+                        if destination then
                             destination[bind] = button
-                            if
-                                tostring(C_ClassTalents.GetLastSelectedSavedConfigID(PlayerUtil.GetCurrentSpecID())) ==
-                                    loadout
-                             then
-                                SetBinding(bind)
-                                SetBindingClick(bind, button, _G[button])
-                            end
                         else
-                            destination[bind] = button
-                            SetBinding(bind)
-                            SetBindingClick(bind, button, _G[button])
+                            GSE.PrintDebugMessage(
+                                "Error Saving Keybind " .. bind .. " " .. button,
+                                Statics.DebugModules.Storage
+                            )
                         end
-                        if bind ~= initialbind then
-                            showKeybind(bind, button, specialization, loadout)
-                        end
-
                         editframe.ManageTree()
                         local keypath
                         if loadout ~= "ALL" and loadout then
@@ -2986,6 +2976,10 @@ function GSE.CreateEditor()
                         if keypath then
                             treeContainer:SelectByValue(keypath)
                         end
+                        GSE.ReloadKeyBindings()
+                    -- if bind ~= initialbind then
+                    --     showKeybind(bind, button, specialization, loadout)
+                    -- end
                     end
                 end
             )

@@ -1,9 +1,9 @@
-## Interface: 40402, 11507, 110105, 110107, 50500 
+## Interface: 40402, 11507, 110200, 110107, 50500 
 
 ## Title: |cFFFFFFFFGS|r|cFF00FFFFE|r |cFF808080Utility Functions|r
 ## Notes: Optional Utilities for GSE
 ## Author: TimothyLuke
-## Version: 3.2.31
+## Version: 3.2.32
 ## Dependencies: GSE
 ## IconTexture: Interface\Addons\GSE_GUI\Assets\GSE_Logo_Dark_512
 ## Category-enUS: Combat
