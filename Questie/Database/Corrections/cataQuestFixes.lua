@@ -1138,6 +1138,12 @@ function CataQuestFixes.Load()
         [9305] = { -- Spare Parts
             [questKeys.preQuestSingle] = {},
         },
+        [9325] = { -- Stealing Thunder Bluff's Flame
+            [questKeys.startedBy] = {nil,nil,{23180}},
+        },
+        [9326] = { -- Stealing Thunder Bluff's Flame
+            [questKeys.startedBy] = {nil,nil,{23181}},
+        },
         [9327] = { -- The Forsaken
             [questKeys.preQuestSingle] = {},
         },
@@ -1267,9 +1273,27 @@ function CataQuestFixes.Load()
             [questKeys.exclusiveTo] = {},
             [questKeys.preQuestSingle] = {},
         },
+        [9854] = { -- Windroc Mastery
+            [questKeys.breadcrumbs] = {10114},
+        },
         [9872] = { -- Murkblood Invaders
             [questKeys.startedBy] = {nil,nil,{24558}},
             [questKeys.requiredRaces] = raceIDs.ALL_HORDE,
+        },
+        [9882] = { -- Stealing from Thieves
+            [questKeys.breadcrumbs] = {9913},
+        },
+        [9888] = { -- The Impotent Leader
+            [questKeys.zoneOrSort] = zoneIDs.TEROKKAR_FOREST,
+        },
+        [9889] = { -- Don't Kill the Fat One
+            [questKeys.zoneOrSort] = zoneIDs.TEROKKAR_FOREST,
+        },
+        [9890] = { -- Success!
+            [questKeys.zoneOrSort] = zoneIDs.TEROKKAR_FOREST,
+        },
+        [9913] = { -- The Consortium Needs You!
+            [questKeys.breadcrumbForQuestId] = 9882,
         },
         [9931] = { -- Returning the Favor
             [questKeys.preQuestSingle] = {},
@@ -1279,6 +1303,12 @@ function CataQuestFixes.Load()
         },
         [9934] = { -- Message to Garadar
             [questKeys.preQuestSingle] = {},
+        },
+        [9944] = { -- Missing Mag'hari Procession
+            [questKeys.breadcrumbForQuestId] = 9945,
+        },
+        [9945] = { -- War on the Warmaul
+            [questKeys.breadcrumbs] = {9944},
         },
         [9957] = { -- What's Wrong at Cenarion Thicket?
             [questKeys.breadcrumbForQuestId] = 9968,
@@ -1295,6 +1325,21 @@ function CataQuestFixes.Load()
         },
         [9978] = { -- By Any Means Necessary
             [questKeys.preQuestSingle] = {},
+        },
+        [9982] = { -- He Called Himself Altruis...
+            [questKeys.breadcrumbForQuestId] = 9991,
+        },
+        [9983] = { -- He Called Himself Altruis...
+            [questKeys.breadcrumbForQuestId] = 9991,
+        },
+        [9991] = { -- Survey the Land
+            [questKeys.breadcrumbs] = {9982,9983},
+        },
+        [10009] = { -- Crackin' Some Skulls
+            [questKeys.zoneOrSort] = zoneIDs.TEROKKAR_FOREST,
+        },
+        [10010] = { -- It's Just That Easy?
+            [questKeys.zoneOrSort] = zoneIDs.TEROKKAR_FOREST,
         },
         [10066] = { -- Oh, the Tangled Webs They Weave
             [questKeys.startedBy] = {{17986}},
@@ -1352,6 +1397,9 @@ function CataQuestFixes.Load()
         },
         [10105] = { -- News for Rakoria
             [questKeys.zoneOrSort] = zoneIDs.ZANGARMARSH,
+        },
+        [10114] = { -- The Nesingwary Safari
+            [questKeys.breadcrumbForQuestId] = 9854,
         },
         [10120] = { -- Arrival in Outland
             [questKeys.breadcrumbs] = {9407,28705},
@@ -1533,6 +1581,12 @@ function CataQuestFixes.Load()
             [questKeys.exclusiveTo] = {10729,10730,10731},
             [questKeys.reputationReward] = {{967,5}},
         },
+        [10771] = { -- From the Ashes
+            [questKeys.preQuestSingle] = {},
+        },
+        [10825] = { -- The Truth Unorbed
+            [questKeys.startedBy] = {nil,nil,{31489}},
+        },
         [10847] = { -- The Eyes of Skettis
             [questKeys.preQuestSingle] = {},
             [questKeys.breadcrumbs] = {10862,10863,10908},
@@ -1614,10 +1668,16 @@ function CataQuestFixes.Load()
         [10983] = { -- Mog'dorg the Wizened
             [questKeys.preQuestSingle] = {},
             [questKeys.breadcrumbs] = {10984},
+            [questKeys.exclusiveTo] = {10989,11057},
+            [questKeys.nextQuestInChain] = 10995,
         },
         [10984] = { -- Speak with the Ogre
             [questKeys.nextQuestInChain] = 10983,
             [questKeys.breadcrumbForQuestId] = 10983,
+        },
+        [10989] = { -- Mog'dorg the Wizened
+            [questKeys.exclusiveTo] = {10983,11057},
+            [questKeys.nextQuestInChain] = 10995,
         },
         [10998] = { -- Grim(oire) Business
             [questKeys.preQuestSingle] = {},
@@ -1642,6 +1702,9 @@ function CataQuestFixes.Load()
         [11021] = { -- Ishaal's Almanac
             [questKeys.zoneOrSort] = zoneIDs.SKETTIS,
         },
+        [11025] = { -- The Crystals
+            [questKeys.preQuestSingle] = {},
+        },
         [11028] = { -- Countdown to Doom
             [questKeys.zoneOrSort] = zoneIDs.SKETTIS,
         },
@@ -1660,8 +1723,18 @@ function CataQuestFixes.Load()
         [11034] = { -- Restorer No More
             [questKeys.specialFlags] = 1,
         },
+        [11037] = { -- A Strange Vision
+            [questKeys.zoneOrSort] = zoneIDs.NAGRAND,
+        },
+        [11048] = { -- Kroghan's Report
+            [questKeys.zoneOrSort] = zoneIDs.NAGRAND,
+        },
         [11056] = { -- Hazzik's Bargain
             [questKeys.zoneOrSort] = zoneIDs.SKETTIS,
+        },
+        [11057] = { -- The Trouble Below
+            [questKeys.exclusiveTo] = {10983,10989},
+            [questKeys.nextQuestInChain] = 10995,
         },
         [11073] = { -- Terokk's Downfall
             [questKeys.zoneOrSort] = zoneIDs.SKETTIS,
@@ -5948,7 +6021,7 @@ function CataQuestFixes.Load()
         },
         [25776] = { -- Sethria's Demise
             [questKeys.preQuestSingle] = {},
-            [questKeys.preQuestGroup] = {25761,25764},
+            [questKeys.preQuestGroup] = {25746,25761,25764},
         },
         [25777] = { -- Onwards to Menethil
             [questKeys.nextQuestInChain] = 25780,
@@ -14720,9 +14793,11 @@ function CataQuestFixes.Load()
         [29595] = { -- Everything Will Be Alright
             [questKeys.nextQuestInChain] = 29596,
             [questKeys.preQuestSingle] = {10253},
+            [questKeys.breadcrumbForQuestId] = 29596,
         },
         [29596] = { -- The End of the Exarch
             [questKeys.preQuestSingle] = {},
+            [questKeys.breadcrumbs] = {29595},
         },
         [29598] = { -- Taretha's Diversion
             [questKeys.zoneOrSort] = 1941,

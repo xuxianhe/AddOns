@@ -466,7 +466,7 @@ SAO.defaults = {
                     [3] = true,  -- 3 stacks
                     [0] = false, -- any stacks but 3
                 },
-                [63735] = { -- Serendipity (Cataclysm)
+                [63735] = { -- Serendipity (Cataclysm+)
                     [1] = nil, -- set to nil to simplify DB migration, from Serendipity at 0 stacks
                     [2] = nil, -- set to nil to simplify DB migration, from Serendipity at 3 stacks
                 },
@@ -545,6 +545,9 @@ SAO.defaults = {
                 },
                 [81292] = { -- Glyph of Mind Spike (Mists of Pandaria)
                     [8092] = true,
+                },
+                [88625] = { -- Holy Word: Chastise (Mists of Pandaria)
+                    [88625] = false,
                 },
             },
         },
@@ -664,17 +667,23 @@ SAO.defaults = {
         },
         ["WARLOCK"] = {
             alert = {
+                [126] = { -- Eye of Kilrogg
+                    [0] = true,
+                },
                 [17941] = { -- Nightfall
                     [0] = true,
                 },
                 [34936] = { -- Backlash (TBC+)
                     [0] = true,
                 },
-                [71165] = { -- Molten Core (Wrath+)
+                [71165] = { -- Molten Core (Wrath, Cataclysm)
                     [0] = true, -- any stacks
                 },
-                [63167] = { -- Decimation (Wrath+)
+                [63167] = { -- Decimation (Wrath, Cataclysm)
                     [0] = true,
+                },
+                [122355] = { -- Molten Core (Mists of Pandaria)
+                    [0] = true, -- any stacks
                 },
                 [440873] = { -- Decimation (Season of Discovery)
                     [0] = true,
@@ -685,6 +694,15 @@ SAO.defaults = {
                 [89937] = { -- Fel Spark (Cataclysm)
                     [0] = true, -- any stacks
                 },
+                [74434] = { -- Soulburn (Mists of Pandaria)
+                    [0] = false,
+                },
+                [88448] = { -- Demonic Rebirth (Mists of Pandaria)
+                    [0] = true,
+                },
+                [108683] = { -- Fire and Brimstone (Mists of Pandaria)
+                    [0] = false,
+                },
             },
             glow = {
                 [1120] = { -- Drain Soul (Season of Discovery, Wrath+)
@@ -694,7 +712,7 @@ SAO.defaults = {
                     [17877] = true, -- Shadowburn
                 },
                 [17941] = { -- Nightfall
-                    [686] = true, -- Shadow Bolt
+                    [686] = true, -- Shadow Bolt (up until Cataclysm)
                     [403841] = true, -- Shadow Cleave (Season of Discovery)
                 },
                 [71165] = { -- Molten Core (Wrath+)
@@ -712,8 +730,12 @@ SAO.defaults = {
                     [29722] = false, -- Incinerate
                     [50796] = false, -- Chaos Bolt
                 },
+                [117828] = { -- Backdraft (Mists of Pandaria)
+                    [29722] = false, -- Incinerate
+                    [116858] = false, -- Chaos Bolt (new spell ID in Mists of Pandaria)
+                },
                 [34936] = { -- Backlash (TBC+)
-                    [686]   = true, -- Shadow Bolt
+                    [686]   = true, -- Shadow Bolt (TBC - Cataclysm)
                     [29722] = true, -- Incinerate
                 },
                 [47283] = { -- Empowered Imp (Cataclysm)
@@ -721,6 +743,13 @@ SAO.defaults = {
                 },
                 [89937] = { -- Fel Spark (Cataclysm)
                     [77799]  = true, -- Fel Flame
+                },
+                [108683] = { -- Fire and Brimstone (Mists of Pandaria)
+                    [108685] = false, -- Conflagrate + Fire and Brimstone
+                    [109468] = false, -- Curse of Enfeeblement + Fire and Brimstone
+                    [104225] = false, -- Curse of the Elements +  + Fire and Brimstone
+                    [108686] = false, -- Immolate + Fire and Brimstone
+                    [114654] = false, -- Incinerate + Fire and Brimstone
                 },
             },
         },
@@ -739,7 +768,7 @@ SAO.defaults = {
                     [0] = true,
                 },
                 [46916] = { -- Bloodsurge (Wrath+)
-                    [0] = true, -- any stacks (up to 2 stacks with tier 10)
+                    [0] = true, -- any stacks (up to 2 stacks with tier 10, up to 3 stacks with Mists of Pandaria)
                 },
                 [413399] = { -- Bloodsurge (Season of Discovery)
                     [0] = true,
@@ -753,6 +782,15 @@ SAO.defaults = {
                 [402911]= { -- Raging Blow (Season of Discovery)
                     [0] = true,
                 },
+                [32216] = { -- Victorious (Mists of Pandaria)
+                    [0] = true,
+                },
+                [60503] = { -- Taste for Blood (Mists of Pandaria)
+                    [0] = true, -- any stacks
+                },
+                [122510]= { -- Ultimatum (Mists of Pandaria)
+                    [0] =  true,
+                }
             },
             glow = {
                 [7384] = { -- Overpower
@@ -785,8 +823,8 @@ SAO.defaults = {
                     [845] = true, -- Cleave
                 },
                 [52437] = { -- Sudden Death (Wrath+)
-                    [5308] = true, -- Execute (not for Cata)
-                    [86346]= true, -- Colossus Smash (Cataclysm)
+                    [5308]  = true, -- Execute (not for Cata)
+                    [86346] = true, -- Colossus Smash (Cataclysm+)
                 },
                 [440114] = { -- Sudden Death (Season of Discovery)
                     [5308] = true, -- Execute
@@ -795,7 +833,8 @@ SAO.defaults = {
                     [5308] = true, -- Execute
                 },
                 [46916] = { -- Bloodsurge (Wrath+)
-                    [1464] = true, -- Slam
+                    [1464]   = true, -- Slam (Wrath, Cataclysm)
+                    -- [100130] = true, -- Wild Strike (Mists of Pandaria+)
                 },
                 [413399] = { -- Bloodsurge (Season of Discovery)
                     [1464] = true, -- Slam
@@ -806,6 +845,13 @@ SAO.defaults = {
                 [426979] = { -- Sword and Board (Season of Discovery)
                     [23922] = true, -- Shield Slam
                 },
+                [32216] = { -- Victorious (Mists of Pandaria)
+                    [34428]  = true, -- Victory Rush
+                    [103840] = true, -- Impending Victory
+                },
+                [60503] = { -- Taste for Blood (Mists of Pandaria)
+                    [7384] = false, -- Overpower
+                }
             },
         },
     }

@@ -289,6 +289,7 @@ function BG.RoleOverviewUI()
 
             BG.MONEYall_table = {
                 { name = L["影霜碎片"], color = "ff8000", type = "item", id = 50274, quest = 24548, tex = 340336, width = 90 }, -- 橙片
+                { name = L["瓦兰奈尔碎片"], color = "ff8000", type = "item", id = 45039, quest = 13622, tex = "Interface/Icons/inv_ingot_titansteel_red", width = 90 }, -- 橙片
                 { name = C_CurrencyInfo.GetCurrencyInfo(341).name, color = "00BFFF", id = 341, tex = C_CurrencyInfo.GetCurrencyInfo(341).iconFileID, width = 70 }, -- 寒冰
                 { name = C_CurrencyInfo.GetCurrencyInfo(301).name, color = "7B68EE", id = 301, tex = C_CurrencyInfo.GetCurrencyInfo(301).iconFileID, width = 70 }, -- 凯旋
                 { name = C_CurrencyInfo.GetCurrencyInfo(221).name, color = "FFFF00", id = 221, tex = C_CurrencyInfo.GetCurrencyInfo(221).iconFileID, width = 70 }, -- 征服
@@ -380,7 +381,6 @@ function BG.RoleOverviewUI()
     end
 
     -- 角色总览UI
-    local savePoint
     local function ShowAllServer()
         local isShiftKeyDown = IsShiftKeyDown()
         if BiaoGe.options.roleOverviewDefaultShow == "one" and isShiftKeyDown then
@@ -508,14 +508,15 @@ function BG.RoleOverviewUI()
                 f:SetClampedToScreen(false)
                 f:EnableMouse(true)
                 f:SetMovable(true)
-                if savePoint then
-                    f:SetPoint(unpack(savePoint))
+                if BiaoGe.point.roleOverview then
+                    f:SetPoint(unpack(BiaoGe.point.roleOverview))
                 else
                     f:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
                 end
                 f:SetScript("OnMouseUp", function(self)
                     self:StopMovingOrSizing()
-                    savePoint = { self:GetPoint(1) }
+                    BiaoGe.point.roleOverview = { self:GetPoint(1) }
+                    BiaoGe.point.roleOverview[2] = nil
                 end)
                 f:SetScript("OnMouseDown", function(self)
                     self:StartMoving()

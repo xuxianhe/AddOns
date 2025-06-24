@@ -597,6 +597,9 @@ function CataNpcFixes.Load()
         [5912] = { -- Deviate Faerie Dragon
             [npcKeys.spawns] = {[zoneIDs.WAILING_CAVERNS] = {{72.67,74.57},{-1,-1}}},
         },
+        [5992] = { -- Ashmane Boar
+            [npcKeys.spawns] = {[zoneIDs.BLASTED_LANDS] = {{55.86,71.38},{69.24,56.82},{72.99,54.57},{67.72,58.18},{70.5,55.62},{41.52,19.73},{70.02,51.59},{48.02,12.71},{46.26,15.89},{45.59,19.35},{46.48,20.72},{61.36,39.82},{50.69,38.36},{49.37,37.17},{57.98,24.52},{56.56,25.64},{55.45,23.36},{57.13,35.6},{48.63,24.94},{48.85,26.73},{51.41,36.53},{51.28,27.56},{51.81,25.52},{54.1,25.43},{51.46,30.04},{53.54,29.24},{57.55,33.02},{53.17,32.63},{49.29,32.46},{49.36,31.28},{44.05,33.5},{45.02,33.3},{46.83,21.04},{45.1,18.83},{48.04,12.99},{43.73,19.99},{46.09,15.85},{48.9,25.02},{48.89,27.18},{50.66,27.32},{53.37,32.84},{51.31,33.33},{48.75,32.99},{47.51,33.62},{49.23,31.43},{53.22,29.4},{51.71,25.3},{55.01,31.66},{57.07,32.91},{56.95,35.66},{57.2,39.6},{55.36,37.89},{51.8,25.43},{51.51,29.44},{57.09,35.61},{56.98,38.3},{46.54,33.71},{49.21,37.12},{51.42,36.53},{51.46,29.61},{50.77,33.55},{49.2,31.19},{53.36,32.87},{48.98,33.04},{53.26,29.31}}},
+        },
         [6072] = { -- Diathorus the Seeker
             [npcKeys.spawns] = {[zoneIDs.ASHENVALE] = {{78.47,83.9}}},
         },
@@ -1672,6 +1675,9 @@ function CataNpcFixes.Load()
         [19256] = { -- Sergeant Shatterskull
             [npcKeys.waypoints] = {},
         },
+        [19412] = { -- D'ore
+            [npcKeys.spawns] = {[zoneIDs.AUCHENAI_CRYPTS_BRIDGE_OF_SOULS] = {{73.71,55.41}},[zoneIDs.AUCHENAI_CRYPTS] = {{-1,-1}}},
+        },
         [19428] = { -- Cobalt Serpent
             [npcKeys.spawns] = {[zoneIDs.SETHEKK_HALLS_HALLS_OF_MOURNING] = {{32.46,67.08}},[zoneIDs.SETHEKK_HALLS] = {{48.97,94.83},{52.1,85.87},{-1,-1}}},
             [npcKeys.waypoints] = {[zoneIDs.SETHEKK_HALLS_HALLS_OF_MOURNING] = {{{30.54,88.73},{28.54,86.74},{25.94,83.42},{25.94,81.48},{31.01,74.91},{31.56,72.68},{32.46,67.08}},{{44.09,96.18},{44.13,84.84},{44.86,82.77},{49.21,82.28},{51.94,82.87},{53.05,84.3},{53.14,92.67},{51.85,94.9},{51.4,94.9}}},[zoneIDs.SETHEKK_HALLS] = {{{51.4,94.9},{48.97,94.83}},{{52.1,85.87},{49.43,85.31},{48.85,88.04},{47.57,90.98},{45,89.08}}}},
@@ -1855,6 +1861,12 @@ function CataNpcFixes.Load()
         },
         [25636] = { -- Captured Tuskarr Prisoner
             [npcKeys.spawns] = {[zoneIDs.BOREAN_TUNDRA] = {{44.10,77.90}}},
+        },
+        [25697] = { -- Luma Skymother
+            [npcKeys.spawns] = {[zoneIDs.THE_SLAVE_PENS] = {{18.48,49.53},{-1,-1}}},
+        },
+        [25740] = { -- Ahune
+            [npcKeys.spawns] = {[zoneIDs.THE_SLAVE_PENS] = {{32.56,50.45},{-1,-1}}},
         },
         [25892] = { -- Burning Steppes Flame Warden
             [npcKeys.spawns] = {[zoneIDs.BURNING_STEPPES] = {{68.34,60.64}}},
@@ -4758,6 +4770,9 @@ function CataNpcFixes.Load()
         [52314] = { -- Master Caravan Kodo
             [npcKeys.spawns] = {[zoneIDs.THE_BARRENS] = {{47.81,39.53}}},
         },
+        [52442] = { -- Florawing Hive Queen
+            [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{31.57,39.15},{-1,-1}}},
+        },
         [52477] = { -- Tholo Whitehoof
             [npcKeys.spawns] = {
                 [zoneIDs.MOLTEN_FRONT] = {
@@ -4848,6 +4863,15 @@ function CataNpcFixes.Load()
         [53009] = { -- Kalecgos
             [npcKeys.spawns] = {[zoneIDs.BOREAN_TUNDRA] = {{46.53,35.51}}},
         },
+        [53023] = { -- Bloodslayer Zala
+            [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{30.73,47.08},{-1,-1}}},
+        },
+        [53024] = { -- Bloodslayer Zala
+            [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{30.56,47.29},{-1,-1}}},
+        },
+        [53043] = { -- Briney Boltcutter
+            [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{30.5,50.92},{-1,-1}}},
+        },
         [53079] = { -- Crimson Lasher
             [npcKeys.spawns] = {[zoneIDs.MOLTEN_FRONT] = {{53.53,90.74}}},
             [npcKeys.zoneID] = zoneIDs.MOLTEN_FRONT,
@@ -4860,6 +4884,9 @@ function CataNpcFixes.Load()
         },
         [53149] = { -- Kalecgos
             [npcKeys.spawns] = {[zoneIDs.BOREAN_TUNDRA] = {{30.93,24.01}}},
+        },
+        [53151] = { -- Overseer Blingbang
+            [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{30.81,47.56},{-1,-1}}},
         },
         [53215] = { -- Kalecgos
             [npcKeys.spawns] = {[zoneIDs.BOREAN_TUNDRA] = {{23.17,30.79}}},

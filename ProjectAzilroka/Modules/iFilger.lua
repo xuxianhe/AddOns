@@ -389,30 +389,35 @@ function IF:UNIT_SPELLCAST_SUCCEEDED(_, unit, _, SpellID)
 end
 
 function IF:SPELL_UPDATE_COOLDOWN()
-	local Start, Duration, Enable, Charges, _, ChargeStart, ChargeDuration, CurrentDuration
+	local Start, Duration, Enable, CooldownInfo, ChargeInfo, CurrentDuration
 
 	for SpellID in next, IF.Cooldowns do
-		Start, Duration, Enable = GetSpellCooldown(SpellID)
+		CooldownInfo = GetSpellCooldown(SpellID)
 
 		if IF.IsChargeCooldown[SpellID] ~= false then
-			Charges, _, ChargeStart, ChargeDuration = GetSpellCharges(SpellID)
+			ChargeInfo = GetSpellCharges(SpellID)
 
 			if IF.IsChargeCooldown[SpellID] == nil then
-				IF.IsChargeCooldown[SpellID] = Charges and true or false
+				IF.IsChargeCooldown[SpellID] = ChargeInfo and true or false
 			end
 
-			if Charges then
-				Start, Duration = ChargeStart, ChargeDuration
+			Enable = CooldownInfo.isEnabled
+			if ChargeInfo and ChargeInfo.cooldownStartTime and ChargeInfo.cooldownStartTime > 0 then
+				Start, Duration = ChargeInfo.cooldownStartTime, ChargeInfo.cooldownDuration
+			else
+				Start, Duration = CooldownInfo.startTime, CooldownInfo.duration
 			end
 		end
 
-		CurrentDuration = (Start + Duration - GetTime())
+		if Start and Duration then
+			CurrentDuration = (Start + Duration - GetTime())
 
-		if Enable == 1 and CurrentDuration and (CurrentDuration < IF.db.Cooldowns.IgnoreDuration) then
-			if (CurrentDuration >= IF.db.Cooldowns.SuppressDuration) or IF.HasCDDelay[SpellID] then
-				IF.DelayCooldowns[SpellID] = true
-			elseif (CurrentDuration > GLOBAL_COOLDOWN_TIME) then
-				IF.ActiveCooldowns[SpellID] = true
+			if Enable == 1 and CurrentDuration and (CurrentDuration < IF.db.Cooldowns.IgnoreDuration) then
+				if (CurrentDuration >= IF.db.Cooldowns.SuppressDuration) or IF.HasCDDelay[SpellID] then
+					IF.DelayCooldowns[SpellID] = true
+				elseif (CurrentDuration > GLOBAL_COOLDOWN_TIME) then
+					IF.ActiveCooldowns[SpellID] = true
+				end
 			end
 		end
 
