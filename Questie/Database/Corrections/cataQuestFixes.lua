@@ -1404,8 +1404,18 @@ function CataQuestFixes.Load()
         [10120] = { -- Arrival in Outland
             [questKeys.breadcrumbs] = {9407,28705},
         },
+        [10182] = { -- Battle-Mage Dathric
+            [questKeys.startedBy] = {nil,nil,{29233}},
+        },
+        [10183] = { -- Off To Area 52
+            [questKeys.breadcrumbForQuestId] = 10186,
+        },
         [10186] = { -- You're Hired!
             [questKeys.preQuestSingle] = {},
+            [questKeys.breadcrumbs] = {10183,11036,11037,11040,11042},
+        },
+        [10189] = { -- Manaforge B'naar
+            [questKeys.breadcrumbs] = {11039},
         },
         [10227] = { -- I See Dead Draenei
             [questKeys.zoneOrSort] = 3688,
@@ -1418,6 +1428,9 @@ function CataQuestFixes.Load()
         },
         [10231] = { -- What Book? I Don't See Any Book.
             [questKeys.zoneOrSort] = zoneIDs.SHATTRATH_CITY,
+        },
+        [10241] = { -- Distraction at Manaforge B'naar
+            [questKeys.breadcrumbs] = {11038},
         },
         [10251] = { -- The Master's Grand Design?
             [questKeys.zoneOrSort] = zoneIDs.NAGRAND,
@@ -1459,6 +1472,15 @@ function CataQuestFixes.Load()
         },
         [10302] = { -- Volatile Mutations
             [questKeys.preQuestSingle] = {9369,9280},
+        },
+        [10305] = { -- Abjurist Belmara
+            [questKeys.startedBy] = {nil,nil,{29234}},
+        },
+        [10306] = { -- Conjurer Luminrath
+            [questKeys.startedBy] = {nil,nil,{29235}},
+        },
+        [10307] = { -- Cohlien Frostweaver
+            [questKeys.startedBy] = {nil,nil,{29236}},
         },
         [10328] = { -- Sunfury Briefings
             [questKeys.preQuestSingle] = {},
@@ -1547,6 +1569,12 @@ function CataQuestFixes.Load()
         [10475] = { -- Defender's Covenant
             [questKeys.startedBy] = {{19935}},
         },
+        [10567] = { -- Creating the Pendant
+            [questKeys.breadcrumbs] = {10615},
+        },
+        [10615] = { -- Ruuan Weald
+            [questKeys.breadcrumbForQuestId] = 10567,
+        },
         [10639] = { -- Teron Gorefiend, I am...
             [questKeys.preQuestSingle] = {},
         },
@@ -1586,6 +1614,9 @@ function CataQuestFixes.Load()
         },
         [10825] = { -- The Truth Unorbed
             [questKeys.startedBy] = {nil,nil,{31489}},
+        },
+        [10846] = { -- Understanding the Mok'Nathal
+            [questKeys.preQuestSingle] = {10565},
         },
         [10847] = { -- The Eyes of Skettis
             [questKeys.preQuestSingle] = {},
@@ -1699,8 +1730,14 @@ function CataQuestFixes.Load()
         [11008] = { -- Fires Over Skettis
             [questKeys.zoneOrSort] = zoneIDs.SKETTIS,
         },
+        [11009] = { -- Ogre Heaven
+            [questKeys.breadcrumbs] = {11022},
+        },
         [11021] = { -- Ishaal's Almanac
             [questKeys.zoneOrSort] = zoneIDs.SKETTIS,
+        },
+        [11022] = { -- Speak with Mog'dorg
+            [questKeys.breadcrumbForQuestId] = 11009,
         },
         [11025] = { -- The Crystals
             [questKeys.preQuestSingle] = {},
@@ -1723,8 +1760,24 @@ function CataQuestFixes.Load()
         [11034] = { -- Restorer No More
             [questKeys.specialFlags] = 1,
         },
+        [11036] = { -- Out of This World Produce!
+            [questKeys.breadcrumbForQuestId] = 10186,
+        },
         [11037] = { -- A Strange Vision
             [questKeys.zoneOrSort] = zoneIDs.NAGRAND,
+            [questKeys.breadcrumbForQuestId] = 10186,
+        },
+        [11038] = { -- Assist Exarch Orelis
+            [questKeys.breadcrumbForQuestId] = 10241,
+        },
+        [11039] = { -- Report to Spymaster Thalodien
+            [questKeys.breadcrumbForQuestId] = 10189,
+        },
+        [11040] = { -- Parts for the Rocket-Chief
+            [questKeys.breadcrumbForQuestId] = 10186,
+        },
+        [11042] = { -- A Mystifying Vision
+            [questKeys.breadcrumbForQuestId] = 10186,
         },
         [11048] = { -- Kroghan's Report
             [questKeys.zoneOrSort] = zoneIDs.NAGRAND,
@@ -1736,6 +1789,9 @@ function CataQuestFixes.Load()
             [questKeys.exclusiveTo] = {10983,10989},
             [questKeys.nextQuestInChain] = 10995,
         },
+        [11059] = { -- Guardian of the Monument
+            [questKeys.preQuestSingle] = {11062},
+        },
         [11073] = { -- Terokk's Downfall
             [questKeys.zoneOrSort] = zoneIDs.SKETTIS,
         },
@@ -1744,6 +1800,9 @@ function CataQuestFixes.Load()
         },
         [11085] = { -- Escape from Skettis
             [questKeys.zoneOrSort] = zoneIDs.SKETTIS,
+        },
+        [11091] = { -- A Special Thank You
+            [questKeys.requiredMinRep] = {1038,3000},
         },
         [11093] = { -- Hungry Nether Rays
             [questKeys.zoneOrSort] = zoneIDs.SKETTIS,
@@ -1826,9 +1885,11 @@ function CataQuestFixes.Load()
         },
         [11481] = { -- Crisis at the Sunwell
             [questKeys.nextQuestInChain] = 0,
+            [questKeys.exclusiveTo] = {},
         },
         [11482] = { -- Duty Calls
             [questKeys.nextQuestInChain] = 0,
+            [questKeys.exclusiveTo] = {},
         },
         [11490] = { -- The Scryer's Scryer
             [questKeys.preQuestSingle] = {29684},
@@ -1984,12 +2045,18 @@ function CataQuestFixes.Load()
         [11978] = { -- Into the Fold
             [questKeys.preQuestSingle] = {},
         },
+        [11981] = { -- Find Kurun!
+            [questKeys.exclusiveTo] = {12074},
+        },
         [11999] = { -- Rifle the Bodies
             [questKeys.preQuestSingle] = {},
         },
         [12012] = { -- Inform the Elder
             [questKeys.exclusiveTo] = {29092},
             [questKeys.startedBy] = {{25324}},
+        },
+        [12074] = { -- An Expedient Ally
+            [questKeys.exclusiveTo] = {11981},
         },
         [12088] = { -- Thassarian, the Death Knight
             [questKeys.nextQuestInChain] = 11956,
@@ -2063,9 +2130,6 @@ function CataQuestFixes.Load()
         },
         [12535] = { -- Mischief in the Making
             [questKeys.preQuestSingle] = {12532},
-        },
-        [12539] = { -- Hoofing It
-            [questKeys.preQuestGroup] = {},
         },
         [12547] = { -- The Activation Rune
             [questKeys.zoneOrSort] = zoneIDs.UN_GORO_CRATER,
@@ -5831,6 +5895,9 @@ function CataQuestFixes.Load()
         },
         [25679] = { -- Into the Mountain
             [questKeys.preQuestGroup] = {25677,25678},
+        },
+        [25681] = { -- Some People Just Need Killing
+            [questKeys.extraObjectives] = {{nil,Questie.ICON_TYPE_INTERACT,l10n("Use the Box to avoid enemies"),0,{{"object",203192}}}},
         },
         [25688] = { -- The Altar of Storms
             [questKeys.extraObjectives] = {{nil,Questie.ICON_TYPE_INTERACT,l10n("Start the event"),0,{{"object",203196}}}},
@@ -13442,6 +13509,9 @@ function CataQuestFixes.Load()
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_TALK, l10n("Start the event"), 0, {{"monster", 48758}}}},
             [questKeys.triggerEnd] = {"Supply Caravan Escorted",{[zoneIDs.TWILIGHT_HIGHLANDS]={{56.05,20.4}}}},
             [questKeys.objectives] = {},
+        },
+        [28865] = { -- Call of the Warmatron
+            [questKeys.exclusiveTo] = {28553,28858,28671},
         },
         [28866] = { -- Into the Stonecore
             [questKeys.preQuestSingle] = {27061},

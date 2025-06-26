@@ -5,6 +5,7 @@ end
 
 local EPB = PA:NewModule("EnhancedPetBattleUI", "AceEvent-3.0")
 _G.EnhancedPetBattleUI, PA.EnhancedPetBattleUI = EPB, EPB
+_G.BINDING_HEADER_ENHANCEDPETBATTLEUI = "EnhancedPetBattleUI"
 
 EPB.Title, EPB.Description, EPB.Authors, EPB.isEnabled =
 	"EnhancedPet Battle UI", ACL["An enhanced UI for pet battles"], "Azilroka", false
@@ -1496,7 +1497,7 @@ function EPB:GetOptions()
 		nil,
 		nil,
 		function()
-			return not IsAddOnLoaded("PetTracker")
+			return not C_AddOns.IsAddOnLoaded("PetTracker")
 		end
 	)
 	EnhancedPetBattleUI.args.General.args.EnhanceTooltip = ACH:Toggle(
@@ -1648,7 +1649,7 @@ function EPB:GetOptions()
 		nil,
 		nil,
 		function()
-			return not EPB.db.UseoUF
+			return not EPB.db.UseoUF or not BattlePetBreedID
 		end
 	)
 end
