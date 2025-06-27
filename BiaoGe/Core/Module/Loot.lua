@@ -1095,7 +1095,7 @@ BG.Init2(function()
             if BiaoGe.options["allLootToMe"] == 1 and IsMasterLooter() then
                 bt:Show()
                 bt.SPbutton:Update()
-                if BiaoGe.options["autoAllLootToMe"] == 1 and not IsModifierKeyDown() then
+                if BiaoGe.options["autoAllLootToMe"] == 1 and not IsModifierKeyDown() and bt:IsVisible() then
                     BG.After(0.1, function()
                         bt:GiveLoot()
                     end)

@@ -392,40 +392,41 @@ function BG.RoleOverviewUI()
     end
     -- 检查子账号
     local function CheckSameName(frame, realmID, player)
-        if BiaoGeAccounts and BiaoGeAccounts.accountName and BGV and BGV.ShowEquipFrame then
-            BG.After(0, function()
-                local tbl = {}
-                for accountName in pairs(BiaoGeAccounts.accountName) do
-                    for _realmID in pairs(BiaoGeAccounts.accountName[accountName]) do
-                        if realmID == _realmID then
-                            for _player in pairs(BiaoGeAccounts.accountName[accountName][realmID]) do
-                                if player == _player then
-                                    tinsert(tbl, accountName)
-                                end
-                            end
-                        end
-                    end
-                end
-                if #tbl > 1 then
-                    local t = frame:CreateFontString()
-                    t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
-                    t:SetPoint("RIGHT", frame, "LEFT", -15, 0)
-                    t:SetTextColor(1, 0, 0)
-                    t:SetText(L["角色重复"])
+        -- if BiaoGeAccounts and BiaoGeAccounts.accountName and BGV and BGV.ShowEquipFrame then
+        --     BG.After(0, function()
+        --         local tbl = {}
+        --         for accountName in pairs(BiaoGeAccounts.accountName) do
+        --             for _realmID in pairs(BiaoGeAccounts.accountName[accountName]) do
+        --                 if realmID == _realmID then
+        --                     for _player in pairs(BiaoGeAccounts.accountName[accountName][realmID]) do
+        --                         if player == _player then
+        --                             tinsert(tbl, accountName)
+        --                         end
+        --                     end
+        --                 end
+        --             end
+        --         end
+        --         if #tbl > 1 then
+        --             local t = frame:CreateFontString()
+        --             t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+        --             t:SetPoint("RIGHT", frame, "LEFT", -15, 0)
+        --             t:SetTextColor(1, 0, 0)
+        --             t:SetText(L["角色重复"])
 
-                    if not BG.FBCDFrame.errText then
-                        local t = frame:CreateFontString()
-                        t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
-                        t:SetPoint("BOTTOM", BG.FBCDFrame, "TOP", 0, 0)
-                        t:SetTextColor(1, 0, 0)
-                        t:SetText(L["你部分角色存在重复（同一个角色存在于多个子账号）。请你登录曾经复制过配置的账号，在表格设置-角色配置里面删掉重复角色。"])
-                        t:SetWidth(BG.FBCDFrame:GetWidth())
-                    end
-                end
-            end)
-        end
+        --             if not BG.FBCDFrame.errText then
+        --                 local t = frame:CreateFontString()
+        --                 t:SetFont(STANDARD_TEXT_FONT, 15, "OUTLINE")
+        --                 t:SetPoint("BOTTOM", BG.FBCDFrame, "TOP", 0, 0)
+        --                 t:SetTextColor(1, 0, 0)
+        --                 t:SetText(L["你部分角色存在重复（同一个角色存在于多个子账号）。请你登录曾经复制过配置的账号，在表格设置-角色配置里面删掉重复角色。"])
+        --                 t:SetWidth(BG.FBCDFrame:GetWidth())
+        --             end
+        --         end
+        --     end)
+        -- end
     end
     function BG.SetFBCD(self, position, click, refresh)
+        local frameName
         if click then
             if BG.FBCDFrame then
                 if BG.FBCDFrame.click and BG.FBCDFrame:IsVisible() and not refresh then
@@ -434,13 +435,14 @@ function BG.RoleOverviewUI()
                 end
                 BG.FBCDFrame:Hide()
             end
+            frameName = ("BGFBCDFrame"..GetTime()):gsub("%.","")
         else
             if BG.FBCDFrame and BG.FBCDFrame.click and BG.FBCDFrame:IsVisible() then
                 return
             end
         end
         BG.UpdateFBCD()
-
+        
         local isVIP = BG.BiaoGeVIPVerNum and BG.BiaoGeVIPVerNum >= 10170
 
         local height = 20
@@ -483,7 +485,7 @@ function BG.RoleOverviewUI()
         local totalwidth
         local FBCDwidth = 0
         -- 创建框体UI
-        local f = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+        local f = CreateFrame("Frame", frameName, UIParent, "BackdropTemplate")
         do
             f:SetBackdrop({
                 bgFile = "Interface/ChatFrame/ChatFrameBackground",
@@ -502,6 +504,14 @@ function BG.RoleOverviewUI()
             end
             BG.FBCDFrame = f
             if click then
+                for i = #UISpecialFrames, 1, -1 do
+                    local name = UISpecialFrames[i]
+                    if name:match("BGFBCDFrame")then
+                        _G[name]=nil
+                        tremove(UISpecialFrames,i)
+                    end
+                end
+                tinsert(UISpecialFrames, frameName)
                 f.click = true
                 f:SetFrameStrata("HIGH")
                 f:SetToplevel(true)
