@@ -1,6 +1,6 @@
 # Baganator
 
-## [701](https://github.com/Baganator/Baganator/tree/701) (2025-06-30)
-[Full Changelog](https://github.com/Baganator/Baganator/compare/700...701) 
+## [703](https://github.com/Baganator/Baganator/tree/703) (2025-07-04)
+[Full Changelog](https://github.com/Baganator/Baganator/compare/702...703) 
 
-- Improvements and fixes for GW2 theme  
+- Categories: Fix deleting categories not actually deleting them  

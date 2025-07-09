@@ -222,7 +222,7 @@ function addon:Initialize()
     addon:UpdateCombatWatch()
 
     -- Support mutliple talent specs on release (does not work for WoTLK at the moment)
-    if addon:ProjectIsRetail() or addon:ProjectIsWrath() or addon:ProjectIsCataclysm() then
+    if addon:ProjectIsRetail() or addon:ProjectIsWrath() or addon:ProjectIsCataclysm() or addon:ProjectIsMists() then
         self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED", "TalentGroupChanged")
         addon:TalentGroupChanged()
     end
