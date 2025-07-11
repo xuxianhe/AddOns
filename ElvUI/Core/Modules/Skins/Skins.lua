@@ -1466,7 +1466,7 @@ do
 	local closeOnLeave = function(btn) if btn.Texture then btn.Texture:SetVertexColor(1, 1, 1) end end
 
 	function S:HandleCloseButton(f, point, x, y)
-		if f.IsSkinned then return end
+		if not f or f.IsSkinned then return end
 
 		f:StripTextures()
 

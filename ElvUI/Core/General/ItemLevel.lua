@@ -50,11 +50,14 @@ local X2_INVTYPES, X2_EXCEPTIONS, ARMOR_SLOTS = {
 	[2] = 19, -- wands, use INVTYPE_RANGEDRIGHT, but are 1H
 }, {1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, (E.Cata or E.Wrath) and 18 or nil}
 
-function E:InspectGearSlot(line, lineText, slotInfo)
+function E:InspectGearSlot(line, lineText, slotInfo, slot)
 	if not lineText then return end
 
 	-- handle item level
 	local itemLevel = strmatch(lineText, MATCH_ITEM_LEVEL_ALT) or strmatch(lineText, MATCH_ITEM_LEVEL)
+	if not itemlevel then
+		itemlevel = select(4, GetItemInfo(GetInventoryItemLink("player", slot)))
+	end
 	if itemLevel then
 		slotInfo.iLvl = tonumber(itemLevel)
 
@@ -126,12 +129,21 @@ function E:GetGearSlotInfo(unit, slot, deepScan)
 		slotInfo.itemLevelColors = tt.itemLevelColors
 
 		if info then
+			local itemLevel = select(4, GetItemInfo(GetInventoryItemLink(unit, slot)))
+			if itemLevel then
+				slotInfo.iLvl = tonumber(itemLevel)
+
+				local r1, g1, b1 = _G.ElvUI_ScanTooltipTextLeft1:GetTextColor()
+				slotInfo.itemLevelColors[1] = r1
+				slotInfo.itemLevelColors[2] = g1
+				slotInfo.itemLevelColors[3] = b1
+			end
 			for i, line in next, info.lines do
 				local text = line and line.leftText
 				if i == 1 and text == RETRIEVING_ITEM_INFO then
 					return 'tooSoon'
 				else
-					E:InspectGearSlot(_G['ElvUI_ScanTooltipTextLeft'..i], text, slotInfo)
+					E:InspectGearSlot(_G['ElvUI_ScanTooltipTextLeft'..i], text, slotInfo, slot)
 					E:CollectEssenceInfo(i, text, slotInfo)
 				end
 			end
@@ -144,7 +156,7 @@ function E:GetGearSlotInfo(unit, slot, deepScan)
 		end
 
 		local colorblind = GetCVarBool('colorblindmode')
-		local numLines = (E.Cata or E.Wrath) and (colorblind and 21 or 20) or (colorblind and 4 or 3)
+		local numLines = E.Cata and (colorblind and 21 or 20) or (colorblind and 4 or 3)
 		for x = 2, numLines do
 			local line = info.lines[x]
 			if line then

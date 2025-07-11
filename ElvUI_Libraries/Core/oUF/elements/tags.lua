@@ -239,7 +239,7 @@ local tagStrings = {
 
 	['level'] = [[function(u)
 		local l = (UnitEffectiveLevel or UnitLevel)(u)
-		if C_PetBattles and (UnitIsWildBattlePet(u) or UnitIsBattlePetCompanion(u)) then
+		if C_PetBattles and (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and (UnitIsWildBattlePet(u) or UnitIsBattlePetCompanion(u))) then
 			l = UnitBattlePetLevel(u)
 		end
 

@@ -1,0 +1,14 @@
+## Interface: 40400
+## Title: Fojji Core
+## RequiredDeps: WeakAuras
+## SavedVariables: FTSavedVars, FojjiSkipWTF
+## Version: 1.2.7
+
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+embeds.xml
+FojjiMedia.lua
+FojjiRange.lua
+FojjiSkip.lua
+FojjiSync.lua
+FojjiTimers.lua

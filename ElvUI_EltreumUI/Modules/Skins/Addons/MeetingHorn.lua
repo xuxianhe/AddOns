@@ -86,7 +86,7 @@ function ElvUI_EltreumUI:EltruismMeetingHorn()
         S:HandleFrame(f.MainPanel.Announcement.loading)
 
         --mission guidance
-        S:HandleFrame(f.MainPanel.MissionGuidance)
+        --S:HandleFrame(f.MainPanel.MissionGuidance)
 
         --recent
         S:HandleFrame(f.MainPanel.Recent)
@@ -135,7 +135,11 @@ function ElvUI_EltreumUI:EltruismMeetingHorn()
         --help
         S:HandleFrame(f.MainPanel.Help)
 
-        --bc the tab names are nil, gotta try to detect it
+        S:HandleFrame(f.MainPanel.PracticalTool.Toolbar)
+        S:HandleFrame(f.MainPanel.PracticalTool.Present)
+        S:HandleFrame(f.MainPanel.PracticalTool.QRCodeExhibition)
+
+	--bc the tab names are nil, gotta try to detect it
         local header = f.MainPanel
         for i = 1, header:GetNumChildren() do
             local group = select(i, header:GetChildren())

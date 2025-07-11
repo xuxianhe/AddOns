@@ -10,8 +10,8 @@ local GetTalentTabInfo = GetTalentTabInfo
 local GetTalentInfo = GetTalentInfo
 
 local DRUID_FERAL_TAB = 2
-local DRUID_FERAL_INSTINCT = 3
-local DRUID_THICK_HIDE = 5
+local DRUID_FERAL_INSTINCT = 6
+local DRUID_THICK_HIDE = 1
 local DRUID_GUARDIAN_SPEC_INDEX = 3
 local DRUID_RESTO_SPEC_INDEX = 4
 
@@ -414,7 +414,7 @@ function LCS.GetSpecialization(isInspect, isPet)
 		end
 	end
 
-	if (ClassID == 11) then -- Druid
+	--[[if (ClassID == 11) then -- Druid
 		local feralInstinctPoints = select(5, GetTalentInfo(DRUID_FERAL_TAB, DRUID_FERAL_INSTINCT))
 		local thickHidePoints = select(5, GetTalentInfo(DRUID_FERAL_TAB, DRUID_THICK_HIDE))
 
@@ -426,7 +426,7 @@ function LCS.GetSpecialization(isInspect, isPet)
 		if (specIndex == DRUID_GUARDIAN_SPEC_INDEX) then
 			return DRUID_RESTO_SPEC_INDEX
 		end
-	end
+	end]]
 
 	return specIndex
 end

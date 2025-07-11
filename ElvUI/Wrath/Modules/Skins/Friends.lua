@@ -31,8 +31,8 @@ function S:FriendsFrame()
 
 	_G.FriendsFrameCloseButton:Point('TOPRIGHT', 0, 2)
 
-	S:HandleDropDownBox(_G.FriendsFrameStatusDropdown, 72)
-	_G.FriendsFrameStatusDropdown:PointXY(266, -55)
+	S:HandleDropDownBox(_G.FriendsFrameStatusDropdown, 82)
+	_G.FriendsFrameStatusDropdown:PointXY(246, -59)
 
 	for i = 1, #_G.FRIENDSFRAME_SUBFRAMES do
 		S:HandleTab(_G['FriendsFrameTab'..i])

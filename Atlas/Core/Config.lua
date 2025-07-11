@@ -383,18 +383,25 @@ local function getOptions()
 	return options
 end
 
-local function openOptions()
-	-- open the profiles tab before, so the menu expands
-	InterfaceOptionsFrame_OpenToCategory(addon.optionsFrames.Profiles)
-	InterfaceOptionsFrame_OpenToCategory(addon.optionsFrames.Profiles) -- yes, run twice to force the tre get expanded
-	InterfaceOptionsFrame_OpenToCategory(addon.optionsFrames.General)
-	if InterfaceOptionsFrame then
-		InterfaceOptionsFrame:Raise()
+-- Function to open options panel
+function addon:OpenOptions()
+	if not self.optionsFrames then return end
+	
+	-- Use AceConfigDialog to open the options panel
+	if AceConfigDialog then
+		AceConfigDialog:Open(addon.LocName)
+		
+		-- Make sure the frame is shown and raised
+		if InterfaceOptionsFrame then
+			InterfaceOptionsFrame:Show()
+			InterfaceOptionsFrame:Raise()
+		end
 	end
 end
 
-function addon:OpenOptions() 
-	openOptions()
+-- Register slash command handler
+function addon:SetupSlash()
+	self:RegisterChatCommand("atlas", function() self:OpenOptions() end)
 end
 
 local function giveProfiles()
@@ -410,7 +417,7 @@ function addon:SetupOptions()
 
 	self:RegisterModuleOptions("Profiles", giveProfiles, L["Profile Options"])
 
-	self:RegisterChatCommand("atlas"..ATLAS_SLASH_OPTIONS, openOptions)
+	self:SetupSlash()
 end
 
 -- Description: Function which extends our options table in a modular way

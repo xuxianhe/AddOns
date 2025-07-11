@@ -246,7 +246,9 @@ function S:LookingForGroupFrames()
 		end
 	end)
 
-	S:HandleDropDownBox(_G.LFDQueueFrameTypeDropdown)
+	S:HandleDropDownBox(_G.LFDQueueFrameTypeDropdown, 259)
+	_G.LFDQueueFrameTypeDropdown:ClearAllPoints()
+	_G.LFDQueueFrameTypeDropdown:Point('TOPRIGHT', PVEFrame, 'TOPRIGHT', -10, -117)
 
 	-- Skin Reward Items (This works for all frames, LFD, Raid, Scenario)
 	hooksecurefunc('LFGRewardsFrame_SetItemButton', SkinItemButton)

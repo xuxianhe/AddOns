@@ -37,6 +37,8 @@ LibStub("AceTimer-3.0"):Embed(WeakAurasTimers)
 Private.maxTimerDuration = 604800; -- A week, in seconds
 local maxUpTime = 4294967; -- 2^32 / 1000
 
+local tempText = "加拉克苏斯111"
+
 Private.watched_trigger_events = {}
 
 -- The worlds simplest callback system.
@@ -1690,6 +1692,10 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
     end
     role = "none"
     if WeakAuras.IsWrathClassic() then
+	  role = UnitGroupRolesAssigned("player")
+      if role == "NONE" then
+        role = GetTalentGroupRole(GetActiveTalentGroup()) or "NONE"
+      end
       vehicle = UnitInVehicle('player') or UnitOnTaxi('player') or false
       vehicleUi = UnitHasVehicleUI('player') or HasOverrideActionBar() or HasVehicleActionBar() or false
     else
@@ -1746,9 +1752,9 @@ local function scanForLoadsImpl(toCheck, event, arg1, ...)
         shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, inEncounter, vehicle, class, player, realm, race, faction, playerLevel, raidRole, group, groupSize, raidMemberType, zone, zoneId, zonegroupId, instanceId, minimapText, encounter_id, size)
         couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, inEncounter, vehicle, class, player, realm, race, faction, playerLevel, raidRole, group, groupSize, raidMemberType, zone, zoneId, zonegroupId, instanceId, minimapText, encounter_id, size)
       elseif WeakAuras.IsWrathClassic() then
-		--[[if id:find("收割灵魂（团") then
-		print(id,inCombat, alive, inEncounter, vehicle, vehicleUi, mounted, class, player, realm, guild, race, faction, playerLevel, role, position, raidRole, group, groupSize, raidMemberType, zone, zoneId, zonegroupId, instanceId, minimapText, encounter_id, size, difficulty,  difficultyIndex)
-        end]]
+		if id:find(tempText) then
+			print(id,inCombat, alive, inEncounter, vehicle, vehicleUi, mounted, class, player, realm, guild, race, faction, playerLevel, role, position, raidRole, group, groupSize, raidMemberType, zone, zoneId, zonegroupId, instanceId, minimapText, encounter_id, size, difficulty,  difficultyIndex)
+        end
 		--shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, inEncounter, vehicle, vehicleUi, class, player, realm, race, faction, playerLevel, role, raidRole, group, groupSize, raidMemberType, zone, zoneId, zonegroupId, instanceId, minimapText, encounter_id, size, difficulty, difficultyIndex)
 		shouldBeLoaded = loadFunc and loadFunc("ScanForLoads_Auras", inCombat, alive, inEncounter, vehicle, vehicleUi, mounted, class, player, realm, guild, race, faction, playerLevel, role, position, raidRole, group, groupSize, raidMemberType, zone, zoneId, zonegroupId, instanceId, minimapText, encounter_id, size, difficulty,  difficultyIndex)
         couldBeLoaded =  loadOpt and loadOpt("ScanForLoads_Auras",   inCombat, alive, inEncounter, vehicle, vehicleUi, mounted, class, player, realm, guild, race, faction, playerLevel, role, position, raidRole, group, groupSize, raidMemberType, zone, zoneId, zonegroupId, instanceId, minimapText, encounter_id, size, difficulty,  difficultyIndex)
@@ -3239,9 +3245,9 @@ function pAdd(data, simpleChange)
       local loadForOptionsFuncStr = ConstructFunction(load_prototype, data.load, true);
       local loadFunc = Private.LoadFunction(loadFuncStr, id);
 
-		--[[if id:find("收割灵魂（团") then
+		if id:find(tempText) then
 		print(id,loadFuncStr)
-        end]]
+        end
       local loadForOptionsFunc = Private.LoadFunction(loadForOptionsFuncStr, id);
       local triggerLogicFunc;
       if data.triggers.disjunctive == "custom" then

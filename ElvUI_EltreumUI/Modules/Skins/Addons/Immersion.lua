@@ -56,7 +56,7 @@ function ElvUI_EltreumUI:EltruismImmersion()
 					ElvUI_EltreumUI:ShadowColor(frame.shadow)
 				end
 			end
-			if E.Classic then
+			if E.Wrath or E.Classic then
 				if _G["ImmersionFrame"].TalkBox.BackgroundFrame.shadow then
 					_G["ImmersionFrame"].TalkBox.BackgroundFrame.shadow:Hide()
 				end

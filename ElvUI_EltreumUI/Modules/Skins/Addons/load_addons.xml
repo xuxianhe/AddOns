@@ -1,6 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<Script file='Auctionator.lua'/>
 	<Script file='BagSync.lua'/>
+	<Script file='BiaoGe.lua'/>
 	<Script file='BigWigs.lua'/>
 	<Script file='BugSack.lua'/>
 	<Script file='Cell.lua'/>

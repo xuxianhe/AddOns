@@ -21,14 +21,14 @@ function ElvUI_EltreumUI:SkinAuctionator()
 			if _G.AuctionatorShoppingFrame and not _G.AuctionatorShoppingFrame.EltruismSkin then
 
 				--scanning thing
-				if E.Classic then
+				if E.Wrath or E.Classic then
 					S:HandleFrame(_G["AuctionatorPageStatusDialogFrame"])
 				end
 
 				--shopping
 				S:HandleFrame(_G["AuctionatorShoppingFrame"])
 				S:HandleFrame(_G["AuctionatorShoppingFrame"].ShoppingResultsInset)
-				if E.Classic then
+				if E.Wrath or E.Classic then
 					_G["AuctionatorShoppingFrame"].ShoppingResultsInset:SetBackdrop()
 					_G["AuctionatorShoppingFrame"].ListsContainer:CreateBackdrop()
 					S:HandleButton(_G["AuctionatorShoppingFrame"].LoadAllPagesButton)
@@ -59,7 +59,7 @@ function ElvUI_EltreumUI:SkinAuctionator()
 				if _G["AuctionatorShoppingFrame"].ListsContainer.eltruismbgtexture then
 					_G["AuctionatorShoppingFrame"].ListsContainer.eltruismbgtexture:Hide()
 				end
-				if E.Classic then
+				if E.Wrath or E.Classic then
 					_G["AuctionatorShoppingFrame"].ListsContainer.Inset:Hide()
 					_G["AuctionatorShoppingFrame"].ListsContainer:CreateBackdrop()
 				else
@@ -119,10 +119,10 @@ function ElvUI_EltreumUI:SkinAuctionator()
 				S:HandleEditBox(_G["AuctionatorShoppingTabItemFrame"].CraftedLevelRange.MinBox)
 				S:HandleEditBox(_G["AuctionatorShoppingTabItemFrame"].CraftedLevelRange.MaxBox)
 				S:HandleEditBox(_G["AuctionatorShoppingTabItemFrame"].PurchaseQuantity.InputBox)
-				S:HandleDropDownBox(_G["AuctionatorShoppingTabItemFrame_FilterKeySelector"],240)
-				S:HandleDropDownBox(_G["AuctionatorShoppingTabItemFrame"].QualityContainer.DropDown.DropDown,200)
-				S:HandleDropDownBox(_G["AuctionatorShoppingTabItemFrame"].ExpansionContainer.DropDown.DropDown,200)
-				S:HandleDropDownBox(_G["AuctionatorShoppingTabItemFrame"].TierContainer.DropDown.DropDown,200)
+				S:HandleDropDownBox(_G["AuctionatorShoppingTabItemFrame_FilterKeySelector"].DropDown, 240)
+				S:HandleDropDownBox(_G["AuctionatorShoppingTabItemFrame"].QualityContainer.DropDown.DropDown, 200)
+				S:HandleDropDownBox(_G["AuctionatorShoppingTabItemFrame"].ExpansionContainer.DropDown.DropDown, 200)
+				S:HandleDropDownBox(_G["AuctionatorShoppingTabItemFrame"].TierContainer.DropDown.DropDown, 200)
 				--S:HandleDropDownBox(_G["AuctionatorShoppingTabItemFrame"].DropDown,240)
 				if _G["AuctionatorShoppingTabItemFrame"].Inset then
 					_G["AuctionatorShoppingTabItemFrame"].Inset:Hide()

@@ -6234,7 +6234,7 @@ function CataNpcFixes.Load()
                 [zoneIDs.BADLANDS] = {
                     {66.39,55.49,phases.RHEA_LETHLOR_RAVINE},
                     {21.16,57.77,phases.RHEA_DRAGONS_MOUTH},
-                    --21.16,57.77,phases.RHEA_NEW_KARGATH},
+                    {18.15,42.51,phases.RHEA_NEW_KARGATH},
                     {15.96,33.39,phases.RHEA_HIDDEN_CLUTCH},
                 },
             },
@@ -6393,6 +6393,18 @@ function CataNpcFixes.Load()
                     {58.61,53.29,phases.SHADOWFANG_KEEP_GODFREY_DEAD_A},
                 },
             },
+        },
+        [47021] = { -- Amakkar, Jack of All Trades
+            [npcKeys.spawns] = {[zoneIDs.BADLANDS] = {{18.87,42.97}}},
+            [npcKeys.zoneID] = zoneIDs.BADLANDS,
+        },
+        [47022] = { -- Gargal, the Behemoth
+            [npcKeys.spawns] = {[zoneIDs.BADLANDS] = {{18.96,42.86}}},
+            [npcKeys.zoneID] = zoneIDs.BADLANDS,
+        },
+        [47024] = { -- Jurrix Whitemane
+            [npcKeys.spawns] = {[zoneIDs.BADLANDS] = {{18.88,42.74}}},
+            [npcKeys.zoneID] = zoneIDs.BADLANDS,
         },
         [47080] = { -- Lucien Tosselwrench
             [npcKeys.spawns] = {[zoneIDs.BADLANDS] = {{26.49,62.3}}},
@@ -6946,6 +6958,9 @@ function CataNpcFixes.Load()
             [npcKeys.spawns] = {[zoneIDs.ORGRIMMAR] = {{57.96,57.62}}},
             [npcKeys.questStarts] = {172},
         },
+        [52059] = { -- High Priestess Kilnara
+            [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{47.88,20.97},{-1,-1}}},
+        },
         [52064] = { -- Keira
             [npcKeys.spawns] = {[zoneIDs.ELWYNN_FOREST] = {{32.09,50.59}}},
             [npcKeys.zoneID] = zoneIDs.ELWYNN_FOREST,
@@ -6979,11 +6994,20 @@ function CataNpcFixes.Load()
         [52383] = { -- Nemesis
             [npcKeys.questStarts] = {},
         },
+        [52392] = { -- Gurubashi Master Chef
+            [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{57.59,27.47},{-1,-1}}},
+        },
         [52399] = { -- Galenges
             [npcKeys.questStarts] = {},
         },
+        [52405] = { -- Mor'Lek the Dismantler
+            [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{47.88,20.97},{-1,-1}}},
+        },
         [52408] = { -- Coridormi
             [npcKeys.questStarts] = {29132,30095},
+        },
+        [52422] = { -- Kaulema the Mover
+            [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{54.07,62.89},{-1,-1}}},
         },
         [52442] = { -- Florawing Hive Queen
             [npcKeys.spawns] = {[zoneIDs.ZUL_GURUB] = {{31.57,39.15},{-1,-1}}},

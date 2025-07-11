@@ -305,13 +305,13 @@ function CataQuestFixes.Load()
             [questKeys.nextQuestInChain] = 0,-- there are some weird things happening if you completed these quests before prepatch
         },
         [2945] = { -- Grime-Encrusted Ring
-            [questKeys.zoneOrSort] = 6457,
+            [questKeys.zoneOrSort] = zoneIDs.NEW_TINKERTOWN,
         },
         [2947] = { -- Return of the Ring
-            [questKeys.zoneOrSort] = 6457,
+            [questKeys.zoneOrSort] = zoneIDs.NEW_TINKERTOWN,
         },
         [2949] = { -- Return of the Ring
-            [questKeys.zoneOrSort] = 6457,
+            [questKeys.zoneOrSort] = zoneIDs.NEW_TINKERTOWN,
         },
         [2950] = { -- Nogg's Ring Redo
             [questKeys.zoneOrSort] = zoneIDs.ORGRIMMAR,
@@ -8082,7 +8082,7 @@ function CataQuestFixes.Load()
             [questKeys.preQuestGroup] = {27625,27626},
         },
         [26642] = { -- Preserving the Barrens
-            [questKeys.exclusiveTo] = {},
+            [questKeys.exclusiveTo] = {28494},
             [questKeys.nextQuestInChain] = 871,
         },
         [26644] = { -- Attracting Attention
@@ -10288,6 +10288,7 @@ function CataQuestFixes.Load()
         [27635] = { -- Decontamination
             [questKeys.objectives] = {{{46185,nil,Questie.ICON_TYPE_MOUNT_UP}}},
             [questKeys.zoneOrSort] = zoneIDs.DUN_MOROGH,
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.MAGE + classIDs.WARLOCK + classIDs.ROGUE + classIDs.PRIEST, -- gnome DKs don't get these quests
         },
         [27636] = { -- Just You and Mathias
             [questKeys.startedBy] = {{100021}},
@@ -10417,6 +10418,7 @@ function CataQuestFixes.Load()
             [questKeys.objectives] = {{{46268,nil,Questie.ICON_TYPE_INTERACT}}},
             [questKeys.startedBy] = {{47250}},
             [questKeys.zoneOrSort] = zoneIDs.DUN_MOROGH,
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.MAGE + classIDs.WARLOCK + classIDs.ROGUE + classIDs.PRIEST, -- gnome DKs don't get these quests
         },
         [27672] = { -- The Chamber of Khaz'mul
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_OBJECT, l10n("Use it"), 0, {{"object", 124371}}}},
@@ -10425,6 +10427,7 @@ function CataQuestFixes.Load()
         [27674] = { -- To the Surface
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_TALK, l10n("Talk to Torben Zapblast"), 0, {{"monster", 46293}}}},
             [questKeys.zoneOrSort] = zoneIDs.DUN_MOROGH,
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.MAGE + classIDs.WARLOCK + classIDs.ROGUE + classIDs.PRIEST, -- gnome DKs don't get these quests
         },
         [27675] = { -- Forged Documents [Alliance]
             [questKeys.requiredSkill] = {profKeys.INSCRIPTION,500},
@@ -10931,6 +10934,16 @@ function CataQuestFixes.Load()
             [questKeys.preQuestSingle] = {25611,25612},
             [questKeys.nextQuestInChain] = 25663,
         },
+        [27881] = { -- Bloodwatcher Point
+            [questKeys.preQuestSingle] = {27789},
+            [questKeys.nextQuestInChain] = 27882,
+        },
+        [27883] = { -- The Sentinel's Pawn
+            [questKeys.preQuestSingle] = {27882},
+        },
+        [27884] = { -- The Warden's Pawn
+            [questKeys.preQuestSingle] = {27882},
+        },
         [27885] = { -- The Warden's Game
             [questKeys.startedBy] = {nil,{206335}},
             [questKeys.finishedBy] = {{100034}},
@@ -10946,6 +10959,28 @@ function CataQuestFixes.Load()
             [questKeys.preQuestGroup] = {27885,27886},
             [questKeys.startedBy] = {{46757}},
             [questKeys.finishedBy] = {{100035}},
+            [questKeys.nextQuestInChain] = 27913,
+        },
+        [27888] = { -- Return to Blam
+            [questKeys.nextQuestInChain] = 27889,
+        },
+        [27889] = { -- New Kargath
+            [questKeys.preQuestSingle] = {27888},
+        },
+        [27891] = { -- Amakkar, Jack of All Trades
+            [questKeys.exclusiveTo] = {},
+            [questKeys.preQuestSingle] = {27890},
+            [questKeys.objectives] = {{{47021,nil,Questie.ICON_TYPE_EVENT},{47021,nil,Questie.ICON_TYPE_EVENT}}},
+        },
+        [27892] = { -- Jurrix the Striker
+            [questKeys.exclusiveTo] = {},
+            [questKeys.preQuestSingle] = {27890},
+            [questKeys.objectives] = {{{47024,nil,Questie.ICON_TYPE_EVENT},{47024,nil,Questie.ICON_TYPE_EVENT}}},
+        },
+        [27893] = { -- Gargal, the Behemoth
+            [questKeys.exclusiveTo] = {},
+            [questKeys.preQuestSingle] = {27890},
+            [questKeys.objectives] = {{{47022,nil,Questie.ICON_TYPE_EVENT},{47022,nil,Questie.ICON_TYPE_EVENT}}},
         },
         [27894] = { -- The Wrath of a Dragonflight
             [questKeys.preQuestSingle] = {},
@@ -10993,10 +11028,12 @@ function CataQuestFixes.Load()
         [27912] = { -- The Titans' Trove
             [questKeys.startedBy] = {{100036}},
             [questKeys.preQuestSingle] = {27793},
+            [questKeys.nextQuestInChain] = 27794,
         },
         [27913] = { -- The Titans' Trove
             [questKeys.startedBy] = {{100036}},
             [questKeys.preQuestSingle] = {27887},
+            [questKeys.nextQuestInChain] = 27888,
         },
         [27915] = { -- The Heart of the Temple
             [questKeys.preQuestSingle] = {27914},
@@ -11603,8 +11640,9 @@ function CataQuestFixes.Load()
             [questKeys.nextQuestInChain] = 27441,
             [questKeys.startedBy] = {{3045,4606,16658,43870}},
         },
-        [28167] = { -- Venomblood Antidote
+        [28167] = { -- Report to Carvo Blastbolt
             [questKeys.zoneOrSort] = zoneIDs.DUN_MOROGH,
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.MAGE + classIDs.WARLOCK + classIDs.ROGUE + classIDs.PRIEST, -- gnome DKs don't get these quests
         },
         [28168] = { -- Trouble at the Sludge Fields
             [questKeys.nextQuestInChain] = 28192,
@@ -11613,6 +11651,7 @@ function CataQuestFixes.Load()
         },
         [28169] = { -- Withdraw to the Loading Room!
             [questKeys.zoneOrSort] = zoneIDs.DUN_MOROGH,
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.MAGE + classIDs.WARLOCK + classIDs.ROGUE + classIDs.PRIEST, -- gnome DKs don't get these quests
         },
         [28170] = { -- Night Terrors
             [questKeys.extraObjectives] = {{nil, Questie.ICON_TYPE_TALK, l10n("Talk to Uchek"), 0, {{"monster", 47826}}}},

@@ -1,6 +1,6 @@
 ## Interface: 30404
 ## Author: Lag
-## Version: v3.2.0
+## Version: v3.2.0 |cFF00ff00谷风修复版|r
 ## SavedVariables: AtlasLootClassicDB
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, LibDBIcon-1.0, LibDataBroker-1.1
 ## DefaultState: Enabled
@@ -17,7 +17,7 @@
 ## Title-koKR: AtlasLoot 클래식 |cFF22B14C[코어]|r
 ## Title-ptBR: AtlasLoot Classic |cFF22B14C[Núcleo]|r
 ## Title-ruRU: AtlasLoot Classic |cFF22B14C[Ядро]|r
-## Title-zhCN: AtlasLoot经典版 |cFF22B14C[主程序]|r
+## Title-zhCN: AtlasLoot经典版 |cFF00ff00谷风修复版|r
 ## Title-zhTW: 副本戰利品查詢經典版 |cFF22B14C[主程式]|r
 ## Notes-deDE: Zeigt die mögliche Boss-Beute.
 ## Notes-esES: Muestra botines posibles de jefes

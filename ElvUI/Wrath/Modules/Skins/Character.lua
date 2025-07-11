@@ -504,6 +504,7 @@ function S:CharacterFrame()
 	S:HandleCheckBox(_G.TokenFramePopupInactiveCheckbox)
 	S:HandleCheckBox(_G.TokenFramePopupBackpackCheckbox)
 
+	S:HandleScrollBar(_G.TokenFrameContainerScrollBar)
 	S:HandleCloseButton(_G.TokenFramePopupCloseButton, _G.TokenFramePopup)
 
 	hooksecurefunc('TokenFrame_Update', UpdateCurrencySkins)

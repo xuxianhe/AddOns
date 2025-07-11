@@ -1,4 +1,4 @@
-## Interface: 30403
+## Interface: 30404
 ## Author: Lag
 ## Version: v3.2.0
 ## Dependencies: AtlasLootClassic

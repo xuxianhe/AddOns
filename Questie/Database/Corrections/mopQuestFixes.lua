@@ -30,6 +30,18 @@ function MopQuestFixes.Load()
         [13409] = { -- Hellfire Fortifications
             [questKeys.requiredClasses] = 2015, -- all classes except DK
         },
+        [27670] = { -- Pinned Down
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.MAGE + classIDs.WARLOCK + classIDs.ROGUE + classIDs.PRIEST + classIDs.MONK, -- gnome DKs don't get these quests
+        },
+        [27671] = { -- See to the Survivors
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.MAGE + classIDs.WARLOCK + classIDs.ROGUE + classIDs.PRIEST + classIDs.MONK, -- gnome DKs don't get these quests
+        },
+        [28167] = { -- Report to Carvo Blastbolt
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.MAGE + classIDs.WARLOCK + classIDs.ROGUE + classIDs.PRIEST + classIDs.MONK, -- gnome DKs don't get these quests
+        },
+        [28169] = { -- Withdraw to the Loading Room!
+            [questKeys.requiredClasses] = classIDs.WARRIOR + classIDs.MAGE + classIDs.WARLOCK + classIDs.ROGUE + classIDs.PRIEST + classIDs.MONK, -- gnome DKs don't get these quests
+        },
         [29406] = { -- The Lesson of the Sandy Fist
             [questKeys.requiredLevel] = 1,
         },
@@ -547,6 +559,23 @@ function MopQuestFixes.Load()
             [questKeys.objectives] = {{{62209,nil,Questie.ICON_TYPE_EVENT}}},
             [questKeys.preQuestSingle] = {31013},
         },
+        [31135] = { -- The Future of Gnomeregan
+            [questKeys.startedBy] = {{42396}},
+            [questKeys.preQuestSingle] = {27674},
+            [questKeys.requiredRaces] = raceIDs.GNOME,
+        },
+        [31137] = { -- Meet the High Tinker
+            [questKeys.preQuestSingle] = {31135},
+            [questKeys.requiredRaces] = raceIDs.GNOME,
+        },
+        [31138] = { -- The Arts of a Monk
+            [questKeys.preQuestSingle] = {31135},
+            [questKeys.requiredRaces] = raceIDs.GNOME,
+            [questKeys.requiredClasses] = classIDs.MONK,
+        },
+        [31139] = { -- Beating Them Back!
+            [questKeys.requiredRaces] = raceIDs.HUMAN,
+        },
         [31152] = { -- Peering Into the Past
             [questKeys.preQuestSingle] = {31167},
         },
@@ -615,6 +644,26 @@ function MopQuestFixes.Load()
         },
         [31488] = { -- Stranger in a Strange Land
             [questKeys.startedBy] = {{62871,64047,64144,66225,66409,66415}},
+        },
+        [31490] = { -- Rank and File
+            [questKeys.objectives] = {nil,nil,nil,nil,{{{58632,58676,58683,58684,58685,58756,58898,58998,59150,59175,59191,59240,59241,59293,59303,59372,59373},58632}}}
+        },
+        [31495] = { -- Rank and File
+            [questKeys.objectives] = {nil,nil,nil,nil,{{{58632,58676,58683,58684,58685,58756,58898,58998,59150,59175,59191,59240,59241,59293,59303,59372,59373},58632}}}
+        },
+        [31513] = { -- Blades of the Anointed
+            [questKeys.zoneOrSort] = zoneIDs.SCARLET_MONASTERY,
+        },
+        [31514] = { -- Unto Dust Thou Shalt Return
+            [questKeys.zoneOrSort] = zoneIDs.SCARLET_MONASTERY,
+            [questKeys.objectives] = {{{3977,nil,Questie.ICON_TYPE_INTERACT}}},
+        },
+        [31515] = { -- Blades of the Anointed
+            [questKeys.zoneOrSort] = zoneIDs.SCARLET_MONASTERY,
+        },
+        [31516] = { -- Unto Dust Thou Shalt Return
+            [questKeys.zoneOrSort] = zoneIDs.SCARLET_MONASTERY,
+            [questKeys.objectives] = {{{3977,nil,Questie.ICON_TYPE_INTERACT}}},
         },
         [31519] = {-- A Worthy Challenge: Yan-zhu the Uncasked
             [questKeys.exclusiveTo] = {31520,31522,31523,31524,31525,31526,31527,31528},
@@ -1094,6 +1143,9 @@ function MopQuestFixes.Load()
         [31991] = { -- Grand Master Zusshi
             [questKeys.objectives] = {{{66918,nil,Questie.ICON_TYPE_PET_BATTLE}}},
         },
+        [32005] = { -- A Worthy Challenge: Durand
+            [questKeys.zoneOrSort] = zoneIDs.SCARLET_MONASTERY,
+        },
         [32008] = { -- Audrey Burnhep
             [questKeys.exclusiveTo] = {31316},
         },
@@ -1128,6 +1180,9 @@ function MopQuestFixes.Load()
         [32604] = { -- Beasts of Fable Book I
             [questKeys.objectives] = {{{68555,nil,Questie.ICON_TYPE_PET_BATTLE},{68563,nil,Questie.ICON_TYPE_PET_BATTLE},{68564,nil,Questie.ICON_TYPE_PET_BATTLE},{68565,nil,Questie.ICON_TYPE_PET_BATTLE}}},
             [questKeys.preQuestSingle] = {32603},
+        },
+        [32863] = { -- What We've Been Training For
+            [questKeys.objectives] = {{{110001}}},
         },
         [32868] = { -- Beasts of Fable Book II
             [questKeys.objectives] = {{{68560,nil,Questie.ICON_TYPE_PET_BATTLE},{68561,nil,Questie.ICON_TYPE_PET_BATTLE},{68566,nil,Questie.ICON_TYPE_PET_BATTLE}}},

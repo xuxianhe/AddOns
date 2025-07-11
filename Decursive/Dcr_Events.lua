@@ -1,7 +1,7 @@
 --[[
     This file is part of Decursive.
 
-    Decursive (v 2.7.28) add-on for World of Warcraft UI
+    Decursive (v 2.7.27) add-on for World of Warcraft UI
     Copyright (C) 2006-2025 John Wellesz (Decursive AT 2072productions.com) ( http://www.2072productions.com/to/decursive.php )
 
     Decursive is free software: you can redistribute it and/or modify
@@ -1134,9 +1134,9 @@ do
 
         -- if we know that there are unspet talents, it means we can check for
         -- them
-        if _G.GetNumUnspentTalents and GetNumUnspentTalents() then
+        --[[if _G.GetNumUnspentTalents and GetNumUnspentTalents() then
             return true;
-        end
+        end]]
 
         if (DC.WOWC) then
             -- local name, iconTexture, tier, column, rank, maxRank, isExceptional, available = GetTalentInfo
@@ -1193,6 +1193,6 @@ do
     end
 end
 
-T._LoadedFiles["Dcr_Events.lua"] = "2.7.28";
+T._LoadedFiles["Dcr_Events.lua"] = "2.7.27";
 
 -- The Great Below

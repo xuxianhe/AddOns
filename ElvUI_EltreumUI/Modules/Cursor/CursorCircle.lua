@@ -460,16 +460,15 @@ function ElvUI_EltreumUI:CastCursor()
 			if unit and unit ~= 'player' then
 				return
 			elseif unit and unit == 'player' then
-				if E.Retail then
-					local cooldowntable = GetSpellCooldown(61304)
-					if cooldowntable.duration > 0 and (E.Retail or cooldowntable.duration <= 1.51) then
-						Start(self, GetTime() - cooldowntable.startTime, cooldowntable.duration )
-					end
-				else
-					local start, duration = GetSpellCooldown(E.Retail and 61304 or spellID)
-					if duration > 0 and (E.Retail or duration <= 1.51) then
-						Start(self, GetTime() - start, duration )
-					end
+				local start, duration
+				local spellCooldownInfo = GetSpellCooldown(E.Retail and 61304 or spellID)
+				if type(spellCooldownInfo) == "number" then
+					start, duration, isEnabled = spellCooldownInfo
+				elseif type(spellCooldownInfo) == "table" then
+					start, duration, isEnabled = spellCooldownInfo.startTime, spellCooldownInfo.duration, spellCooldownInfo.isEnabled
+				end
+				if duration > 0 and (E.Retail or duration <= 1.51) then
+					Start(self, GetTime() - start, duration )
 				end
 			end
 		end

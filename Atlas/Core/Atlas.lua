@@ -91,11 +91,26 @@ local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 
 local profile
 
--- Minimap button with LibDBIcon-1.0
-local LDB = LibStub("LibDataBroker-1.1"):NewDataObject("Atlas", {
+-- Make an LDB object
+local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
+LDB = LDB:NewDataObject("Atlas", {
 	type = "launcher",
-	text = L["ATLAS_TITLE"],
+	text = addon.LocName,
 	icon = "Interface\\WorldMap\\WorldMap-Icon",
+	OnClick = function(self, button)
+		if button == "LeftButton" then
+			Atlas_Toggle()
+		elseif button == "RightButton" then
+			if addon.OpenOptions then
+				addon:OpenOptions()
+			end
+		end
+	end,
+	OnTooltipShow = function(tooltip)
+		if not tooltip or not tooltip.AddLine then return end
+		tooltip:AddLine(addon.LocName)
+		tooltip:AddLine(L["ATLAS_LDB_TOOLTIP"])
+	end,
 })
 
 local minimapButton = LibStub("LibDBIcon-1.0")
@@ -1985,7 +2000,9 @@ local function initialization()
 		if button == "LeftButton" then
 			Atlas_Toggle()
 		elseif button == "RightButton" then
-			addon:OpenOptions()
+			if addon.OpenOptions then
+				addon:OpenOptions()
+			end
 		end
 	end
 	LDB.OnTooltipShow = function(tooltip)
@@ -2061,4 +2078,15 @@ function addon:Refresh()
 			addon.WorldMap.Button:Hide()
 		end
 	end
+end
+
+-- Minimap button click handler
+local function MinimapButton_OnClick(self, button)
+    if button == "RightButton" then
+        if addon.OpenOptions then
+            addon:OpenOptions()
+        end
+    else
+        Atlas_Toggle()
+    end
 end

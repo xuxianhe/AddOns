@@ -1,9 +1,9 @@
 # Details! Damage Meter
 
-## [Details.20250704.13626.165](https://github.com/Tercioo/Details-Damage-Meter/tree/Details.20250704.13626.165) (2025-07-04)
-[Full Changelog](https://github.com/Tercioo/Details-Damage-Meter/compare/Details.20250703.13625.165...Details.20250704.13626.165) 
+## [Details.20250331.13502.162-4-g3396762](https://github.com/Tercioo/Details-Damage-Meter/tree/33967622db92842c7a5bc3772c6b10327078dcba) (2025-04-05)
+[Full Changelog](https://github.com/Tercioo/Details-Damage-Meter/compare/Details.20250331.13502.162...33967622db92842c7a5bc3772c6b10327078dcba) 
 
-- Fix moving windows on PTR 11.2  
-- Merge pull request #928 from Flamanis/master  
-    Fix resize/drag on 11.2 ptr  
-- Fix resize/drag on 11.2 ptr  
+- Added Details:UnpackDeathEvent(deathEvent)  
+- Removed interrupts from crowd control. Fixed crowd control amount in the 'Crowd Control Done' display.  
+- Create FUNDING.yml  
+- Increate the core version  

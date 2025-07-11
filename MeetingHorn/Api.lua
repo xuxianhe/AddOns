@@ -44,12 +44,12 @@ ns.SEARCH_ALIAS = { --
 }
 
 local keyCombinations = {
-    "SHIFT-.", "SHIFT-[", "SHIFT-;",
     "CTRL-.", "CTRL-[", "CTRL-;",
-    "ALT-.", "ALT-[", "ALT-;",
-    "SHIFT-,", "SHIFT-]", "SHIFT-'",
     "CTRL-,", "CTRL-]", "CTRL-'",
-    "ALT-,", "ALT-]", "ALT-'"
+    "ALT-,", "ALT-]", "ALT-'",
+    "ALT-.", "ALT-[", "ALT-;",
+    "SHIFT-.", "SHIFT-[", "SHIFT-;",
+    "SHIFT-,", "SHIFT-]", "SHIFT-'",
 }
 
 
