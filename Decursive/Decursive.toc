@@ -2,7 +2,7 @@
 ## X-Max-Interface: 110105
 ## X-Min-Interface:  11506
 
-## Title: Decursive |cffff00ff -Ace3-|r 国服修复by巴尼
+## Title: Decursive 国服修复by巴尼
 ## Notes: Afflictions display and cleaning for solo, group and raid with advanced filtering and priority system.
 ## Notes-frFR: Affichage et guérison des affections avec un système évolué de filtrage et de priorité.
 ## Notes-deDE: Anzeige und Reinigung von Gebrechen für Solo, Gruppe und Schlachtzug mit erweitertem Filter- und Prioritäten-System.

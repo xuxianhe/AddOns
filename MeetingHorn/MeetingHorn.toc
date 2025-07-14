@@ -1,7 +1,7 @@
-## Interface: 30404
+## Interface: 30405
 ## Title: MeetingHorn
 ## Title-zhCN: 集结号
-## Version: 2.3.1
+## Version: 2.3.2
 ## SavedVariables: MEETINGHORN_DB
 ## SavedVariablesPerCharacter: MEETINGHORN_DB_CHARACTER_MEMBERS
 

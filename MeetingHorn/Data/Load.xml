@@ -24,5 +24,6 @@
     <Script file="AppData22.lua"/>
     <Script file="AppData23.lua"/>
     <Script file="AppData24.lua"/>
+    <Script file="AppData25.lua"/>
     <Script file="SetRegimentVersion.lua"/>
 </Ui>

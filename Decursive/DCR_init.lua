@@ -590,13 +590,11 @@ local function SetRuntimeConstants_Once () -- {{{
                 Pet = false,
             },
             -- Priest
-            [not DC.CATACLYSM and DSI["SPELL_ABOLISH_DISEASE"] or false] = { -- WOW CLASSIC  https://classic.wowhead.com/spell=552/abolish-disease
+            --[[[not DC.CATACLYSM and DSI["SPELL_ABOLISH_DISEASE"] or false] = { -- WOW CLASSIC  https://classic.wowhead.com/spell=552/abolish-disease
                 Types = {DC.DISEASE},
                 Better = 2,
                 Pet = false,
-
-
-            },
+            },]]
             -- Priest
             [DSI["SPELL_CURE_DISEASE_PRIEST"]] = { -- WOW CLASSIC  https://classic.wowhead.com/spell=528/cure-disease
                 Types = {DC.DISEASE},
@@ -633,31 +631,36 @@ local function SetRuntimeConstants_Once () -- {{{
                 }
             },
             -- HUNTERS http://www.wowhead.com/?spell=19801
-            [DC.CATACLYSM and DSI["SPELL_TRANQUILIZING_SHOT"] or false]    = {
+            [(DC.CATACLYSM or DC.WOTLK) and DSI["SPELL_TRANQUILIZING_SHOT"] or false]    = {
                 Types = {DC.ENEMYMAGIC},
                 Better = 0,
                 Pet = false,
             },
             -- Shamans http://www.wowhead.com/?spell=51514
-            [DC.CATACLYSM and DSI["SPELL_HEX"] or false] = {
+            [DSI["SPELL_HEX"]] = {
                 Types = {DC.CHARMED},
                 Better = 0,
                 Pet = false,
             },
             -- Druid
-            [not DC.CATACLYSM and DSI["SPELL_ABOLISH_POISON"] or false] = { -- WOW CLASSIC  https://classic.wowhead.com/spell=2893/abolish-poison
+            [DSI["SPELL_ABOLISH_POISON"]] = { -- WOW CLASSIC  https://classic.wowhead.com/spell=2893/abolish-poison
                 Types = {DC.POISON},
                 Better = 2,
                 Pet = false,
             },
             -- Shaman
-            [not DC.CATACLYSM and DSI["SPELL_CURE_POISON_SHAMAN"] or false] = { -- WOW CLASSIC  https://classic.wowhead.com/spell=526/cure-poison
-                Types = DC.CATACLYSM and {DC.POISON, DC.DISEASE} or {DC.POISON},
+            [not IsPlayerSpell(DSI["CLEANSE_SPIRIT"]) and DSI["SPELL_CURE_POISON_SHAMAN"] or false] = { -- WOW CLASSIC  https://classic.wowhead.com/spell=526/cure-poison
+                Types = DC.WOTLK and {DC.POISON, DC.DISEASE} or {DC.POISON},
                 Better = 0,
                 Pet = false,
             },
+            [DC.WOTLK and DSI["CLEANSE_SPIRIT"] or false] = { -- same name as PURIFY_SPIRIT in ruRU XXX
+                Types = {DC.POISON, DC.DISEASE, DC.CURSE},
+                Better = 2,
+                Pet = false,
+            },
             -- Druid
-            [not DC.CATACLYSM and DSI["SPELL_CURE_POISON_DRUID"] or false] = { -- WOW CLASSIC  https://classic.wowhead.com/spell=8946/cure-poison
+            [DSI["SPELL_CURE_POISON_DRUID"]] = { -- WOW CLASSIC  https://classic.wowhead.com/spell=8946/cure-poison
                 Types = {DC.POISON},
                 Better = 0,
                 Pet = false,
@@ -667,6 +670,12 @@ local function SetRuntimeConstants_Once () -- {{{
                 Types = not DC.CATACLYSM and {DC.MAGIC, DC.ENEMYMAGIC} or {DC.ENEMYMAGIC},
                 Better = 0,
                 Pet = true,
+            },
+            -- Mages (global)
+            [DSI["SPELL_SPELLSTEAL"]] = {
+                Types = {DC.ENEMYMAGIC},
+                Better = 1,
+                Pet = false,
             },
             -- undead racial
             [DSI["SPELL_WILL_OF_THE_FORSAKEN"]] = {
@@ -900,7 +909,7 @@ function D:OnInitialize() -- Called on ADDON_LOADED by AceAddon -- {{{
     self:RegisterChatCommand("dcrshow"      ,function() D:HideBar(0)                                end, false  );
     self:RegisterChatCommand("dcrhide"      ,function() D:HideBar(1)                                end, false  );
     self:RegisterChatCommand("dcrshoworder" ,function() D:Show_Cure_Order()                         end, false  );
-    self:RegisterChatCommand("dcrreport"    ,function() T._ShowDebugReport()                         end, false  );
+    self:RegisterChatCommand("dcrreport"    ,function() T._ShowDebugReport()                        end, false  );
     -- }}}
 
 
@@ -966,7 +975,7 @@ function D:OnEnable() -- called after PLAYER_LOGIN -- {{{
     end); -- }}}
 
     D:SecureHook("CastSpellByName", "HOOK_CastSpellByName");
-    D:SecureHook(C_Item, "UseItemByName",   "HOOK_UseItemByName");
+    D:SecureHook(C_Item, "UseItemByName", "HOOK_UseItemByName");
 
     -- these events are automatically stopped when the addon is disabled by Ace
 
@@ -1733,31 +1742,31 @@ function D:SetSpellsTranslations(FromDIAG) -- {{{
                 ["SPELL_DISPELL_MAGIC"]     = 528,
                 ["SPELL_PURIFY"]            = 527,
                 ["Fluidity"]	            = 138002,
-                ["SPELL_SPELLSTEAL"]	    = 30449,
+              --["SPELL_SPELLSTEAL"]	    = 30449,
                 ["SPELL_CONSUME_MAGIC"]	    = 278326,
-                ["PET_TORCH_MAGIC"]	        = 171021,
-                ["SPELL_HEX"]	            = 51514,
-                ["SPELL_CYCLONE"]	        = 33786,
-                ["SPELL_DETOX_1"]	        = 115450,
+                ["PET_TORCH_MAGIC"]	    = 171021,
+              --["SPELL_HEX"]	            = 51514,
+                ["SPELL_CYCLONE"]	    = 33786,
+                ["SPELL_DETOX_1"]	    = 115450,
                 ["Unstable Affliction"]	    = 30108,
                 ["SPELL_REVERSEMAGIC"]	    = 205604,
-                ["PET_SEAR_MAGIC"]	        = 115276,
+                ["PET_SEAR_MAGIC"]	    = 115276,
                 ["SPELL_COMMAND_DEMON"]	    = 119898,
                 ["Greater Invisibility"]    = 110959,
                 ["SPELL_MENDINGBANDAGE"]    = 212640,
-                ["CRIPLES"]	                = 33787,
-                ["Arcane Blast"]	        = 30451,
-                ["SPELL_DETOX_2"]	        = 218164,
+                ["CRIPLES"]	            = 33787,
+                ["Arcane Blast"]	    = 30451,
+                ["SPELL_DETOX_2"]	    = 218164,
                 ["SPELL_IMPROVED_DETOX"]    = 388874,
-                ["MDREAMLESSSLEEP"]	        = 28504,
-                ["PURIFY_SPIRIT"]	        = 77130,
+                ["MDREAMLESSSLEEP"]	    = 28504,
+                ["PURIFY_SPIRIT"]	    = 77130,
                 ["SONICBURST"]	            = 39052,
                 ["SPELL_PURIFY_DISEASE"]    = 213634,
                 ["IMPROVED_PURIFY"]         = 390632,
-                ["Vampiric Touch"]	        = 34914,
-                ["CLEANSE_SPIRIT"]	        = 51886,
+                ["Vampiric Touch"]	    = 34914,
+              --["CLEANSE_SPIRIT"]	    = 51886,
                 ["SPELL_NATURES_CURE"]	    = 88423,
-                ["PET_SINGE_MAGIC"]	        = 89808,
+                ["PET_SINGE_MAGIC"]	    = 89808,
                 ["PET_SINGE_MAGIC_PVP"]	    = 212623,
                 ["SPELL_CLEANSE_TOXINS"]    = 213644,
                 ["SPELL_DIFFUSEMAGIC"]	    = 122783,
