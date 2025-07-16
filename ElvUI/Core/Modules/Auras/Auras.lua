@@ -157,8 +157,8 @@ function A:CreateIcon(button)
 
 	if E.Retail then
 		button:RegisterForClicks('RightButtonUp', 'RightButtonDown')
-	else
-		button:RegisterForClicks('RightButtonUp')
+	elseif not InCombatLockdown() then
+		button:RegisterForClicks('RightButtonDown')
 	end
 
 	button:SetScript('OnAttributeChanged', A.Button_OnAttributeChanged)

@@ -628,12 +628,14 @@ end
 
 -- update click handling ~Simpy
 local function UpdateRegisterClicks(self, down)
-	if self.isFlyoutButton then -- the bar button
-		self:RegisterForClicks('AnyUp')
-	elseif self.isFlyout or WoWRetail then -- the flyout spell
-		self:RegisterForClicks('AnyDown', 'AnyUp')
-	else
-		self:RegisterForClicks(self.config.clickOnDown and not down and 'AnyDown' or 'AnyUp')
+	if not InCombatLockdown() then
+		if self.isFlyoutButton then -- the bar button
+			self:RegisterForClicks('AnyUp')
+		elseif self.isFlyout or WoWRetail then -- the flyout spell
+			self:RegisterForClicks('AnyDown', 'AnyUp')
+		else
+			self:RegisterForClicks(self.config.clickOnDown and not down and 'AnyDown' or 'AnyUp')
+		end
 	end
 end
 
@@ -1448,6 +1450,10 @@ function Generic:UpdateConfig(config)
 	UpdateHotkeys(self)
 	UpdateGrid(self)
 	Update(self, 'UpdateConfig')
+
+	if not WoWRetail then
+		self:RegisterForClicks(self.config.clickOnDown and "AnyDown" or "AnyUp")
+	end
 end
 
 -----------------------------------------------------------
@@ -2106,7 +2112,7 @@ function Update(self, which)
 
 	UpdateSpellHighlight(self)
 
-	UpdateRegisterClicks(self)
+	--UpdateRegisterClicks(self)
 
 	if GameTooltip_GetOwnerForbidden() == self then
 		UpdateTooltip(self)

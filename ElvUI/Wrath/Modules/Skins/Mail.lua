@@ -54,8 +54,7 @@ function S:MailFrame()
 
 	_G.MailFrameCloseButton:Point('TOPRIGHT', 0, 2)
 
-	_G.InboxFrameBg:StripTextures()
-	_G.MailFrameBg:StripTextures()
+	_G.InboxFrame:StripTextures()
 
 	_G.InboxTitleText:Point('CENTER', _G.InboxFrame, 'TOP', -10, -17)
 

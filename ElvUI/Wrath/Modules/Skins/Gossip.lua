@@ -116,34 +116,19 @@ function S:GossipFrame()
 	S:HandleNextPrevButton(_G.ItemTextNextPageButton)
 	S:HandleNextPrevButton(_G.ItemTextPrevPageButton)
 
-	if E.private.skins.parchmentRemoverEnable then
-		_G.QuestFont:SetTextColor(1, 1, 1)
-		_G.ItemTextPageText:SetTextColor('P', 1, 1, 1)
+	_G.QuestFont:SetTextColor(1, 1, 1)
+	_G.ItemTextPageText:SetTextColor('P', 1, 1, 1)
 
-		_G.ItemTextMaterialBotLeft:SetAlpha(0)
-		_G.ItemTextMaterialBotRight:SetAlpha(0)
-		_G.ItemTextMaterialTopLeft:SetAlpha(0)
-		_G.ItemTextMaterialTopRight:SetAlpha(0)
+	_G.ItemTextMaterialBotLeft:SetAlpha(0)
+	_G.ItemTextMaterialBotRight:SetAlpha(0)
+	_G.ItemTextMaterialTopLeft:SetAlpha(0)
+	_G.ItemTextMaterialTopRight:SetAlpha(0)
 
-		hooksecurefunc(_G.ItemTextPageText, 'SetTextColor', ItemTextPage_SetTextColor)
-		hooksecurefunc(GreetingPanel.ScrollBox, 'Update', GreetingPanel_Update)
+	hooksecurefunc(_G.ItemTextPageText, 'SetTextColor', ItemTextPage_SetTextColor)
+	hooksecurefunc(GreetingPanel.ScrollBox, 'Update', GreetingPanel_Update)
 
-		if GossipFrame.Background then
-			GossipFrame.Background:Hide()
-		end
-	else
-		_G.ItemTextMaterialBotLeft:SetDrawLayer('ARTWORK', 1)
-		_G.ItemTextMaterialBotRight:SetDrawLayer('ARTWORK', 1)
-		_G.ItemTextMaterialTopLeft:SetDrawLayer('ARTWORK', 1)
-		_G.ItemTextMaterialTopRight:SetDrawLayer('ARTWORK', 1)
-
-		local spellTex = createParchment(GreetingPanel)
-		spellTex:SetInside(GreetingPanel.backdrop)
-		GreetingPanel.spellTex = spellTex
-
-		local itemTex = createParchment(ItemTextFrame)
-		itemTex:SetInside(ItemTextScrollFrame, -5)
-		ItemTextFrame.itemTex = itemTex
+	if GossipFrame.Background then
+		GossipFrame.Background:Hide()
 	end
 end
 
