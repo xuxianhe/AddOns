@@ -1,0 +1,7 @@
+## Interface: 30405
+## Title: 天赋推荐
+## Notes: 巫妖王之怒天赋推荐插件
+## Author: Meiyang
+## Version: 1.0
+
+WotLKTalentRecommender.lua

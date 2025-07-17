@@ -3,7 +3,8 @@ local Statics = GSE.Static
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = GSE.L
-
+GetSpecialization=nil
+GetSpecializationInfo=nil
 if GSE.isEmpty(GSE.CreateIconControl) then
     GSE.CreateIconControl = function(action, version, keyPath, sequence, frame)
         local lbl = AceGUI:Create("Label")
@@ -982,7 +983,7 @@ function GSE.CreateEditor()
         local seqTableEditbox = AceGUI:Create("MultiLineEditBox")
         seqTableEditbox:SetLabel(L["Sequence"])
         seqTableEditbox:DisableButton(true)
-        seqTableEditbox:SetNumLines(35)
+        seqTableEditbox:SetNumLines(#GSE.SplitMeIntoLines(tablestring))
         seqTableEditbox:SetRelativeWidth(0.95)
         --seqTableEditbox:SetHeight(editframe.Height - 250)
         seqTableEditbox:SetText(tablestring)
@@ -2950,14 +2951,24 @@ function GSE.CreateEditor()
                             SetBinding(initialbind)
                             destination[bind] = nil
                         end
-                        if destination then
+                        if loadout ~= "ALL" and loadout then
                             destination[bind] = button
+                            if
+                                tostring(C_ClassTalents.GetLastSelectedSavedConfigID(PlayerUtil.GetCurrentSpecID())) ==
+                                    loadout
+                             then
+                                SetBinding(bind)
+                                SetBindingClick(bind, button, _G[button])
+                            end
                         else
-                            GSE.PrintDebugMessage(
-                                "Error Saving Keybind " .. bind .. " " .. button,
-                                Statics.DebugModules.Storage
-                            )
+                            destination[bind] = button
+                            SetBinding(bind)
+                            SetBindingClick(bind, button, _G[button])
                         end
+                        if bind ~= initialbind then
+                            showKeybind(bind, button, specialization, loadout)
+                        end
+
                         editframe.ManageTree()
                         local keypath
                         if loadout ~= "ALL" and loadout then
@@ -2976,10 +2987,6 @@ function GSE.CreateEditor()
                         if keypath then
                             treeContainer:SelectByValue(keypath)
                         end
-                        GSE.ReloadKeyBindings()
-                    -- if bind ~= initialbind then
-                    --     showKeybind(bind, button, specialization, loadout)
-                    -- end
                     end
                 end
             )
@@ -3277,10 +3284,7 @@ function GSE.CreateEditor()
                         if bind ~= initialbind then
                             showKeybind(bind, button, specialization, loadout)
                         end
-                        -- trigger a reload of KeyBindings
-                        GSE.ReloadOverrides()
 
-                        GSE.UpdateIcon(_G[button.Sequence])
                         editframe.ManageTree()
                         if loadout ~= "ALL" and loadout then
                             if GetSpecialization then
@@ -3318,8 +3322,6 @@ function GSE.CreateEditor()
                         GSE_C["ActionBarBinds"]["Specialisations"][tostring(specialization)][bind] = nil
                     end
                     GSE.ButtonOverrides[bind] = nil
-                    _G[bind]:SetAttribute("type", "action")
-                    SecureHandlerUnwrapScript(_G[bind], "OnClick")
                     rightContainer:ReleaseChildren()
                     editframe.ManageTree()
                 end
@@ -3648,38 +3650,29 @@ end]],
                     GSE_C["ActionBarBinds"]["LoadOuts"][tostring(currentspecid)]
              then
                 for i, j in pairs(GSE_C["ActionBarBinds"]["LoadOuts"][tostring(currentspecid)]) do
-                    local success, result =
+                    local success =
                         pcall(
                         function()
                             local loadout = C_Traits.GetConfigInfo(i)
                             local specnode = {
                                 value = i,
-                                text = "|cffffcc00" .. loadout.name .. Statics.StringReset,
+                                text = "|cff808080" .. loadout.name .. Statics.StringReset,
                                 children = {},
                                 icon = Statics.Icons.Talents
                             }
 
                             for l, m in GSE.pairsByKeys(j) do
-                                local nodelabel = l .. " " .. GSEOptions.KEYWORD .. "(" .. m.Sequence
-                                if m and m.State then
-                                    nodelabel = nodelabel .. " - " .. L["Button State"] .. ": " .. m.State
-                                end
-                                nodelabel = nodelabel .. "" .. ")" .. Statics.StringReset
-
                                 table.insert(
                                     specnode["children"],
                                     {
-                                        value = l .. "\001" .. m.Sequence,
-                                        text = nodelabel
+                                        value = l .. "\001" .. m,
+                                        text = l .. " " .. GSEOptions.KEYWORD .. "(" .. m .. ")" .. Statics.StringReset
                                     }
                                 )
                             end
                             table.insert(node["children"], specnode)
                         end
                     )
-                    if not success then
-                        GSE.PrintDebugMessage(result, "ACTIONBAR OVERRIDES MENU")
-                    end
                 end
             end
             if GetSpecializationInfo then
@@ -4581,7 +4574,6 @@ end]],
                                 local rightContainer = AceGUI:Create("SimpleGroup")
                                 rightContainer:SetFullWidth(true)
                                 rightContainer:SetLayout("List")
-
                                 showKeybind(bind, button, specialization, loadout, type, rightContainer)
                                 container:AddChild(rightContainer)
                                 editframe.loaded = true

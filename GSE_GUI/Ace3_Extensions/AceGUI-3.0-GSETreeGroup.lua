@@ -194,11 +194,7 @@ local function Button_OnClick(frame)
         frame.selected = true
         frame:LockHighlight()
         Expand_OnClick(frame.toggle)
-    else
-        local mbutton = GetMouseButtonClicked()
-        if mbutton == "RightButton" then
-            self:Fire("OnGroupSelected", frame.uniquevalue)
-        end
+        self:RefreshTree()
     end
     AceGUI:ClearFocus()
 end

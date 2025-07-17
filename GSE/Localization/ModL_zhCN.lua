@@ -29,7 +29,8 @@ L["Conditionals Colour"] = "条件颜色"
 L["Create a new macro in the /macro interface and assign it an Icon. Then reopen this menu.  You cannot create a new macro here but after it has been created you can manage it."] = "在 /macro 界面创建新宏并分配图标，然后重新打开此菜单。您不能在此处创建新宏，但创建后可以管理它。"
 L["Create Human Readable Exports"] = "创建人类可读的导出"
 L["Current Value"] = "当前值"
-L["Default"] = "默认"
+--[[Translation missing --]]
+L["Default"] = "Default"
 L["Default Keybinding Height"] = "默认按键绑定高度"
 L["Default Keybinding Width"] = "默认按键绑定宽度"
 L["Disable inbuilt LibActionButton"] = "禁用内置 LibActionButton"
@@ -77,13 +78,17 @@ L["Manage Macro with GSE"] = "使用 GSE 管理宏"
 L["Manage Macros"] = "管理宏"
 L["Manage Variables"] = "管理变量"
 L["Missing Variable "] = "缺失变量 "
-L["modified in other window.  This view is now behind the current sequence."] = "在其他窗口中修改。该视图现在位于当前序列之后。"
+--[[Translation missing --]]
+L["modified in other window.  This view is now behind the current sequence."] = "modified in other window.  This view is now behind the current sequence."
 L["New Actionbar Override"] = "新建动作条覆盖"
 L["New KeyBind"] = "新的按键绑定"
-L["New Sequence"] = "新建序列"
-L["New Variable"] = "新建变量"
+--[[Translation missing --]]
+L["New Sequence"] = "New Sequence"
+--[[Translation missing --]]
+L["New Variable"] = "New Variable"
 L["Not Yet Active"] = "尚未激活"
-L["Open %s in New Window"] = "在新窗口中打开%s"
+--[[Translation missing --]]
+L["Open %s in New Window"] = "Open %s in New Window"
 L["Party"] = "小队"
 L["Pet"] = "宠物"
 L["Pet Ability"] = "宠物技能"
@@ -118,10 +123,13 @@ L["Use WLM Export Sequence Format"] = "使用WLM格式导出序列"
 L["Variable"] = "变量"
 L["Variable Menu"] = "变量菜单"
 --[[Translation missing --]]
-L["WhatsNew"] = "|cFFFFFFFFGS|r|cFF00FFFFE|r 3.2.28 changes the import and export strings.  Each GSE import will now start with !GSEx! where the x shows the version number going forward.  https://wago.io/gse has been updated toi handle these new import strings and wago.io exports will switch to exporting these style strings around 11.2.  These new strings will be picked up by the classic variants when they are next updated by Blizzard.  As always details are in Discord."
+L["WhatsNew"] = [=[|cFFFFFFFFGS|r|cFF00FFFFE|r 3.2.25 has finally fixed being able to use castsequences and their resets within GSE.
+
+The GUI Menu and the Editor have been redesigned.  Details are in Discord.]=]
 L["When creating a macro, if there is not a personal character macro space, create an account wide macro."] = "创建宏时,如果没有角色宏空间,创建帐户通用的宏."
 L["When exporting from GSE create a descriptive export for Discord/Discource forums."] = "从 GSE 导出时创建适合 Discord/Discourse 论坛的描述性导出。"
 L["When loading or creating a sequence, if it is a macro of the same class automatically create the Macro Stub"] = "当加载或创建序列时,如果它是同职业的宏,则自动创建宏存根"
-L["You cannot open a new Sequence Editor window while you are in combat.  Please exit combat and then try again."] = "在战斗中无法打开新的序列编辑器窗口。请退出战斗，然后重试。"
+--[[Translation missing --]]
+L["You cannot open a new Sequence Editor window while you are in combat.  Please exit combat and then try again."] = "You cannot open a new Sequence Editor window while you are in combat.  Please exit combat and then try again."
 
 
